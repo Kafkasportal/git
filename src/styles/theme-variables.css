@@ -1,0 +1,177 @@
+/**
+ * Dynamic Theme Variables
+ * These CSS variables are dynamically updated by the Settings Context
+ * based on user's theme selection
+ */
+
+:root {
+  /* ========== COLOR VARIABLES ========== */
+
+  /* Primary Colors */
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-primary-active: #1d4ed8;
+
+  /* Secondary Colors */
+  --color-secondary: #6b7280;
+  --color-secondary-hover: #4b5563;
+
+  /* Accent Color */
+  --color-accent: #8b5cf6;
+
+  /* Status Colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Background Colors */
+  --color-background: #ffffff;
+  --color-background-secondary: #f9fafb;
+  --color-background-tertiary: #f3f4f6;
+
+  /* Text Colors */
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+
+  /* Border Colors */
+  --color-border: #e5e7eb;
+  --color-border-hover: #d1d5db;
+
+  /* Sidebar Colors */
+  --color-sidebar-bg: #1f2937;
+  --color-sidebar-text: #d1d5db;
+  --color-sidebar-active: #3b82f6;
+
+  /* ========== TYPOGRAPHY VARIABLES ========== */
+
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  --font-base-size: 14px;
+  --font-heading-scale: 1.5;
+  --line-height: 1.5;
+
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ========== LAYOUT VARIABLES ========== */
+
+  --sidebar-width: 256px;
+  --container-max-width: 1400px;
+  --border-radius: 8px;
+  --border-radius-sm: 4px;
+  --border-radius-lg: 12px;
+  --border-radius-full: 9999px;
+
+  /* Spacing Scale */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* Card Elevation Shadows */
+  --shadow-flat: none;
+  --shadow-subtle: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-medium: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-high: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+
+  /* ========== ANIMATION VARIABLES ========== */
+
+  --transition-fast: 150ms;
+  --transition-normal: 200ms;
+  --transition-slow: 300ms;
+  --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========== DARK MODE OVERRIDES ========== */
+.dark {
+  /* Background Colors */
+  --color-background: #111827;
+  --color-background-secondary: #1f2937;
+  --color-background-tertiary: #374151;
+
+  /* Text Colors */
+  --color-text-primary: #f9fafb;
+  --color-text-secondary: #d1d5db;
+  --color-text-muted: #9ca3af;
+
+  /* Border Colors */
+  --color-border: #374151;
+  --color-border-hover: #4b5563;
+
+  /* Sidebar Colors (slightly lighter in dark mode) */
+  --color-sidebar-bg: #0f172a;
+  --color-sidebar-text: #e2e8f0;
+  --color-sidebar-active: #3b82f6;
+}
+
+/* ========== SPACING SCALE VARIANTS ========== */
+:root[data-spacing='tight'] {
+  --spacing-xs: 0.125rem;
+  --spacing-sm: 0.25rem;
+  --spacing-md: 0.5rem;
+  --spacing-lg: 1rem;
+  --spacing-xl: 1.5rem;
+  --spacing-2xl: 2rem;
+}
+
+:root[data-spacing='relaxed'] {
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 3rem;
+  --spacing-2xl: 4rem;
+}
+
+/* ========== UTILITY CLASSES ========== */
+
+.theme-primary {
+  color: var(--color-primary);
+}
+
+.theme-bg-primary {
+  background-color: var(--color-primary);
+}
+
+.theme-border-primary {
+  border-color: var(--color-primary);
+}
+
+.theme-text {
+  color: var(--color-text-primary);
+}
+
+.theme-text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.theme-text-muted {
+  color: var(--color-text-muted);
+}
+
+.theme-bg {
+  background-color: var(--color-background);
+}
+
+.theme-bg-secondary {
+  background-color: var(--color-background-secondary);
+}
+
+.theme-border {
+  border-color: var(--color-border);
+}
+
+.theme-shadow {
+  box-shadow: var(--shadow-medium);
+}
+
+.theme-transition {
+  transition-duration: var(--transition-normal);
+  transition-timing-function: var(--transition-ease);
+}

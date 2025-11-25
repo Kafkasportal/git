@@ -1,0 +1,20 @@
+{
+    "databases": [
+        {
+            "$id": "Kafkasder Panel Database",
+            "name": "kafkasder_db",
+            "enabled": true
+        }
+    ],
+    "collections": [
+        {
+            "$id": "Kafkasder Panel Database",
+            "databaseId": "Kafkasder Panel Database",
+            "name": "Kafkasder Panel Database",
+            "documentSecurity": false,
+            "attributes": [],
+            "indexes": [],
+            "enabled": true
+        }
+    ]
+}

@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "Chrome DevTools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest"],
+      "env": {}
+    },
+    "Docker MCP": {
+      "command": "docker",
+      "args": ["mcp", "gateway", "stdio"],
+      "env": {}
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": ""
+      }
+    }
+  }
+}
+

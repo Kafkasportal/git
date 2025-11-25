@@ -1,0 +1,134 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Testing
+/coverage
+/test-results/
+/playwright-report/
+*.test-results
+junit.xml
+
+# Next.js
+/.next/
+/out/
+next-env.d.ts
+
+# Production
+/build
+/dist
+
+# TypeScript
+*.tsbuildinfo
+
+# Environment files
+.env*
+!.env.example
+!.env.production.example
+.env.vercel
+.env.production
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.log
+logs/
+dev-debug.log
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# But allow specific cursor files
+!.cursor/mcp_settings.example.json
+!.cursor/README.md
+!.cursor/mcp_settings.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Misc
+*.pem
+.cache/
+*.tmp
+*.temp
+
+# Vercel
+.vercel
+.vercel.json
+.vercel-build-output/
+
+# Code quality and reports
+/jscpd-report/
+lint-*.txt
+lint-output.txt
+lint-current.txt
+*-output.txt
+*-current.txt
+
+# Temporary documentation and analysis files
+.analysis-progress.md
+.devam-progress.md
+.progress-update.txt
+.roomodes
+REFACTORING_PLAN.md
+REFACTORING_SUMMARY.md
+*_SETUP_COMPLETE.md
+*_ANALYSIS*.md
+*_SUMMARY*.md
+*_REPORT*.md
+TEST_*.md
+PLAYWRIGHT_*.md
+LOGIN_*.md
+AUTH_*.md
+
+# Obsolete documentation (if any exist)
+COMPONENT_GUIDE.md
+DOCUMENTATION_INDEX.md
+QUICK_START.md
+README_TR.md
+TESTING-CHECKLIST.md
+testsprite_tests/
+
+# AI/Tool specific directories
+.yoyo/
+.gemini/
+.kluster
+.serena/
+weweb-custom/
+.cursor/rules/kluster-code-verify.mdc
+.github/instructions/codacy.instructions.md
+.cursor/rules/codacy.mdc
+# Claude Code - ignore local settings but allow shared hooks
+.claude/*
+!.claude/hooks/
+.claude/hooks/*
+!.claude/hooks/session-start.sh
+!.claude/settings.json
+
+# Browser MCP screenshots and temporary files
+.playwright-mcp/
+
+# Sensitive files
+KEYS-AND-CREDENTIALS.md
+gha-creds-*.json
+
+# Local IDE settings (contains secrets)
+.vscode/settings.local.json

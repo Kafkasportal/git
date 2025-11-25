@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Run lint-staged for code quality checks
+npx lint-staged
+
+# Run TypeScript type checking
+npm run typecheck
