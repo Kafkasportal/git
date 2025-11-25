@@ -8,9 +8,9 @@ import type { Document } from '@/types/database';
 /**
  * Get document ID (supports $id, _id, and id fields)
  */
-export function getDocumentId(doc: Document | null | undefined): string {
-  if (!doc) return '';
-  return doc.$id || doc._id || doc.id || '';
+export function getDocumentId(doc: Document | null | undefined): string | null {
+  if (!doc) return null;
+  return doc.$id || doc._id || doc.id || null;
 }
 
 /**
