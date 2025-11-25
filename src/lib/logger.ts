@@ -1,5 +1,3 @@
-import * as Sentry from '@sentry/nextjs';
-
 type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 
 interface LogContext {
@@ -156,12 +154,7 @@ class LoggerImpl implements Logger {
       console.log(JSON.stringify(logEntry));
     }
 
-    if ((level === 'error' || level === 'fatal') && process.env.SENTRY_DSN) {
-      Sentry.captureException(safeError || new Error(message), {
-        tags: { level },
-        extra: safeContext as Record<string, any>,
-      } as any);
-    }
+    // Error/Fatal logs are captured (Sentry removed)
   }
 
   debug(message: string, context?: LogContext): void {

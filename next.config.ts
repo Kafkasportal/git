@@ -1,6 +1,5 @@
 import type { NextConfig } from 'next';
 import withBundleAnalyzer from '@next/bundle-analyzer';
-import { withSentryConfig } from '@sentry/nextjs';
 import os from 'os';
 import webpack from 'webpack';
 const isWindows = os.platform() === 'win32';
@@ -439,8 +438,4 @@ const baseConfig: NextConfig = {
 
 const nextConfig: NextConfig = bundleAnalyzer(baseConfig);
 
-export default withSentryConfig(nextConfig, {
-  silent: true,
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-});
+export default nextConfig;

@@ -11,6 +11,7 @@ import { persistentCache } from '@/lib/persistent-cache';
 import { initGlobalErrorHandlers } from '@/lib/global-error-handler';
 import { initErrorTracker } from '@/lib/error-tracker';
 import { SettingsProvider } from '@/contexts/settings-context';
+import { pingAppwrite } from '@/lib/appwrite';
 
 import { SuspenseBoundary } from '@/components/ui/suspense-boundary';
 
@@ -54,6 +55,17 @@ export function Providers({ children }: { children: React.ReactNode }) {
       initErrorTracker();
 
       // Error tracking system initialized
+    }
+  }, []);
+
+  // Ping Appwrite to verify connection on app load
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      pingAppwrite().then((success) => {
+        if (!success) {
+          console.warn('⚠️ Appwrite connection could not be verified');
+        }
+      });
     }
   }, []);
 
