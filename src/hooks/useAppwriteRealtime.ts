@@ -438,3 +438,32 @@ export function useAppwriteReconnect({
     reconnectAttempts,
   };
 }
+
+/**
+ * Convenience hook for real-time updates on a collection
+ * Wraps useAppwriteCollection for simpler API
+ *
+ * @example
+ * ```ts
+ * const { isConnected } = useAppwriteRealtime('donations', {
+ *   notifyOnChange: true,
+ *   onChange: (event) => console.log('Update:', event),
+ * });
+ * ```
+ */
+export function useAppwriteRealtime(
+  collectionId: string,
+  options?: Omit<UseRealtimeOptions, 'enabled'> & { enabled?: boolean }
+) {
+  const { enabled = true, ...rest } = options || {};
+
+  // Use the DATABASE_ID from config or default
+  const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || 'kafkasder';
+
+  return useAppwriteCollection({
+    databaseId,
+    collectionId,
+    enabled,
+    ...rest,
+  });
+}

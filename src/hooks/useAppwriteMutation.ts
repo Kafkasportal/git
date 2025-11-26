@@ -10,7 +10,7 @@ import { queueOfflineMutation } from '@/lib/offline-sync';
 import logger from '@/lib/logger';
 
 interface UseAppwriteMutationOptions<TData = unknown, TVariables = unknown, TError = unknown>
-  extends Omit<UseMutationOptions<TData, TError, TVariables>, 'mutationFn'> {
+  extends Omit<UseMutationOptions<TData, TError, TVariables>, 'mutationFn' | 'onSuccess' | 'onError'> {
   mutationFn: (variables: TVariables) => Promise<TData>;
   queryKey?: (string | number | boolean | null | undefined)[];
   successMessage?: string;
@@ -19,8 +19,8 @@ interface UseAppwriteMutationOptions<TData = unknown, TVariables = unknown, TErr
   showErrorToast?: boolean;
   enableOfflineQueue?: boolean;
   collection?: string;
-  onSuccess?: (data: TData, variables: TVariables) => void;
-  onError?: (error: TError, variables: TVariables) => void;
+  onSuccess?: (data: TData, variables: TVariables, context: unknown) => void;
+  onError?: (error: TError, variables: TVariables, context: unknown) => void;
 }
 
 /**
@@ -100,8 +100,7 @@ export function useAppwriteMutation<TData = unknown, TVariables = unknown, TErro
         }
 
         // Call callbacks
-        onSuccess?.(data, variables);
-        options.onSuccess?.(data, variables, context);
+        onSuccess?.(data, variables, context);
       }
     },
     onError: (error, variables, context) => {
@@ -112,9 +111,7 @@ export function useAppwriteMutation<TData = unknown, TVariables = unknown, TErro
       }
 
       // Call callbacks
-      onError?.(error, variables);
-      options.onError?.(error, variables, context);
+      onError?.(error, variables, context);
     },
   });
 }
-

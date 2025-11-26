@@ -88,17 +88,18 @@ export function KumbaraList({ onCreate }: KumbaraListProps) {
       notifyOnChange: true,
       changeMessage: 'Yeni kumbara bağışı eklendi',
       skipInitial: true,
-      onChange: (event) => {
+      onChange: (event: { events: string[] }) => {
         // Invalidate queries to refresh the list
         queryClient.invalidateQueries({ queryKey: ['kumbara-donations'] });
         queryClient.invalidateQueries({ queryKey: ['kumbara-stats'] });
         
-        // Show specific messages
-        if (event === 'create') {
+        // Show specific messages based on event type
+        const eventType = event.events[0];
+        if (eventType?.includes('create')) {
           toast.success('Yeni kumbara bağışı eklendi!');
-        } else if (event === 'update') {
+        } else if (eventType?.includes('update')) {
           toast.info('Kumbara bağışı güncellendi');
-        } else if (event === 'delete') {
+        } else if (eventType?.includes('delete')) {
           toast.warning('Kumbara bağışı silindi');
         }
       },

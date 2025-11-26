@@ -76,8 +76,7 @@ export const tcKimlikNoSchema = z
 /**
  * Sanitize phone number - remove spaces, dashes, parentheses, and leading 0 or +90
  */
-const sanitizePhoneNumber = (value: unknown): string => {
-  if (typeof value !== 'string') return '';
+const sanitizePhoneNumber = (value: string): string => {
   // Remove all non-digit characters
   let cleaned = value.replace(/\D/g, '');
   // Remove leading 90 (Turkey country code)
@@ -96,29 +95,28 @@ const sanitizePhoneNumber = (value: unknown): string => {
  * Accepts: 5XXXXXXXXX (10 digits, Turkish mobile format)
  * Auto-sanitizes input (removes spaces, dashes, leading 0/+90)
  */
-export const phoneSchema = z.preprocess(
-  sanitizePhoneNumber,
-  z
-    .string()
-    .regex(
-      /^5\d{9}$/,
-      'Telefon numarası 10 haneli olmalı ve 5 ile başlamalıdır (5XXXXXXXXX)'
-    )
-    .optional()
-);
+export const phoneSchema = z
+  .string()
+  .optional()
+  .transform((val) => (val ? sanitizePhoneNumber(val) : val))
+  .refine(
+    (val) => !val || /^5\d{9}$/.test(val),
+    'Telefon numarası 10 haneli olmalı ve 5 ile başlamalıdır (5XXXXXXXXX)'
+  );
 
 /**
  * Required phone validator
  * Accepts: 5XXXXXXXXX (10 digits, Turkish mobile format)
  * Auto-sanitizes input (removes spaces, dashes, leading 0/+90)
  */
-export const requiredPhoneSchema = z.preprocess(
-  sanitizePhoneNumber,
-  z
-    .string()
-    .min(10, 'Telefon numarası gereklidir')
-    .regex(/^5\d{9}$/, 'Telefon numarası 10 haneli olmalı ve 5 ile başlamalıdır (5XXXXXXXXX)')
-);
+export const requiredPhoneSchema = z
+  .string()
+  .min(1, 'Telefon numarası gereklidir')
+  .transform(sanitizePhoneNumber)
+  .refine(
+    (val) => /^5\d{9}$/.test(val),
+    'Telefon numarası 10 haneli olmalı ve 5 ile başlamalıdır (5XXXXXXXXX)'
+  );
 
 /**
  * International phone validator
