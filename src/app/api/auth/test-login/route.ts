@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { generateCsrfToken } from '@/lib/csrf';
-import { appwriteUsers } from '@/lib/appwrite/api';
-import { verifyPassword } from '@/lib/auth/password';
-import { serializeSessionCookie } from '@/lib/auth/session';
+import { NextResponse } from "next/server";
+import { generateCsrfToken } from "@/lib/csrf";
+import { appwriteUsers } from "@/lib/appwrite/api";
+import { verifyPassword } from "@/lib/auth/password";
+import { serializeSessionCookie } from "@/lib/auth/session";
 
 /**
  * Test login endpoint - Development only
@@ -10,29 +10,38 @@ import { serializeSessionCookie } from '@/lib/auth/session';
  */
 export async function GET() {
   // Only allow in development
-  if (process.env.NODE_ENV !== 'development') {
-    return NextResponse.json({ error: 'Not available in production' }, { status: 403 });
+  if (process.env.NODE_ENV !== "development") {
+    return NextResponse.json(
+      { error: "Not available in production" },
+      { status: 403 },
+    );
   }
 
   try {
-    const email = 'mcp-login@example.com';
-    const password = 'SecurePass123!';
+    const email = "mcp-login@example.com";
+    const password = "SecurePass123!";
 
     // Get user from Appwrite
     const user = await appwriteUsers.getByEmail(email.toLowerCase());
 
     if (!user) {
-      return NextResponse.json({ error: 'Kullanıcı bulunamadı' }, { status: 401 });
+      return NextResponse.json(
+        { error: "Kullanıcı bulunamadı" },
+        { status: 401 },
+      );
     }
 
     // Verify password
     if (!user.passwordHash) {
-      return NextResponse.json({ error: 'Şifre hash bulunamadı' }, { status: 401 });
+      return NextResponse.json(
+        { error: "Şifre hash bulunamadı" },
+        { status: 401 },
+      );
     }
 
     const isValidPassword = await verifyPassword(password, user.passwordHash);
     if (!isValidPassword) {
-      return NextResponse.json({ error: 'Şifre hatalı' }, { status: 401 });
+      return NextResponse.json({ error: "Şifre hatalı" }, { status: 401 });
     }
 
     // Create session
@@ -51,36 +60,40 @@ export async function GET() {
 
     // Set session cookie
     const signedSession = serializeSessionCookie(sessionData);
-    
+
     // Create response with redirect
-    const response = NextResponse.redirect(new URL('/genel', process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'));
+    const response = NextResponse.redirect(
+      new URL(
+        "/genel",
+        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+      ),
+    );
 
     // Set cookies on response
-    const nodeEnv = process.env.NODE_ENV;
-    const isProduction = nodeEnv === 'production';
-    response.cookies.set('auth-session', signedSession, {
+    const nodeEnv = process.env.NODE_ENV as string;
+    const isProduction = nodeEnv === "production";
+    response.cookies.set("auth-session", signedSession, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: 'strict',
+      sameSite: "strict",
       maxAge: 24 * 60 * 60, // 24 hours
-      path: '/',
+      path: "/",
     });
 
-    response.cookies.set('csrf-token', csrfToken, {
+    response.cookies.set("csrf-token", csrfToken, {
       httpOnly: false,
       secure: isProduction,
-      sameSite: 'strict',
+      sameSite: "strict",
       maxAge: 24 * 60 * 60, // 24 hours
-      path: '/',
+      path: "/",
     });
 
     return response;
   } catch (error) {
-    console.error('Test login error:', error);
+    console.error("Test login error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Login başarısız' },
-      { status: 500 }
+      { error: error instanceof Error ? error.message : "Login başarısız" },
+      { status: 500 },
     );
   }
 }
-

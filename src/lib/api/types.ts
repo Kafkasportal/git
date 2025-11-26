@@ -18,7 +18,7 @@ export interface BeneficiaryCreateInput {
   phone: string;
   address: string;
   email?: string;
-  status?: 'TASLAK' | 'AKTIF' | 'PASIF' | 'SILINDI';
+  status?: "TASLAK" | "AKTIF" | "PASIF" | "SILINDI";
   city?: string;
   district?: string;
   neighborhood?: string;
@@ -26,10 +26,48 @@ export interface BeneficiaryCreateInput {
   birth_date?: string;
   gender?: string;
   nationality?: string;
+  religion?: string;
+  marital_status?: string;
+  children_count?: number;
+  orphan_children_count?: number;
+  elderly_count?: number;
+  disabled_count?: number;
+  income_level?: string;
+  income_source?: string;
+  has_debt?: boolean;
+  housing_type?: string;
+  has_vehicle?: boolean;
+  health_status?: string;
+  has_chronic_illness?: boolean;
+  chronic_illness_detail?: string;
+  has_disability?: boolean;
+  disability_detail?: string;
+  has_health_insurance?: boolean;
+  regular_medication?: string;
+  education_level?: string;
+  occupation?: string;
+  employment_status?: string;
+  aid_type?: string;
+  totalAidAmount?: number;
+  aid_duration?: string;
+  priority?: string;
+  reference_name?: string;
+  reference_phone?: string;
+  reference_relation?: string;
+  application_source?: string;
+  notes?: string;
+  previous_aid?: boolean;
+  other_organization_aid?: string;
+  emergency?: boolean;
+  contact_preference?: string;
+  approval_status?: "pending" | "approved" | "rejected";
+  approved_by?: string;
+  approved_at?: unknown;
   [key: string]: unknown;
 }
 
-export interface BeneficiaryUpdateInput extends Partial<BeneficiaryCreateInput> {
+export interface BeneficiaryUpdateInput
+  extends Partial<BeneficiaryCreateInput> {
   auth?: { userId: string; role: string };
 }
 
@@ -38,34 +76,34 @@ export interface BeneficiaryUpdateInput extends Partial<BeneficiaryCreateInput> 
 // ========================================
 
 export type PaymentMethod =
-  | 'cash'
-  | 'check'
-  | 'credit_card'
-  | 'online'
-  | 'bank_transfer'
-  | 'sms'
-  | 'in_kind'
-  | 'NAKIT'
-  | 'CEK_SENET'
-  | 'KREDI_KARTI'
-  | 'ONLINE'
-  | 'BANKA_HAVALESI'
-  | 'SMS'
-  | 'AYNI';
+  | "cash"
+  | "check"
+  | "credit_card"
+  | "online"
+  | "bank_transfer"
+  | "sms"
+  | "in_kind"
+  | "NAKIT"
+  | "CEK_SENET"
+  | "KREDI_KARTI"
+  | "ONLINE"
+  | "BANKA_HAVALESI"
+  | "SMS"
+  | "AYNI";
 
 export interface DonationCreateInput {
   donor_name: string;
   donor_phone: string;
   donor_email?: string;
   amount: number;
-  currency: 'TRY' | 'USD' | 'EUR';
+  currency: "TRY" | "USD" | "EUR";
   donation_type: string;
   payment_method: PaymentMethod;
   donation_purpose: string;
   notes?: string;
   receipt_number: string;
   receipt_file_id?: string;
-  status: 'pending' | 'completed' | 'cancelled';
+  status: "pending" | "completed" | "cancelled";
   // Kumbara-specific fields (optional)
   is_kumbara?: boolean;
   kumbara_location?: string;
@@ -90,10 +128,10 @@ export interface DonationUpdateInput extends Partial<DonationCreateInput> {
 export interface TaskCreateInput {
   title: string;
   description?: string;
-  assigned_to?: Id<'users'>;
-  created_by: Id<'users'>;
-  priority: 'low' | 'normal' | 'high' | 'urgent';
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  assigned_to?: Id<"users">;
+  created_by: Id<"users">;
+  priority: "low" | "normal" | "high" | "urgent";
+  status: "pending" | "in_progress" | "completed" | "cancelled";
   due_date?: string;
   category?: string;
   tags?: string[];
@@ -114,9 +152,9 @@ export interface TodoCreateInput {
   description?: string;
   completed?: boolean;
   completed_at?: string;
-  created_by: Id<'users'>;
+  created_by: Id<"users">;
   due_date?: string;
-  priority: 'low' | 'normal' | 'high' | 'urgent';
+  priority: "low" | "normal" | "high" | "urgent";
   tags?: string[];
   is_read: boolean;
   [key: string]: unknown;
@@ -135,10 +173,10 @@ export interface MeetingCreateInput {
   description?: string;
   meeting_date: string;
   location?: string;
-  organizer: Id<'users'>;
-  participants: Id<'users'>[];
-  status: 'scheduled' | 'ongoing' | 'completed' | 'cancelled';
-  meeting_type: 'general' | 'committee' | 'board' | 'other';
+  organizer: Id<"users">;
+  participants: Id<"users">[];
+  status: "scheduled" | "ongoing" | "completed" | "cancelled";
+  meeting_type: "general" | "committee" | "board" | "other";
   agenda?: string;
   notes?: string;
   [key: string]: unknown;
@@ -153,12 +191,12 @@ export interface MeetingUpdateInput extends Partial<MeetingCreateInput> {
 // ========================================
 
 export interface MeetingDecisionCreateInput {
-  meeting_id: Id<'meetings'>;
+  meeting_id: Id<"meetings">;
   title: string;
   summary?: string;
-  owner?: Id<'users'>;
-  created_by: Id<'users'>;
-  status?: 'acik' | 'devam' | 'kapatildi';
+  owner?: Id<"users">;
+  created_by: Id<"users">;
+  status?: "acik" | "devam" | "kapatildi";
   tags?: string[];
   due_date?: string;
   [key: string]: unknown;
@@ -171,31 +209,32 @@ export type MeetingDecisionUpdateInput = Partial<MeetingDecisionCreateInput>;
 // ========================================
 
 export interface MeetingActionItemCreateInput {
-  meeting_id: Id<'meetings'>;
+  meeting_id: Id<"meetings">;
   title: string;
-  assigned_to: Id<'users'>;
-  created_by: Id<'users'>;
-  decision_id?: Id<'meeting_decisions'>;
+  assigned_to: Id<"users">;
+  created_by: Id<"users">;
+  decision_id?: Id<"meeting_decisions">;
   description?: string;
   due_date?: string;
-  status?: 'devam' | 'beklemede' | 'hazir' | 'iptal';
+  status?: "devam" | "beklemede" | "hazir" | "iptal";
   notes?: string[];
   reminder_scheduled_at?: string;
   [key: string]: unknown;
 }
 
-export type MeetingActionItemUpdateInput = Partial<MeetingActionItemCreateInput>;
+export type MeetingActionItemUpdateInput =
+  Partial<MeetingActionItemCreateInput>;
 
 // ========================================
 // MESSAGE TYPES
 // ========================================
 
 export interface MessageCreateInput {
-  message_type: 'sms' | 'email' | 'internal';
-  sender: Id<'users'>;
-  recipients: Id<'users'>[];
+  message_type: "sms" | "email" | "internal";
+  sender: Id<"users">;
+  recipients: Id<"users">[];
   content: string;
-  status: 'draft' | 'sent' | 'failed';
+  status: "draft" | "sent" | "failed";
   is_bulk: boolean;
   subject?: string;
   template_id?: string;
@@ -230,14 +269,14 @@ export interface UserUpdateInput extends Partial<UserCreateInput> {
 // ========================================
 
 export interface WorkflowNotificationCreateInput {
-  recipient: Id<'users'>;
-  category: 'meeting' | 'gorev' | 'rapor' | 'hatirlatma';
+  recipient: Id<"users">;
+  category: "meeting" | "gorev" | "rapor" | "hatirlatma";
   title: string;
-  triggered_by?: Id<'users'>;
+  triggered_by?: Id<"users">;
   body?: string;
-  status?: 'beklemede' | 'gonderildi' | 'okundu';
+  status?: "beklemede" | "gonderildi" | "okundu";
   reference?: {
-    type: 'meeting_action_item' | 'meeting' | 'meeting_decision';
+    type: "meeting_action_item" | "meeting" | "meeting_decision";
     id: string;
   };
   metadata?: Record<string, unknown>;
@@ -251,19 +290,19 @@ export interface WorkflowNotificationCreateInput {
 
 export interface AidApplicationCreateInput {
   application_date: string;
-  applicant_type: 'person' | 'organization' | 'partner';
+  applicant_type: "person" | "organization" | "partner";
   applicant_name: string;
-  beneficiary_id?: Id<'beneficiaries'>;
+  beneficiary_id?: Id<"beneficiaries">;
   one_time_aid?: number;
   regular_financial_aid?: number;
   regular_food_aid?: number;
   in_kind_aid?: number;
   service_referral?: number;
-  stage: 'draft' | 'under_review' | 'approved' | 'ongoing' | 'completed';
-  status: 'open' | 'closed';
+  stage: "draft" | "under_review" | "approved" | "ongoing" | "completed";
+  status: "open" | "closed";
   description?: string;
   notes?: string;
-  priority?: 'low' | 'normal' | 'high' | 'urgent';
+  priority?: "low" | "normal" | "high" | "urgent";
   [key: string]: unknown;
 }
 
@@ -274,14 +313,14 @@ export type AidApplicationUpdateInput = Partial<AidApplicationCreateInput>;
 // ========================================
 
 export interface FinanceRecordCreateInput {
-  record_type: 'income' | 'expense';
+  record_type: "income" | "expense";
   category: string;
   amount: number;
-  currency: 'TRY' | 'USD' | 'EUR';
+  currency: "TRY" | "USD" | "EUR";
   description: string;
   transaction_date: string;
-  created_by: Id<'users'>;
-  status: 'pending' | 'approved' | 'rejected';
+  created_by: Id<"users">;
+  status: "pending" | "approved" | "rejected";
   payment_method?: string;
   receipt_number?: string;
   receipt_file_id?: string;
@@ -297,9 +336,14 @@ export type FinanceRecordUpdateInput = Partial<FinanceRecordCreateInput>;
 
 export interface PartnerCreateInput {
   name: string;
-  type: 'organization' | 'individual' | 'sponsor';
-  partnership_type: 'donor' | 'supplier' | 'volunteer' | 'sponsor' | 'service_provider';
-  status: 'active' | 'inactive' | 'pending';
+  type: "organization" | "individual" | "sponsor";
+  partnership_type:
+    | "donor"
+    | "supplier"
+    | "volunteer"
+    | "sponsor"
+    | "service_provider";
+  status: "active" | "inactive" | "pending";
   contact_person?: string;
   email?: string;
   phone?: string;
@@ -322,12 +366,12 @@ export type PartnerUpdateInput = Partial<PartnerCreateInput>;
 // ========================================
 
 export interface ScholarshipCreateInput {
-  beneficiary_id: Id<'beneficiaries'>;
+  beneficiary_id: Id<"beneficiaries">;
   scholarship_type: string;
   amount: number;
   start_date: string;
   end_date?: string;
-  status?: 'active' | 'completed' | 'cancelled';
+  status?: "active" | "completed" | "cancelled";
   [key: string]: unknown;
 }
 

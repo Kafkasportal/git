@@ -3,15 +3,20 @@
  * Standardizes error handling, auth, validation, and logging across all API routes
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import logger from '@/lib/logger';
-import { requireModuleAccess } from '@/lib/api/auth-utils';
-import { errorResponse } from '@/lib/api/route-helpers';
+import { NextRequest, NextResponse } from "next/server";
+import logger from "@/lib/logger";
+import { requireModuleAccess } from "@/lib/api/auth-utils";
+import { errorResponse } from "@/lib/api/route-helpers";
+
+// Next.js route handler context type
+export interface RouteContext {
+  params?: Record<string, string> | Promise<Record<string, string>>;
+}
 
 export type RouteHandler = (
   request: NextRequest,
-  params?: Record<string, string>
-) => Promise<NextResponse<any>>;
+  context?: RouteContext,
+) => Promise<NextResponse<unknown>>;
 
 export interface MiddlewareOptions {
   requireAuth?: boolean;
@@ -22,9 +27,14 @@ export interface MiddlewareOptions {
 /**
  * Compose multiple middleware functions
  */
-export function compose(...middlewares: Array<(handler: RouteHandler) => RouteHandler>) {
+export function compose(
+  ...middlewares: Array<(handler: RouteHandler) => RouteHandler>
+) {
   return (handler: RouteHandler) => {
-    return middlewares.reduce((wrapped, middleware) => middleware(wrapped), handler);
+    return middlewares.reduce(
+      (wrapped, middleware) => middleware(wrapped),
+      handler,
+    );
   };
 }
 
@@ -38,8 +48,8 @@ export function withAuth(handler: RouteHandler): RouteHandler {
       // This is a placeholder for additional auth checks if needed
       return await handler(request, params);
     } catch (error) {
-      logger.error('Auth middleware error', error);
-      return errorResponse('Kimlik doğrulama başarısız', 401);
+      logger.error("Auth middleware error", error);
+      return errorResponse("Kimlik doğrulama başarısız", 401);
     }
   };
 }
@@ -55,7 +65,7 @@ export function withModuleAccess(moduleName: string) {
         return await handler(request, params);
       } catch (error) {
         logger.error(`Module access denied for ${moduleName}`, error);
-        return errorResponse('Bu modüle erişim izniniz yok', 403);
+        return errorResponse("Bu modüle erişim izniniz yok", 403);
       }
     };
   };
@@ -67,10 +77,10 @@ export function withModuleAccess(moduleName: string) {
  */
 export function withOfflineSync(handler: RouteHandler): RouteHandler {
   return async (request, params) => {
-    const forceOverwrite = request.headers.get('X-Force-Overwrite') === 'true';
+    const forceOverwrite = request.headers.get("X-Force-Overwrite") === "true";
 
     if (forceOverwrite) {
-      logger.info('Offline sync operation with force overwrite', {
+      logger.info("Offline sync operation with force overwrite", {
         method: request.method,
         url: request.url,
       });
@@ -98,41 +108,41 @@ export function withErrorHandler(handler: RouteHandler): RouteHandler {
       // Handle duplicate key errors
       const errorMsg = error instanceof Error ? error.message : String(error);
       if (
-        errorMsg?.toLowerCase().includes('duplicate') ||
-        errorMsg?.toLowerCase().includes('unique')
+        errorMsg?.toLowerCase().includes("duplicate") ||
+        errorMsg?.toLowerCase().includes("unique")
       ) {
-        logger.error('Duplicate entry error', error, context);
-        return errorResponse('Bu kayıt zaten mevcut', 409);
+        logger.error("Duplicate entry error", error, context);
+        return errorResponse("Bu kayıt zaten mevcut", 409);
       }
 
       // Handle validation errors
-      if (errorMsg?.toLowerCase().includes('validation')) {
-        logger.error('Validation error', error, context);
-        return errorResponse('Doğrulama hatası', 400);
+      if (errorMsg?.toLowerCase().includes("validation")) {
+        logger.error("Validation error", error, context);
+        return errorResponse("Doğrulama hatası", 400);
       }
 
       // Handle not found
-      if (errorMsg?.toLowerCase().includes('not found')) {
-        logger.error('Not found error', error, context);
-        return errorResponse('Kayıt bulunamadı', 404);
+      if (errorMsg?.toLowerCase().includes("not found")) {
+        logger.error("Not found error", error, context);
+        return errorResponse("Kayıt bulunamadı", 404);
       }
 
       // Handle Appwrite specific errors
-      if (errorMsg?.toLowerCase().includes('missing required attribute')) {
-        logger.error('Missing required attribute error', error, context);
+      if (errorMsg?.toLowerCase().includes("missing required attribute")) {
+        logger.error("Missing required attribute error", error, context);
         return errorResponse(`Zorunlu alanlar eksik: ${errorMsg}`, 400);
       }
 
       // Handle invalid document structure
-      if (errorMsg?.toLowerCase().includes('invalid document structure')) {
-        logger.error('Invalid document structure error', error, context);
+      if (errorMsg?.toLowerCase().includes("invalid document structure")) {
+        logger.error("Invalid document structure error", error, context);
         return errorResponse(`Geçersiz veri yapısı: ${errorMsg}`, 400);
       }
 
       // Generic server error - include original message in development
-      logger.error('API error', error, context);
-      const isDev = process.env.NODE_ENV === 'development';
-      return errorResponse(isDev ? errorMsg : 'İşlem başarısız oldu', 500);
+      logger.error("API error", error, context);
+      const isDev = process.env.NODE_ENV === "development";
+      return errorResponse(isDev ? errorMsg : "İşlem başarısız oldu", 500);
     }
   };
 }
@@ -149,16 +159,19 @@ export function withValidation(options: ValidatorOptions = {}) {
   return (handler: RouteHandler): RouteHandler => {
     return async (request, params) => {
       try {
-        if (options.requireBody && ['POST', 'PUT', 'PATCH'].includes(request.method)) {
+        if (
+          options.requireBody &&
+          ["POST", "PUT", "PATCH"].includes(request.method)
+        ) {
           if (!request.body) {
-            return errorResponse('İstek gövdesi gereklidir', 400);
+            return errorResponse("İstek gövdesi gereklidir", 400);
           }
         }
 
         return await handler(request, params);
       } catch (error) {
-        logger.error('Validation middleware error', error);
-        return errorResponse('İstek doğrulanması başarısız', 400);
+        logger.error("Validation middleware error", error);
+        return errorResponse("İstek doğrulanması başarısız", 400);
       }
     };
   };
@@ -188,7 +201,10 @@ export function withRateLimit(options: RateLimitOptions) {
       }
 
       if (clientRecord.count >= options.maxRequests) {
-        return errorResponse('Çok fazla istek gönderdiniz. Lütfen sonra tekrar deneyin', 429);
+        return errorResponse(
+          "Çok fazla istek gönderdiniz. Lütfen sonra tekrar deneyin",
+          429,
+        );
       }
 
       clientRecord.count++;
@@ -200,24 +216,27 @@ export function withRateLimit(options: RateLimitOptions) {
 /**
  * CORS middleware
  */
-export function withCors(allowedOrigins: string[] = ['http://localhost:3000']) {
+export function withCors(allowedOrigins: string[] = ["http://localhost:3000"]) {
   return (handler: RouteHandler): RouteHandler => {
     return async (request, params) => {
-      const origin = request.headers.get('origin');
+      const origin = request.headers.get("origin");
 
       if (origin && !allowedOrigins.includes(origin)) {
-        return errorResponse('CORS policy violation', 403);
+        return errorResponse("CORS policy violation", 403);
       }
 
       const response = await handler(request, params);
 
       // Add CORS headers
-      response.headers.set('Access-Control-Allow-Origin', origin || '*');
+      response.headers.set("Access-Control-Allow-Origin", origin || "*");
       response.headers.set(
-        'Access-Control-Allow-Methods',
-        'GET, POST, PUT, PATCH, DELETE, OPTIONS'
+        "Access-Control-Allow-Methods",
+        "GET, POST, PUT, PATCH, DELETE, OPTIONS",
       );
-      response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      response.headers.set(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization",
+      );
 
       return response;
     };
@@ -251,7 +270,10 @@ export function withMethodCheck(allowedMethods: string[]) {
   return (handler: RouteHandler): RouteHandler => {
     return async (request, params) => {
       if (!allowedMethods.includes(request.method)) {
-        return errorResponse(`${request.method} method bu endpoint'te desteklenmiyor`, 405);
+        return errorResponse(
+          `${request.method} method bu endpoint'te desteklenmiyor`,
+          405,
+        );
       }
 
       return await handler(request, params);
@@ -263,7 +285,11 @@ export function withMethodCheck(allowedMethods: string[]) {
  * Helper to get client ID for rate limiting
  */
 function getClientId(request: NextRequest): string {
-  return request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+  return (
+    request.headers.get("x-forwarded-for") ||
+    request.headers.get("x-real-ip") ||
+    "unknown"
+  );
 }
 
 /**

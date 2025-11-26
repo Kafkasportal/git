@@ -17,18 +17,18 @@
 // Note: This hook intentionally uses setState in useEffect for subscription setup.
 // This is the standard pattern for external subscription libraries like Appwrite Realtime.
 
-import { useEffect, useState, useCallback, useRef } from 'react';
-import type { RealtimeResponseEvent } from 'appwrite';
-import { client } from '@/lib/appwrite/client';
-import logger from '@/lib/logger';
-import { toast } from 'sonner';
+import { useEffect, useState, useCallback, useRef } from "react";
+import type { RealtimeResponseEvent } from "appwrite";
+import { client } from "@/lib/appwrite/client";
+import logger from "@/lib/logger";
+import { toast } from "sonner";
 
 // Realtime event types
 export type RealtimeEvent =
-  | 'databases.*.collections.*.documents.*'
-  | 'databases.*.collections.*.documents.*.create'
-  | 'databases.*.collections.*.documents.*.update'
-  | 'databases.*.collections.*.documents.*.delete';
+  | "databases.*.collections.*.documents.*"
+  | "databases.*.collections.*.documents.*.create"
+  | "databases.*.collections.*.documents.*.update"
+  | "databases.*.collections.*.documents.*.delete";
 
 interface UseRealtimeOptions {
   /** Enable/disable the subscription */
@@ -88,7 +88,7 @@ export function useAppwriteDocument<T = unknown>({
     try {
       // Note: isConnected will be set to true when first message is received
       const unsubscribe = client.subscribe<T>(channel, (response) => {
-        logger.info('Appwrite Realtime event received', {
+        logger.info("Appwrite Realtime event received", {
           channel,
           events: response.events,
         });
@@ -101,9 +101,9 @@ export function useAppwriteDocument<T = unknown>({
 
         // Notify on change
         if (notifyOnChange && (!skipInitial || !isInitialRef.current)) {
-          const message = changeMessage || 'Veri güncellendi';
+          const message = changeMessage || "Veri güncellendi";
           toast.info(message, {
-            description: 'Değişiklikler otomatik olarak yüklendi',
+            description: "Değişiklikler otomatik olarak yüklendi",
           });
         }
 
@@ -122,7 +122,7 @@ export function useAppwriteDocument<T = unknown>({
       };
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-      logger.error('Appwrite Realtime subscription failed', { error, channel });
+      logger.error("Appwrite Realtime subscription failed", { error, channel });
       setError(error);
       setIsConnected(false);
 
@@ -196,7 +196,7 @@ export function useAppwriteCollection<T = unknown>({
     try {
       // Note: isConnected will be set to true when first message is received
       const unsubscribe = client.subscribe<T>(channel, (response) => {
-        logger.info('Appwrite Realtime collection event', {
+        logger.info("Appwrite Realtime collection event", {
           channel,
           events: response.events,
         });
@@ -205,9 +205,9 @@ export function useAppwriteCollection<T = unknown>({
         const eventType = response.events[0];
 
         // Update documents map
-        if (eventType?.includes('create') || eventType?.includes('update')) {
+        if (eventType?.includes("create") || eventType?.includes("update")) {
           documentsMapRef.current.set(payload.$id, payload);
-        } else if (eventType?.includes('delete')) {
+        } else if (eventType?.includes("delete")) {
           documentsMapRef.current.delete(payload.$id);
         }
 
@@ -218,14 +218,14 @@ export function useAppwriteCollection<T = unknown>({
 
         // Notify on change
         if (notifyOnChange && (!skipInitial || !isInitialRef.current)) {
-          const message = changeMessage || 'Liste güncellendi';
-          const description = eventType?.includes('create')
-            ? 'Yeni kayıt eklendi'
-            : eventType?.includes('update')
-              ? 'Kayıt güncellendi'
-              : eventType?.includes('delete')
-                ? 'Kayıt silindi'
-                : 'Değişiklikler otomatik olarak yüklendi';
+          const message = changeMessage || "Liste güncellendi";
+          const description = eventType?.includes("create")
+            ? "Yeni kayıt eklendi"
+            : eventType?.includes("update")
+              ? "Kayıt güncellendi"
+              : eventType?.includes("delete")
+                ? "Kayıt silindi"
+                : "Değişiklikler otomatik olarak yüklendi";
 
           toast.info(message, { description });
         }
@@ -246,7 +246,10 @@ export function useAppwriteCollection<T = unknown>({
       };
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-      logger.error('Appwrite Realtime collection subscription failed', { error, channel });
+      logger.error("Appwrite Realtime collection subscription failed", {
+        error,
+        channel,
+      });
       setError(error);
       setIsConnected(false);
 
@@ -297,7 +300,7 @@ export function useAppwriteMultipleChannels({
 }: {
   channels: string[];
   onMessage: (response: RealtimeResponseEvent<unknown>) => void;
-} & Pick<UseRealtimeOptions, 'enabled' | 'onError'>) {
+} & Pick<UseRealtimeOptions, "enabled" | "onError">) {
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -309,7 +312,7 @@ export function useAppwriteMultipleChannels({
     try {
       // Note: isConnected will be set to true when first message is received
       const unsubscribe = client.subscribe(channels, (response) => {
-        logger.info('Appwrite Realtime multi-channel event', {
+        logger.info("Appwrite Realtime multi-channel event", {
           channels,
           events: response.events,
         });
@@ -326,7 +329,10 @@ export function useAppwriteMultipleChannels({
       };
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-      logger.error('Appwrite Realtime multi-channel subscription failed', { error, channels });
+      logger.error("Appwrite Realtime multi-channel subscription failed", {
+        error,
+        channels,
+      });
       setError(error);
       setIsConnected(false);
 
@@ -368,11 +374,11 @@ export function useAppwriteReconnect({
       const attempts = prev + 1;
 
       if (attempts > maxReconnectAttempts) {
-        logger.error('Max reconnection attempts reached');
-        toast.error('Bağlantı kurulamadı', {
-          description: 'Lütfen sayfayı yenileyin',
+        logger.error("Max reconnection attempts reached");
+        toast.error("Bağlantı kurulamadı", {
+          description: "Lütfen sayfayı yenileyin",
           action: {
-            label: 'Yenile',
+            label: "Yenile",
             onClick: () => window.location.reload(),
           },
         });
@@ -383,7 +389,7 @@ export function useAppwriteReconnect({
       reconnectDelayRef.current = Math.min(1000 * Math.pow(2, attempts), 30000);
 
       setTimeout(() => {
-        logger.info('Attempting to reconnect...', { attempt: attempts });
+        logger.info("Attempting to reconnect...", { attempt: attempts });
         if (onReconnect) {
           onReconnect();
         }
@@ -397,7 +403,7 @@ export function useAppwriteReconnect({
     if (!enabled) return;
 
     const handleOnline = () => {
-      logger.info('Network connection restored');
+      logger.info("Network connection restored");
       setIsOnline(true);
       setReconnectAttempts(0);
       reconnectDelayRef.current = 1000;
@@ -406,35 +412,145 @@ export function useAppwriteReconnect({
         onReconnect();
       }
 
-      toast.success('Bağlantı yeniden kuruldu');
+      toast.success("Bağlantı yeniden kuruldu");
     };
 
     const handleOffline = () => {
-      logger.warn('Network connection lost');
+      logger.warn("Network connection lost");
       setIsOnline(false);
 
       if (onDisconnect) {
         onDisconnect();
       }
 
-      toast.warning('Bağlantı kesildi', {
-        description: 'Tekrar bağlanılmaya çalışılıyor...',
+      toast.warning("Bağlantı kesildi", {
+        description: "Tekrar bağlanılmaya çalışılıyor...",
       });
 
       attemptReconnect();
     };
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, [enabled, attemptReconnect, onReconnect, onDisconnect]);
 
   return {
     isOnline,
     reconnectAttempts,
+  };
+}
+
+/**
+ * Simplified hook for subscribing to collection changes
+ * This is an alias/wrapper for useAppwriteCollection with a simpler interface
+ *
+ * @example
+ * ```ts
+ * const { isConnected } = useAppwriteRealtime('donations', {
+ *   notifyOnChange: true,
+ *   onChange: (event) => console.log('Changed:', event),
+ * });
+ * ```
+ */
+export function useAppwriteRealtime<T = unknown>(
+  collectionId: string,
+  options: {
+    enabled?: boolean;
+    notifyOnChange?: boolean;
+    changeMessage?: string;
+    skipInitial?: boolean;
+    onChange?: (event: "create" | "update" | "delete") => void;
+    onError?: (error: Error) => void;
+    databaseId?: string;
+  } = {},
+) {
+  const {
+    enabled = true,
+    notifyOnChange = false,
+    changeMessage,
+    skipInitial = true,
+    onChange,
+    onError,
+    databaseId = "main",
+  } = options;
+
+  const [isConnected, setIsConnected] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const isInitialRef = useRef(true);
+
+  useEffect(() => {
+    if (!client || !enabled) {
+      return;
+    }
+
+    const channel = `databases.${databaseId}.collections.${collectionId}.documents`;
+
+    try {
+      const unsubscribe = client.subscribe<T>(channel, (response) => {
+        logger.info("Appwrite Realtime event", {
+          channel,
+          events: response.events,
+        });
+
+        setIsConnected(true);
+        setError(null);
+
+        // Determine event type
+        const eventType = response.events[0];
+        let eventName: "create" | "update" | "delete" = "update";
+        if (eventType?.includes("create")) {
+          eventName = "create";
+        } else if (eventType?.includes("delete")) {
+          eventName = "delete";
+        }
+
+        // Notify on change
+        if (notifyOnChange && (!skipInitial || !isInitialRef.current)) {
+          const message = changeMessage || "Veri güncellendi";
+          toast.info(message);
+        }
+
+        // Call onChange callback
+        if (onChange && (!skipInitial || !isInitialRef.current)) {
+          onChange(eventName);
+        }
+
+        isInitialRef.current = false;
+      });
+
+      return () => {
+        unsubscribe();
+        setIsConnected(false);
+      };
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      logger.error("Appwrite Realtime subscription failed", { error, channel });
+      setError(error);
+      setIsConnected(false);
+
+      if (onError) {
+        onError(error);
+      }
+      return undefined;
+    }
+  }, [
+    databaseId,
+    collectionId,
+    enabled,
+    notifyOnChange,
+    changeMessage,
+    skipInitial,
+    onChange,
+    onError,
+  ]);
+
+  return {
+    isConnected,
+    error,
   };
 }
