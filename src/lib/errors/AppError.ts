@@ -379,13 +379,14 @@ export class ErrorHandler {
    */
   static log(error: AppError): void {
     const logMessage = `${error.name}: ${error.message}`;
+    const errorJson = error.toJSON();
 
     if (error.severity === ErrorSeverity.CRITICAL) {
-      logger.error(logMessage, error, error.toJSON());
+      logger.error(logMessage, error, errorJson);
     } else if (error.severity === ErrorSeverity.HIGH) {
-      logger.warn(logMessage, error, error.toJSON());
+      logger.warn(logMessage, errorJson);
     } else {
-      logger.warn(logMessage, error, error.toJSON());
+      logger.warn(logMessage, errorJson);
     }
   }
 }

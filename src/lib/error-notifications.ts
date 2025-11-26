@@ -33,11 +33,13 @@ export async function createErrorNotification(options: ErrorNotificationOptions)
   try {
     // Get all admin and super admin users
     const adminUsersResult = await appwriteUsers.list({
-      filters: [{ field: 'role', value: 'admin' }, { field: 'isActive', value: true }],
+      role: 'admin',
+      isActive: true,
     });
 
     const superAdminUsersResult = await appwriteUsers.list({
-      filters: [{ field: 'role', value: 'super_admin' }, { field: 'isActive', value: true }],
+      role: 'super_admin',
+      isActive: true,
     });
 
     const allAdmins = [

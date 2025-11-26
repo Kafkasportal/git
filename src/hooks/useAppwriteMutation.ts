@@ -10,7 +10,7 @@ import { queueOfflineMutation } from '@/lib/offline-sync';
 import logger from '@/lib/logger';
 
 interface UseAppwriteMutationOptions<TData = unknown, TVariables = unknown, TError = unknown>
-  extends Omit<UseMutationOptions<TData, TError, TVariables>, 'mutationFn'> {
+  extends Omit<UseMutationOptions<TData, TError, TVariables>, 'mutationFn' | 'onSuccess' | 'onError'> {
   mutationFn: (variables: TVariables) => Promise<TData>;
   queryKey?: (string | number | boolean | null | undefined)[];
   successMessage?: string;
@@ -99,21 +99,19 @@ export function useAppwriteMutation<TData = unknown, TVariables = unknown, TErro
           toast.success(successMessage);
         }
 
-        // Call callbacks
+        // Call callback
         onSuccess?.(data, variables);
-        options.onSuccess?.(data, variables, context);
       }
     },
-    onError: (error, variables, context) => {
+    onError: (error, variables, _context) => {
       // Show error toast
       if (showErrorToast) {
         const message = error instanceof Error ? error.message : typeof error === 'string' ? error : errorMessage;
         toast.error(message);
       }
 
-      // Call callbacks
+      // Call callback
       onError?.(error, variables);
-      options.onError?.(error, variables, context);
     },
   });
 }

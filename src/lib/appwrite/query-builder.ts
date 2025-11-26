@@ -124,10 +124,10 @@ export class AppwriteQueryBuilder {
     if (Array.isArray(value)) {
       // If array, use first element (Appwrite contains doesn't support arrays directly)
       if (value.length > 0) {
-        this.queries.push(Query.contains(field, value[0]));
+        this.queries.push(Query.contains(field, String(value[0])));
       }
     } else {
-      this.queries.push(Query.contains(field, value));
+      this.queries.push(Query.contains(field, String(value)));
     }
     return this;
   }
@@ -141,7 +141,7 @@ export class AppwriteQueryBuilder {
       // Appwrite doesn't support containsAny directly, so we use OR logic with multiple contains
       // For now, just use the first value as a workaround
       // TODO: Implement proper OR logic if needed
-      this.queries.push(Query.contains(field, values[0]));
+      this.queries.push(Query.contains(field, String(values[0])));
     }
     return this;
   }

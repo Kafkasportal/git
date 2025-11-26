@@ -13,7 +13,7 @@ import {
 } from '@/lib/api/auth-utils';
 import { readOnlyRateLimit, dataModificationRateLimit } from '@/lib/rate-limit';
 import { themePresetSchema, type ThemePresetFormData } from '@/lib/validations/theme';
-import type { ThemePreset } from '@/contexts/settings-context';
+import type { ThemePreset, ThemeColors, ThemeTypography, ThemeLayout } from '@/contexts/settings-context';
 
 /**
  * GET - Get all theme presets
@@ -174,9 +174,9 @@ async function createThemePresetHandler(request: NextRequest) {
       _id: newPreset.$id || newPreset._id || '',
       name: newPreset.name,
       description: newPreset.description,
-      colors: themeConfigParsed.colors || {},
-      typography: themeConfigParsed.typography,
-      layout: themeConfigParsed.layout,
+      colors: (themeConfigParsed.colors || { primary: '#000000' }) as ThemeColors,
+      typography: themeConfigParsed.typography as ThemeTypography | undefined,
+      layout: themeConfigParsed.layout as ThemeLayout | undefined,
       isDefault: newPreset.is_default === true,
       isCustom: newPreset.is_custom === true,
     };

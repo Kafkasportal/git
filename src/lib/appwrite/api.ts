@@ -1328,7 +1328,9 @@ export const appwriteStorage = {
     try {
       // Dynamically import InputFile to avoid middleware issues
       const nodeAppwrite = await import('node-appwrite');
-      const InputFile = (nodeAppwrite as any).InputFile || nodeAppwrite.default?.InputFile;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const nodeAppwriteModule = nodeAppwrite as any;
+      const InputFile = nodeAppwriteModule.InputFile || nodeAppwriteModule.default?.InputFile;
 
       if (!InputFile) {
         throw new Error('InputFile not found in node-appwrite. Please check the import.');

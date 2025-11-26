@@ -157,7 +157,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   });
 
   const allSettings = allSettingsData;
-  const themePresets = themePresetsData ?? [];
+  const themePresets: ThemePreset[] = (themePresetsData ?? []) as ThemePreset[];
   const defaultTheme = defaultThemeData;
 
   const isLoading = allSettings === undefined || themePresets === undefined;

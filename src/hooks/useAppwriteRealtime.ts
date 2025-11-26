@@ -438,3 +438,108 @@ export function useAppwriteReconnect({
     reconnectAttempts,
   };
 }
+
+/**
+ * Simple hook for subscribing to a collection's realtime updates
+ * 
+ * @example
+ * ```ts
+ * const { isConnected } = useAppwriteRealtime(
+ *   'donations',
+ *   {
+ *     notifyOnChange: true,
+ *     onChange: (event) => console.log('Change:', event),
+ *   }
+ * );
+ * ```
+ */
+export function useAppwriteRealtime(
+  collectionId: string,
+  options: {
+    enabled?: boolean;
+    notifyOnChange?: boolean;
+    changeMessage?: string;
+    skipInitial?: boolean;
+    onChange?: (event: 'create' | 'update' | 'delete') => void;
+    onError?: (error: Error) => void;
+  } = {}
+) {
+  const {
+    enabled = true,
+    notifyOnChange = false,
+    changeMessage,
+    skipInitial = true,
+    onChange,
+    onError,
+  } = options;
+
+  const [isConnected, setIsConnected] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const isInitialRef = useRef(true);
+
+  useEffect(() => {
+    if (!client || !enabled || !collectionId) {
+      return;
+    }
+
+    // Import dynamically to get databaseId
+    const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || '';
+    const channel = `databases.${databaseId}.collections.${collectionId}.documents`;
+
+    try {
+      const unsubscribe = client.subscribe(channel, (response) => {
+        logger.info('Appwrite Realtime collection event', {
+          channel,
+          events: response.events,
+        });
+
+        setIsConnected(true);
+        setError(null);
+
+        // Determine event type
+        const eventType = response.events[0];
+        let eventAction: 'create' | 'update' | 'delete' = 'update';
+        
+        if (eventType?.includes('create')) {
+          eventAction = 'create';
+        } else if (eventType?.includes('delete')) {
+          eventAction = 'delete';
+        }
+
+        // Notify on change
+        if (notifyOnChange && (!skipInitial || !isInitialRef.current)) {
+          const message = changeMessage || 'Veri güncellendi';
+          toast.info(message);
+        }
+
+        // Call onChange callback
+        if (onChange) {
+          onChange(eventAction);
+        }
+
+        isInitialRef.current = false;
+      });
+
+      // Cleanup
+      return () => {
+        unsubscribe();
+        setIsConnected(false);
+      };
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      logger.error('Appwrite Realtime subscription failed', { error, channel });
+      setError(error);
+      setIsConnected(false);
+
+      if (onError) {
+        onError(error);
+      }
+      return undefined;
+    }
+  }, [collectionId, enabled, notifyOnChange, changeMessage, skipInitial, onChange, onError]);
+
+  return {
+    isConnected,
+    error,
+  };
+}

@@ -7,11 +7,16 @@ import type { AidApplicationDocument } from '@/types/database';
  */
 export const aidApplicationDocumentSchema = z.object({
   // Document base fields
-  _id: z.string().min(1),
-  _creationTime: z.string(),
-  _updatedAt: z.string(),
-  _collectionId: z.string(),
-  _databaseId: z.string(),
+  _id: z.string().min(1).optional(),
+  _creationTime: z.number().optional(),
+  _updatedAt: z.number().optional(),
+  _collectionId: z.string().optional(),
+  _databaseId: z.string().optional(),
+  $id: z.string().optional(),
+  $createdAt: z.string().optional(),
+  $updatedAt: z.string().optional(),
+  $collectionId: z.string().optional(),
+  $databaseId: z.string().optional(),
   $permissions: z.array(z.string()).optional(),
 
   // Başvuru Bilgileri
@@ -42,7 +47,7 @@ export const aidApplicationDocumentSchema = z.object({
   approved_by: z.string().optional(),
   approved_at: z.string().optional(),
   completed_at: z.string().optional(),
-}) satisfies z.ZodType<AidApplicationDocument>;
+});
 
 /**
  * Type guard function to validate if data is a valid AidApplicationDocument
@@ -58,7 +63,7 @@ export function isValidAidApplicationDocument(data: unknown): data is AidApplica
 export function validateAidApplicationDocument(data: unknown): AidApplicationDocument | null {
   const result = aidApplicationDocumentSchema.safeParse(data);
   if (result.success) {
-    return result.data;
+    return result.data as AidApplicationDocument;
   }
   return null;
 }
