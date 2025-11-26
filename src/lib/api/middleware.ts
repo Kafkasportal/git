@@ -117,9 +117,22 @@ export function withErrorHandler(handler: RouteHandler): RouteHandler {
         return errorResponse('Kayıt bulunamadı', 404);
       }
 
-      // Generic server error
+      // Handle Appwrite specific errors
+      if (errorMsg?.toLowerCase().includes('missing required attribute')) {
+        logger.error('Missing required attribute error', error, context);
+        return errorResponse('Zorunlu alanlar eksik: ' + errorMsg, 400);
+      }
+
+      // Handle invalid document structure
+      if (errorMsg?.toLowerCase().includes('invalid document structure')) {
+        logger.error('Invalid document structure error', error, context);
+        return errorResponse('Geçersiz veri yapısı: ' + errorMsg, 400);
+      }
+
+      // Generic server error - include original message in development
       logger.error('API error', error, context);
-      return errorResponse('İşlem başarısız oldu', 500);
+      const isDev = process.env.NODE_ENV === 'development';
+      return errorResponse(isDev ? errorMsg : 'İşlem başarısız oldu', 500);
     }
   };
 }
