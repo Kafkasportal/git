@@ -142,6 +142,6 @@ export const POST = buildApiRoute({
     if (errorMessage.includes('unique') || errorMessage.includes('duplicate')) {
       return errorResponse('Bu makbuz numarası zaten kullanılmış', 409);
     }
-    return errorResponse('Bağış kaydedilemedi: ' + errorMessage, 500);
+    return errorResponse(`Bağış kaydedilemedi: ${errorMessage}`, 500);
   }
 });

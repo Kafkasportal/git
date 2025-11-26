@@ -9,8 +9,8 @@ vi.mock('@/lib/api/auth-utils', () => ({
 }));
 
 vi.mock('@/lib/rate-limit', () => ({
-  readOnlyRateLimit: (handler: Function) => handler,
-  dataModificationRateLimit: (handler: Function) => handler,
+  readOnlyRateLimit: <T>(handler: T) => handler,
+  dataModificationRateLimit: <T>(handler: T) => handler,
 }));
 
 vi.mock('@/lib/appwrite/api', () => ({

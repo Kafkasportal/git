@@ -1,5 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { NextRequest } from 'next/server';
+import { describe, it, expect } from 'vitest';
 import type { TodoCreateInput, TodoUpdateInput } from '@/lib/api/types';
 import { todoSchema, todoUpdateSchema } from '@/lib/validations/todo';
 
@@ -25,19 +24,19 @@ describe('Todo API Input Validation', () => {
     });
 
     it('should require title', () => {
-      const { title, ...invalid } = validCreateInput;
+      const { title: _title, ...invalid } = validCreateInput;
       const result = todoSchema.safeParse(invalid);
       expect(result.success).toBe(false);
     });
 
     it('should require created_by', () => {
-      const { created_by, ...invalid } = validCreateInput;
+      const { created_by: _created_by, ...invalid } = validCreateInput;
       const result = todoSchema.safeParse(invalid);
       expect(result.success).toBe(false);
     });
 
     it('should require is_read', () => {
-      const { is_read, ...invalid } = validCreateInput;
+      const { is_read: _is_read, ...invalid } = validCreateInput;
       const result = todoSchema.safeParse(invalid);
       expect(result.success).toBe(false);
     });

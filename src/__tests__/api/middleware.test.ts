@@ -11,7 +11,7 @@ import {
   withMethodCheck,
   withErrorHandler,
 } from '@/lib/api/middleware';
-import { successResponse, errorResponse } from '@/lib/api/route-helpers';
+import { successResponse } from '@/lib/api/route-helpers';
 
 vi.mock('@/lib/api/auth-utils', () => ({
   requireModuleAccess: vi.fn().mockResolvedValue(undefined),

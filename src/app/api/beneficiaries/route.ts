@@ -3,7 +3,6 @@ import { appwriteBeneficiaries, normalizeQueryParams } from '@/lib/appwrite/api'
 import { buildApiRoute } from '@/lib/api/middleware';
 import { successResponse, errorResponse, parseBody } from '@/lib/api/route-helpers';
 import { verifyCsrfToken, requireAuthenticatedUser } from '@/lib/api/auth-utils';
-import logger from '@/lib/logger';
 
 // TypeScript interfaces
 

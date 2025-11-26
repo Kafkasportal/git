@@ -130,13 +130,13 @@ describe('Todo Validation Schemas', () => {
 
   describe('todoCreateSchema', () => {
     it('should not require created_by', () => {
-      const { created_by, ...todoWithoutCreator } = validTodo;
+      const { created_by: _created_by, ...todoWithoutCreator } = validTodo;
       const result = todoCreateSchema.safeParse(todoWithoutCreator);
       expect(result.success).toBe(true);
     });
 
     it('should accept valid create data', () => {
-      const { created_by, ...createData } = validTodo;
+      const { created_by: _created_by2, ...createData } = validTodo;
       const result = todoCreateSchema.safeParse(createData);
       expect(result.success).toBe(true);
     });

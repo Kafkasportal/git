@@ -13,6 +13,10 @@
  * @see https://appwrite.io/docs/realtime
  */
 
+/* eslint-disable react-hooks/set-state-in-effect */
+// Note: This hook intentionally uses setState in useEffect for subscription setup.
+// This is the standard pattern for external subscription libraries like Appwrite Realtime.
+
 import { useEffect, useState, useCallback, useRef } from 'react';
 import type { RealtimeResponseEvent } from 'appwrite';
 import { client } from '@/lib/appwrite/client';
@@ -82,8 +86,7 @@ export function useAppwriteDocument<T = unknown>({
     const channel = `databases.${databaseId}.collections.${collectionId}.documents.${documentId}`;
 
     try {
-      setIsConnected(false);
-
+      // Note: isConnected will be set to true when first message is received
       const unsubscribe = client.subscribe<T>(channel, (response) => {
         logger.info('Appwrite Realtime event received', {
           channel,
@@ -111,8 +114,6 @@ export function useAppwriteDocument<T = unknown>({
 
         isInitialRef.current = false;
       });
-
-      setIsConnected(true);
 
       // Cleanup
       return () => {
@@ -193,8 +194,7 @@ export function useAppwriteCollection<T = unknown>({
     const channel = `databases.${databaseId}.collections.${collectionId}.documents`;
 
     try {
-      setIsConnected(false);
-
+      // Note: isConnected will be set to true when first message is received
       const unsubscribe = client.subscribe<T>(channel, (response) => {
         logger.info('Appwrite Realtime collection event', {
           channel,
@@ -237,8 +237,6 @@ export function useAppwriteCollection<T = unknown>({
 
         isInitialRef.current = false;
       });
-
-      setIsConnected(true);
 
       // Cleanup
       return () => {
@@ -309,8 +307,7 @@ export function useAppwriteMultipleChannels({
     }
 
     try {
-      setIsConnected(false);
-
+      // Note: isConnected will be set to true when first message is received
       const unsubscribe = client.subscribe(channels, (response) => {
         logger.info('Appwrite Realtime multi-channel event', {
           channels,
@@ -321,8 +318,6 @@ export function useAppwriteMultipleChannels({
         setError(null);
         onMessage(response);
       });
-
-      setIsConnected(true);
 
       // Cleanup
       return () => {

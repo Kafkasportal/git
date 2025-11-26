@@ -17,9 +17,9 @@ describe('Analytics API', () => {
 
   describe('GET /api/analytics', () => {
     it('should return dashboard statistics', async () => {
-      const mockBeneficiaries = { total: 150 };
-      const mockDonations = { total: 1250 };
-      const mockTasks = { total: 45 };
+      const _mockBeneficiaries = { total: 150 };
+      const _mockDonations = { total: 1250 };
+      const _mockTasks = { total: 45 };
 
       vi.mocked(databases.listDocuments)
         .mockResolvedValueOnce({ documents: [], total: 150 })

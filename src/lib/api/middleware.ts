@@ -120,13 +120,13 @@ export function withErrorHandler(handler: RouteHandler): RouteHandler {
       // Handle Appwrite specific errors
       if (errorMsg?.toLowerCase().includes('missing required attribute')) {
         logger.error('Missing required attribute error', error, context);
-        return errorResponse('Zorunlu alanlar eksik: ' + errorMsg, 400);
+        return errorResponse(`Zorunlu alanlar eksik: ${errorMsg}`, 400);
       }
 
       // Handle invalid document structure
       if (errorMsg?.toLowerCase().includes('invalid document structure')) {
         logger.error('Invalid document structure error', error, context);
-        return errorResponse('Geçersiz veri yapısı: ' + errorMsg, 400);
+        return errorResponse(`Geçersiz veri yapısı: ${errorMsg}`, 400);
       }
 
       // Generic server error - include original message in development
