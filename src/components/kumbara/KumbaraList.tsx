@@ -47,7 +47,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { KumbaraForm } from './KumbaraForm';
 import { KumbaraPrintQR } from './KumbaraPrintQR';
-import { useAppwriteRealtime } from '@/hooks/useAppwriteRealtime';
+import { useAppwriteCollection } from '@/hooks/useAppwriteRealtime';
 import { appwriteConfig } from '@/lib/appwrite/config';
 
 interface KumbaraDonation {
@@ -82,28 +82,28 @@ export function KumbaraList({ onCreate }: KumbaraListProps) {
   const queryClient = useQueryClient();
 
   // Real-time subscription for donations
-  const { isConnected: _isConnected } = useAppwriteRealtime(
-    appwriteConfig.collections.donations,
-    {
-      notifyOnChange: true,
-      changeMessage: 'Yeni kumbara bağışı eklendi',
-      skipInitial: true,
-      onChange: (event) => {
-        // Invalidate queries to refresh the list
-        queryClient.invalidateQueries({ queryKey: ['kumbara-donations'] });
-        queryClient.invalidateQueries({ queryKey: ['kumbara-stats'] });
-        
-        // Show specific messages
-        if (event === 'create') {
-          toast.success('Yeni kumbara bağışı eklendi!');
-        } else if (event === 'update') {
-          toast.info('Kumbara bağışı güncellendi');
-        } else if (event === 'delete') {
-          toast.warning('Kumbara bağışı silindi');
-        }
-      },
-    }
-  );
+  const { isConnected: _isConnected } = useAppwriteCollection<KumbaraDonation>({
+    databaseId: appwriteConfig.databaseId,
+    collectionId: appwriteConfig.collections.donations,
+    notifyOnChange: true,
+    changeMessage: 'Kumbara listesi güncellendi',
+    skipInitial: true,
+    onChange: (event) => {
+      // Invalidate queries to refresh the list
+      queryClient.invalidateQueries({ queryKey: ['kumbara-donations'] });
+      queryClient.invalidateQueries({ queryKey: ['kumbara-stats'] });
+
+      // Show specific messages based on event type
+      const eventType = event.events[0];
+      if (eventType?.includes('create')) {
+        toast.success('Yeni kumbara bağışı eklendi!');
+      } else if (eventType?.includes('update')) {
+        toast.info('Kumbara bağışı güncellendi');
+      } else if (eventType?.includes('delete')) {
+        toast.warning('Kumbara bağışı silindi');
+      }
+    },
+  });
 
   const { data, isLoading, error } = useQuery<{
     donations: KumbaraDonation[];

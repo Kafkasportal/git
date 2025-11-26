@@ -124,11 +124,13 @@ export default function WorkManagementPage() {
 
   const statusBreakdown = useMemo(() => {
     const source = isAdmin ? allActionItems : myActionItems;
+    // Ensure source is always an array
+    const items = Array.isArray(source) ? source : [];
     return {
-      beklemede: source.filter((item) => item.status === 'beklemede').length,
-      devam: source.filter((item) => item.status === 'devam').length,
-      hazir: source.filter((item) => item.status === 'hazir').length,
-      iptal: source.filter((item) => item.status === 'iptal').length,
+      beklemede: items.filter((item) => item.status === 'beklemede').length,
+      devam: items.filter((item) => item.status === 'devam').length,
+      hazir: items.filter((item) => item.status === 'hazir').length,
+      iptal: items.filter((item) => item.status === 'iptal').length,
     };
   }, [allActionItems, isAdmin, myActionItems]);
 
