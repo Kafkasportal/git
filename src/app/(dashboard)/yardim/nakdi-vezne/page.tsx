@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { appwriteFinanceRecords } from '@/lib/appwrite/api';
 import type { FinanceRecordCreateInput } from '@/lib/api/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -67,39 +68,33 @@ export default function CashVaultPage() {
   const [notes, setNotes] = useState('');
 
   // Fetch vault balance
-  const { data: vaultData } = useQuery({
+  const { data: vaultStats } = useQuery({
     queryKey: ['vault-balance'],
     queryFn: async () => {
-      // Calculate balance from all finance records
-      const response = await appwriteFinanceRecords.list({ limit: 1000 });
-      const records = response.documents || [];
-      
-      let balance = 0;
-      let cashIn = 0;
-      let cashOut = 0;
-      
-      records.forEach((r: { type?: string; amount?: number; payment_method?: string; [key: string]: unknown }) => {
-        const amount = r.amount || 0;
-        if (r.payment_method === 'cash') {
-          if (r.type === 'income') {
-            cashIn += amount;
-            balance += amount;
-          } else if (r.type === 'expense') {
-            cashOut += amount;
-            balance -= amount;
-          }
-        }
-      });
-
-      return {
-        balance,
-        cashIn,
-        cashOut,
-        transactionCount: records.filter((r: { payment_method?: string; [key: string]: unknown }) => r.payment_method === 'cash').length,
-      };
+      const res = await fetch(`/api/financial/stats?payment_method=cash`);
+      if (!res.ok) throw new Error('Kasa bakiyesi alınamadı');
+      return res.json();
     },
     refetchInterval: 5000, // Poll every 5 seconds
   });
+
+  const vaultData = useMemo(() => {
+    if (!vaultStats?.data?.totals) {
+      return {
+        balance: 0,
+        cashIn: 0,
+        cashOut: 0,
+        transactionCount: 0,
+      };
+    }
+    const t = vaultStats.data.totals;
+    return {
+      balance: t.netIncome,
+      cashIn: t.totalIncome,
+      cashOut: t.totalExpenses,
+      transactionCount: t.recordCount,
+    };
+  }, [vaultStats]);
 
   const vaultBalance = vaultData;
 
