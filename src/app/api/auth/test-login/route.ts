@@ -3,6 +3,7 @@ import { generateCsrfToken } from "@/lib/csrf";
 import { appwriteUsers } from "@/lib/appwrite/api";
 import { verifyPassword } from "@/lib/auth/password";
 import { serializeSessionCookie } from "@/lib/auth/session";
+import logger from "@/lib/logger";
 
 /**
  * Test login endpoint - Development only
@@ -18,8 +19,9 @@ export async function GET() {
   }
 
   try {
-    const email = "mcp-login@example.com";
-    const password = "SecurePass123!";
+    // Test credential'ları environment'tan veya varsayılan değerlerden al
+    const email = process.env.MCP_TEST_EMAIL || "mcp-login@example.com";
+    const password = process.env.MCP_TEST_PASSWORD || "SecurePass123!";
 
     // Get user from Appwrite
     const user = await appwriteUsers.getByEmail(email.toLowerCase());
@@ -90,7 +92,7 @@ export async function GET() {
 
     return response;
   } catch (error) {
-    console.error("Test login error:", error);
+    logger.error("Test login error", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Login başarısız" },
       { status: 500 },

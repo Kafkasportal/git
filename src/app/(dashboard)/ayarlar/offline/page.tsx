@@ -3,14 +3,25 @@
  * Centralized offline management interface
  */
 
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Wifi, Cloud, Smartphone, Settings } from 'lucide-react';
-import { OfflineSyncPanel } from '@/components/pwa/OfflineSyncPanel';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Smartphone, Wifi, Cloud, Settings } from "lucide-react";
+
+// Type for iOS standalone detection
+interface ExtendedNavigator extends Navigator {
+  standalone?: boolean;
+}
+import { OfflineSyncPanel } from "@/components/pwa/OfflineSyncPanel";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 export default function OfflineSettingsPage() {
   const { isOnline: _isOnline } = useOnlineStatus();
@@ -20,16 +31,21 @@ export default function OfflineSettingsPage() {
 
   useEffect(() => {
     // Check if app is installed
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       // Check if running as standalone (installed PWA)
       const checkInstallation = () => {
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-        setIsInstalled(isStandalone || (window.navigator as any).standalone === true);
+        const isStandalone = window.matchMedia(
+          "(display-mode: standalone)",
+        ).matches;
+        setIsInstalled(
+          isStandalone ||
+            (window.navigator as ExtendedNavigator).standalone === true,
+        );
       };
 
       // Check service worker registration
       const checkServiceWorker = async () => {
-        if ('serviceWorker' in navigator) {
+        if ("serviceWorker" in navigator) {
           const reg = await navigator.serviceWorker.getRegistration();
           setSwRegistered(!!reg);
         }
@@ -37,7 +53,10 @@ export default function OfflineSettingsPage() {
 
       // Check background sync support
       const checkBackgroundSync = () => {
-        if ('serviceWorker' in navigator && 'sync' in ServiceWorkerRegistration.prototype) {
+        if (
+          "serviceWorker" in navigator &&
+          "sync" in ServiceWorkerRegistration.prototype
+        ) {
           setBackgroundSyncSupported(true);
         }
       };
@@ -58,7 +77,8 @@ export default function OfflineSettingsPage() {
             Offline ve PWA Ayarları
           </h1>
           <p className="text-muted-foreground mt-1">
-            Çevrimdışı senkronizasyon ve Progressive Web App özelliklerini yönetin
+            Çevrimdışı senkronizasyon ve Progressive Web App özelliklerini
+            yönetin
           </p>
         </div>
       </div>
@@ -71,7 +91,8 @@ export default function OfflineSettingsPage() {
             Offline Senkronizasyon Durumu
           </CardTitle>
           <CardDescription>
-            Offline kuyruğundaki işlemleri görüntüleyin ve manuel olarak senkronize edin
+            Offline kuyruğundaki işlemleri görüntüleyin ve manuel olarak
+            senkronize edin
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -96,19 +117,19 @@ export default function OfflineSettingsPage() {
               <p className="font-medium">Kurulum Durumu</p>
               <p className="text-sm text-muted-foreground">
                 {isInstalled
-                  ? 'Uygulama cihazınıza kurulu'
-                  : 'Uygulama henüz kurulmamış'}
+                  ? "Uygulama cihazınıza kurulu"
+                  : "Uygulama henüz kurulmamış"}
               </p>
             </div>
-            <Badge variant={isInstalled ? 'default' : 'secondary'}>
-              {isInstalled ? 'Kurulu' : 'Kurulmamış'}
+            <Badge variant={isInstalled ? "default" : "secondary"}>
+              {isInstalled ? "Kurulu" : "Kurulmamış"}
             </Badge>
           </div>
           {!isInstalled && (
             <div className="mt-4 p-4 rounded-lg bg-muted">
               <p className="text-sm text-muted-foreground">
-                Uygulamayı ana ekranınıza eklemek için tarayıcı menüsünden &quot;Ana ekrana ekle&quot;
-                seçeneğini kullanın.
+                Uygulamayı ana ekranınıza eklemek için tarayıcı menüsünden
+                &quot;Ana ekrana ekle&quot; seçeneğini kullanın.
               </p>
             </div>
           )}
@@ -131,11 +152,13 @@ export default function OfflineSettingsPage() {
             <div>
               <p className="font-medium">Kayıt Durumu</p>
               <p className="text-sm text-muted-foreground">
-                {swRegistered ? 'Service Worker aktif' : 'Service Worker kayıtlı değil'}
+                {swRegistered
+                  ? "Service Worker aktif"
+                  : "Service Worker kayıtlı değil"}
               </p>
             </div>
-            <Badge variant={swRegistered ? 'default' : 'secondary'}>
-              {swRegistered ? 'Aktif' : 'Pasif'}
+            <Badge variant={swRegistered ? "default" : "secondary"}>
+              {swRegistered ? "Aktif" : "Pasif"}
             </Badge>
           </div>
 
@@ -146,15 +169,16 @@ export default function OfflineSettingsPage() {
                 Arka plan senkronizasyonu desteği
               </p>
             </div>
-            <Badge variant={backgroundSyncSupported ? 'default' : 'secondary'}>
-              {backgroundSyncSupported ? 'Destekleniyor' : 'Desteklenmiyor'}
+            <Badge variant={backgroundSyncSupported ? "default" : "secondary"}>
+              {backgroundSyncSupported ? "Destekleniyor" : "Desteklenmiyor"}
             </Badge>
           </div>
 
           {!swRegistered && (
             <div className="mt-4 p-4 rounded-lg bg-muted">
               <p className="text-sm text-muted-foreground">
-                Service Worker kayıtlı değil. Sayfayı yenileyerek tekrar deneyin.
+                Service Worker kayıtlı değil. Sayfayı yenileyerek tekrar
+                deneyin.
               </p>
             </div>
           )}
@@ -168,31 +192,34 @@ export default function OfflineSettingsPage() {
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
           <div>
-            <p className="font-medium text-foreground mb-1">Offline Mutation Queue</p>
+            <p className="font-medium text-foreground mb-1">
+              Offline Mutation Queue
+            </p>
             <p>
-              İnternet bağlantısı olmadığında yapılan değişiklikler otomatik olarak kuyruğa eklenir.
-              Bağlantı kurulduğunda bu işlemler otomatik olarak senkronize edilir.
+              İnternet bağlantısı olmadığında yapılan değişiklikler otomatik
+              olarak kuyruğa eklenir. Bağlantı kurulduğunda bu işlemler otomatik
+              olarak senkronize edilir.
             </p>
           </div>
           <div>
             <p className="font-medium text-foreground mb-1">Background Sync</p>
             <p>
-              Tarayıcınız destekliyorsa, işlemler arka planda otomatik olarak senkronize edilir.
-              Bu sayede sayfayı kapatmanıza gerek kalmaz.
+              Tarayıcınız destekliyorsa, işlemler arka planda otomatik olarak
+              senkronize edilir. Bu sayede sayfayı kapatmanıza gerek kalmaz.
             </p>
           </div>
           <div>
             <p className="font-medium text-foreground mb-1">PWA Installation</p>
             <p>
-              Uygulamayı cihazınıza kurarak daha hızlı erişim sağlayabilir ve offline özelliklerden
-              tam olarak yararlanabilirsiniz.
+              Uygulamayı cihazınıza kurarak daha hızlı erişim sağlayabilir ve
+              offline özelliklerden tam olarak yararlanabilirsiniz.
             </p>
           </div>
           <div>
             <p className="font-medium text-foreground mb-1">Cache Management</p>
             <p>
-              Service Worker, uygulama dosyalarını önbelleğe alarak daha hızlı yükleme sağlar ve
-              offline erişime olanak tanır.
+              Service Worker, uygulama dosyalarını önbelleğe alarak daha hızlı
+              yükleme sağlar ve offline erişime olanak tanır.
             </p>
           </div>
         </CardContent>
@@ -200,4 +227,3 @@ export default function OfflineSettingsPage() {
     </div>
   );
 }
-

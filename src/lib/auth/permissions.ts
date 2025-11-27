@@ -3,18 +3,26 @@
  * Centralized permission handling logic
  */
 
-import { MODULE_PERMISSIONS, SPECIAL_PERMISSIONS, type PermissionValue } from '@/types/permissions';
+import {
+  MODULE_PERMISSIONS,
+  SPECIAL_PERMISSIONS,
+  type PermissionValue,
+} from "@/types/permissions";
 
 /**
  * Normalize and deduplicate permissions
  */
-export function normalizePermissions(permissions: PermissionValue[]): PermissionValue[] {
+export function normalizePermissions(
+  permissions: PermissionValue[],
+): PermissionValue[] {
   if (!Array.isArray(permissions)) {
     return [];
   }
 
-  // Remove duplicates and wildcard
-  const normalized = permissions.filter((p) => p !== '*' && p !== '');
+  // Remove duplicates and wildcard - cast to string for comparison
+  const normalized = permissions.filter(
+    (p) => (p as string) !== "*" && (p as string) !== "",
+  );
   return Array.from(new Set(normalized));
 }
 
@@ -24,9 +32,9 @@ export function normalizePermissions(permissions: PermissionValue[]): Permission
  */
 export function getEffectivePermissions(
   role: string,
-  explicitPermissions: PermissionValue[]
+  explicitPermissions: PermissionValue[],
 ): PermissionValue[] {
-  const roleUpper = (role || '').toString().toUpperCase();
+  const roleUpper = (role || "").toString().toUpperCase();
   const baseModulePermissions = Object.values(MODULE_PERMISSIONS);
 
   // Normalize explicit permissions
@@ -34,10 +42,10 @@ export function getEffectivePermissions(
 
   // Admin-level roles get all base module permissions + user management
   const isAdminRole =
-    roleUpper.includes('ADMIN') ||
-    roleUpper.includes('BAŞKAN') ||
-    roleUpper.includes('PRESIDENT') ||
-    roleUpper.includes('DIRECTOR');
+    roleUpper.includes("ADMIN") ||
+    roleUpper.includes("BAŞKAN") ||
+    roleUpper.includes("PRESIDENT") ||
+    roleUpper.includes("DIRECTOR");
 
   if (isAdminRole) {
     const withAdmin = new Set<PermissionValue>([
@@ -57,7 +65,7 @@ export function getEffectivePermissions(
  */
 export function hasPermission(
   userPermissions: PermissionValue[],
-  permission: PermissionValue | string
+  permission: PermissionValue | string,
 ): boolean {
   if (!Array.isArray(userPermissions)) {
     return false;
@@ -70,12 +78,14 @@ export function hasPermission(
  */
 export function hasAnyPermission(
   userPermissions: PermissionValue[],
-  permissions: Array<PermissionValue | string>
+  permissions: Array<PermissionValue | string>,
 ): boolean {
   if (!Array.isArray(userPermissions) || !Array.isArray(permissions)) {
     return false;
   }
-  return permissions.some((p) => userPermissions.includes(p as PermissionValue));
+  return permissions.some((p) =>
+    userPermissions.includes(p as PermissionValue),
+  );
 }
 
 /**
@@ -83,10 +93,12 @@ export function hasAnyPermission(
  */
 export function hasAllPermissions(
   userPermissions: PermissionValue[],
-  permissions: Array<PermissionValue | string>
+  permissions: Array<PermissionValue | string>,
 ): boolean {
   if (!Array.isArray(userPermissions) || !Array.isArray(permissions)) {
     return false;
   }
-  return permissions.every((p) => userPermissions.includes(p as PermissionValue));
+  return permissions.every((p) =>
+    userPermissions.includes(p as PermissionValue),
+  );
 }

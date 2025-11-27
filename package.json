@@ -28,6 +28,8 @@
     "clean:temp": "node -e \"const fs=require('fs');const path=require('path');const files=fs.readdirSync('.').filter(f=>/^(lint-|.*-output\\.txt|.*-current\\.txt|test-|typecheck-)/.test(f)&&f.endsWith('.txt'));files.forEach(f=>{try{fs.unlinkSync(f);}catch(e){}});\"",
     "health:check": "curl http://localhost:3000/api/health?detailed=true",
     "test:backend": "tsx scripts/test-backend.ts",
+    "setup": "tsx scripts/quick-setup.ts",
+    "setup:quick": "tsx scripts/quick-setup.ts && npm run dev",
     "appwrite:setup": "tsx scripts/appwrite-setup.ts",
     "appwrite:configure": "./scripts/auto-setup-appwrite.sh",
     "validate:deploy": "node -e \"fetch(process.env.DEPLOY_URL + '/api/health').then(r => r.json()).then(console.log)\"",

@@ -3,36 +3,63 @@
  * Validates required environment variables at build time and runtime
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // Client-side (public) environment variables schema
 const clientEnvSchema = z.object({
-  NEXT_PUBLIC_APP_NAME: z.string().optional().default('Dernek Yönetim Sistemi'),
-  NEXT_PUBLIC_APP_VERSION: z.string().optional().default('1.0.0'),
+  NEXT_PUBLIC_APP_NAME: z.string().optional().default("Dernek Yönetim Sistemi"),
+  NEXT_PUBLIC_APP_VERSION: z.string().optional().default("1.0.0"),
   NEXT_PUBLIC_ENABLE_REALTIME: z
     .string()
     .optional()
-    .default('true')
-    .transform((val) => val === 'true'),
+    .default("true")
+    .transform((val) => val === "true"),
   NEXT_PUBLIC_ENABLE_ANALYTICS: z
     .string()
     .optional()
-    .default('false')
-    .transform((val) => val === 'true'),
+    .default("false")
+    .transform((val) => val === "true"),
   // Sentry Configuration (Optional)
-  NEXT_PUBLIC_SENTRY_DSN: z.string().url('Invalid Sentry DSN').optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.string().url("Invalid Sentry DSN").optional(),
 });
 
 // Server-side (private) environment variables schema
 const serverEnvSchema = clientEnvSchema.extend({
-  NODE_ENV: z.enum(['development', 'production', 'test']).optional().default('development'),
+  NODE_ENV: z
+    .enum(["development", "production", "test"])
+    .optional()
+    .default("development"),
   // Production requires these secrets
-  CSRF_SECRET: z.string().min(32, 'CSRF secret must be at least 32 characters').optional(),
-  SESSION_SECRET: z.string().min(32, 'Session secret must be at least 32 characters').optional(),
+  CSRF_SECRET: z
+    .string()
+    .min(32, "CSRF secret must be at least 32 characters")
+    .optional(),
+  SESSION_SECRET: z
+    .string()
+    .min(32, "Session secret must be at least 32 characters")
+    .optional(),
   // Sentry Configuration (Optional)
-  SENTRY_DSN: z.string().url('Invalid Sentry DSN').optional(),
+  SENTRY_DSN: z.string().url("Invalid Sentry DSN").optional(),
   SENTRY_ORG: z.string().optional(),
   SENTRY_PROJECT: z.string().optional(),
+
+  // Appwrite Configuration
+  NEXT_PUBLIC_APPWRITE_ENDPOINT: z
+    .string()
+    .url("Invalid Appwrite endpoint")
+    .optional(),
+  NEXT_PUBLIC_APPWRITE_PROJECT_ID: z
+    .string()
+    .min(1, "Appwrite project ID is required")
+    .optional(),
+  NEXT_PUBLIC_APPWRITE_DATABASE_ID: z
+    .string()
+    .min(1, "Appwrite database ID is required")
+    .optional(),
+  APPWRITE_API_KEY: z
+    .string()
+    .min(1, "Appwrite API key is required")
+    .optional(),
 
   // Optional email configuration
   SMTP_HOST: z.string().optional(),
@@ -53,24 +80,24 @@ const serverEnvSchema = clientEnvSchema.extend({
   RATE_LIMIT_MAX_REQUESTS: z
     .string()
     .optional()
-    .default('100')
+    .default("100")
     .transform((val) => parseInt(val, 10)),
   RATE_LIMIT_WINDOW_MS: z
     .string()
     .optional()
-    .default('900000')
+    .default("900000")
     .transform((val) => parseInt(val, 10)),
 
   // File upload limits
   MAX_FILE_SIZE: z
     .string()
     .optional()
-    .default('10485760')
+    .default("10485760")
     .transform((val) => parseInt(val, 10)),
   MAX_FILES_PER_UPLOAD: z
     .string()
     .optional()
-    .default('5')
+    .default("5")
     .transform((val) => parseInt(val, 10)),
 });
 
@@ -93,10 +120,10 @@ export function validateClientEnv(): ClientEnv {
   } catch (error) {
     if (error instanceof z.ZodError) {
       const missingVars = error.issues
-        .map((e) => `  - ${e.path.join('.')}: ${e.message}`)
-        .join('\n');
+        .map((e) => `  - ${e.path.join(".")}: ${e.message}`)
+        .join("\n");
       throw new Error(
-        `❌ Client environment validation failed:\n${missingVars}\n\nPlease check your .env.local file.`
+        `❌ Client environment validation failed:\n${missingVars}\n\nPlease check your .env.local file.`,
       );
     }
     throw error;
@@ -108,13 +135,15 @@ export function validateClientEnv(): ClientEnv {
  * Only call on server (API routes, server components, middleware)
  */
 export function validateServerEnv(): ServerEnv {
-  if (typeof window !== 'undefined') {
-    throw new Error('validateServerEnv() can only be called on the server side');
+  if (typeof window !== "undefined") {
+    throw new Error(
+      "validateServerEnv() can only be called on the server side",
+    );
   }
 
   try {
-    const nodeEnv = process.env.NODE_ENV || 'development';
-    const isProduction = nodeEnv === 'production';
+    const nodeEnv = process.env.NODE_ENV || "development";
+    const isProduction = nodeEnv === "production";
 
     return serverEnvSchema.parse({
       // Client vars
@@ -129,13 +158,22 @@ export function validateServerEnv(): ServerEnv {
       // Require secrets in production
       CSRF_SECRET: isProduction
         ? process.env.CSRF_SECRET
-        : process.env.CSRF_SECRET || 'development-csrf-secret-min-32-chars',
+        : process.env.CSRF_SECRET || "development-csrf-secret-min-32-chars",
       SESSION_SECRET: isProduction
         ? process.env.SESSION_SECRET
-        : process.env.SESSION_SECRET || 'development-session-secret-min-32-chars',
+        : process.env.SESSION_SECRET ||
+          "development-session-secret-min-32-chars",
       SENTRY_DSN: process.env.SENTRY_DSN,
       SENTRY_ORG: process.env.SENTRY_ORG,
       SENTRY_PROJECT: process.env.SENTRY_PROJECT,
+
+      // Appwrite Configuration
+      NEXT_PUBLIC_APPWRITE_ENDPOINT: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT,
+      NEXT_PUBLIC_APPWRITE_PROJECT_ID:
+        process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID,
+      NEXT_PUBLIC_APPWRITE_DATABASE_ID:
+        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+      APPWRITE_API_KEY: process.env.APPWRITE_API_KEY,
 
       // Optional services
       SMTP_HOST: process.env.SMTP_HOST,
@@ -154,10 +192,10 @@ export function validateServerEnv(): ServerEnv {
   } catch (error) {
     if (error instanceof z.ZodError) {
       const missingVars = error.issues
-        .map((e) => `  - ${e.path.join('.')}: ${e.message}`)
-        .join('\n');
+        .map((e) => `  - ${e.path.join(".")}: ${e.message}`)
+        .join("\n");
       throw new Error(
-        `❌ Server environment validation failed:\n${missingVars}\n\nPlease check your .env.local file.`
+        `❌ Server environment validation failed:\n${missingVars}\n\nPlease check your .env.local file.`,
       );
     }
     throw error;
@@ -182,8 +220,8 @@ export function getClientEnv(): ClientEnv {
  */
 let cachedServerEnv: ServerEnv | null = null;
 export function getServerEnv(): ServerEnv {
-  if (typeof window !== 'undefined') {
-    throw new Error('getServerEnv() can only be called on the server side');
+  if (typeof window !== "undefined") {
+    throw new Error("getServerEnv() can only be called on the server side");
   }
 
   if (!cachedServerEnv) {
@@ -203,5 +241,9 @@ export function hasEmailConfig(env: ServerEnv): boolean {
  * Check if SMS configuration is available
  */
 export function hasSmsConfig(env: ServerEnv): boolean {
-  return !!(env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN && env.TWILIO_PHONE_NUMBER);
+  return !!(
+    env.TWILIO_ACCOUNT_SID &&
+    env.TWILIO_AUTH_TOKEN &&
+    env.TWILIO_PHONE_NUMBER
+  );
 }
