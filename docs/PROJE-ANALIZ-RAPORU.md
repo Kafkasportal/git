@@ -279,7 +279,10 @@ Proje, bir dernek yönetim sistemi için gerekli temel modüllerin çoğunu içe
 - whatsapp-web.js kullanımı
 
 **Kritik Uyarı:**
-- ⚠️ **Güvenlik açıkları:** whatsapp-web.js bağımlılıklarında CVE'ler var
+- ⚠️ **Güvenlik açıkları:** whatsapp-web.js bağımlılıklarında güvenlik açıkları var:
+  - `tar-fs`: Arbitrary file write vulnerability (GHSA-rh63-9qcf-83gf, CVSS 7.5)
+  - `ws`: DoS via resource exhaustion (GHSA-3hhj-ccr3-f6hh, CVSS 7.5)
+  - Detaylı bilgi: `npm audit` komutu ile kontrol edilebilir
 - 💡 **Alternatif değerlendirmesi:** WhatsApp Business API veya Twilio WhatsApp
 
 ### 3.7 İş Yönetimi
@@ -432,7 +435,7 @@ Ay 2:
 Ay 3:
 ├── Takvim entegrasyonları (Google/Outlook)
 ├── Canlı bildirim sistemi
-└── Mobil responsive optimizasyon
+└── Mobil responsive optimizasyonu
 ```
 
 ### Faz 3: Gelişmiş Özellikler (3-4 Ay)
@@ -527,5 +530,5 @@ Kafkasder Panel, bir dernek yönetim sistemi için gerekli olan temel modülleri
 
 ---
 
-**Rapor Hazırlayan:** Claude AI Assistant  
-**Rapor Tarihi:** 27 Kasım 2025
+**Rapor Tarihi:** 27 Kasım 2025  
+**Rapor Türü:** Otomatik Analiz Raporu
