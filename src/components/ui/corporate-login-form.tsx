@@ -545,13 +545,13 @@ export function CorporateLoginForm({
               >
                 <OAuthButton
                   provider="google"
-                  redirectUrl={typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : '/auth/callback'}
+                  redirectUrl={typeof window !== 'undefined' ? `${window.location.origin}/api/auth/oauth/callback` : '/api/auth/oauth/callback'}
                   className="w-full"
                   variant="outline"
                 />
                 <OAuthButton
                   provider="github"
-                  redirectUrl={typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : '/auth/callback'}
+                  redirectUrl={typeof window !== 'undefined' ? `${window.location.origin}/api/auth/oauth/callback` : '/api/auth/oauth/callback'}
                   className="w-full"
                   variant="outline"
                 />

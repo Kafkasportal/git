@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { appwriteUsers } from '@/lib/appwrite/api';
 import { MODULE_PERMISSIONS, SPECIAL_PERMISSIONS, type PermissionValue } from '@/types/permissions';
+import { getEffectivePermissions } from '@/lib/auth/permissions';
 
 export interface AuthSession {
   sessionId: string;
@@ -214,23 +215,12 @@ export async function getUserFromSession(session: AuthSession | null): Promise<S
     }
 
     const roleString = (user.role || '').toString();
-    const roleUpper = roleString.toUpperCase();
-    const baseModulePermissions = Object.values(MODULE_PERMISSIONS);
-
-    let effectivePermissions: PermissionValue[] = Array.isArray(user.permissions)
+    const explicitPermissions: PermissionValue[] = Array.isArray(user.permissions)
       ? (user.permissions as PermissionValue[])
       : [];
 
-    // Admin-level fallback: if role indicates ADMIN or BAŞKAN, grant base module access and user management
-    const looksAdmin = roleUpper.includes('ADMIN') || roleUpper.includes('BAŞKAN');
-    if (looksAdmin) {
-      const withAdmin = new Set<PermissionValue>([
-        ...effectivePermissions,
-        ...baseModulePermissions,
-        SPECIAL_PERMISSIONS.USERS_MANAGE,
-      ]);
-      effectivePermissions = Array.from(withAdmin);
-    }
+    // Get effective permissions (includes role-based auto-grants for admin roles)
+    const effectivePermissions = getEffectivePermissions(roleString, explicitPermissions);
 
     const userId = user.$id || user._id || session.userId;
     return {

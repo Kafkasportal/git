@@ -1,42 +1,36 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 import { generateCsrfToken } from '@/lib/csrf';
-import logger from '@/lib/logger';
+import { cookies } from 'next/headers';
 
 /**
  * GET /api/csrf
- * Generate and return CSRF token
+ * Generate and return a CSRF token
+ * The token is set in a cookie and also returned in the response
  */
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
+    const csrfToken = generateCsrfToken();
     const cookieStore = await cookies();
 
-    // Check if token already exists
-    let csrfToken = cookieStore.get('csrf-token')?.value;
-
-    // Generate new token if none exists
-    if (!csrfToken) {
-      csrfToken = generateCsrfToken();
-
-      // Set CSRF token cookie (not HttpOnly so client can read it)
-      cookieStore.set('csrf-token', csrfToken, {
-        httpOnly: false, // Client needs to read this
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 60 * 60 * 24, // 24 hours
-        path: '/',
-      });
-    }
+    // Set CSRF token cookie (client-readable)
+    cookieStore.set('csrf-token', csrfToken, {
+      httpOnly: false, // Client needs to read this
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60, // 24 hours
+      path: '/',
+    });
 
     return NextResponse.json({
       success: true,
       token: csrfToken,
     });
-  } catch (_error) {
-    logger.error('CSRF token generation error', { error: _error });
-
+  } catch (error) {
     return NextResponse.json(
-      { success: false, error: 'Failed to generate CSRF token' },
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to generate CSRF token',
+      },
       { status: 500 }
     );
   }
