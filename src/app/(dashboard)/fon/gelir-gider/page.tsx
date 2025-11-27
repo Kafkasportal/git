@@ -1,30 +1,34 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { calculateFinancialStats } from '@/lib/financial/calculations';
-import { useFinancialData } from '@/hooks/useFinancialData';
-import { FinancialHeader } from './_components/FinancialHeader';
-import { FinancialMetrics } from './_components/FinancialMetrics';
-import { FinancialFilters } from './_components/FinancialFilters';
-import { TransactionList } from './_components/TransactionList';
-import { exportFinancialDataAsCSV } from './_components/ExportButton';
-import { DemoBanner } from '@/components/ui/demo-banner';
-import type { FinanceRecord } from '@/lib/financial/calculations';
+import { useState, useMemo } from "react";
+import { calculateFinancialStats } from "@/lib/financial/calculations";
+import { useFinancialData } from "@/hooks/useFinancialData";
+import { FinancialHeader } from "./_components/FinancialHeader";
+import { FinancialMetrics } from "./_components/FinancialMetrics";
+import { FinancialFilters } from "./_components/FinancialFilters";
+import { TransactionList } from "./_components/TransactionList";
+import { exportFinancialDataAsCSV } from "./_components/ExportButton";
+import { exportToPDF } from "@/lib/utils/pdf-export";
+import { exportToExcel } from "@/lib/utils/excel-export";
+import { DemoBanner } from "@/components/ui/demo-banner";
+import type { FinanceRecord } from "@/lib/financial/calculations";
 
 export default function IncomeExpensePage() {
   // Filter state
-  const [search, setSearch] = useState('');
-  const [recordTypeFilter, setRecordTypeFilter] = useState('all');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [dateFilter, setDateFilter] = useState('all');
-  const [customStartDate, setCustomStartDate] = useState('');
-  const [customEndDate, setCustomEndDate] = useState('');
+  const [search, setSearch] = useState("");
+  const [recordTypeFilter, setRecordTypeFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("all");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
   const [page, setPage] = useState(1);
 
   // Dialog state
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [_selectedRecord, _setSelectedRecord] = useState<FinanceRecord | null>(null);
+  const [_selectedRecord, _setSelectedRecord] = useState<FinanceRecord | null>(
+    null,
+  );
   const [_isViewDialogOpen, _setIsViewDialogOpen] = useState(false);
 
   // Fetch data with filters
@@ -48,8 +52,16 @@ export default function IncomeExpensePage() {
     return calculateFinancialStats(records, total);
   }, [records, total]);
 
-  const handleExportExcel = () => {
+  const handleExportCSV = () => {
     exportFinancialDataAsCSV(records);
+  };
+
+  const handleExportExcel = () => {
+    void exportToExcel(records);
+  };
+
+  const handleExportPDF = () => {
+    exportToPDF(records);
   };
 
   const handleViewRecord = (record: FinanceRecord) => {
@@ -70,7 +82,9 @@ export default function IncomeExpensePage() {
 
       {/* Header Section */}
       <FinancialHeader
+        onExportPDF={handleExportPDF}
         onExportExcel={handleExportExcel}
+        onExportCSV={handleExportCSV}
         onAddNew={() => {}}
         isAddDialogOpen={isAddDialogOpen}
         onAddDialogOpenChange={setIsAddDialogOpen}

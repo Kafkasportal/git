@@ -13,18 +13,20 @@ import { join } from "path";
 // 🔑 GERÇEK APPWRITE CREDENTIALS - BURAYA YAZ
 // ============================================
 const APPWRITE_CONFIG = {
-  endpoint: "https://fra.cloud.appwrite.io/v1",
-  projectId: "6927aa95001c4c6b488b",
+  endpoint: "https://cloud.appwrite.io/v1",
+  projectId: "YOUR_PROJECT_ID",
   projectName: "kafkasportal",
-  apiKey:
-    "standard_68e4323dcc1c339e02d9ab6c370dcda3e25663664525243e634350e8fb1d0e403f48003a8b9f3cab9c14ff093f7ec352757e54cbca45e34cdf307d2e72955d1af600758d0d13fe4b9b5e4c8cdcf80c866e677c004b405301b72bbf2cdb8897f03a4bd2d5a9931f9f68d357a08d5e67680778a001dfea6ca70251296e839ef308",
+  apiKey: "YOUR_APPWRITE_API_KEY",
   databaseId: "kafkasder_db",
 };
 
 // Dev API Key (opsiyonel) - kullanılmıyor ama referans için saklanıyor
-const _DEV_API_KEY =
-  "d4f8642bb9b6ed09d00a49af1dce70f4f0585314aabe1b89a883fd31cf734a1c5661166b6d5a7fa214057007908c730f7a4741973eb998f512b446290b3f4e6eb3186232b3a0168c6ba98e80d69a484ff2e57d6d0c95b25168d264ed48303b9a2d9c4c65eab5f94e4e96a820db5f615160817eb3d107a0b723be627881cda519";
+const _DEV_API_KEY = "YOUR_DEV_API_KEY";
 void _DEV_API_KEY; // Lint uyarısını önle
+
+// GitHub Token
+const _GITHUB_TOKEN = "YOUR_GITHUB_TOKEN";
+void _GITHUB_TOKEN; // Lint uyarısını önle
 
 // Test kullanıcı bilgileri
 const TEST_USER = {
