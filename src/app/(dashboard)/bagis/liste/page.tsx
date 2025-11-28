@@ -16,6 +16,9 @@ import {
 } from '@/components/ui/dialog';
 import { Search, Plus, DollarSign, User, Calendar, FileText } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { BulkActionsToolbar } from '@/components/ui/bulk-actions-toolbar';
+import { toast } from 'sonner';
 
 const DonationForm = dynamic(
   () => import('@/components/forms/DonationForm').then((mod) => ({ default: mod.DonationForm })),
@@ -30,8 +33,10 @@ const DonationForm = dynamic(
 );
 
 export default function DonationsPage() {
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
   const { data, isLoading } = useQuery({
     queryKey: ['donations', search],
@@ -46,6 +51,50 @@ export default function DonationsPage() {
   const donations = data?.data || [];
 
   const totalAmount = donations.reduce((sum, d) => sum + d.amount, 0);
+
+  // Bulk operations mutations
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (_ids: string[]) => {
+      // TODO: Replace with actual bulk delete API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return { success: true };
+    },
+    onSuccess: () => {
+      toast.success(`${selectedItems.size} bağış başarıyla silindi`);
+      setSelectedItems(new Set());
+      queryClient.invalidateQueries({ queryKey: ['donations'] });
+    },
+    onError: () => {
+      toast.error('Bağışlar silinirken bir hata oluştu');
+    },
+  });
+
+  const bulkStatusUpdateMutation = useMutation({
+    mutationFn: async ({ ids: _ids, status }: { ids: string[]; status: string }) => {
+      // TODO: Replace with actual bulk status update API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return { success: true, status };
+    },
+    onSuccess: (_, variables) => {
+      const statusLabel = variables.status === 'completed' ? 'Tamamlandı' : 'Beklemede';
+      toast.success(`${selectedItems.size} bağış ${statusLabel} olarak güncellendi`);
+      setSelectedItems(new Set());
+      queryClient.invalidateQueries({ queryKey: ['donations'] });
+    },
+    onError: () => {
+      toast.error('Durum güncellenirken bir hata oluştu');
+    },
+  });
+
+  const handleBulkDelete = () => {
+    const ids = Array.from(selectedItems);
+    bulkDeleteMutation.mutate(ids);
+  };
+
+  const handleBulkStatusChange = (status: string) => {
+    const ids = Array.from(selectedItems);
+    bulkStatusUpdateMutation.mutate({ ids, status });
+  };
 
   const columns: DataTableColumn<(typeof donations)[0]>[] = [
     {
@@ -102,7 +151,11 @@ export default function DonationsPage() {
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <span className="font-medium">
-            {item._creationTime ? new Date(item._creationTime).toLocaleDateString('tr-TR') : item.$createdAt ? new Date(item.$createdAt).toLocaleDateString('tr-TR') : '-'}
+            {item._creationTime
+              ? new Date(item._creationTime).toLocaleDateString('tr-TR')
+              : item.$createdAt
+                ? new Date(item.$createdAt).toLocaleDateString('tr-TR')
+                : '-'}
           </span>
         </div>
       ),
@@ -203,6 +256,19 @@ export default function DonationsPage() {
         </Card>
       </div>
 
+      {/* Bulk Actions Toolbar */}
+      <BulkActionsToolbar
+        selectedCount={selectedItems.size}
+        onClearSelection={() => setSelectedItems(new Set())}
+        onDelete={handleBulkDelete}
+        onStatusChange={handleBulkStatusChange}
+        statusOptions={[
+          { value: 'completed', label: 'Tamamlandı Yap' },
+          { value: 'pending', label: 'Beklemede Yap' },
+        ]}
+        isLoading={bulkDeleteMutation.isPending || bulkStatusUpdateMutation.isPending}
+      />
+
       {/* Search */}
       <Card className="w-full">
         <CardHeader className="pb-4">
@@ -236,6 +302,10 @@ export default function DonationsPage() {
             emptyDescription="Henüz bağış eklenmemiş"
             rowHeight={70}
             containerHeight={700}
+            selectable={true}
+            selectedItems={selectedItems}
+            onSelectionChange={setSelectedItems}
+            getItemId={(item) => item._id || item.$id || ''}
           />
         </CardContent>
       </Card>
