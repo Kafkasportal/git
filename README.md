@@ -76,7 +76,6 @@ Detaylı dokümantasyon için [docs/](./docs/) klasörüne bakın:
 - [API Referansı](./docs/api-reference.md)
 - [Bileşen Kütüphanesi](./docs/components.md)
 - [Veritabanı Şeması](./docs/database-schema.md)
-- [Güvenlik](./docs/security.md)
 - [Yetkilendirme](./docs/authorization.md)
 - [Form Yönetimi](./docs/forms.md)
 - [Test Yazımı](./docs/testing.md)

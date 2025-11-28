@@ -18,7 +18,7 @@ Güvenlik açığı bulduğunuzda, lütfen aşağıdaki adımları izleyin:
 
 ### 📧 Bildirme Yöntemi
 
-1. Güvenlik açığını e-posta ile bildirin
+1. GitHub üzerinden [Security Advisory](https://github.com/Kafkasportal/git/security/advisories/new) açın
 2. Aşağıdaki bilgileri ekleyin:
    - Açığın türü (XSS, SQL Injection, CSRF, vb.)
    - Etkilenen bileşenler
