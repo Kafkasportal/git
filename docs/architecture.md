@@ -175,7 +175,7 @@ export default function DashboardLayout({ children }) {
 
 ### `/src/lib/appwrite/`
 
-Appwrite SDK wrapper'ları:
+Appwrite SDK wrapper'larını:
 
 ```
 lib/appwrite/
@@ -361,4 +361,3 @@ describe('Beneficiaries API', () => {
    - CSRF koruması tüm mutasyonlarda
    - Rate limiting tüm endpoint'lerde
    - Input sanitization
-

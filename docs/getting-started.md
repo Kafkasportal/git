@@ -426,4 +426,3 @@ Sorunlar için:
 1. [Docs](./README.md) klasörünü kontrol edin
 2. GitHub Issues açın
 3. Geliştirici ekibiyle iletişime geçin
-
