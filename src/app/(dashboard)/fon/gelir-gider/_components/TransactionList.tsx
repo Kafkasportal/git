@@ -1,9 +1,7 @@
-'use client';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowDownCircle, ArrowUpCircle, Edit, Eye, FileText } from 'lucide-react';
+import { ArrowDownCircle, ArrowUpCircle, Edit, Eye, FileText, Trash2 } from 'lucide-react';
 import { STATUS_LABELS } from '@/lib/financial/constants';
 import { formatCurrency, formatTransactionDate } from '@/lib/financial/calculations';
 import type { FinanceRecord } from '@/lib/financial/calculations';
@@ -14,6 +12,7 @@ interface TransactionListProps {
   total?: number;
   onViewRecord?: (record: FinanceRecord) => void;
   onEditRecord?: (record: FinanceRecord) => void;
+  onDeleteRecord?: (record: FinanceRecord) => void;
 }
 
 export function TransactionList({
@@ -22,6 +21,7 @@ export function TransactionList({
   total,
   onViewRecord,
   onEditRecord,
+  onDeleteRecord,
 }: TransactionListProps) {
   if (isLoading) {
     return (
@@ -73,6 +73,7 @@ export function TransactionList({
                 record={record}
                 onView={onViewRecord}
                 onEdit={onEditRecord}
+                onDelete={onDeleteRecord}
               />
             ))}
           </div>
@@ -86,9 +87,10 @@ interface TransactionRowProps {
   record: FinanceRecord;
   onView?: (record: FinanceRecord) => void;
   onEdit?: (record: FinanceRecord) => void;
+  onDelete?: (record: FinanceRecord) => void;
 }
 
-function TransactionRow({ record, onView, onEdit }: TransactionRowProps) {
+function TransactionRow({ record, onView, onEdit, onDelete }: TransactionRowProps) {
   const statusInfo = STATUS_LABELS[record.status];
 
   return (
@@ -135,6 +137,15 @@ function TransactionRow({ record, onView, onEdit }: TransactionRowProps) {
           <Button size="sm" variant="outline" className="gap-1" onClick={() => onEdit?.(record)}>
             <Edit className="h-4 w-4" />
             Düzenle
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            onClick={() => onDelete?.(record)}
+          >
+            <Trash2 className="h-4 w-4" />
+            Sil
           </Button>
         </div>
       </div>

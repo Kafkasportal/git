@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,8 +22,9 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { apiClient as api } from '@/lib/api/api-client';
-import type { AidApplicationDocument } from '@/types/database';
+import { scholarshipApplicationsApi, scholarshipsApi } from '@/lib/api';
+import { StudentForm } from '@/components/forms/StudentForm';
+import type { StudentFormValues } from '@/lib/validations/student';
 import {
   Search,
   Filter,
@@ -36,9 +37,11 @@ import {
   Eye,
   Edit,
 } from 'lucide-react';
+import Link from 'next/link';
 
-interface StudentRecord {
-  _id: string;
+// Define the type based on what the API returns
+interface ScholarshipApplication {
+  $id: string;
   applicant_name: string;
   applicant_tc_no: string;
   applicant_phone: string;
@@ -47,22 +50,14 @@ interface StudentRecord {
   department?: string;
   grade_level?: string;
   gpa?: number;
-  academic_year?: string;
-  monthly_income?: number;
-  family_income?: number;
-  father_occupation?: string;
-  mother_occupation?: string;
-  sibling_count?: number;
-  is_orphan?: boolean;
-  has_disability?: boolean;
   status: string;
-  priority_score?: number;
-  submitted_at?: string;
   scholarship_id: string;
-  scholarship_title?: string;
-  scholarship_amount?: number;
-  total_paid?: number;
-  last_payment_date?: string;
+  scholarship?: {
+    title: string;
+    amount: number;
+  };
+  created_at?: string;
+  updated_at?: string;
 }
 
 const STATUS_LABELS = {
@@ -75,6 +70,7 @@ const STATUS_LABELS = {
 };
 
 const GRADE_LABELS = {
+  hazirlik: 'Hazırlık',
   '1': '1. Sınıf',
   '2': '2. Sınıf',
   '3': '3. Sınıf',
@@ -90,63 +86,67 @@ export default function StudentsPage() {
   const [page, setPage] = useState(1);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const limit = 50;
+  const queryClient = useQueryClient();
 
+  // Fetch applications
   const { data: applicationsResponse, isLoading } = useQuery({
-    queryKey: ['scholarship-students', page, search, statusFilter],
+    queryKey: ['scholarship-applications', page, search, statusFilter],
     queryFn: async () => {
-      const response = await api.aidApplications.getAidApplications({
-        page,
+      const res = await scholarshipApplicationsApi.list({
         limit,
-        search,
-        filters: {
-          stage: statusFilter !== 'all' ? statusFilter : undefined,
-        },
+        skip: (page - 1) * limit,
+        status: statusFilter !== 'all' ? statusFilter : undefined,
+        // search param is not directly supported by list but we can filter client side or add support later
       });
-      return response;
+      if (!res.success) throw new Error(res.error || 'Failed to fetch applications');
+      return res;
     },
   });
 
-  const applications = (applicationsResponse?.data ?? []) as AidApplicationDocument[];
-  const total = applicationsResponse?.total ?? applications.length;
+  // Fetch scholarships map for titles
+  const { data: scholarshipsResponse } = useQuery({
+    queryKey: ['scholarships', 'map'],
+    queryFn: async () => {
+      const res = await scholarshipsApi.list({ limit: 100 });
+      if (!res.success) return [];
+      return res.data;
+    },
+  });
+
+  const scholarshipsMap = useMemo(() => {
+    const map: Record<string, { title: string; amount: number }> = {};
+    scholarshipsResponse?.forEach((s: any) => {
+      map[s.$id] = { title: s.title, amount: s.amount };
+    });
+    return map;
+  }, [scholarshipsResponse]);
+
+  const applications = (applicationsResponse?.data || []) as any[];
+  const total = applicationsResponse?.total || 0;
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
-  const memoizedStudents: StudentRecord[] = useMemo(() => {
-    const normalized: StudentRecord[] = applications.map((application) => ({
-      _id: application._id || application.$id || '',
-      applicant_name: application.applicant_name,
-      applicant_tc_no: '',
-      applicant_phone: '',
-      applicant_email: undefined,
-      university: undefined,
-      department: undefined,
-      grade_level: undefined,
-      gpa: undefined,
-      academic_year: undefined,
-      monthly_income: application.regular_financial_aid,
-      family_income: undefined,
-      father_occupation: undefined,
-      mother_occupation: undefined,
-      sibling_count: undefined,
-      is_orphan: undefined,
-      has_disability: undefined,
-      status: application.stage,
-      priority_score: undefined,
-      submitted_at: application.application_date,
-      scholarship_id: application.beneficiary_id || '',
-      scholarship_title: undefined,
-      scholarship_amount: application.one_time_aid,
-      total_paid: undefined,
-      last_payment_date: application.completed_at,
+  const memoizedStudents: ScholarshipApplication[] = useMemo(() => {
+    let filtered = applications.map((app) => ({
+      ...app,
+      scholarship: scholarshipsMap[app.scholarship_id],
     }));
 
-    return normalized.filter((student) => {
-      const matchesGrade = gradeFilter === 'all' || student.grade_level === gradeFilter;
-      const matchesStatus = statusFilter === 'all' || student.status === statusFilter;
-      const matchesSearch =
-        !search || student.applicant_name.toLowerCase().includes(search.toLowerCase());
-      return matchesGrade && matchesStatus && matchesSearch;
-    });
-  }, [applications, gradeFilter, statusFilter, search]);
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filtered = filtered.filter(
+        (s) =>
+          s.applicant_name.toLowerCase().includes(searchLower) ||
+          s.applicant_tc_no.includes(search) ||
+          s.university?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    if (gradeFilter !== 'all') {
+      filtered = filtered.filter((s) => s.grade_level === gradeFilter);
+    }
+
+    return filtered;
+  }, [applications, search, gradeFilter, scholarshipsMap]);
 
   const visibleTotal = memoizedStudents.length;
 
@@ -154,10 +154,11 @@ export default function StudentsPage() {
   const stats = useMemo(() => {
     const approvedStudents = memoizedStudents.filter((s) => s.status === 'approved');
     const totalScholarshipAmount = approvedStudents.reduce(
-      (sum, s) => sum + (s.scholarship_amount || 0),
+      (sum, s) => sum + (s.scholarship?.amount || 0),
       0
     );
-    const totalPaid = approvedStudents.reduce((sum, s) => sum + (s.total_paid || 0), 0);
+    // Mock total paid for now as we don't have payments linked here yet
+    const totalPaid = 0;
     const averageGPA =
       approvedStudents.length > 0
         ? approvedStudents.reduce((sum, s) => sum + (s.gpa || 0), 0) / approvedStudents.length
@@ -172,6 +173,26 @@ export default function StudentsPage() {
       pendingReview: memoizedStudents.filter((s) => s.status === 'under_review').length,
     };
   }, [memoizedStudents, total]);
+
+  const createMutation = useMutation({
+    mutationFn: async (data: StudentFormValues) => {
+      const res = await scholarshipApplicationsApi.create(data);
+      if (!res.success) throw new Error(res.error || 'Failed to create application');
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success('Öğrenci başarıyla eklendi');
+      setIsAddDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['scholarship-applications'] });
+    },
+    onError: (error) => {
+      toast.error(`Hata: ${error.message}`);
+    },
+  });
+
+  const handleAddStudent = async (data: StudentFormValues) => {
+    await createMutation.mutateAsync(data);
+  };
 
   const handleExportExcel = () => {
     const csvContent = [
@@ -189,9 +210,8 @@ export default function StudentsPage() {
         'Sınıf',
         'GPA',
         'Durum',
-        'Puan',
+        'Burs Programı',
         'Burs Tutarı',
-        'Ödenen',
       ],
       ...memoizedStudents.map((student) => [
         student.applicant_name,
@@ -203,9 +223,8 @@ export default function StudentsPage() {
         GRADE_LABELS[student.grade_level as keyof typeof GRADE_LABELS] || student.grade_level || '',
         student.gpa?.toFixed(2) || '',
         STATUS_LABELS[student.status as keyof typeof STATUS_LABELS]?.label || student.status,
-        student.priority_score?.toString() || '',
-        (student.scholarship_amount || 0).toLocaleString('tr-TR'),
-        (student.total_paid ?? 0).toLocaleString('tr-TR'),
+        student.scholarship?.title || '',
+        (student.scholarship?.amount || 0).toLocaleString('tr-TR'),
       ]),
     ];
 
@@ -267,16 +286,12 @@ export default function StudentsPage() {
                 Yeni Öğrenci
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Yeni Öğrenci Ekle</DialogTitle>
                 <DialogDescription>Burs başvurusu yapan yeni bir öğrenci ekleyin</DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
-                <p className="text-center text-muted-foreground py-8">
-                  Yeni öğrenci ekleme formu geliştirilme aşamasındadır.
-                </p>
-              </div>
+              <StudentForm onSubmit={handleAddStudent} isLoading={createMutation.isPending} />
             </DialogContent>
           </Dialog>
         </div>
@@ -375,6 +390,7 @@ export default function StudentsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tüm Sınıflar</SelectItem>
+                <SelectItem value="hazirlik">Hazırlık</SelectItem>
                 <SelectItem value="1">1. Sınıf</SelectItem>
                 <SelectItem value="2">2. Sınıf</SelectItem>
                 <SelectItem value="3">3. Sınıf</SelectItem>
@@ -406,7 +422,7 @@ export default function StudentsPage() {
             <div className="space-y-4">
               {memoizedStudents.map((student) => (
                 <div
-                  key={student._id}
+                  key={student.$id}
                   className="border rounded-lg p-6 hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-start justify-between">
@@ -418,10 +434,9 @@ export default function StudentsPage() {
                             STATUS_LABELS[student.status as keyof typeof STATUS_LABELS]?.color
                           }
                         >
-                          {STATUS_LABELS[student.status as keyof typeof STATUS_LABELS]?.label}
+                          {STATUS_LABELS[student.status as keyof typeof STATUS_LABELS]?.label ||
+                            student.status}
                         </Badge>
-                        {student.is_orphan && <Badge variant="secondary">Yetim</Badge>}
-                        {student.has_disability && <Badge variant="secondary">Engelli</Badge>}
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
@@ -455,43 +470,31 @@ export default function StudentsPage() {
                             {GRADE_LABELS[student.grade_level as keyof typeof GRADE_LABELS] || '-'}
                           </p>
                         </div>
-                        <div>
-                          <span className="text-muted-foreground">Öncelik Puanı:</span>
-                          <p className="font-medium">{student.priority_score || '-'}</p>
-                        </div>
                       </div>
 
-                      {student.scholarship_title && (
+                      {student.scholarship && (
                         <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                           <div className="flex items-center justify-between">
                             <div>
                               <h4 className="font-semibold text-green-800 dark:text-green-200">
-                                {student.scholarship_title}
+                                {student.scholarship.title}
                               </h4>
                               <p className="text-sm text-green-600 dark:text-green-300">
-                                Aylık: {(student.scholarship_amount || 0).toLocaleString('tr-TR')} ₺
+                                Aylık: {(student.scholarship.amount || 0).toLocaleString('tr-TR')} ₺
                               </p>
                             </div>
-                            {(student.total_paid ?? 0) > 0 && (
-                              <div className="text-right">
-                                <p className="text-sm text-green-600 dark:text-green-300">
-                                  Toplam Ödenen
-                                </p>
-                                <p className="font-semibold text-green-800 dark:text-green-200">
-                                  {(student.total_paid ?? 0).toLocaleString('tr-TR')} ₺
-                                </p>
-                              </div>
-                            )}
                           </div>
                         </div>
                       )}
                     </div>
 
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="gap-1">
-                        <Eye className="h-4 w-4" />
-                        Görüntüle
-                      </Button>
+                      <Link href={`/burs/ogrenciler/${student.$id}`}>
+                        <Button size="sm" variant="outline" className="gap-1">
+                          <Eye className="h-4 w-4" />
+                          Görüntüle
+                        </Button>
+                      </Link>
                       <Button size="sm" variant="outline" className="gap-1">
                         <Edit className="h-4 w-4" />
                         Düzenle

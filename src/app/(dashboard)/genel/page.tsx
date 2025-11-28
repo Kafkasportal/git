@@ -9,7 +9,9 @@ import { KPICard } from '@/components/ui/kpi-card';
 import { CurrencyWidget } from '@/components/ui/currency-widget';
 import { PageLayout } from '@/components/layouts/PageLayout';
 import { DemoBanner } from '@/components/ui/demo-banner';
-// api removed
+import { useQuery } from '@tanstack/react-query';
+import api from '@/lib/api';
+
 import {
   Users,
   Heart,
@@ -76,48 +78,51 @@ const DynamicCell = dynamic(() => import('recharts').then((mod) => mod.Cell), { 
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuthStore();
 
-  // Mock data for Appwrite migration
-  const enhancedKPIs = {
-    pendingOperations: { total: 0, tasks: 0, applications: 0, trend: 0 },
-    trackedWorkItems: { total: 0, active: 0, trend: 0 },
-    calendarEvents: { total: 0, upcoming: 0, trend: 0 },
-    plannedMeetings: { total: 0, thisWeek: 0 },
-  };
+  // Fetch real data
+  const { data: enhancedKPIs } = useQuery({
+    queryKey: ['monitoring', 'kpis'],
+    queryFn: async () => {
+      const res = await api.monitoring.getEnhancedKPIs();
+      if (!res.data) throw new Error(res.error || 'Failed to fetch KPIs');
+      return res.data;
+    },
+    initialData: {
+      pendingOperations: { total: 0, tasks: 0, applications: 0, trend: 0 },
+      trackedWorkItems: { total: 0, active: 0, trend: 0 },
+      calendarEvents: { total: 0, upcoming: 0, trend: 0 },
+      plannedMeetings: { total: 0, thisWeek: 0 },
+    },
+  });
 
-  const dashboardStats = {
-    beneficiaries: { total: 0, recent: 0 },
-    donations: { total: 0, recent: 0, totalAmount: 0 },
-    users: { active: 0 },
-  };
+  const { data: dashboardStats } = useQuery({
+    queryKey: ['monitoring', 'stats'],
+    queryFn: async () => {
+      const res = await api.monitoring.getDashboardStats();
+      if (!res.data) throw new Error(res.error || 'Failed to fetch stats');
+      return res.data;
+    },
+    initialData: {
+      beneficiaries: { total: 0, recent: 0 },
+      donations: { total: 0, recent: 0, totalAmount: 0 },
+      users: { active: 0 },
+    },
+  });
 
-  const currencyData = {
-    rates: [],
-    lastUpdate: new Date().toISOString(),
-  };
+  const { data: currencyData } = useQuery({
+    queryKey: ['monitoring', 'currency'],
+    queryFn: async () => {
+      const res = await api.monitoring.getCurrencyRates();
+      if (!res.data) throw new Error(res.error || 'Failed to fetch currency');
+      return res.data;
+    },
+    refetchInterval: 300000, // 5 minutes
+    initialData: {
+      rates: [],
+      lastUpdate: new Date().toISOString(),
+    },
+  });
 
-  /*
-  // Fetch enhanced KPIs and currency rates with real-time updates
-  const enhancedKPIs = useQuery(api.monitoring.getEnhancedKPIs);
-  const currencyData = useRealtimeQuery(
-    api.monitoring.getCurrencyRates,
-    {},
-    {
-      notifyOnChange: true,
-      changeMessage: 'Döviz kurları güncellendi',
-      skipInitial: true,
-    }
-  );
-  const dashboardStats = useRealtimeQuery(
-    api.monitoring.getDashboardStats,
-    {},
-    {
-      notifyOnChange: false, // Too frequent, no notification
-      skipInitial: true,
-    }
-  );
-  */
-
-  // ⚠️ DEMO DATA: Aşağıdaki veriler gerçek API'lerden alınmalı (bkz: docs/ISSUES.md - Mock Data)
+  // ⚠️ TODO: Charts are still using static data. Implement aggregation API for charts.
   // Sample chart data - memoized to prevent re-renders (moved before early returns)
   const donationData = useMemo(
     () => [

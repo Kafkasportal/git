@@ -10,8 +10,6 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { DashboardError } from '@/components/errors/DashboardError';
 import { TrendingUp, Users, MousePointerClick, Clock, Activity, Eye, Zap } from 'lucide-react';
 import {
-  AreaChart,
-  Area,
   BarChart,
   Bar,
   PieChart,
@@ -25,34 +23,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-// Mock data for demonstration (in production, fetch from /api/analytics)
-const mockPageViews = [
-  { page: '/genel', views: 1250, avgTime: 180 },
-  { page: '/yardim/ihtiyac-sahipleri', views: 890, avgTime: 240 },
-  { page: '/bagis/liste', views: 720, avgTime: 165 },
-  { page: '/burs/ogrenciler', views: 640, avgTime: 200 },
-  { page: '/mesaj/toplu', views: 520, avgTime: 150 },
-  { page: '/kullanici', views: 480, avgTime: 120 },
-];
-
-const mockUserActivity = [
-  { hour: '00:00', count: 12 },
-  { hour: '03:00', count: 8 },
-  { hour: '06:00', count: 25 },
-  { hour: '09:00', count: 145 },
-  { hour: '12:00', count: 210 },
-  { hour: '15:00', count: 180 },
-  { hour: '18:00', count: 95 },
-  { hour: '21:00', count: 45 },
-];
-
-const mockEventTypes = [
-  { name: 'Sayfa Görüntüleme', value: 4500, color: '#8884d8' },
-  { name: 'Tıklama', value: 2800, color: '#82ca9d' },
-  { name: 'Form Gönderimi', value: 1200, color: '#ffc658' },
-  { name: 'Arama', value: 850, color: '#ff8042' },
-  { name: 'Dosya İndirme', value: 420, color: '#a4de6c' },
-];
+import { useQuery } from '@tanstack/react-query';
+import api from '@/lib/api';
 
 const mockCoreWebVitals = [
   { metric: 'LCP', value: 2.1, threshold: 2.5, status: 'good' },
@@ -61,27 +33,65 @@ const mockCoreWebVitals = [
   { metric: 'TTFB', value: 420, threshold: 600, status: 'good' },
 ];
 
-const mockTopUsers = [
-  { name: 'Ahmet Yılmaz', events: 342, sessions: 28, avgDuration: 450 },
-  { name: 'Fatma Kaya', events: 298, sessions: 24, avgDuration: 380 },
-  { name: 'Mehmet Demir', events: 275, sessions: 22, avgDuration: 420 },
-  { name: 'Ayşe Çelik', events: 241, sessions: 19, avgDuration: 360 },
-  { name: 'Ali Öztürk', events: 218, sessions: 17, avgDuration: 340 },
-];
-
 function AnalyticsPageContent() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [timeRange] = useState<'day' | 'week' | 'month'>('week');
 
+  const { data: analyticsData, isLoading } = useQuery({
+    queryKey: ['analytics', 'stats'],
+    queryFn: async () => {
+      const res = await api.analytics.getStats({ limit: 1000 });
+      if (!res.data) throw new Error(res.error || 'Failed to fetch analytics');
+      return res.data;
+    },
+    initialData: {
+      totalEvents: 0,
+      uniqueUsers: 0,
+      eventCounts: {},
+      pageViews: {},
+      recentEvents: [],
+    },
+  });
+
   const stats = useMemo(
     () => ({
-      totalEvents: mockEventTypes.reduce((sum, e) => sum + e.value, 0),
-      totalUsers: 89,
-      avgSessionDuration: 385,
-      bounceRate: 32.5,
+      totalEvents: analyticsData.totalEvents,
+      totalUsers: analyticsData.uniqueUsers,
+      avgSessionDuration: 0, // Not yet implemented
+      bounceRate: 0, // Not yet implemented
     }),
-    []
+    [analyticsData]
   );
+
+  const pageViewsData = useMemo(() => {
+    return Object.entries(analyticsData.pageViews || {})
+      .map(([page, views]) => ({
+        page,
+        views: views as number,
+        avgTime: 0, // Not yet implemented
+      }))
+      .sort((a, b) => b.views - a.views)
+      .slice(0, 10);
+  }, [analyticsData.pageViews]);
+
+  const eventTypesData = useMemo(() => {
+    const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#a4de6c'];
+    return Object.entries(analyticsData.eventCounts || {}).map(([name, value], index) => ({
+      name,
+      value: value as number,
+      color: colors[index % colors.length],
+    }));
+  }, [analyticsData.eventCounts]);
+
+  if (isLoading) {
+    return (
+      <PageLayout title="Analitik Dashboard" description="Yükleniyor...">
+        <div className="flex items-center justify-center h-96">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </PageLayout>
+    );
+  }
 
   const getVitalStatusColor = (status: string) => {
     switch (status) {
@@ -193,7 +203,7 @@ function AnalyticsPageContent() {
             <CardContent>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={mockPageViews}>
+                  <BarChart data={pageViewsData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="page" angle={-45} textAnchor="end" height={100} />
                     <YAxis yAxisId="left" />
@@ -215,25 +225,13 @@ function AnalyticsPageContent() {
             <Card>
               <CardHeader>
                 <CardTitle>Saatlik Aktivite</CardTitle>
-                <CardDescription>Kullanıcı etkinliği saatlik dağılım</CardDescription>
+                <CardDescription>
+                  Kullanıcı etkinliği saatlik dağılım (Henüz aktif değil)
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={mockUserActivity}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="hour" />
-                      <YAxis />
-                      <Tooltip />
-                      <Area
-                        type="monotone"
-                        dataKey="count"
-                        stroke="#8884d8"
-                        fill="#8884d8"
-                        name="Aktivite"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                <div className="h-80 flex items-center justify-center text-muted-foreground">
+                  Veri toplanıyor...
                 </div>
               </CardContent>
             </Card>
@@ -241,29 +239,11 @@ function AnalyticsPageContent() {
             <Card>
               <CardHeader>
                 <CardTitle>En Aktif Kullanıcılar</CardTitle>
-                <CardDescription>Son 7 güne göre</CardDescription>
+                <CardDescription>Son 7 güne göre (Henüz aktif değil)</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {mockTopUsers.map((user, index) => (
-                    <div key={user.name} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Badge
-                          variant="outline"
-                          className="w-8 h-8 flex items-center justify-center"
-                        >
-                          {index + 1}
-                        </Badge>
-                        <div>
-                          <p className="font-medium">{user.name}</p>
-                          <p className="text-sm text-gray-600">
-                            {user.sessions} oturum • {Math.floor(user.avgDuration / 60)}dk ortalama
-                          </p>
-                        </div>
-                      </div>
-                      <Badge className="bg-blue-500">{user.events} olay</Badge>
-                    </div>
-                  ))}
+                <div className="h-80 flex items-center justify-center text-muted-foreground">
+                  Veri toplanıyor...
                 </div>
               </CardContent>
             </Card>
@@ -282,7 +262,7 @@ function AnalyticsPageContent() {
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={mockEventTypes}
+                      data={eventTypesData}
                       cx="50%"
                       cy="50%"
                       outerRadius={120}
@@ -290,7 +270,7 @@ function AnalyticsPageContent() {
                       dataKey="value"
                       label
                     >
-                      {mockEventTypes.map((entry, index) => (
+                      {eventTypesData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>

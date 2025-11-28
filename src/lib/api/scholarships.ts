@@ -8,8 +8,8 @@ import {
   appwriteScholarships,
   appwriteScholarshipApplications,
   appwriteScholarshipPayments,
-} from "@/lib/appwrite/api";
-import logger from "@/lib/logger";
+} from '@/lib/appwrite/api';
+import logger from '@/lib/logger';
 
 // Scholarship Programs API
 export const scholarshipsApi = {
@@ -29,12 +29,12 @@ export const scholarshipsApi = {
         error: null,
       };
     } catch (error) {
-      logger.error("Error listing scholarships", error);
+      logger.error('Error listing scholarships', error);
       return {
         success: false,
         data: [],
         total: 0,
-        error: error instanceof Error ? error.message : "Bilinmeyen hata",
+        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
       };
     }
   },
@@ -49,11 +49,11 @@ export const scholarshipsApi = {
         error: null,
       };
     } catch (error) {
-      logger.error("Error getting scholarship", error);
+      logger.error('Error getting scholarship', error);
       return {
         success: false,
         data: null,
-        error: error instanceof Error ? error.message : "Bilinmeyen hata",
+        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
       };
     }
   },
@@ -63,7 +63,7 @@ export const scholarshipsApi = {
     title: string;
     description?: string;
     amount: number;
-    currency: "TRY" | "USD" | "EUR";
+    currency: 'TRY' | 'USD' | 'EUR';
     duration_months?: number;
     category: string;
     eligibility_criteria?: string;
@@ -84,11 +84,11 @@ export const scholarshipsApi = {
         error: null,
       };
     } catch (error) {
-      logger.error("Error creating scholarship", error);
+      logger.error('Error creating scholarship', error);
       return {
         success: false,
         data: null,
-        error: error instanceof Error ? error.message : "Bilinmeyen hata",
+        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
       };
     }
   },
@@ -109,7 +109,7 @@ export const scholarshipsApi = {
       academic_year?: string;
       max_recipients?: number;
       is_active?: boolean;
-    },
+    }
   ) => {
     try {
       await appwriteScholarships.update(id, data);
@@ -118,10 +118,10 @@ export const scholarshipsApi = {
         error: null,
       };
     } catch (error) {
-      logger.error("Error updating scholarship", error);
+      logger.error('Error updating scholarship', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Bilinmeyen hata",
+        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
       };
     }
   },
@@ -135,10 +135,10 @@ export const scholarshipsApi = {
         error: null,
       };
     } catch (error) {
-      logger.error("Error deleting scholarship", error);
+      logger.error('Error deleting scholarship', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Bilinmeyen hata",
+        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
       };
     }
   },
@@ -153,11 +153,11 @@ export const scholarshipsApi = {
         error: null,
       };
     } catch (error) {
-      logger.error("Error getting statistics", error);
+      logger.error('Error getting statistics', error);
       return {
         success: false,
         data: null,
-        error: error instanceof Error ? error.message : "Bilinmeyen hata",
+        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
       };
     }
   },
@@ -182,12 +182,12 @@ export const scholarshipApplicationsApi = {
         error: null,
       };
     } catch (error) {
-      logger.error("Error listing applications", error);
+      logger.error('Error listing applications', error);
       return {
         success: false,
         data: [],
         total: 0,
-        error: error instanceof Error ? error.message : "Bilinmeyen hata",
+        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
       };
     }
   },
@@ -202,11 +202,11 @@ export const scholarshipApplicationsApi = {
         error: null,
       };
     } catch (error) {
-      logger.error("Error getting application", error);
+      logger.error('Error getting application', error);
       return {
         success: false,
         data: null,
-        error: error instanceof Error ? error.message : "Bilinmeyen hata",
+        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
       };
     }
   },
@@ -244,11 +244,11 @@ export const scholarshipApplicationsApi = {
         error: null,
       };
     } catch (error) {
-      logger.error("Error creating application", error);
+      logger.error('Error creating application', error);
       return {
         success: false,
         data: null,
-        error: error instanceof Error ? error.message : "Bilinmeyen hata",
+        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
       };
     }
   },
@@ -257,18 +257,28 @@ export const scholarshipApplicationsApi = {
   update: async (
     id: string,
     data: {
-      status?:
-        | "draft"
-        | "submitted"
-        | "under_review"
-        | "approved"
-        | "rejected"
-        | "waitlisted";
+      status?: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'waitlisted';
       reviewer_notes?: string;
       reviewed_by?: string;
       reviewed_at?: string;
       submitted_at?: string;
-    },
+      applicant_name?: string;
+      applicant_tc_no?: string;
+      applicant_phone?: string;
+      applicant_email?: string;
+      university?: string;
+      department?: string;
+      grade_level?: string;
+      gpa?: number;
+      monthly_income?: number;
+      family_income?: number;
+      father_occupation?: string;
+      mother_occupation?: string;
+      sibling_count?: number;
+      is_orphan?: boolean;
+      has_disability?: boolean;
+      essay?: string;
+    }
   ) => {
     try {
       await appwriteScholarshipApplications.update(id, data);
@@ -277,10 +287,10 @@ export const scholarshipApplicationsApi = {
         error: null,
       };
     } catch (error) {
-      logger.error("Error updating application", error);
+      logger.error('Error updating application', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Bilinmeyen hata",
+        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
       };
     }
   },
@@ -294,10 +304,10 @@ export const scholarshipApplicationsApi = {
         error: null,
       };
     } catch (error) {
-      logger.error("Error submitting application", error);
+      logger.error('Error submitting application', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Bilinmeyen hata",
+        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
       };
     }
   },
@@ -321,12 +331,12 @@ export const scholarshipPaymentsApi = {
         error: null,
       };
     } catch (error) {
-      logger.error("Error listing payments", error);
+      logger.error('Error listing payments', error);
       return {
         success: false,
         data: [],
         total: 0,
-        error: error instanceof Error ? error.message : "Bilinmeyen hata",
+        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
       };
     }
   },
@@ -336,7 +346,7 @@ export const scholarshipPaymentsApi = {
     application_id: string;
     payment_date: string;
     amount: number;
-    currency: "TRY" | "USD" | "EUR";
+    currency: 'TRY' | 'USD' | 'EUR';
     payment_method: string;
     payment_reference?: string;
     bank_account?: string;
@@ -352,11 +362,11 @@ export const scholarshipPaymentsApi = {
         error: null,
       };
     } catch (error) {
-      logger.error("Error creating payment", error);
+      logger.error('Error creating payment', error);
       return {
         success: false,
         data: null,
-        error: error instanceof Error ? error.message : "Bilinmeyen hata",
+        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
       };
     }
   },
@@ -365,11 +375,11 @@ export const scholarshipPaymentsApi = {
   update: async (
     id: string,
     data: {
-      status: "pending" | "paid" | "failed" | "cancelled";
+      status: 'pending' | 'paid' | 'failed' | 'cancelled';
       processed_by?: string;
       receipt_file_id?: string;
       notes?: string;
-    },
+    }
   ) => {
     try {
       await appwriteScholarshipPayments.update(id, data);
@@ -378,10 +388,10 @@ export const scholarshipPaymentsApi = {
         error: null,
       };
     } catch (error) {
-      logger.error("Error updating payment", error);
+      logger.error('Error updating payment', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Bilinmeyen hata",
+        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
       };
     }
   },
