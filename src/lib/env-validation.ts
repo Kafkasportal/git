@@ -19,8 +19,6 @@ const clientEnvSchema = z.object({
     .optional()
     .default("false")
     .transform((val) => val === "true"),
-  // Sentry Configuration (Optional)
-  NEXT_PUBLIC_SENTRY_DSN: z.string().url("Invalid Sentry DSN").optional(),
 });
 
 // Server-side (private) environment variables schema
@@ -38,10 +36,6 @@ const serverEnvSchema = clientEnvSchema.extend({
     .string()
     .min(32, "Session secret must be at least 32 characters")
     .optional(),
-  // Sentry Configuration (Optional)
-  SENTRY_DSN: z.string().url("Invalid Sentry DSN").optional(),
-  SENTRY_ORG: z.string().optional(),
-  SENTRY_PROJECT: z.string().optional(),
 
   // Appwrite Configuration
   NEXT_PUBLIC_APPWRITE_ENDPOINT: z
@@ -115,7 +109,6 @@ export function validateClientEnv(): ClientEnv {
       NEXT_PUBLIC_APP_VERSION: process.env.NEXT_PUBLIC_APP_VERSION,
       NEXT_PUBLIC_ENABLE_REALTIME: process.env.NEXT_PUBLIC_ENABLE_REALTIME,
       NEXT_PUBLIC_ENABLE_ANALYTICS: process.env.NEXT_PUBLIC_ENABLE_ANALYTICS,
-      NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -151,8 +144,6 @@ export function validateServerEnv(): ServerEnv {
       NEXT_PUBLIC_APP_VERSION: process.env.NEXT_PUBLIC_APP_VERSION,
       NEXT_PUBLIC_ENABLE_REALTIME: process.env.NEXT_PUBLIC_ENABLE_REALTIME,
       NEXT_PUBLIC_ENABLE_ANALYTICS: process.env.NEXT_PUBLIC_ENABLE_ANALYTICS,
-      NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
-
       // Server-only vars
       NODE_ENV: nodeEnv,
       // Require secrets in production
@@ -163,10 +154,6 @@ export function validateServerEnv(): ServerEnv {
         ? process.env.SESSION_SECRET
         : process.env.SESSION_SECRET ||
           "development-session-secret-min-32-chars",
-      SENTRY_DSN: process.env.SENTRY_DSN,
-      SENTRY_ORG: process.env.SENTRY_ORG,
-      SENTRY_PROJECT: process.env.SENTRY_PROJECT,
-
       // Appwrite Configuration
       NEXT_PUBLIC_APPWRITE_ENDPOINT: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT,
       NEXT_PUBLIC_APPWRITE_PROJECT_ID:

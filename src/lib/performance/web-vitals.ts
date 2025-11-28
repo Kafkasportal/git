@@ -45,16 +45,6 @@ function sendToAnalytics(metric: Metric): void {
     });
   }
 
-  // Send to Sentry (if configured)
-  if (typeof window !== 'undefined' && (window as any).Sentry) {
-    const Sentry = (window as any).Sentry;
-    Sentry.metrics?.distribution(`web_vital.${metric.name.toLowerCase()}`, metric.value, {
-      tags: {
-        rating,
-        id: metric.id,
-      },
-    });
-  }
 
   // Send to custom analytics endpoint (if configured)
   const analyticsEndpoint = process.env.NEXT_PUBLIC_ANALYTICS_ENDPOINT;

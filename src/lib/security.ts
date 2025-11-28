@@ -33,32 +33,9 @@ export class InputSanitizer {
     return input.replace(/[<>'"&]/g, '');
   }
 
-  static validateEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-
-  static validatePhone(phone: string): boolean {
-    // Turkish phone validation
-    const phoneRegex = /^(\+90|0)?[5][0-9]{9}$/;
-    return phoneRegex.test(phone.replace(/\s+/g, ''));
-  }
-
-  static validateTCNo(tcNo: string): boolean {
-    // Turkish ID number validation
-    if (tcNo.length !== 11 || !/^\d+$/.test(tcNo)) return false;
-
-    const digits = tcNo.split('').map(Number);
-    const sum = digits.slice(0, 10).reduce((a, b) => a + b, 0);
-    const checksum = ((sum % 10) + digits[9]) % 10;
-
-    return checksum === digits[10];
-  }
-
-  static escapeSql(input: string): string {
-    // Basic SQL injection prevention
-    return input.replace(/['"\\]/g, '\\$&');
-  }
+  // Note: Email validation is now done inline in API routes
+  // Phone and TC validation should use shared-validators.ts schemas
+  // SQL injection prevention should use parameterized queries, not string escaping
 }
 
 // Rate limiting utilities

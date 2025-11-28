@@ -1,507 +1,891 @@
-# Testing Guide - Kafkasder Panel
+# 🧪 Test Yazımı
 
-## Overview
+Bu döküman, Dernek Yönetim Sistemi'nin test stratejisini ve örneklerini açıklar.
 
-This document provides a comprehensive guide to the testing infrastructure and test coverage for the Kafkasder Panel project.
+## 📊 Test Altyapısı
 
-## Test Framework Setup
+| Araç | Kullanım |
+|------|----------|
+| **Vitest** | Test runner |
+| **Testing Library** | React bileşen testleri |
+| **MSW** | API mocking |
+| **jsdom** | DOM simülasyonu |
 
-### Technologies Used
+---
 
-- **Vitest**: Unit and integration testing framework
-- **React Testing Library**: Component testing
-- **Playwright**: End-to-end (E2E) testing
-- **@testing-library/jest-dom**: Enhanced testing utilities
-
-### Configuration
-
-- **Vitest Config**: `vitest.config.ts`
-- **Playwright Config**: `playwright.config.cts`
-- **Test Setup**: `src/__tests__/setup.ts`
-
-## Test Structure
+## 📁 Test Yapısı
 
 ```
 src/__tests__/
-├── hooks/                          # Custom React hooks tests
-│   └── useStandardForm.test.ts      # Form hook testing
-├── lib/
-│   ├── api/
-│   │   └── types.test.ts            # API type definitions
-│   └── validations/
-│       └── forms.test.ts            # Form validation schemas
-├── integration/
-│   └── api-client.test.ts           # API client CRUD operations
-├── setup.ts                         # Global test setup
-└── mocks/
-    └── handlers.ts                 # API mock handlers
-
-e2e/                                # End-to-end tests (Playwright)
-├── example.spec.ts                 # Standalone example tests (no app required)
-├── auth.spec.ts
-├── beneficiaries.spec.ts
-├── donations.spec.ts
-├── meetings.spec.ts
-├── test-utils.ts                   # E2E test utilities
-├── mock-api.ts                     # API mocking utilities
-├── README.md                       # E2E testing documentation
-└── ...
+├── api/                    # API route testleri
+│   ├── beneficiaries.test.ts
+│   ├── donations.test.ts
+│   ├── users.test.ts
+│   └── ...
+│
+├── components/             # Bileşen testleri
+│   ├── DonationForm.test.tsx
+│   └── ...
+│
+├── hooks/                  # Hook testleri
+│   ├── useStandardForm.test.ts
+│   ├── useOnlineStatus.test.ts
+│   └── ...
+│
+├── lib/                    # Utility testleri
+│   ├── security.test.ts
+│   ├── validations.test.ts
+│   └── ...
+│
+├── integration/            # Entegrasyon testleri
+│   └── auth-flow.test.ts
+│
+├── mocks/                  # Mock dosyaları
+│   ├── handlers.ts
+│   └── server.ts
+│
+└── setup.ts               # Test setup
 ```
 
-### E2E Example Tests
+---
 
-The `e2e/example.spec.ts` file contains standalone tests that demonstrate Playwright capabilities without requiring the application to be running. These tests are perfect for:
+## ⚙️ Konfigürasyon
 
-- Verifying Playwright installation
-- Learning Playwright test patterns
-- Quick validation during development
-- Testing basic browser interactions
-
-**Features demonstrated:**
-
-- Page navigation and assertions
-- Form inputs and validation
-- Button and element interactions
-- CSS selectors and class verification
-- Responsive design testing
-- Async operations and waiting
-- Multiple viewport sizes
-
-**Run example tests:**
-
-```bash
-npm run test:e2e:example
-# or
-SKIP_WEBSERVER=true npx playwright test example
-```
-
-All example tests use self-contained HTML (data URLs) and do not require external network access or a running server.
-
-## Test Coverage
-
-### Unit Tests (1,381 lines added)
-
-#### 1. Hook Tests: `useStandardForm.test.ts` (296 lines)
-
-Tests for the standard form hook covering:
-
-- **Form Initialization**
-  - Default values population
-  - Property existence checks
-  - Form state initial values
-
-- **Validation**
-  - Zod schema validation
-  - Error detection
-  - Error clearing on valid input
-
-- **Mutations**
-  - Mutation function invocation
-  - Data transformation
-  - Success callbacks
-  - Error handling
-
-- **Form Management**
-  - Form reset on success (configurable)
-  - Manual reset functionality
-  - Dirty state tracking
-
-**Key Test Cases:**
+### vitest.config.ts
 
 ```typescript
-- initializes form with provided default values
-- validates form data according to schema
-- calls mutation function with form data on submit
-- resets form on successful submission when resetOnSuccess is true
-- transforms data before mutation if transformData is provided
-- manually resets form via reset() function
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/__tests__/setup.ts'],
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'src/__tests__/',
+        '**/*.d.ts',
+      ],
+    },
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+});
 ```
 
-#### 2. API Type Tests: `lib/api/types.test.ts` (314 lines)
-
-Comprehensive type definition validation covering all 8 resources:
-
-- **BeneficiaryCreateInput / BeneficiaryUpdateInput**
-  - Required fields: name, tc_no, phone, address, city, district, neighborhood, family_size
-  - Optional fields: email, gender, category
-  - Partial updates validation
-
-- **DonationCreateInput / DonationUpdateInput**
-  - Required: donor_name, donor_phone, amount, currency, donation_type, donation_purpose, receipt_number, status
-  - Payment methods: cash, check, credit_card, online, bank_transfer, sms, in_kind
-  - Status transitions: pending → approved/rejected
-
-- **TaskCreateInput / TaskUpdateInput**
-  - Required: title, assigned_to, created_by
-  - Priority levels: low, normal, high, urgent
-  - Status tracking: pending, in_progress, completed
-
-- **MeetingCreateInput / MeetingUpdateInput**
-  - Meeting types: general, committee, board, other
-  - Participant management
-  - Schedule tracking
-
-- **UserCreateInput / UserUpdateInput**
-  - Role-based access control
-  - Permission management
-  - Active status tracking
-
-- **FinanceRecordCreateInput / FinanceRecordUpdateInput**
-  - Income/Expense distinction
-  - Category tracking
-  - Approval workflow
-
-- **AidApplicationCreateInput / AidApplicationUpdateInput**
-  - Application stages: draft, submitted, under_review, approved, rejected, completed
-  - Priority levels: low, medium, high
-  - Status management
-
-- **PartnerCreateInput / PartnerUpdateInput**
-  - Partner types: organization, individual
-  - Partnership types: donor, supplier, volunteer, sponsor, service_provider
-  - Status: active, inactive
-
-**Key Test Cases:**
+### Test Setup
 
 ```typescript
-- validates all Create input types
-- validates all Update input types (partial)
-- enum value validation
-- type safety constraints
-- required vs optional field validation
+// src/__tests__/setup.ts
+import '@testing-library/jest-dom';
+import { beforeAll, afterEach, afterAll } from 'vitest';
+import { server } from './mocks/server';
+
+// MSW server setup
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+
+// Mock Next.js router
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  usePathname: () => '/test-path',
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+// Mock cookies
+vi.mock('next/headers', () => ({
+  cookies: () => ({
+    get: vi.fn(() => ({ value: 'mock-token' })),
+    set: vi.fn(),
+    delete: vi.fn(),
+  }),
+}));
 ```
 
-#### 3. API Client Integration Tests: `integration/api-client.test.ts` (484 lines)
+---
 
-Complete CRUD operation testing for all resources:
+## 📝 API Route Testleri
 
-- **Beneficiary Operations**
-  - Create with required fields
-  - Retrieve by ID
-  - Update partial data
-  - Delete operations
-
-- **Donation Operations**
-  - Create with payment details
-  - Status transitions
-  - Payment method validation
-
-- **Task Operations**
-  - Create with assignments
-  - Priority management
-  - Status updates
-
-- **Meeting Operations**
-  - Create with participants
-  - Meeting type management
-  - Schedule updates
-
-- **User Operations**
-  - Create with roles
-  - Permission management
-  - Role updates
-
-- **Finance Record Operations**
-  - Income/Expense distinction
-  - Approval workflow
-  - Status tracking
-
-- **Aid Application Operations**
-  - Application stage progression
-  - Priority management
-  - Approval tracking
-
-- **Partner Operations**
-  - Relationship type management
-  - Status tracking
-  - Contact information
-
-- **Error Handling**
-  - Network errors
-  - Validation errors
-  - Error recovery
-
-**Key Test Cases:**
+### Mock Request Helper
 
 ```typescript
-- should create [resource] with required fields
-- should retrieve [resource] by ID
-- should update [resource] with partial data
-- should delete [resource]
-- should handle API errors gracefully
-- should handle validation errors
-```
+// src/__tests__/mocks/helpers.ts
+import { NextRequest } from 'next/server';
 
-#### 4. Form Validation Tests: `lib/validations/forms.test.ts` (287 lines)
-
-Comprehensive validation schema testing:
-
-- **Email Validation**
-  - Valid formats: user@domain.com, user.name@domain.co.uk
-  - Invalid formats: missing @, double @@, invalid domain
-
-- **Phone Number Validation**
-  - Multiple formats: +90 555 123 4567, 0555-1234567
-  - International format support
-  - Minimum length enforcement
-
-- **Turkish ID (TC No) Validation**
-  - 11-digit requirement
-  - Numeric only
-  - Format validation
-
-- **Complex Schemas**
-  - Object composition
-  - Optional field handling
-  - Age/date validation
-
-- **String Transformations**
-  - Whitespace trimming
-  - Case handling
-  - Length validation
-
-- **Conditional Validation**
-  - Dependent field requirements
-  - Enum-based conditions
-  - Custom refinements
-
-- **Union Types**
-  - Discriminated unions
-  - Type-specific fields
-  - Multi-type support
-
-**Key Test Cases:**
-
-```typescript
-- validates correct email addresses
-- rejects invalid email addresses
-- validates various phone formats
-- validates 11-digit TC numbers
-- validates complete complex objects
-- provides specific error messages
-- trims whitespace from input
-- handles conditional validation
-```
-
-## Running Tests
-
-### Available Test Commands
-
-```bash
-# Run all tests in watch mode
-npm run test
-
-# Run tests with UI (interactive)
-npm run test:ui
-
-# Run tests once (CI mode)
-npm run test:run
-
-# Generate coverage report
-npm run test:coverage
-
-# Run E2E tests with Playwright
-npm run test:e2e
-
-# Run E2E example test (standalone, no app required)
-npm run test:e2e:example
-# or
-npx playwright test example
-
-# Open E2E test UI
-npm run e2e:ui
-```
-
-### Example Test Output
-
-```
-✓ src/__tests__/hooks/useStandardForm.test.ts (14)
-  ✓ useStandardForm (14)
-    ✓ initializes form with provided default values
-    ✓ returns correct form state properties
-    ✓ validates form data according to schema
-    ✓ clears errors when valid data is entered
-    ✓ calls mutation function with form data on submit
-    ✓ resets form on successful submission
-    ✓ does not reset form when resetOnSuccess is false
-    ✓ calls onSuccess callback with response data
-    ✓ transforms data before mutation
-    ✓ manually resets form via reset() function
-    ...
-
-✓ src/__tests__/lib/api/types.test.ts (18)
-✓ src/__tests__/integration/api-client.test.ts (32)
-✓ src/__tests__/lib/validations/forms.test.ts (28)
-
-Test Files   4 passed (4)
-     Tests  92 passed (92)
-```
-
-## Test Coverage Goals
-
-### Current Coverage (AŞAMA 3)
-
-- **Hook Coverage**: 100% of form hooks
-- **API Type Coverage**: All 8 resources + Create/Update input pairs
-- **API Client Coverage**: All CRUD operations
-- **Validation Coverage**: Email, phone, TC number, complex schemas
-- **Total New Tests**: 92 test cases (1,381 lines)
-
-### Target Coverage: 30%
-
-The new tests focus on high-value areas:
-
-- Core business logic (forms, API operations)
-- Type safety (API types, input validation)
-- Error handling (validation, API errors)
-
-## Best Practices
-
-### Writing New Tests
-
-1. **Use Descriptive Names**
-
-   ```typescript
-   it('should create beneficiary with required fields', async () => {
-     // ...
-   });
-   ```
-
-2. **Arrange-Act-Assert Pattern**
-
-   ```typescript
-   // Arrange
-   const input = {
-     /* ... */
-   };
-
-   // Act
-   const result = await api.create(input);
-
-   // Assert
-   expect(result._id).toBeDefined();
-   ```
-
-3. **Mock External Dependencies**
-
-   ```typescript
-   mockApiClient.beneficiaries.create.mockResolvedValue({ _id: 'ben_123' });
-   ```
-
-4. **Test Error Paths**
-
-   ```typescript
-   mockApiClient.create.mockRejectedValue(new Error('Network error'));
-   ```
-
-5. **Use Type Safety**
-   ```typescript
-   const input: BeneficiaryCreateInput = {
-     // TypeScript ensures all required fields
-   };
-   ```
-
-### Test Organization
-
-- Group related tests with `describe()`
-- Use `beforeEach()` for test setup
-- Keep tests focused and independent
-- Mock external dependencies
-- Use meaningful assertions
-
-## Continuous Integration
-
-### Pre-commit Hooks
-
-Tests run automatically via Husky on:
-
-- Code commits (linting + format)
-- Git push (validate changes)
-
-### CI/CD Pipeline
-
-- Tests run in `test:run` mode (once, no watch)
-- Coverage reports generated as HTML
-- JUnit XML output for CI systems
-
-## Common Issues & Solutions
-
-### Issue: Tests timeout
-
-**Solution**: Increase timeout in vitest.config.ts
-
-```typescript
-test: {
-  testTimeout: 10000,  // 10 seconds
+export function createMockRequest(
+  url: string,
+  options: {
+    method?: string;
+    body?: unknown;
+    headers?: Record<string, string>;
+    cookies?: Record<string, string>;
+  } = {}
+): NextRequest {
+  const { method = 'GET', body, headers = {}, cookies = {} } = options;
+  
+  const request = new NextRequest(new URL(url, 'http://localhost:3000'), {
+    method,
+    body: body ? JSON.stringify(body) : undefined,
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+  });
+  
+  // Add cookies
+  Object.entries(cookies).forEach(([key, value]) => {
+    request.cookies.set(key, value);
+  });
+  
+  return request;
 }
 ```
 
-### Issue: "Module not found" errors
-
-**Solution**: Check vitest.config.ts alias configuration
+### GET Endpoint Testi
 
 ```typescript
-alias: {
-  '@': resolve(__dirname, './src'),
-}
+// src/__tests__/api/beneficiaries.test.ts
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { GET, POST } from '@/app/api/beneficiaries/route';
+import { createMockRequest } from '../mocks/helpers';
+
+// Mock Appwrite
+vi.mock('@/lib/appwrite/api', () => ({
+  appwriteBeneficiaries: {
+    list: vi.fn(),
+    create: vi.fn(),
+  },
+}));
+
+vi.mock('@/lib/api/auth-utils', () => ({
+  requireAuthenticatedUser: vi.fn(() => ({
+    user: { id: 'user-1', role: 'Yönetici', permissions: ['beneficiaries:access'] },
+  })),
+  verifyCsrfToken: vi.fn(),
+}));
+
+import { appwriteBeneficiaries } from '@/lib/appwrite/api';
+
+describe('GET /api/beneficiaries', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+  
+  it('should return beneficiaries list', async () => {
+    const mockData = {
+      documents: [
+        { $id: '1', name: 'Test User', tc_no: '12345678901' },
+        { $id: '2', name: 'Another User', tc_no: '98765432109' },
+      ],
+      total: 2,
+    };
+    
+    vi.mocked(appwriteBeneficiaries.list).mockResolvedValue(mockData);
+    
+    const request = createMockRequest('/api/beneficiaries');
+    const response = await GET(request);
+    const data = await response.json();
+    
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
+    expect(data.data).toHaveLength(2);
+  });
+  
+  it('should handle pagination', async () => {
+    vi.mocked(appwriteBeneficiaries.list).mockResolvedValue({
+      documents: [],
+      total: 100,
+    });
+    
+    const request = createMockRequest('/api/beneficiaries?page=2&limit=10');
+    const response = await GET(request);
+    
+    expect(appwriteBeneficiaries.list).toHaveBeenCalledWith(
+      expect.objectContaining({
+        limit: 10,
+        skip: 10, // page 2
+      })
+    );
+  });
+  
+  it('should handle search', async () => {
+    vi.mocked(appwriteBeneficiaries.list).mockResolvedValue({
+      documents: [],
+      total: 0,
+    });
+    
+    const request = createMockRequest('/api/beneficiaries?search=ahmet');
+    await GET(request);
+    
+    expect(appwriteBeneficiaries.list).toHaveBeenCalledWith(
+      expect.objectContaining({
+        search: 'ahmet',
+      })
+    );
+  });
+});
 ```
 
-### Issue: React hooks not working in tests
-
-**Solution**: Use `renderHook` from React Testing Library
+### POST Endpoint Testi
 
 ```typescript
+describe('POST /api/beneficiaries', () => {
+  it('should create new beneficiary', async () => {
+    const newBeneficiary = {
+      name: 'Yeni Kullanıcı',
+      tc_no: '12345678901',
+      phone: '5551234567',
+      address: 'Test Mahallesi, Test Sokak No:1',
+      city: 'İstanbul',
+      district: 'Kadıköy',
+      neighborhood: 'Caferağa',
+      family_size: 4,
+    };
+    
+    vi.mocked(appwriteBeneficiaries.create).mockResolvedValue({
+      $id: 'new-id',
+      ...newBeneficiary,
+    });
+    
+    const request = createMockRequest('/api/beneficiaries', {
+      method: 'POST',
+      body: newBeneficiary,
+      headers: { 'x-csrf-token': 'valid-token' },
+      cookies: { 'csrf-token': 'valid-token' },
+    });
+    
+    const response = await POST(request);
+    const data = await response.json();
+    
+    expect(response.status).toBe(201);
+    expect(data.success).toBe(true);
+    expect(data.data.$id).toBe('new-id');
+  });
+  
+  it('should validate required fields', async () => {
+    const invalidData = {
+      name: 'A', // Too short
+      tc_no: '123', // Invalid
+    };
+    
+    const request = createMockRequest('/api/beneficiaries', {
+      method: 'POST',
+      body: invalidData,
+      headers: { 'x-csrf-token': 'valid-token' },
+    });
+    
+    const response = await POST(request);
+    const data = await response.json();
+    
+    expect(response.status).toBe(400);
+    expect(data.success).toBe(false);
+    expect(data.errors).toBeDefined();
+  });
+  
+  it('should reject duplicate TC number', async () => {
+    vi.mocked(appwriteBeneficiaries.create).mockRejectedValue(
+      new Error('Document with same tc_no already exists')
+    );
+    
+    const request = createMockRequest('/api/beneficiaries', {
+      method: 'POST',
+      body: {
+        name: 'Test User',
+        tc_no: '12345678901',
+        phone: '5551234567',
+        address: 'Test Adres Test Adres',
+        city: 'İstanbul',
+        district: 'Kadıköy',
+        neighborhood: 'Test',
+        family_size: 1,
+      },
+      headers: { 'x-csrf-token': 'valid-token' },
+    });
+    
+    const response = await POST(request);
+    
+    expect(response.status).toBe(409);
+  });
+});
+```
+
+---
+
+## 🎨 Bileşen Testleri
+
+### Form Bileşeni Testi
+
+```typescript
+// src/__tests__/components/DonationForm.test.tsx
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { DonationForm } from '@/components/forms/DonationForm';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Wrapper for providers
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+  
+  return ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
+  );
+};
+
+describe('DonationForm', () => {
+  it('should render all required fields', () => {
+    render(<DonationForm />, { wrapper: createWrapper() });
+    
+    expect(screen.getByLabelText(/bağışçı adı/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/telefon/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/tutar/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /kaydet/i })).toBeInTheDocument();
+  });
+  
+  it('should show validation errors for empty required fields', async () => {
+    const user = userEvent.setup();
+    render(<DonationForm />, { wrapper: createWrapper() });
+    
+    // Submit empty form
+    await user.click(screen.getByRole('button', { name: /kaydet/i }));
+    
+    // Check for error messages
+    await waitFor(() => {
+      expect(screen.getByText(/bağışçı adı en az 2 karakter/i)).toBeInTheDocument();
+    });
+  });
+  
+  it('should validate phone number format', async () => {
+    const user = userEvent.setup();
+    render(<DonationForm />, { wrapper: createWrapper() });
+    
+    const phoneInput = screen.getByLabelText(/telefon/i);
+    await user.type(phoneInput, '123'); // Invalid
+    await user.tab(); // Trigger blur validation
+    
+    await waitFor(() => {
+      expect(screen.getByText(/telefon.*10 haneli/i)).toBeInTheDocument();
+    });
+  });
+  
+  it('should submit form with valid data', async () => {
+    const onSuccess = vi.fn();
+    const user = userEvent.setup();
+    
+    // Mock fetch
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ success: true, data: { $id: '123' } }),
+    });
+    
+    render(<DonationForm onSuccess={onSuccess} />, { wrapper: createWrapper() });
+    
+    // Fill form
+    await user.type(screen.getByLabelText(/bağışçı adı/i), 'Test Bağışçı');
+    await user.type(screen.getByLabelText(/telefon/i), '5551234567');
+    await user.type(screen.getByLabelText(/tutar/i), '1000');
+    
+    // Select values
+    await user.click(screen.getByRole('combobox', { name: /bağış türü/i }));
+    await user.click(screen.getByRole('option', { name: /nakdi/i }));
+    
+    // Submit
+    await user.click(screen.getByRole('button', { name: /kaydet/i }));
+    
+    await waitFor(() => {
+      expect(onSuccess).toHaveBeenCalled();
+    });
+  });
+  
+  it('should show loading state during submission', async () => {
+    const user = userEvent.setup();
+    
+    // Mock slow response
+    global.fetch = vi.fn().mockImplementation(
+      () => new Promise(resolve => setTimeout(resolve, 1000))
+    );
+    
+    render(<DonationForm />, { wrapper: createWrapper() });
+    
+    // Fill minimum required fields and submit
+    await user.type(screen.getByLabelText(/bağışçı adı/i), 'Test');
+    await user.type(screen.getByLabelText(/telefon/i), '5551234567');
+    await user.type(screen.getByLabelText(/tutar/i), '100');
+    
+    await user.click(screen.getByRole('button', { name: /kaydet/i }));
+    
+    // Check loading state
+    expect(screen.getByText(/kaydediliyor/i)).toBeInTheDocument();
+    expect(screen.getByRole('button')).toBeDisabled();
+  });
+  
+  it('should call onCancel when cancel button clicked', async () => {
+    const onCancel = vi.fn();
+    const user = userEvent.setup();
+    
+    render(<DonationForm onCancel={onCancel} />, { wrapper: createWrapper() });
+    
+    await user.click(screen.getByRole('button', { name: /iptal/i }));
+    
+    expect(onCancel).toHaveBeenCalled();
+  });
+});
+```
+
+---
+
+## 🪝 Hook Testleri
+
+### Custom Hook Testi
+
+```typescript
+// src/__tests__/hooks/useOnlineStatus.test.ts
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
-const { result } = renderHook(() => useMyHook());
+describe('useOnlineStatus', () => {
+  beforeEach(() => {
+    // Reset navigator.onLine
+    Object.defineProperty(navigator, 'onLine', {
+      value: true,
+      writable: true,
+    });
+  });
+  
+  it('should return true when online', () => {
+    const { result } = renderHook(() => useOnlineStatus());
+    
+    expect(result.current).toBe(true);
+  });
+  
+  it('should return false when offline', () => {
+    Object.defineProperty(navigator, 'onLine', { value: false });
+    
+    const { result } = renderHook(() => useOnlineStatus());
+    
+    expect(result.current).toBe(false);
+  });
+  
+  it('should update when going offline', () => {
+    const { result } = renderHook(() => useOnlineStatus());
+    
+    expect(result.current).toBe(true);
+    
+    act(() => {
+      Object.defineProperty(navigator, 'onLine', { value: false });
+      window.dispatchEvent(new Event('offline'));
+    });
+    
+    expect(result.current).toBe(false);
+  });
+  
+  it('should update when going online', () => {
+    Object.defineProperty(navigator, 'onLine', { value: false });
+    
+    const { result } = renderHook(() => useOnlineStatus());
+    
+    expect(result.current).toBe(false);
+    
+    act(() => {
+      Object.defineProperty(navigator, 'onLine', { value: true });
+      window.dispatchEvent(new Event('online'));
+    });
+    
+    expect(result.current).toBe(true);
+  });
+});
 ```
 
-## Future Test Improvements
+### useStandardForm Hook Testi
 
-### Planned for Next Phase
+```typescript
+// src/__tests__/hooks/useStandardForm.test.ts
+import { describe, it, expect, vi } from 'vitest';
+import { renderHook, waitFor, act } from '@testing-library/react';
+import { z } from 'zod';
+import { useStandardForm } from '@/hooks/useStandardForm';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-1. **Component Tests**
-   - Form components (TaskForm, BeneficiaryForm)
-   - UI components (buttons, inputs, modals)
-   - List/table components
+const schema = z.object({
+  name: z.string().min(2, 'En az 2 karakter'),
+  email: z.string().email('Geçerli email girin'),
+});
 
-2. **E2E Test Expansion**
-   - Complete beneficiary workflow
-   - Donation submission process
-   - Meeting scheduling flow
+type FormData = z.infer<typeof schema>;
 
-3. **Performance Tests**
-   - Component render time
-   - API response time
-   - Form input latency
+const wrapper = ({ children }: { children: React.ReactNode }) => {
+  const queryClient = new QueryClient();
+  return (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+};
 
-4. **Accessibility Tests**
-   - WCAG compliance
-   - Keyboard navigation
-   - Screen reader support
+describe('useStandardForm', () => {
+  it('should initialize with default values', () => {
+    const { result } = renderHook(
+      () =>
+        useStandardForm<FormData>({
+          schema,
+          mutationFn: vi.fn(),
+          queryKey: 'test',
+          defaultValues: { name: 'Test', email: '' },
+        }),
+      { wrapper }
+    );
+    
+    expect(result.current.form.getValues('name')).toBe('Test');
+    expect(result.current.isSubmitting).toBe(false);
+    expect(result.current.isDirty).toBe(false);
+  });
+  
+  it('should validate on submit', async () => {
+    const mutationFn = vi.fn();
+    
+    const { result } = renderHook(
+      () =>
+        useStandardForm<FormData>({
+          schema,
+          mutationFn,
+          queryKey: 'test',
+          defaultValues: { name: '', email: '' },
+        }),
+      { wrapper }
+    );
+    
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+    
+    // Should not call mutation with invalid data
+    expect(mutationFn).not.toHaveBeenCalled();
+    
+    // Should have errors
+    expect(result.current.form.formState.errors.name).toBeDefined();
+    expect(result.current.form.formState.errors.email).toBeDefined();
+  });
+  
+  it('should call mutation with valid data', async () => {
+    const mutationFn = vi.fn().mockResolvedValue({ id: '123' });
+    
+    const { result } = renderHook(
+      () =>
+        useStandardForm<FormData>({
+          schema,
+          mutationFn,
+          queryKey: 'test',
+          defaultValues: { name: 'Valid Name', email: 'valid@email.com' },
+        }),
+      { wrapper }
+    );
+    
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+    
+    await waitFor(() => {
+      expect(mutationFn).toHaveBeenCalledWith({
+        name: 'Valid Name',
+        email: 'valid@email.com',
+      });
+    });
+  });
+});
+```
 
-## Resources
+---
 
-- [Vitest Documentation](https://vitest.dev/)
-- [React Testing Library Docs](https://testing-library.com/react)
-- [Playwright Documentation](https://playwright.dev/)
-- [Zod Validation](https://zod.dev/)
-- [Testing Best Practices](https://github.com/goldbergyoni/javascript-testing-best-practices)
+## 🔧 Utility Testleri
 
-## Contributing Tests
+### Validasyon Testi
 
-When adding new features:
+```typescript
+// src/__tests__/lib/validations.test.ts
+import { describe, it, expect } from 'vitest';
+import {
+  tcKimlikNoSchema,
+  requiredPhoneSchema,
+  requiredEmailSchema,
+} from '@/lib/validations/shared-validators';
 
-1. Write tests first (TDD approach)
-2. Ensure tests pass before committing
-3. Maintain test coverage above 30%
-4. Document complex test scenarios
-5. Keep tests DRY (Don't Repeat Yourself)
+describe('TC Kimlik No Validator', () => {
+  it('should accept valid TC numbers', () => {
+    const validNumbers = ['10000000146', '12345678934'];
+    
+    validNumbers.forEach(tc => {
+      const result = tcKimlikNoSchema.safeParse(tc);
+      expect(result.success).toBe(true);
+    });
+  });
+  
+  it('should reject TC starting with 0', () => {
+    const result = tcKimlikNoSchema.safeParse('01234567890');
+    expect(result.success).toBe(false);
+  });
+  
+  it('should reject wrong length', () => {
+    expect(tcKimlikNoSchema.safeParse('1234567890').success).toBe(false);
+    expect(tcKimlikNoSchema.safeParse('123456789012').success).toBe(false);
+  });
+  
+  it('should reject non-numeric', () => {
+    const result = tcKimlikNoSchema.safeParse('1234567890a');
+    expect(result.success).toBe(false);
+  });
+});
 
-## Contact & Support
+describe('Phone Validator', () => {
+  it('should accept valid Turkish mobile numbers', () => {
+    const validNumbers = ['5551234567', '5001234567', '5991234567'];
+    
+    validNumbers.forEach(phone => {
+      const result = requiredPhoneSchema.safeParse(phone);
+      expect(result.success).toBe(true);
+    });
+  });
+  
+  it('should sanitize and accept formatted numbers', () => {
+    const formattedNumbers = [
+      '+905551234567',
+      '905551234567',
+      '05551234567',
+      '0555 123 45 67',
+      '+90 (555) 123-4567',
+    ];
+    
+    formattedNumbers.forEach(phone => {
+      const result = requiredPhoneSchema.safeParse(phone);
+      expect(result.success).toBe(true);
+      expect(result.data).toBe('5551234567');
+    });
+  });
+  
+  it('should reject non-mobile numbers', () => {
+    // Landline
+    const result = requiredPhoneSchema.safeParse('2121234567');
+    expect(result.success).toBe(false);
+  });
+});
+```
 
-For questions about testing:
+### Security Utility Testi
 
-- Review TESTING_GUIDE.md (this file)
-- Check existing test examples
-- Run tests in watch mode: `npm run test`
+```typescript
+// src/__tests__/lib/security.test.ts
+import { describe, it, expect } from 'vitest';
+import { RateLimiter, PasswordSecurity, FileSecurity } from '@/lib/security';
+
+describe('RateLimiter', () => {
+  beforeEach(() => {
+    RateLimiter.resetAll();
+  });
+  
+  it('should allow requests within limit', () => {
+    const result = RateLimiter.checkLimit('test-ip', 5, 60000);
+    
+    expect(result.allowed).toBe(true);
+    expect(result.remaining).toBe(4);
+  });
+  
+  it('should block after exceeding limit', () => {
+    const identifier = 'test-ip-2';
+    
+    // Make 5 requests
+    for (let i = 0; i < 5; i++) {
+      RateLimiter.checkLimit(identifier, 5, 60000);
+    }
+    
+    // 6th request should be blocked
+    const result = RateLimiter.checkLimit(identifier, 5, 60000);
+    
+    expect(result.allowed).toBe(false);
+    expect(result.remaining).toBe(0);
+  });
+  
+  it('should reset after window expires', async () => {
+    const identifier = 'test-ip-3';
+    
+    // Exhaust limit
+    for (let i = 0; i < 5; i++) {
+      RateLimiter.checkLimit(identifier, 5, 100); // 100ms window
+    }
+    
+    // Wait for window to expire
+    await new Promise(r => setTimeout(r, 150));
+    
+    // Should be allowed again
+    const result = RateLimiter.checkLimit(identifier, 5, 100);
+    expect(result.allowed).toBe(true);
+  });
+});
+
+describe('PasswordSecurity', () => {
+  it('should accept strong passwords', () => {
+    const result = PasswordSecurity.validateStrength('SecurePass123!');
+    
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+  
+  it('should reject weak passwords', () => {
+    const result = PasswordSecurity.validateStrength('weak');
+    
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
+  });
+  
+  it('should require uppercase', () => {
+    const result = PasswordSecurity.validateStrength('lowercase123!');
+    
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain('Şifre en az bir büyük harf içermelidir');
+  });
+});
+
+describe('FileSecurity', () => {
+  it('should accept allowed file types', () => {
+    const file = new File(['content'], 'test.pdf', { type: 'application/pdf' });
+    const result = FileSecurity.validateFile(file);
+    
+    expect(result.valid).toBe(true);
+  });
+  
+  it('should reject disallowed file types', () => {
+    const file = new File(['content'], 'test.exe', { type: 'application/x-msdownload' });
+    const result = FileSecurity.validateFile(file);
+    
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain('Desteklenmeyen dosya türü');
+  });
+  
+  it('should reject oversized files', () => {
+    const largeContent = new Array(6 * 1024 * 1024).fill('a').join('');
+    const file = new File([largeContent], 'large.pdf', { type: 'application/pdf' });
+    const result = FileSecurity.validateFile(file);
+    
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain('büyük');
+  });
+});
+```
+
+---
+
+## 🏃 Test Çalıştırma
+
+### Tüm Testler
+
+```bash
+npm run test
+```
+
+### Watch Mode
+
+```bash
+npm run test -- --watch
+```
+
+### Belirli Dosya
+
+```bash
+npm run test -- src/__tests__/api/beneficiaries.test.ts
+```
+
+### Coverage
+
+```bash
+npm run test:coverage
+```
+
+### UI Mode
+
+```bash
+npm run test:ui
+```
+
+---
+
+## ✅ Best Practices
+
+### 1. Test Isolation
+
+```typescript
+// ✓ İyi - Her test bağımsız
+beforeEach(() => {
+  vi.clearAllMocks();
+  RateLimiter.resetAll();
+});
+
+// ✗ Kötü - Testler birbirine bağımlı
+let counter = 0;
+it('first test', () => { counter++; });
+it('second test', () => { expect(counter).toBe(1); });
+```
+
+### 2. Descriptive Names
+
+```typescript
+// ✓ İyi
+it('should return 401 when session token is missing', async () => {});
+
+// ✗ Kötü
+it('test error', async () => {});
+```
+
+### 3. AAA Pattern
+
+```typescript
+it('should create beneficiary', async () => {
+  // Arrange
+  const mockData = { name: 'Test', tc_no: '12345678901' };
+  vi.mocked(appwriteBeneficiaries.create).mockResolvedValue(mockData);
+  
+  // Act
+  const response = await POST(createMockRequest('/api/beneficiaries', {
+    method: 'POST',
+    body: mockData,
+  }));
+  
+  // Assert
+  expect(response.status).toBe(201);
+});
+```
+
+### 4. Mock Scope
+
+```typescript
+// ✓ İyi - Test içinde mock
+it('specific test', () => {
+  vi.mocked(fetch).mockResolvedValueOnce({ ok: true });
+  // ...
+});
+
+// △ Dikkatli - Global mock
+vi.mock('@/lib/api', () => ({
+  getData: vi.fn(),
+}));
+```
+

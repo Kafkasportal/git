@@ -10,10 +10,6 @@ interface PerformanceMemory {
 
 declare global {
   interface Window {
-    Sentry?: {
-      captureException: (error: Error, options?: Record<string, unknown>) => void;
-      showReportDialog?: () => void;
-    };
     __GLOBAL_ERROR__?: {
       error: Error & { digest?: string };
       digest?: string;
@@ -61,37 +57,9 @@ export default function GlobalError({
       logger.error('Hydration error detected', { error, digest: error.digest });
     }
 
-    // Send to Sentry with high priority
-    if (typeof window !== 'undefined') {
-      if (window.Sentry) {
-        window.Sentry.captureException(error, {
-          level: 'fatal',
-          tags: { digest: error.digest, type: 'global-error' },
-          contexts: {
-            browser: {
-              userAgent: navigator.userAgent,
-              screen: `${window.screen.width}x${window.screen.height}`,
-            },
-            memory: {
-              used: window.performance.memory?.usedJSHeapSize,
-              total: window.performance.memory?.totalJSHeapSize,
-            },
-          },
-          user: {
-            ip_address: '{{auto}}',
-          },
-        });
-
-        // Add user feedback mechanism if Sentry feedback widget available
-        if (window.Sentry.showReportDialog) {
-          window.Sentry.showReportDialog();
-        }
-      }
-
-      // Add error tracking to window (development only)
-      if (process.env.NODE_ENV === 'development') {
-        window.__GLOBAL_ERROR__ = { error, digest: error.digest, timestamp: new Date() };
-      }
+    // Add error tracking to window (development only)
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      window.__GLOBAL_ERROR__ = { error, digest: error.digest, timestamp: new Date() };
     }
   }, [error]);
 

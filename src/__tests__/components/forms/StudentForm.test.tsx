@@ -27,12 +27,21 @@ vi.mock('sonner', () => ({
 
 // Mock scrollIntoView for Radix UI Select
 const mockScrollIntoView = vi.fn();
+const originalScrollIntoView = Element.prototype.scrollIntoView;
+
 beforeEach(() => {
   Element.prototype.scrollIntoView = mockScrollIntoView;
 });
 
 afterEach(() => {
   vi.clearAllMocks();
+  // Restore original scrollIntoView to prevent test pollution
+  if (originalScrollIntoView !== undefined) {
+    Element.prototype.scrollIntoView = originalScrollIntoView;
+  } else {
+    // If it didn't exist originally, delete it
+    delete (Element.prototype as any).scrollIntoView;
+  }
 });
 
 describe('StudentForm', () => {

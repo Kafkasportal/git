@@ -154,7 +154,6 @@ class LoggerImpl implements Logger {
       console.log(JSON.stringify(logEntry));
     }
 
-    // Error/Fatal logs are captured (Sentry removed)
   }
 
   debug(message: string, context?: LogContext): void {

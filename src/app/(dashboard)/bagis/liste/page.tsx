@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { apiClient as api } from '@/lib/api/api-client';
+import { donations } from '@/lib/api/crud-factory';
 import { VirtualizedDataTable, type DataTableColumn } from '@/components/ui/virtualized-data-table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -41,7 +41,7 @@ export default function DonationsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['donations', search],
     queryFn: () =>
-      api.donations.getDonations({
+      donations.getAll({
         page: 1,
         limit: 10000, // Load all data for virtual scrolling
         search,

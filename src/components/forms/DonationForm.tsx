@@ -23,7 +23,7 @@ import logger from '@/lib/logger';
 import { donationSchema, type DonationFormData } from '@/lib/validations/forms';
 
 // ✅ Use CRUD factory API client (mimariye uygun)
-import { donations } from '@/lib/api/api-client';
+import { donations } from '@/lib/api/crud-factory';
 
 // ✅ Use useStandardForm hook (mimariye uygun pattern)
 import { useStandardForm } from '@/hooks/useStandardForm';

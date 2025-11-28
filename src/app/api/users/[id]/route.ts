@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import logger from '@/lib/logger';
 import { appwriteUsers } from '@/lib/appwrite/api';
-import { InputSanitizer } from '@/lib/security';
 import { extractParams } from '@/lib/api/route-helpers';
 import { hashPassword, validatePasswordStrength } from '@/lib/auth/password';
 import {
@@ -76,7 +75,8 @@ async function updateUserHandler(
 
     const body = (await request.json()) as Record<string, unknown>;
 
-    if (body.email && typeof body.email === 'string' && !InputSanitizer.validateEmail(body.email)) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (body.email && typeof body.email === 'string' && !emailRegex.test(body.email)) {
       return NextResponse.json(
         { success: false, error: 'Geçersiz e-posta adresi' },
         { status: 400 }

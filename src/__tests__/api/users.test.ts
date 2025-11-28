@@ -27,12 +27,7 @@ vi.mock('@/lib/auth/password', () => ({
   validatePasswordStrength: vi.fn().mockReturnValue({ valid: true }),
 }));
 
-// Mock security
-vi.mock('@/lib/security', () => ({
-  InputSanitizer: {
-    validateEmail: vi.fn((email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)),
-  },
-}));
+// Email validation is now done inline, no mock needed
 
 // Mock route helpers
 vi.mock('@/lib/api/route-helpers', () => ({
