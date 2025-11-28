@@ -99,6 +99,42 @@ export const isAppwriteReady = (): boolean => {
   return client !== null;
 };
 
+// Ping function to verify Appwrite connection
+// This works even if the full client isn't initialized (e.g., no database ID)
+export const pingAppwrite = async (): Promise<boolean> => {
+  // If main client exists, use it
+  if (client) {
+    try {
+      await client.ping();
+      logger.info('Appwrite ping successful - connection verified');
+      return true;
+    } catch (error) {
+      logger.error('Appwrite ping failed', { error });
+      return false;
+    }
+  }
+
+  // If main client isn't available, try creating a minimal client just for ping
+  // This allows verifying connection even without full configuration (e.g., no database ID)
+  if (appwriteConfig.endpoint && appwriteConfig.projectId) {
+    try {
+      const { Client } = await import('appwrite');
+      const pingClient = new Client()
+        .setEndpoint(appwriteConfig.endpoint)
+        .setProject(appwriteConfig.projectId);
+      await pingClient.ping();
+      logger.info('Appwrite ping successful - connection verified (minimal client)');
+      return true;
+    } catch (error) {
+      logger.error('Appwrite ping failed', { error });
+      return false;
+    }
+  }
+
+  logger.warn('Cannot ping Appwrite: endpoint or project ID not configured');
+  return false;
+};
+
 // Log configuration status (development only)
 if (process.env.NODE_ENV === 'development' && !isBuildTime) {
   if (isAppwriteReady()) {

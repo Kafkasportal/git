@@ -371,6 +371,7 @@ Detaylı bilgi için: [docs/mcp-setup.md](./docs/mcp-setup.md)
 
 - [docs/appwrite-guide.md](./docs/appwrite-guide.md) - Appwrite kullanim rehberi
 - [docs/mcp-setup.md](./docs/mcp-setup.md) - MCP kurulum rehberi
+- [docs/deployment.md](./docs/deployment.md) - Deployment rehberi
 - [docs/testing.md](./docs/testing.md) - Test rehberi
 - [docs/api-patterns.md](./docs/api-patterns.md) - API standartlari
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - Katki rehberi

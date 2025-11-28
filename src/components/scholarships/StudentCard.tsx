@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { memo, useCallback } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,8 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import {
   Eye,
   Edit,
@@ -23,16 +24,28 @@ import {
   Mail,
   MapPin,
   Heart,
-} from 'lucide-react';
-import { Student } from '@/types/scholarship';
-import { getStudentStatusBadge, getEducationLevelBadge } from '@/lib/utils/scholarship-helpers';
+} from "lucide-react";
+import { Student } from "@/types/scholarship";
+import {
+  getStudentStatusBadge,
+  getEducationLevelBadge,
+} from "@/lib/utils/scholarship-helpers";
 
 interface StudentCardProps {
   student: Student;
   onEdit?: (student: Student) => void;
 }
 
-export function StudentCard({ student, onEdit }: StudentCardProps) {
+/**
+ * StudentCard component - memoized to prevent unnecessary re-renders in lists
+ */
+export const StudentCard = memo(function StudentCard({
+  student,
+  onEdit,
+}: StudentCardProps) {
+  const handleEdit = useCallback(() => {
+    onEdit?.(student);
+  }, [onEdit, student]);
   return (
     <Card key={student.id} className="border">
       <CardContent className="p-4">
@@ -44,7 +57,10 @@ export function StudentCard({ student, onEdit }: StudentCardProps) {
               </h3>
               {getStudentStatusBadge(student.status)}
               {student.isOrphan && (
-                <Badge variant="outline" className="text-red-600 border-red-600">
+                <Badge
+                  variant="outline"
+                  className="text-red-600 border-red-600"
+                >
                   <Heart className="h-3 w-3 mr-1" />
                   Yetim
                 </Badge>
@@ -102,7 +118,8 @@ export function StudentCard({ student, onEdit }: StudentCardProps) {
                 <DialogHeader>
                   <DialogTitle>Öğrenci Detayları</DialogTitle>
                   <DialogDescription>
-                    {student.firstName} {student.lastName} - {student.institution}
+                    {student.firstName} {student.lastName} -{" "}
+                    {student.institution}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
@@ -115,66 +132,100 @@ export function StudentCard({ student, onEdit }: StudentCardProps) {
                     </div>
                     <div>
                       <Label className="text-sm font-medium">TC No</Label>
-                      <p className="text-sm text-muted-foreground">{student.nationalId || '-'}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {student.nationalId || "-"}
+                      </p>
                     </div>
                     <div>
                       <Label className="text-sm font-medium">Durum</Label>
-                      <div className="mt-1">{getStudentStatusBadge(student.status)}</div>
+                      <div className="mt-1">
+                        {getStudentStatusBadge(student.status)}
+                      </div>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium">Eğitim Seviyesi</Label>
-                      <div className="mt-1">{getEducationLevelBadge(student.educationLevel)}</div>
+                      <Label className="text-sm font-medium">
+                        Eğitim Seviyesi
+                      </Label>
+                      <div className="mt-1">
+                        {getEducationLevelBadge(student.educationLevel)}
+                      </div>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium">Eğitim Kurumu</Label>
-                      <p className="text-sm text-muted-foreground">{student.institution}</p>
+                      <Label className="text-sm font-medium">
+                        Eğitim Kurumu
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        {student.institution}
+                      </p>
                     </div>
                     <div>
                       <Label className="text-sm font-medium">Bölüm</Label>
-                      <p className="text-sm text-muted-foreground">{student.department || '-'}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {student.department || "-"}
+                      </p>
                     </div>
                     <div>
                       <Label className="text-sm font-medium">Sınıf</Label>
-                      <p className="text-sm text-muted-foreground">{student.grade || '-'}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {student.grade || "-"}
+                      </p>
                     </div>
                     <div>
                       <Label className="text-sm font-medium">GPA</Label>
-                      <p className="text-sm text-muted-foreground">{student.gpa || '-'}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {student.gpa || "-"}
+                      </p>
                     </div>
                     <div>
                       <Label className="text-sm font-medium">E-posta</Label>
-                      <p className="text-sm text-muted-foreground">{student.email || '-'}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {student.email || "-"}
+                      </p>
                     </div>
                     <div>
                       <Label className="text-sm font-medium">Telefon</Label>
-                      <p className="text-sm text-muted-foreground">{student.phone || '-'}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {student.phone || "-"}
+                      </p>
                     </div>
                     <div>
                       <Label className="text-sm font-medium">Şehir</Label>
-                      <p className="text-sm text-muted-foreground">{student.city || '-'}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {student.city || "-"}
+                      </p>
                     </div>
                     <div>
                       <Label className="text-sm font-medium">Aile Geliri</Label>
                       <p className="text-sm text-muted-foreground">
-                        {student.familyIncome ? `${student.familyIncome} TL` : '-'}
+                        {student.familyIncome
+                          ? `${student.familyIncome} TL`
+                          : "-"}
                       </p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium">Aile Büyüklüğü</Label>
-                      <p className="text-sm text-muted-foreground">{student.familySize || '-'}</p>
+                      <Label className="text-sm font-medium">
+                        Aile Büyüklüğü
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        {student.familySize || "-"}
+                      </p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium">Yetim Durumu</Label>
+                      <Label className="text-sm font-medium">
+                        Yetim Durumu
+                      </Label>
                       <p className="text-sm text-muted-foreground">
-                        {student.isOrphan ? 'Evet' : 'Hayır'}
+                        {student.isOrphan ? "Evet" : "Hayır"}
                       </p>
                     </div>
                   </div>
                   {student.isOrphan && student.guardianName && (
                     <div>
-                      <Label className="text-sm font-medium">Veli Bilgileri</Label>
+                      <Label className="text-sm font-medium">
+                        Veli Bilgileri
+                      </Label>
                       <p className="text-sm text-muted-foreground">
-                        {student.guardianName} ({student.guardianRelation}) -{' '}
+                        {student.guardianName} ({student.guardianRelation}) -{" "}
                         {student.guardianPhone}
                       </p>
                     </div>
@@ -182,14 +233,16 @@ export function StudentCard({ student, onEdit }: StudentCardProps) {
                   {student.notes && (
                     <div>
                       <Label className="text-sm font-medium">Notlar</Label>
-                      <p className="text-sm text-muted-foreground">{student.notes}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {student.notes}
+                      </p>
                     </div>
                   )}
                 </div>
               </DialogContent>
             </Dialog>
             {onEdit && (
-              <Button variant="outline" size="sm" onClick={() => onEdit(student)}>
+              <Button variant="outline" size="sm" onClick={handleEdit}>
                 <Edit className="h-4 w-4" />
               </Button>
             )}
@@ -198,4 +251,4 @@ export function StudentCard({ student, onEdit }: StudentCardProps) {
       </CardContent>
     </Card>
   );
-}
+});

@@ -28,6 +28,8 @@
     "clean:temp": "node -e \"const fs=require('fs');const path=require('path');const files=fs.readdirSync('.').filter(f=>/^(lint-|.*-output\\.txt|.*-current\\.txt|test-|typecheck-)/.test(f)&&f.endsWith('.txt'));files.forEach(f=>{try{fs.unlinkSync(f);}catch(e){}});\"",
     "health:check": "curl http://localhost:3000/api/health?detailed=true",
     "test:backend": "tsx scripts/test-backend.ts",
+    "setup": "tsx scripts/quick-setup.ts",
+    "setup:quick": "tsx scripts/quick-setup.ts && npm run dev",
     "appwrite:setup": "tsx scripts/appwrite-setup.ts",
     "appwrite:configure": "./scripts/auto-setup-appwrite.sh",
     "validate:deploy": "node -e \"fetch(process.env.DEPLOY_URL + '/api/health').then(r => r.json()).then(console.log)\"",
@@ -69,16 +71,15 @@
     "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-tooltip": "^1.2.8",
-    "@sentry/nextjs": "^10.22.0",
     "@tanstack/react-query": "^5.90.6",
     "@tanstack/react-query-devtools": "^5.90.2",
     "@tanstack/react-table": "^8.21.3",
     "ai": "^5.0.93",
     "appwrite": "^21.4.0",
     "bcryptjs": "^3.0.3",
+    "beasties": "^0.3.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "beasties": "^0.3.5",
     "date-fns": "^4.1.0",
     "exceljs": "^4.4.0",
     "framer-motion": "^12.23.24",
@@ -134,6 +135,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/twilio": "^3.19.2",
+    "@types/webpack": "^5.28.5",
     "@vitejs/plugin-react": "^4.0.4",
     "@vitest/coverage-v8": "^4.0.8",
     "@vitest/ui": "^4.0.6",
@@ -149,6 +151,7 @@
     "tsx": "^4.20.6",
     "typescript": "^5",
     "vitest": "^4.0.8",
-    "web-vitals": "^5.1.0"
+    "web-vitals": "^5.1.0",
+    "webpack": "^5.103.0"
   }
 }

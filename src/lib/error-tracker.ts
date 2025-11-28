@@ -4,7 +4,6 @@
  */
 
 import logger from './logger';
-import * as Sentry from '@sentry/nextjs';
 
 export type ErrorCategory =
   | 'runtime'
@@ -215,26 +214,6 @@ export async function captureError(options: CaptureErrorOptions): Promise<void> 
   // Log to console in development
   if (process.env.NODE_ENV === 'development') {
     // Error captured and logged
-  }
-
-  // Send to Sentry
-  if (process.env.SENTRY_DSN) {
-    try {
-      Sentry.captureException(error || new Error(title), {
-        tags: {
-          category,
-          severity,
-          error_code: errorCode,
-          component: context.component || 'unknown',
-        },
-        extra: {
-          ...errorData,
-        },
-        fingerprint: [fingerprint],
-      });
-    } catch (sentryError) {
-      logger.error('Failed to send error to Sentry', sentryError);
-    }
   }
 
   // Log using logger

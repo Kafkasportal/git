@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Controller } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -122,6 +123,12 @@ export function DonationForm({ onSuccess, onCancel }: DonationFormProps) {
     queryKey: ['donations'],
     successMessage: 'Bağış başarıyla kaydedildi',
     errorMessage: 'Bağış kaydedilirken hata oluştu',
+    // Transform phone number to sanitized format before mutation
+    transformData: (data) => ({
+      ...data,
+      // Remove all non-digit characters from phone
+      donor_phone: data.donor_phone?.replace(/\D/g, '') || '',
+    }),
     // ✅ Use CRUD factory mutation (mimariye uygun!)
     mutationFn: async (data: DonationFormData) => {
       let uploadedFileId: string | undefined = undefined;
@@ -232,38 +239,31 @@ export function DonationForm({ onSuccess, onCancel }: DonationFormProps) {
                 required
                 errorId="donor_phone-error"
               >
-                <Input
-                  id="donor_phone"
-                  {...form.register('donor_phone')}
-                  placeholder="0555 123 45 67"
-                  onChange={(e) => {
-                    // Format Turkish phone number
-                    let value = e.target.value.replace(/\D/g, '');
-                    if (value.length > 10) value = value.slice(0, 10);
-
-                    // Format as 0555 123 45 67
-                    if (value.length >= 4) {
-                      value = `${value.slice(0, 4)} ${value.slice(4)}`;
-                    }
-                    if (value.length >= 7) {
-                      value = `${value.slice(0, 8)} ${value.slice(8)}`;
-                    }
-                    if (value.length >= 10) {
-                      value = `${value.slice(0, 11)} ${value.slice(11)}`;
-                    }
-
-                    e.target.value = value;
-                    form.register('donor_phone').onChange(e);
-                    if (value.replace(/\s/g, '').length > 0) {
-                      void validateField('donor_phone', value.replace(/\s/g, ''));
-                    }
-                  }}
-                  maxLength={14}
-                  aria-describedby={
-                    form.formState.errors.donor_phone ? 'donor_phone-error' : undefined
-                  }
-                  aria-invalid={!!form.formState.errors.donor_phone}
-                  disabled={isSubmitting}
+                <Controller
+                  name="donor_phone"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Input
+                      id="donor_phone"
+                      placeholder="5321234567"
+                      value={field.value || ''}
+                      onChange={(e) => {
+                        // Clean the input - remove all non-digits and limit to 10
+                        const cleaned = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        field.onChange(cleaned);
+                        if (cleaned.length > 0) {
+                          void validateField('donor_phone', cleaned);
+                        }
+                      }}
+                      onBlur={field.onBlur}
+                      maxLength={10}
+                      aria-describedby={
+                        form.formState.errors.donor_phone ? 'donor_phone-error' : undefined
+                      }
+                      aria-invalid={!!form.formState.errors.donor_phone}
+                      disabled={isSubmitting}
+                    />
+                  )}
                 />
               </FieldWithValidation>
             </div>

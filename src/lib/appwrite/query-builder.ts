@@ -1,11 +1,11 @@
 /**
  * Appwrite Query Builder
- * 
+ *
  * Fluent API for building Appwrite database queries
  * Provides type-safe and chainable query construction
  */
 
-import { Query } from 'appwrite';
+import { Query } from "appwrite";
 
 export class AppwriteQueryBuilder {
   private queries: string[] = [];
@@ -29,11 +29,11 @@ export class AppwriteQueryBuilder {
   /**
    * Order by field
    */
-  orderBy(field: string, direction: 'asc' | 'desc' = 'asc'): this {
+  orderBy(field: string, direction: "asc" | "desc" = "asc"): this {
     // Remove existing order for this field if any
     this.queries = this.queries.filter((q) => !q.includes(`order("${field}"`));
-    
-    if (direction === 'desc') {
+
+    if (direction === "desc") {
       this.queries.push(Query.orderDesc(field));
     } else {
       this.queries.push(Query.orderAsc(field));
@@ -124,24 +124,28 @@ export class AppwriteQueryBuilder {
     if (Array.isArray(value)) {
       // If array, use first element (Appwrite contains doesn't support arrays directly)
       if (value.length > 0) {
-        this.queries.push(Query.contains(field, value[0]));
+        this.queries.push(Query.contains(field, String(value[0])));
       }
     } else {
-      this.queries.push(Query.contains(field, value));
+      this.queries.push(Query.contains(field, String(value)));
     }
     return this;
   }
 
   /**
    * Filter by array contains any
-   * Note: Appwrite doesn't have containsAny, so we use multiple contains queries
+   * Note: Appwrite doesn't have containsAny, so we use multiple contains queries with OR
    */
   containsAny(field: string, values: (string | number)[]): this {
-    if (values.length > 0) {
-      // Appwrite doesn't support containsAny directly, so we use OR logic with multiple contains
-      // For now, just use the first value as a workaround
-      // TODO: Implement proper OR logic if needed
-      this.queries.push(Query.contains(field, values[0]));
+    if (values.length === 1) {
+      this.queries.push(Query.contains(field, String(values[0])));
+    } else if (values.length > 1) {
+      // Use OR logic with multiple contains queries
+      // We need to use Query.or to combine multiple conditions
+      const queries = values.map((value) =>
+        Query.contains(field, String(value)),
+      );
+      this.queries.push(Query.or(queries));
     }
     return this;
   }
@@ -203,20 +207,23 @@ export function createQueryBuilder(): AppwriteQueryBuilder {
 /**
  * Helper function for common pagination pattern
  */
-export function paginationQuery(page: number = 1, limit: number = 20): AppwriteQueryBuilder {
-  return new AppwriteQueryBuilder()
-    .limit(limit)
-    .offset((page - 1) * limit);
+export function paginationQuery(
+  page: number = 1,
+  limit: number = 20,
+): AppwriteQueryBuilder {
+  return new AppwriteQueryBuilder().limit(limit).offset((page - 1) * limit);
 }
 
 /**
  * Helper function for common search pattern
  */
-export function searchQuery(searchField: string, searchTerm: string): AppwriteQueryBuilder {
+export function searchQuery(
+  searchField: string,
+  searchTerm: string,
+): AppwriteQueryBuilder {
   const builder = new AppwriteQueryBuilder();
   if (searchTerm.trim()) {
     builder.search(searchField, searchTerm);
   }
   return builder;
 }
-

@@ -1,18 +1,24 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -20,7 +26,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -28,9 +34,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import {
   Plus,
   Search,
@@ -41,63 +47,68 @@ import {
   Building2,
   User,
   Star,
-} from 'lucide-react';
-import { apiClient as api } from '@/lib/api/api-client';
+} from "lucide-react";
+import { apiClient as api } from "@/lib/api/api-client";
 
 interface Partner {
   _id: string;
   name: string;
-  type: 'organization' | 'individual' | 'sponsor';
+  type: "organization" | "individual" | "sponsor";
   contact_person?: string;
   email?: string;
   phone?: string;
   address?: string;
   website?: string;
   tax_number?: string;
-  partnership_type: 'donor' | 'supplier' | 'volunteer' | 'sponsor' | 'service_provider';
+  partnership_type:
+    | "donor"
+    | "supplier"
+    | "volunteer"
+    | "sponsor"
+    | "service_provider";
   collaboration_start_date?: string;
   collaboration_end_date?: string;
   notes?: string;
-  status: 'active' | 'inactive' | 'pending';
+  status: "active" | "inactive" | "pending";
   total_contribution?: number;
   contribution_count?: number;
   logo_url?: string;
 }
 
 export default function PartnersPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
   const [formData, setFormData] = useState({
-    name: '',
-    type: 'organization' as 'organization' | 'individual' | 'sponsor',
-    contact_person: '',
-    email: '',
-    phone: '',
-    address: '',
-    website: '',
-    tax_number: '',
-    partnership_type: 'donor' as
-      | 'donor'
-      | 'supplier'
-      | 'volunteer'
-      | 'sponsor'
-      | 'service_provider',
-    status: 'active' as 'active' | 'inactive' | 'pending',
-    notes: '',
+    name: "",
+    type: "organization" as "organization" | "individual" | "sponsor",
+    contact_person: "",
+    email: "",
+    phone: "",
+    address: "",
+    website: "",
+    tax_number: "",
+    partnership_type: "donor" as
+      | "donor"
+      | "supplier"
+      | "volunteer"
+      | "sponsor"
+      | "service_provider",
+    status: "active" as "active" | "inactive" | "pending",
+    notes: "",
   });
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['partners', searchTerm, typeFilter, statusFilter],
+    queryKey: ["partners", searchTerm, typeFilter, statusFilter],
     queryFn: () =>
       api.partners.getPartners({
         search: searchTerm || undefined,
         filters: {
-          type: typeFilter === 'all' ? undefined : typeFilter,
-          status: statusFilter === 'all' ? undefined : statusFilter,
+          type: typeFilter === "all" ? undefined : typeFilter,
+          status: statusFilter === "all" ? undefined : statusFilter,
         },
       }),
   });
@@ -110,40 +121,43 @@ export default function PartnersPage() {
   const filteredPartners = partners.filter((partner: Partner) => {
     const matchesSearch =
       partner.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      partner.contact_person?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      partner.contact_person
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
       partner.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = typeFilter === 'all' || partner.type === typeFilter;
-    const matchesStatus = statusFilter === 'all' || partner.status === statusFilter;
+    const matchesType = typeFilter === "all" || partner.type === typeFilter;
+    const matchesStatus =
+      statusFilter === "all" || partner.status === statusFilter;
 
     return matchesSearch && matchesType && matchesStatus;
   });
 
   const handleCreatePartner = async () => {
     if (!formData.name) {
-      toast.error('Partner adı zorunludur');
+      toast.error("Partner adı zorunludur");
       return;
     }
 
     try {
       await api.partners.createPartner(formData);
       setFormData({
-        name: '',
-        type: 'organization',
-        contact_person: '',
-        email: '',
-        phone: '',
-        address: '',
-        website: '',
-        tax_number: '',
-        partnership_type: 'donor',
-        status: 'active',
-        notes: '',
+        name: "",
+        type: "organization",
+        contact_person: "",
+        email: "",
+        phone: "",
+        address: "",
+        website: "",
+        tax_number: "",
+        partnership_type: "donor",
+        status: "active",
+        notes: "",
       });
       setIsCreateModalOpen(false);
-      toast.success('Partner başarıyla oluşturuldu');
+      toast.success("Partner başarıyla oluşturuldu");
       refetch();
     } catch (_error) {
-      toast.error('Partner oluşturulurken hata oluştu');
+      toast.error("Partner oluşturulurken hata oluştu");
     }
   };
 
@@ -152,22 +166,22 @@ export default function PartnersPage() {
     setFormData({
       name: partner.name,
       type: partner.type,
-      contact_person: partner.contact_person || '',
-      email: partner.email || '',
-      phone: partner.phone || '',
-      address: partner.address || '',
-      website: partner.website || '',
-      tax_number: partner.tax_number || '',
+      contact_person: partner.contact_person || "",
+      email: partner.email || "",
+      phone: partner.phone || "",
+      address: partner.address || "",
+      website: partner.website || "",
+      tax_number: partner.tax_number || "",
       partnership_type: partner.partnership_type,
       status: partner.status,
-      notes: partner.notes || '',
+      notes: partner.notes || "",
     });
     setIsEditModalOpen(true);
   };
 
   const handleUpdatePartner = async () => {
     if (!editingPartner || !formData.name) {
-      toast.error('Partner adı zorunludur');
+      toast.error("Partner adı zorunludur");
       return;
     }
 
@@ -175,46 +189,49 @@ export default function PartnersPage() {
       await api.partners.updatePartner(editingPartner._id, formData);
       setIsEditModalOpen(false);
       setEditingPartner(null);
-      toast.success('Partner başarıyla güncellendi');
+      toast.success("Partner başarıyla güncellendi");
       refetch();
     } catch (_error) {
-      toast.error('Partner güncellenirken hata oluştu');
+      toast.error("Partner güncellenirken hata oluştu");
     }
   };
 
   const handleDeletePartner = async (partnerId: string) => {
-    if (!confirm('Bu partneri silmek istediğinizden emin misiniz?')) {
+    if (!confirm("Bu partneri silmek istediğinizden emin misiniz?")) {
       return;
     }
 
     try {
       await api.partners.deletePartner(partnerId);
-      toast.success('Partner başarıyla silindi');
+      toast.success("Partner başarıyla silindi");
       refetch();
     } catch (_error) {
-      toast.error('Partner silinirken hata oluştu');
+      toast.error("Partner silinirken hata oluştu");
     }
   };
 
-  const handleToggleStatus = async (partnerId: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+  const handleToggleStatus = async (
+    partnerId: string,
+    currentStatus: string,
+  ) => {
+    const newStatus = currentStatus === "active" ? "inactive" : "active";
 
     try {
       await api.partners.updatePartner(partnerId, { status: newStatus });
-      toast.success('Partner durumu güncellendi');
+      toast.success("Partner durumu güncellendi");
       refetch();
     } catch {
-      toast.error('Durum güncellenirken hata oluştu');
+      toast.error("Durum güncellenirken hata oluştu");
     }
   };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'organization':
+      case "organization":
         return <Building2 className="h-4 w-4" />;
-      case 'individual':
+      case "individual":
         return <User className="h-4 w-4" />;
-      case 'sponsor':
+      case "sponsor":
         return <Star className="h-4 w-4" />;
       default:
         return <Users className="h-4 w-4" />;
@@ -223,12 +240,12 @@ export default function PartnersPage() {
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case 'organization':
-        return 'Kurum';
-      case 'individual':
-        return 'Kişi';
-      case 'sponsor':
-        return 'Sponsor';
+      case "organization":
+        return "Kurum";
+      case "individual":
+        return "Kişi";
+      case "sponsor":
+        return "Sponsor";
       default:
         return type;
     }
@@ -236,16 +253,16 @@ export default function PartnersPage() {
 
   const getPartnershipTypeLabel = (type: string) => {
     switch (type) {
-      case 'donor':
-        return 'Bağışçı';
-      case 'supplier':
-        return 'Tedarikçi';
-      case 'volunteer':
-        return 'Gönüllü';
-      case 'sponsor':
-        return 'Sponsor';
-      case 'service_provider':
-        return 'Hizmet Sağlayıcı';
+      case "donor":
+        return "Bağışçı";
+      case "supplier":
+        return "Tedarikçi";
+      case "volunteer":
+        return "Gönüllü";
+      case "sponsor":
+        return "Sponsor";
+      case "service_provider":
+        return "Hizmet Sağlayıcı";
       default:
         return type;
     }
@@ -253,15 +270,15 @@ export default function PartnersPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active':
+      case "active":
         return (
           <Badge className="bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">
             Aktif
           </Badge>
         );
-      case 'inactive':
+      case "inactive":
         return <Badge variant="secondary">Pasif</Badge>;
-      case 'pending':
+      case "pending":
         return (
           <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400">
             Beklemede
@@ -276,7 +293,9 @@ export default function PartnersPage() {
     <div className="container mx-auto p-6">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Ortak Listesi</h1>
-        <p className="text-muted-foreground">İş ortaklarını ve sponsorları yönetin</p>
+        <p className="text-muted-foreground">
+          İş ortaklarını ve sponsorları yönetin
+        </p>
       </div>
 
       <Card>
@@ -284,9 +303,14 @@ export default function PartnersPage() {
           <div className="flex justify-between items-center">
             <div>
               <CardTitle>Partnerler</CardTitle>
-              <CardDescription>Toplam {filteredPartners.length} partner</CardDescription>
+              <CardDescription>
+                Toplam {filteredPartners.length} partner
+              </CardDescription>
             </div>
-            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+            <Dialog
+              open={isCreateModalOpen}
+              onOpenChange={setIsCreateModalOpen}
+            >
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="w-4 h-4 mr-2" />
@@ -296,7 +320,9 @@ export default function PartnersPage() {
               <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Yeni Partner Oluştur</DialogTitle>
-                  <DialogDescription>Partner bilgilerini girin</DialogDescription>
+                  <DialogDescription>
+                    Partner bilgilerini girin
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
@@ -304,14 +330,19 @@ export default function PartnersPage() {
                     <Input
                       id="create-name"
                       value={formData.name}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
                     />
                   </div>
                   <div>
                     <Label htmlFor="create-type">Tür</Label>
                     <Select
                       value={formData.type}
-                      onValueChange={(value: Partner['type']) =>
+                      onValueChange={(value: Partner["type"]) =>
                         setFormData((prev) => ({ ...prev, type: value }))
                       }
                     >
@@ -326,11 +357,16 @@ export default function PartnersPage() {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="create-partnership-type">İşbirliği Türü</Label>
+                    <Label htmlFor="create-partnership-type">
+                      İşbirliği Türü
+                    </Label>
                     <Select
                       value={formData.partnership_type}
-                      onValueChange={(value: Partner['partnership_type']) =>
-                        setFormData((prev) => ({ ...prev, partnership_type: value }))
+                      onValueChange={(value: Partner["partnership_type"]) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          partnership_type: value,
+                        }))
                       }
                     >
                       <SelectTrigger>
@@ -341,17 +377,24 @@ export default function PartnersPage() {
                         <SelectItem value="supplier">Tedarikçi</SelectItem>
                         <SelectItem value="volunteer">Gönüllü</SelectItem>
                         <SelectItem value="sponsor">Sponsor</SelectItem>
-                        <SelectItem value="service_provider">Hizmet Sağlayıcı</SelectItem>
+                        <SelectItem value="service_provider">
+                          Hizmet Sağlayıcı
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="create-contact-person">İletişim Kişisi</Label>
+                    <Label htmlFor="create-contact-person">
+                      İletişim Kişisi
+                    </Label>
                     <Input
                       id="create-contact-person"
                       value={formData.contact_person}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, contact_person: e.target.value }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          contact_person: e.target.value,
+                        }))
                       }
                     />
                   </div>
@@ -361,7 +404,12 @@ export default function PartnersPage() {
                       id="create-email"
                       type="email"
                       value={formData.email}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          email: e.target.value,
+                        }))
+                      }
                     />
                   </div>
                   <div>
@@ -369,14 +417,19 @@ export default function PartnersPage() {
                     <Input
                       id="create-phone"
                       value={formData.phone}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          phone: e.target.value,
+                        }))
+                      }
                     />
                   </div>
                   <div>
                     <Label htmlFor="create-status">Durum</Label>
                     <Select
                       value={formData.status}
-                      onValueChange={(value: Partner['status']) =>
+                      onValueChange={(value: Partner["status"]) =>
                         setFormData((prev) => ({ ...prev, status: value }))
                       }
                     >
@@ -396,7 +449,10 @@ export default function PartnersPage() {
                       id="create-address"
                       value={formData.address}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, address: e.target.value }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          address: e.target.value,
+                        }))
                       }
                     />
                   </div>
@@ -405,11 +461,19 @@ export default function PartnersPage() {
                     <Input
                       id="create-notes"
                       value={formData.notes}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          notes: e.target.value,
+                        }))
+                      }
                     />
                   </div>
                   <div className="col-span-2 flex justify-end space-x-2">
-                    <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsCreateModalOpen(false)}
+                    >
                       İptal
                     </Button>
                     <Button onClick={handleCreatePartner}>Oluştur</Button>
@@ -473,7 +537,9 @@ export default function PartnersPage() {
               <Handshake className="h-12 w-12 mx-auto mb-4" />
               <p className="text-lg font-medium">Partner bulunamadı</p>
               <p className="text-sm mt-2">
-                {searchTerm ? 'Arama kriterlerinize uygun partner yok' : 'Henüz partner eklenmemiş'}
+                {searchTerm
+                  ? "Arama kriterlerinize uygun partner yok"
+                  : "Henüz partner eklenmemiş"}
               </p>
             </div>
           ) : (
@@ -499,20 +565,26 @@ export default function PartnersPage() {
                       </div>
                     </TableCell>
                     <TableCell>{getTypeLabel(partner.type)}</TableCell>
-                    <TableCell>{getPartnershipTypeLabel(partner.partnership_type)}</TableCell>
+                    <TableCell>
+                      {getPartnershipTypeLabel(partner.partnership_type)}
+                    </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        {partner.contact_person && <div>{partner.contact_person}</div>}
+                        {partner.contact_person && (
+                          <div>{partner.contact_person}</div>
+                        )}
                         {partner.email && (
-                          <div className="text-muted-foreground">{partner.email}</div>
+                          <div className="text-muted-foreground">
+                            {partner.email}
+                          </div>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>{getStatusBadge(partner.status)}</TableCell>
                     <TableCell>
                       {partner.total_contribution
-                        ? `${partner.total_contribution.toLocaleString('tr-TR')} ₺`
-                        : '-'}
+                        ? `${partner.total_contribution.toLocaleString("tr-TR")} ₺`
+                        : "-"}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end space-x-2">
@@ -526,9 +598,13 @@ export default function PartnersPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleToggleStatus(partner._id, partner.status)}
+                          onClick={() =>
+                            handleToggleStatus(partner._id, partner.status)
+                          }
                         >
-                          {partner.status === 'active' ? 'Pasif Yap' : 'Aktif Yap'}
+                          {partner.status === "active"
+                            ? "Pasif Yap"
+                            : "Aktif Yap"}
                         </Button>
                         <Button
                           variant="outline"
@@ -552,7 +628,9 @@ export default function PartnersPage() {
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Partner Düzenle</DialogTitle>
-            <DialogDescription>Partner bilgilerini güncelleyin</DialogDescription>
+            <DialogDescription>
+              Partner bilgilerini güncelleyin
+            </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
@@ -560,14 +638,18 @@ export default function PartnersPage() {
               <Input
                 id="edit-name"
                 value={formData.name}
-                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
               />
             </div>
             <div>
               <Label htmlFor="edit-type">Tür</Label>
               <Select
                 value={formData.type}
-                onValueChange={(value: any) => setFormData((prev) => ({ ...prev, type: value }))}
+                onValueChange={(
+                  value: "organization" | "individual" | "sponsor",
+                ) => setFormData((prev) => ({ ...prev, type: value }))}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -583,7 +665,14 @@ export default function PartnersPage() {
               <Label htmlFor="edit-partnership-type">İşbirliği Türü</Label>
               <Select
                 value={formData.partnership_type}
-                onValueChange={(value: any) =>
+                onValueChange={(
+                  value:
+                    | "donor"
+                    | "supplier"
+                    | "volunteer"
+                    | "sponsor"
+                    | "service_provider",
+                ) =>
                   setFormData((prev) => ({ ...prev, partnership_type: value }))
                 }
               >
@@ -595,7 +684,9 @@ export default function PartnersPage() {
                   <SelectItem value="supplier">Tedarikçi</SelectItem>
                   <SelectItem value="volunteer">Gönüllü</SelectItem>
                   <SelectItem value="sponsor">Sponsor</SelectItem>
-                  <SelectItem value="service_provider">Hizmet Sağlayıcı</SelectItem>
+                  <SelectItem value="service_provider">
+                    Hizmet Sağlayıcı
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -605,7 +696,10 @@ export default function PartnersPage() {
                 id="edit-contact-person"
                 value={formData.contact_person}
                 onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, contact_person: e.target.value }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    contact_person: e.target.value,
+                  }))
                 }
               />
             </div>
@@ -615,7 +709,9 @@ export default function PartnersPage() {
                 id="edit-email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, email: e.target.value }))
+                }
               />
             </div>
             <div>
@@ -623,14 +719,18 @@ export default function PartnersPage() {
               <Input
                 id="edit-phone"
                 value={formData.phone}
-                onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, phone: e.target.value }))
+                }
               />
             </div>
             <div>
               <Label htmlFor="edit-status">Durum</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value: any) => setFormData((prev) => ({ ...prev, status: value }))}
+                onValueChange={(value: "active" | "inactive" | "pending") =>
+                  setFormData((prev) => ({ ...prev, status: value }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -647,7 +747,9 @@ export default function PartnersPage() {
               <Input
                 id="edit-address"
                 value={formData.address}
-                onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, address: e.target.value }))
+                }
               />
             </div>
             <div className="col-span-2">
@@ -655,11 +757,16 @@ export default function PartnersPage() {
               <Input
                 id="edit-notes"
                 value={formData.notes}
-                onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, notes: e.target.value }))
+                }
               />
             </div>
             <div className="col-span-2 flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsEditModalOpen(false)}
+              >
                 İptal
               </Button>
               <Button onClick={handleUpdatePartner}>Güncelle</Button>

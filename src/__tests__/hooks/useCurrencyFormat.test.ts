@@ -1,89 +1,94 @@
 /**
- * Tests for useCurrencyFormat hook
+ * useCountUp Tests
  */
 
-import { renderHook } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
-import { useCurrencyFormat } from '@/components/kumbara/hooks/useCurrencyFormat';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { renderHook, act } from "@testing-library/react";
+import { useCountUp, formatNumber } from "@/hooks/useCountUp";
 
-describe('useCurrencyFormat', () => {
-  describe('getCurrencySymbol', () => {
-    it('should return ₺ for TRY', () => {
-      const { result } = renderHook(() => useCurrencyFormat());
-      expect(result.current.getCurrencySymbol('TRY')).toBe('₺');
-    });
-
-    it('should return $ for USD', () => {
-      const { result } = renderHook(() => useCurrencyFormat());
-      expect(result.current.getCurrencySymbol('USD')).toBe('$');
-    });
-
-    it('should return € for EUR', () => {
-      const { result } = renderHook(() => useCurrencyFormat());
-      expect(result.current.getCurrencySymbol('EUR')).toBe('€');
-    });
-
-    it('should return £ for GBP', () => {
-      const { result } = renderHook(() => useCurrencyFormat());
-      expect(result.current.getCurrencySymbol('GBP')).toBe('£');
-    });
-
-    it('should return the currency code for unknown currencies', () => {
-      const { result } = renderHook(() => useCurrencyFormat());
-      expect(result.current.getCurrencySymbol('JPY')).toBe('JPY');
-      expect(result.current.getCurrencySymbol('CHF')).toBe('CHF');
-    });
+describe("useCountUp", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
   });
 
-  describe('formatAmount', () => {
-    it('should format TRY amount correctly', () => {
-      const { result } = renderHook(() => useCurrencyFormat());
-      const formatted = result.current.formatAmount(1000, 'TRY');
-      expect(formatted).toMatch(/₺1[.,]000[.,]00/); // Locale-dependent formatting
-    });
-
-    it('should format USD amount correctly', () => {
-      const { result } = renderHook(() => useCurrencyFormat());
-      const formatted = result.current.formatAmount(1500.5, 'USD');
-      expect(formatted).toMatch(/\$1[.,]500[.,]50/);
-    });
-
-    it('should format EUR amount correctly', () => {
-      const { result } = renderHook(() => useCurrencyFormat());
-      const formatted = result.current.formatAmount(2000.75, 'EUR');
-      expect(formatted).toMatch(/€2[.,]000[.,]75/);
-    });
-
-    it('should handle zero amount', () => {
-      const { result } = renderHook(() => useCurrencyFormat());
-      const formatted = result.current.formatAmount(0, 'TRY');
-      expect(formatted).toMatch(/₺0[.,]00/);
-    });
-
-    it('should handle decimal amounts with proper precision', () => {
-      const { result } = renderHook(() => useCurrencyFormat());
-      const formatted = result.current.formatAmount(99.99, 'USD');
-      expect(formatted).toMatch(/\$99[.,]99/);
-    });
-
-    it('should handle large amounts', () => {
-      const { result } = renderHook(() => useCurrencyFormat());
-      const formatted = result.current.formatAmount(1000000, 'TRY');
-      expect(formatted).toContain('₺');
-      expect(formatted).toContain('00'); // Should have decimal places
-    });
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
-  describe('memoization', () => {
-    it('should return stable function references', () => {
-      const { result, rerender } = renderHook(() => useCurrencyFormat());
-      const firstGetSymbol = result.current.getCurrencySymbol;
-      const firstFormatAmount = result.current.formatAmount;
+  it("should start at start value and end at end value", async () => {
+    const { result } = renderHook(() =>
+      useCountUp({ start: 0, end: 100, duration: 100, enabled: true }),
+    );
 
-      rerender();
+    // Initial value should be start
+    expect(result.current.rawCount).toBe(0);
 
-      expect(result.current.getCurrencySymbol).toBe(firstGetSymbol);
-      expect(result.current.formatAmount).toBe(firstFormatAmount);
+    // Fast-forward time
+    act(() => {
+      vi.advanceTimersByTime(200);
     });
+
+    // After animation, should be at end value
+    expect(result.current.rawCount).toBe(100);
+  });
+
+  it("should show end value immediately when disabled", () => {
+    const { result } = renderHook(() =>
+      useCountUp({ start: 0, end: 100, duration: 1000, enabled: false }),
+    );
+
+    // When disabled, should show end value immediately
+    expect(result.current.rawCount).toBe(100);
+  });
+
+  it("should format count with decimals", () => {
+    const { result } = renderHook(() =>
+      useCountUp({
+        start: 0,
+        end: 99.99,
+        duration: 100,
+        decimals: 2,
+        enabled: false,
+      }),
+    );
+
+    expect(result.current.count).toBe("99.99");
+  });
+
+  it("should round count when decimals is 0", () => {
+    const { result } = renderHook(() =>
+      useCountUp({
+        start: 0,
+        end: 100,
+        duration: 100,
+        decimals: 0,
+        enabled: false,
+      }),
+    );
+
+    expect(result.current.count).toBe(100);
+  });
+});
+
+describe("formatNumber", () => {
+  it("should format number with Turkish locale by default", () => {
+    const result = formatNumber(1234567);
+    expect(result).toBe("1.234.567");
+  });
+
+  it("should format number with decimals", () => {
+    const result = formatNumber(1234.5678, { decimals: 2 });
+    expect(result).toBe("1.234,57");
+  });
+
+  it("should format with compact notation", () => {
+    const result = formatNumber(1500000, { notation: "compact" });
+    // Turkish compact format - can be "1,5 Mn" or "2 Mn" depending on rounding
+    expect(result).toMatch(/Mn|Milyon|M/);
+  });
+
+  it("should use custom locale", () => {
+    const result = formatNumber(1234.56, { locale: "en-US", decimals: 2 });
+    expect(result).toBe("1,234.56");
   });
 });

@@ -1,0 +1,54 @@
+{
+  "_description": "MCP Server Configuration for Kafkasder Panel",
+  "_version": "1.0.0",
+  "_instructions": "Copy this file to mcp_settings.json and replace placeholder values with your actual credentials",
+
+  "mcpServers": {
+    "appwrite": {
+      "command": "npx",
+      "args": ["-y", "@appwrite/mcp-server"],
+      "env": {
+        "APPWRITE_PROJECT_ID": "your-project-id",
+        "APPWRITE_API_KEY": "your-api-key",
+        "APPWRITE_ENDPOINT": "https://cloud.appwrite.io/v1"
+      },
+      "description": "Appwrite MCP server for user management and authentication"
+    },
+
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "your-github-token"
+      },
+      "description": "GitHub MCP server for repository and issue management"
+    },
+
+    "puppeteer": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
+      "env": {},
+      "description": "Puppeteer MCP server for browser automation"
+    },
+
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "env": {},
+      "description": "Sequential thinking MCP server for complex problem solving"
+    }
+  },
+
+  "appwrite": {
+    "endpoint": "https://cloud.appwrite.io/v1",
+    "projectId": "your-project-id",
+    "databaseId": "kafkasder_db",
+    "apiKey": "your-api-key-here"
+  },
+
+  "testCredentials": {
+    "email": "mcp-login@example.com",
+    "password": "SecurePass123!",
+    "name": "MCP Login User"
+  }
+}

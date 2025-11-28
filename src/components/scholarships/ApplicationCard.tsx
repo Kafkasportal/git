@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { memo, useCallback } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,11 +10,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Eye, Edit, DollarSign, Users, Calendar } from 'lucide-react';
-import { ScholarshipApplication } from '@/types/scholarship';
-import { getApplicationStatusBadge } from '@/lib/utils/scholarship-helpers';
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Eye, Edit, DollarSign, Users, Calendar } from "lucide-react";
+import { ScholarshipApplication } from "@/types/scholarship";
+import { getApplicationStatusBadge } from "@/lib/utils/scholarship-helpers";
 
 interface ApplicationCardProps {
   application: ScholarshipApplication & {
@@ -23,7 +24,16 @@ interface ApplicationCardProps {
   onEdit?: (application: ScholarshipApplication) => void;
 }
 
-export function ApplicationCard({ application, onEdit }: ApplicationCardProps) {
+/**
+ * ApplicationCard component - memoized to prevent unnecessary re-renders in lists
+ */
+export const ApplicationCard = memo(function ApplicationCard({
+  application,
+  onEdit,
+}: ApplicationCardProps) {
+  const handleEdit = useCallback(() => {
+    onEdit?.(application);
+  }, [onEdit, application]);
   return (
     <Card key={application.id} className="border">
       <CardContent className="p-4">
@@ -46,7 +56,11 @@ export function ApplicationCard({ application, onEdit }: ApplicationCardProps) {
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
-                <span>{new Date(application.applicationDate).toLocaleDateString('tr-TR')}</span>
+                <span>
+                  {new Date(application.applicationDate).toLocaleDateString(
+                    "tr-TR",
+                  )}
+                </span>
               </div>
             </div>
           </div>
@@ -61,7 +75,8 @@ export function ApplicationCard({ application, onEdit }: ApplicationCardProps) {
                 <DialogHeader>
                   <DialogTitle>Başvuru Detayları</DialogTitle>
                   <DialogDescription>
-                    {application.student?.firstName} {application.student?.lastName} -{' '}
+                    {application.student?.firstName}{" "}
+                    {application.student?.lastName} -{" "}
                     {application.scholarship?.name}
                   </DialogDescription>
                 </DialogHeader>
@@ -70,7 +85,8 @@ export function ApplicationCard({ application, onEdit }: ApplicationCardProps) {
                     <div>
                       <Label className="text-sm font-medium">Öğrenci</Label>
                       <p className="text-sm text-muted-foreground">
-                        {application.student?.firstName} {application.student?.lastName}
+                        {application.student?.firstName}{" "}
+                        {application.student?.lastName}
                       </p>
                     </div>
                     <div>
@@ -81,18 +97,26 @@ export function ApplicationCard({ application, onEdit }: ApplicationCardProps) {
                     </div>
                     <div>
                       <Label className="text-sm font-medium">Durum</Label>
-                      <div className="mt-1">{getApplicationStatusBadge(application.status)}</div>
+                      <div className="mt-1">
+                        {getApplicationStatusBadge(application.status)}
+                      </div>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium">Başvuru Tarihi</Label>
+                      <Label className="text-sm font-medium">
+                        Başvuru Tarihi
+                      </Label>
                       <p className="text-sm text-muted-foreground">
-                        {new Date(application.applicationDate).toLocaleDateString('tr-TR')}
+                        {new Date(
+                          application.applicationDate,
+                        ).toLocaleDateString("tr-TR")}
                       </p>
                     </div>
                   </div>
                   {application.personalStatement && (
                     <div>
-                      <Label className="text-sm font-medium">Kişisel Beyan</Label>
+                      <Label className="text-sm font-medium">
+                        Kişisel Beyan
+                      </Label>
                       <p className="text-sm text-muted-foreground mt-1">
                         {application.personalStatement}
                       </p>
@@ -110,7 +134,7 @@ export function ApplicationCard({ application, onEdit }: ApplicationCardProps) {
               </DialogContent>
             </Dialog>
             {onEdit && (
-              <Button variant="outline" size="sm" onClick={() => onEdit(application)}>
+              <Button variant="outline" size="sm" onClick={handleEdit}>
                 <Edit className="h-4 w-4" />
               </Button>
             )}
@@ -119,4 +143,4 @@ export function ApplicationCard({ application, onEdit }: ApplicationCardProps) {
       </CardContent>
     </Card>
   );
-}
+});

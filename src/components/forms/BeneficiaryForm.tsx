@@ -1,45 +1,51 @@
-'use client';
+"use client";
 
-import React, { useState, useCallback } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import React, { useState, useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient as api } from '@/lib/api/api-client';
-import { toast } from 'sonner';
-import { Loader2, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { requiredPhoneSchema } from '@/lib/validations/shared-validators';
-import { sanitizePhone } from '@/lib/sanitization';
+} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiClient as api } from "@/lib/api/api-client";
+import { toast } from "sonner";
+import { Loader2, CheckCircle2, AlertCircle, XCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { requiredPhoneSchema } from "@/lib/validations/shared-validators";
+import { sanitizePhone } from "@/lib/sanitization";
 
 // Validation schema
 const beneficiarySchema = z.object({
-  name: z.string().min(2, 'İsim en az 2 karakter olmalıdır'),
-  tc_no: z.string().length(11, 'TC Kimlik numarası 11 haneli olmalıdır'),
+  name: z.string().min(2, "İsim en az 2 karakter olmalıdır"),
+  tc_no: z.string().length(11, "TC Kimlik numarası 11 haneli olmalıdır"),
   phone: requiredPhoneSchema,
-  address: z.string().min(10, 'Adres en az 10 karakter olmalıdır'),
-  city: z.string().min(2, 'Şehir adı girin'),
-  district: z.string().min(2, 'İlçe adı girin'),
-  neighborhood: z.string().min(2, 'Mahalle adı girin'),
-  income_level: z.enum(['0-3000', '3000-5000', '5000-8000', '8000+']),
-  family_size: z.number().min(1, 'Aile büyüklüğü en az 1 olmalıdır'),
+  address: z.string().min(10, "Adres en az 10 karakter olmalıdır"),
+  city: z.string().min(2, "Şehir adı girin"),
+  district: z.string().min(2, "İlçe adı girin"),
+  neighborhood: z.string().min(2, "Mahalle adı girin"),
+  income_level: z.enum(["0-3000", "3000-5000", "5000-8000", "8000+"]),
+  family_size: z.number().min(1, "Aile büyüklüğü en az 1 olmalıdır"),
   health_status: z.string().optional(),
   employment_status: z.string().optional(),
   notes: z.string().optional(),
-  status: z.enum(['active', 'inactive', 'archived']),
+  status: z.enum(["active", "inactive", "archived"]),
 });
 
 type BeneficiaryFormData = z.infer<typeof beneficiarySchema>;
@@ -53,7 +59,7 @@ interface BeneficiaryFormProps {
 interface FieldWithValidationProps {
   label: string;
   error?: string;
-  validation?: 'valid' | 'invalid' | 'pending';
+  validation?: "valid" | "invalid" | "pending";
   required?: boolean;
   children: React.ReactNode;
   errorId?: string;
@@ -69,9 +75,9 @@ function FieldWithValidation({
 }: FieldWithValidationProps) {
   const getValidationIcon = () => {
     switch (validation) {
-      case 'valid':
+      case "valid":
         return <CheckCircle2 className="h-4 w-4 text-green-600" />;
-      case 'invalid':
+      case "invalid":
         return <XCircle className="h-4 w-4 text-red-600" />;
       default:
         return null;
@@ -80,7 +86,11 @@ function FieldWithValidation({
 
   return (
     <div className="space-y-2">
-      <Label className={cn(required && "after:content-['*'] after:text-red-500 after:ml-1")}>
+      <Label
+        className={cn(
+          required && "after:content-['*'] after:text-red-500 after:ml-1",
+        )}
+      >
         {label}
       </Label>
       <div className="relative">
@@ -90,7 +100,11 @@ function FieldWithValidation({
         </div>
       </div>
       {error && (
-        <p id={errorId} className="text-sm text-red-600 flex items-center gap-1" role="alert">
+        <p
+          id={errorId}
+          className="text-sm text-red-600 flex items-center gap-1"
+          role="alert"
+        >
           <AlertCircle className="h-4 w-4" />
           {error}
         </p>
@@ -103,7 +117,7 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldValidation, setFieldValidation] = useState<
-    Record<string, 'valid' | 'invalid' | 'pending'>
+    Record<string, "valid" | "invalid" | "pending">
   >({});
 
   const {
@@ -113,11 +127,11 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
     watch,
     formState: { errors },
   } = useForm<BeneficiaryFormData>({
-    resolver: zodResolver(beneficiarySchema),
+    resolver: zodResolver(beneficiarySchema) as any,
     defaultValues: {
       family_size: 1,
-      income_level: '0-3000',
-      status: 'active',
+      income_level: "0-3000",
+      status: "active",
     },
   });
 
@@ -125,19 +139,19 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
     mutationFn: async (data: BeneficiaryFormData) => {
       // Map status values to Turkish
       const statusMap = {
-        active: 'AKTIF',
-        inactive: 'PASIF',
-        archived: 'SILINDI',
+        active: "AKTIF",
+        inactive: "PASIF",
+        archived: "SILINDI",
       } as const;
 
       return api.beneficiaries.createBeneficiary({
         ...data,
-        status: statusMap[data.status] || 'AKTIF',
+        status: statusMap[data.status] || "AKTIF",
       });
     },
     onSuccess: () => {
-      toast.success('İhtiyaç sahibi başarıyla eklendi');
-      void queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
+      toast.success("İhtiyaç sahibi başarıyla eklendi");
+      void queryClient.invalidateQueries({ queryKey: ["beneficiaries"] });
       onSuccess?.();
     },
     onError: (err: unknown) => {
@@ -151,51 +165,51 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
     async (fieldName: keyof BeneficiaryFormData, value: unknown) => {
       try {
         await beneficiarySchema.shape[fieldName].parseAsync(value);
-        setFieldValidation((prev) => ({ ...prev, [fieldName]: 'valid' }));
+        setFieldValidation((prev) => ({ ...prev, [fieldName]: "valid" }));
       } catch {
-        setFieldValidation((prev) => ({ ...prev, [fieldName]: 'invalid' }));
+        setFieldValidation((prev) => ({ ...prev, [fieldName]: "invalid" }));
       }
     },
-    []
+    [],
   );
 
   // Optimized onChange handlers
   const handleNameChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      register('name').onChange(e);
+      register("name").onChange(e);
       if (e.target.value.length > 0) {
-        void validateField('name', e.target.value);
+        void validateField("name", e.target.value);
       }
     },
-    [register, validateField]
+    [register, validateField],
   );
 
   const handleTCChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value.replace(/\D/g, '');
+      const value = e.target.value.replace(/\D/g, "");
       e.target.value = value;
-      register('tc_no').onChange(e);
+      register("tc_no").onChange(e);
       if (value.length > 0) {
-        void validateField('tc_no', value);
+        void validateField("tc_no", value);
       }
     },
-    [register, validateField]
+    [register, validateField],
   );
 
   const handlePhoneChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      let value = e.target.value.replace(/\D/g, '');
+      let value = e.target.value.replace(/\D/g, "");
       if (value.length > 10) value = value.slice(0, 10);
 
       e.target.value = value;
-      register('phone').onChange(e);
-      
+      register("phone").onChange(e);
+
       if (value.length === 10) {
         const sanitized = sanitizePhone(value);
-        if (sanitized) validateField('phone', sanitized);
+        if (sanitized) validateField("phone", sanitized);
       }
     },
-    [register, validateField]
+    [register, validateField],
   );
 
   const onSubmit = async (data: BeneficiaryFormData) => {
@@ -211,7 +225,9 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
     <Card className="w-full max-w-2xl mx-auto relative">
       <CardHeader>
         <CardTitle>Yeni İhtiyaç Sahibi Ekle</CardTitle>
-        <CardDescription>İhtiyaç sahibi bilgilerini girerek yeni kayıt oluşturun</CardDescription>
+        <CardDescription>
+          İhtiyaç sahibi bilgilerini girerek yeni kayıt oluşturun
+        </CardDescription>
       </CardHeader>
       <CardContent className="relative">
         {/* Loading Overlay */}
@@ -219,7 +235,9 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
             <div className="flex flex-col items-center gap-3 p-6 bg-background rounded-lg shadow-lg border">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">İhtiyaç sahibi kaydediliyor...</p>
+              <p className="text-sm text-muted-foreground">
+                İhtiyaç sahibi kaydediliyor...
+              </p>
             </div>
           </div>
         )}
@@ -239,10 +257,10 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
               >
                 <Input
                   id="name"
-                  {...register('name')}
+                  {...register("name")}
                   placeholder="Ahmet Yılmaz"
                   onChange={handleNameChange}
-                  aria-describedby={errors.name ? 'name-error' : undefined}
+                  aria-describedby={errors.name ? "name-error" : undefined}
                   aria-invalid={!!errors.name}
                   disabled={isSubmitting}
                 />
@@ -257,11 +275,11 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
               >
                 <Input
                   id="tc_no"
-                  {...register('tc_no')}
+                  {...register("tc_no")}
                   placeholder="12345678901"
                   maxLength={11}
                   onChange={handleTCChange}
-                  aria-describedby={errors.tc_no ? 'tc_no-error' : undefined}
+                  aria-describedby={errors.tc_no ? "tc_no-error" : undefined}
                   aria-invalid={!!errors.tc_no}
                   disabled={isSubmitting}
                 />
@@ -277,11 +295,11 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
             >
               <Input
                 id="phone"
-                {...register('phone')}
+                {...register("phone")}
                 placeholder="5551234567"
                 onChange={handlePhoneChange}
                 maxLength={10}
-                aria-describedby={errors.phone ? 'phone-error' : undefined}
+                aria-describedby={errors.phone ? "phone-error" : undefined}
                 aria-invalid={!!errors.phone}
                 disabled={isSubmitting}
               />
@@ -296,33 +314,49 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
               <Label htmlFor="address">Adres *</Label>
               <Textarea
                 id="address"
-                {...register('address')}
+                {...register("address")}
                 placeholder="Mahalle, Cadde, Sokak, No"
                 rows={3}
               />
-              {errors.address && <p className="text-sm text-red-600">{errors.address.message}</p>}
+              {errors.address && (
+                <p className="text-sm text-red-600">{errors.address.message}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="city">Şehir *</Label>
-                <Input id="city" {...register('city')} placeholder="İstanbul" />
-                {errors.city && <p className="text-sm text-red-600">{errors.city.message}</p>}
+                <Input id="city" {...register("city")} placeholder="İstanbul" />
+                {errors.city && (
+                  <p className="text-sm text-red-600">{errors.city.message}</p>
+                )}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="district">İlçe *</Label>
-                <Input id="district" {...register('district')} placeholder="Kadıköy" />
+                <Input
+                  id="district"
+                  {...register("district")}
+                  placeholder="Kadıköy"
+                />
                 {errors.district && (
-                  <p className="text-sm text-red-600">{errors.district.message}</p>
+                  <p className="text-sm text-red-600">
+                    {errors.district.message}
+                  </p>
                 )}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="neighborhood">Mahalle *</Label>
-                <Input id="neighborhood" {...register('neighborhood')} placeholder="Caferağa" />
+                <Input
+                  id="neighborhood"
+                  {...register("neighborhood")}
+                  placeholder="Caferağa"
+                />
                 {errors.neighborhood && (
-                  <p className="text-sm text-red-600">{errors.neighborhood.message}</p>
+                  <p className="text-sm text-red-600">
+                    {errors.neighborhood.message}
+                  </p>
                 )}
               </div>
             </div>
@@ -336,11 +370,11 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
               <div className="space-y-2">
                 <Label htmlFor="income_level">Gelir Düzeyi *</Label>
                 <Select
-                  value={watch('income_level')}
+                  value={watch("income_level")}
                   onValueChange={(value) =>
                     setValue(
-                      'income_level',
-                      value as '0-3000' | '3000-5000' | '5000-8000' | '8000+'
+                      "income_level",
+                      value as "0-3000" | "3000-5000" | "5000-8000" | "8000+",
                     )
                   }
                 >
@@ -355,7 +389,9 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
                   </SelectContent>
                 </Select>
                 {errors.income_level && (
-                  <p className="text-sm text-red-600">{errors.income_level.message}</p>
+                  <p className="text-sm text-red-600">
+                    {errors.income_level.message}
+                  </p>
                 )}
               </div>
 
@@ -365,10 +401,12 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
                   id="family_size"
                   type="number"
                   min={1}
-                  {...register('family_size', { valueAsNumber: true })}
+                  {...register("family_size", { valueAsNumber: true })}
                 />
                 {errors.family_size && (
-                  <p className="text-sm text-red-600">{errors.family_size.message}</p>
+                  <p className="text-sm text-red-600">
+                    {errors.family_size.message}
+                  </p>
                 )}
               </div>
             </div>
@@ -377,11 +415,13 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
               <Label htmlFor="employment_status">İstihdam Durumu</Label>
               <Input
                 id="employment_status"
-                {...register('employment_status')}
+                {...register("employment_status")}
                 placeholder="Öğrenci, İşsiz, Çalışıyor..."
               />
               {errors.employment_status && (
-                <p className="text-sm text-red-600">{errors.employment_status.message}</p>
+                <p className="text-sm text-red-600">
+                  {errors.employment_status.message}
+                </p>
               )}
             </div>
           </div>
@@ -394,12 +434,14 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
               <Label htmlFor="health_status">Genel Sağlık Durumu</Label>
               <Textarea
                 id="health_status"
-                {...register('health_status')}
+                {...register("health_status")}
                 placeholder="Hastalıklar, engellilik durumu vb."
                 rows={3}
               />
               {errors.health_status && (
-                <p className="text-sm text-red-600">{errors.health_status.message}</p>
+                <p className="text-sm text-red-600">
+                  {errors.health_status.message}
+                </p>
               )}
             </div>
 
@@ -407,19 +449,24 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
               <Label htmlFor="notes">Notlar</Label>
               <Textarea
                 id="notes"
-                {...register('notes')}
+                {...register("notes")}
                 placeholder="Ek bilgiler, özel durumlar..."
                 rows={3}
               />
-              {errors.notes && <p className="text-sm text-red-600">{errors.notes.message}</p>}
+              {errors.notes && (
+                <p className="text-sm text-red-600">{errors.notes.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label>Durum</Label>
               <RadioGroup
-                value={watch('status')}
+                value={watch("status")}
                 onValueChange={(value) =>
-                  setValue('status', value as 'active' | 'inactive' | 'archived')
+                  setValue(
+                    "status",
+                    value as "active" | "inactive" | "archived",
+                  )
                 }
                 className="flex flex-row space-x-6"
               >
@@ -436,20 +483,26 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
                   <Label htmlFor="archived">Arşivlenmiş</Label>
                 </div>
               </RadioGroup>
-              {errors.status && <p className="text-sm text-red-600">{errors.status.message}</p>}
+              {errors.status && (
+                <p className="text-sm text-red-600">{errors.status.message}</p>
+              )}
             </div>
           </div>
 
           {/* Form Actions */}
           <div className="flex flex-col sm:flex-row gap-4 pt-6">
-            <Button type="submit" disabled={isSubmitting} className="flex-1 sm:flex-none">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 sm:flex-none"
+            >
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Kaydediliyor...
                 </>
               ) : (
-                'İhtiyaç Sahibi Ekle'
+                "İhtiyaç Sahibi Ekle"
               )}
             </Button>
 

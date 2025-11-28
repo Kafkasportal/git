@@ -7,11 +7,27 @@ import { z } from 'zod';
 import { requiredPhoneSchema } from './shared-validators';
 
 /**
+ * Flexible phone schema that accepts both formatted and raw phone numbers
+ * Will be sanitized before sending to API
+ */
+const flexiblePhoneSchema = z
+  .string()
+  .min(10, 'Telefon numarası gereklidir')
+  .refine(
+    (value) => {
+      // Remove all non-digits and check if it matches 5XXXXXXXXX pattern
+      const cleaned = value.replace(/\D/g, '');
+      return /^5\d{9}$/.test(cleaned);
+    },
+    { message: 'Telefon numarası 10 haneli olmalı ve 5 ile başlamalıdır (5XXXXXXXXX)' }
+  );
+
+/**
  * Donation Form Schema
  */
 export const donationSchema = z.object({
   donor_name: z.string().min(2, 'Donör adı en az 2 karakter olmalıdır'),
-  donor_phone: requiredPhoneSchema,
+  donor_phone: flexiblePhoneSchema,
   donor_email: z.string().email('Geçerli bir email adresi girin').optional().or(z.literal('')),
   amount: z.number().min(1, "Tutar 0'dan büyük olmalıdır"),
   currency: z.enum(['TRY', 'USD', 'EUR']),

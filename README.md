@@ -1,10 +1,13 @@
 # Kafkasder Panel
 
-Dernek Yonetim Sistemi - Next.js 16 + Appwrite
+Dernek Yonetim Sistemi - Next.js 16 + Appwrite + MCP
 
 ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/Vadalov/Kafkasder-panel?utm_source=oss&utm_medium=github&utm_campaign=Vadalov%2FKafkasder-panel&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js&logoColor=white)
+![Appwrite](https://img.shields.io/badge/Appwrite-f02e65?logo=appwrite&logoColor=white)
 
-Modern, guvenli ve olceklenebilir dernek yonetim platformu.
+Modern, guvenli ve olceklenebilir dernek yonetim platformu. MCP (Model Context Protocol) entegrasyonu ile gelismis yapilandirma yonetimi.
 
 ## Ozellikler
 
@@ -23,6 +26,11 @@ Modern, guvenli ve olceklenebilir dernek yonetim platformu.
   - Custom color palette creator with live preview
   - User-specific theme saving and management
   - Admin controls for organization-wide theme settings
+- **🔧 MCP Integration**: Modern configuration management with centralized settings
+  - Centralized Appwrite configuration
+  - Environment variable validation
+  - Secure credential management
+  - Development/production environment separation
 
 ## Hizli Baslangic
 
@@ -36,7 +44,34 @@ Modern, guvenli ve olceklenebilir dernek yonetim platformu.
 
 Detayli kurulum icin [docs/setup.md](./docs/setup.md) dosyasina bakin.
 
-Hizli baslangic:
+#### MCP ile Hizli Kurulum (Onerilen)
+
+```bash
+# Repo'yu klonla
+git clone https://github.com/kafkasder-org/Kafkasportal.git
+cd Kafkasportal
+
+# Bagimliliklari yukle
+npm install
+
+# MCP yapilandirmasini ayarla
+cp .cursor/mcp_settings.example.json .cursor/mcp_settings.json
+# .cursor/mcp_settings.json dosyasini duzenle
+
+# Environment variables'i MCP'den guncelle
+npx tsx scripts/setup-appwrite-env.ts
+
+# Appwrite database'i kur
+npm run appwrite:setup
+
+# Test kullanıcisi olustur
+npx tsx scripts/create-user-for-login.ts
+
+# Gelistirme sunucusunu baslat
+npm run dev
+```
+
+#### Manuel Kurulum
 
 ```bash
 # Repo'yu klonla
@@ -48,6 +83,7 @@ npm install
 
 # Environment variables ayarla
 cp .env.example .env.local
+# .env.local dosyasini duzenle
 # .env.local dosyasini duzenle (Appwrite endpoint, project ID, API key vb.)
 
 # Appwrite database kurulumu (ilk kez)
@@ -99,18 +135,18 @@ npm run build            # Production build
 
 ## Dokumantasyon
 
-| Dosya                                                  | Icerik                       |
-| ------------------------------------------------------ | ---------------------------- |
-| [docs/](./docs/)                                       | Teknik dokumantasyon         |
-| [docs/setup.md](./docs/setup.md)                       | Kurulum rehberi              |
-| [docs/appwrite-guide.md](./docs/appwrite-guide.md)     | Appwrite kullanim rehberi    |
-| [docs/offline-sync-guide.md](./docs/offline-sync-guide.md) | Offline sync rehberi      |
-| [docs/mcp-setup.md](./docs/mcp-setup.md)               | MCP sunuculari kurulumu      |
-| [docs/deployment.md](./docs/deployment.md)             | Deployment rehberi           |
-| [docs/testing.md](./docs/testing.md)                   | Test rehberi                 |
-| [docs/api-patterns.md](./docs/api-patterns.md)         | API standartlari             |
-| [CONTRIBUTING.md](./CONTRIBUTING.md)                   | Katki rehberi                |
-| [CLAUDE.md](./CLAUDE.md)                               | AI asistanlari icin referans |
+| Dosya                                                      | Icerik                       |
+| ---------------------------------------------------------- | ---------------------------- |
+| [docs/](./docs/)                                           | Teknik dokumantasyon         |
+| [docs/setup.md](./docs/setup.md)                           | Kurulum rehberi              |
+| [docs/appwrite-guide.md](./docs/appwrite-guide.md)         | Appwrite kullanim rehberi    |
+| [docs/offline-sync-guide.md](./docs/offline-sync-guide.md) | Offline sync rehberi         |
+| [docs/mcp-setup.md](./docs/mcp-setup.md)                   | MCP sunuculari kurulumu      |
+| [docs/deployment.md](./docs/deployment.md)                 | Deployment rehberi           |
+| [docs/testing.md](./docs/testing.md)                       | Test rehberi                 |
+| [docs/api-patterns.md](./docs/api-patterns.md)             | API standartlari             |
+| [CONTRIBUTING.md](./CONTRIBUTING.md)                       | Katki rehberi                |
+| [CLAUDE.md](./CLAUDE.md)                                   | AI asistanlari icin referans |
 
 ## Teknoloji Yigini
 

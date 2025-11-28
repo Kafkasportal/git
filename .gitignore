@@ -58,7 +58,10 @@ dev-debug.log
 # But allow specific cursor files
 !.cursor/mcp_settings.example.json
 !.cursor/README.md
-!.cursor/mcp_settings.json
+.cursor/mcp_settings.json
+
+# Quick setup script with real credentials (NEVER commit!)
+# scripts/quick-setup.ts  # Uncomment after initial setup
 
 # OS files
 .DS_Store

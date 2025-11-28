@@ -22,6 +22,7 @@ export {
   getStorage,
   getAvatars,
   getFunctions,
+  pingAppwrite,
 } from './client';
 
 // Server-side

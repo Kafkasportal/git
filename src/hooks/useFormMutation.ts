@@ -28,9 +28,9 @@ interface UseFormMutationOptions<TData, TVariables> {
    */
   mutationFn: (variables: TVariables) => Promise<TData>;
   /**
-   * Collection name for offline sync routing (required for offline support)
+   * Collection name for offline sync routing (optional, enables offline support when provided)
    */
-  collection: string;
+  collection?: string;
   /**
    * Mutation type for offline sync (create/update/delete)
    */
@@ -79,8 +79,8 @@ export function useFormMutation<TData = unknown, TVariables = unknown>({
 
   const mutation = useMutation<TData, unknown, TVariables>({
     mutationFn: async (variables: TVariables) => {
-      // Check if offline and offline queue is enabled
-      if (isOffline && enableOfflineQueue) {
+      // Check if offline and offline queue is enabled (requires collection to be set)
+      if (isOffline && enableOfflineQueue && collection) {
         try {
           await queueOfflineMutation({
             type: mutationType,

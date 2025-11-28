@@ -10,6 +10,7 @@ import type {
   UpdateDocumentData,
 } from '@/types/database';
 import { getCache } from '@/lib/api-cache';
+import { fetchWithCsrf } from '@/lib/csrf';
 
 // Cache TTL configuration per entity type
 const CACHE_TTL = {
@@ -24,7 +25,7 @@ const CACHE_TTL = {
 } as const;
 
 /**
- * Helper function to make API requests with caching
+ * Helper function to make API requests with caching and CSRF protection
  */
 async function apiRequest<T>(
   endpoint: string,
@@ -45,19 +46,51 @@ async function apiRequest<T>(
     }
   }
 
-  const defaultOptions: RequestInit = {
-    headers: {
-      'Content-Type': 'application/json',
-    },
+  const defaultHeaders: Record<string, string> = {
+    'Content-Type': 'application/json',
   };
 
-  const response = await fetch(endpoint, { ...defaultOptions, ...options });
+  // Use fetchWithCsrf for mutations (POST, PUT, DELETE)
+  const method = options?.method || 'GET';
+  const isMutation = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(method);
 
-  if (!response.ok) {
-    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+  let response: Response;
+  if (isMutation) {
+    // fetchWithCsrf handles CSRF token automatically
+    response = await fetchWithCsrf(endpoint, {
+      ...options,
+      headers: {
+        ...defaultHeaders,
+        ...(options?.headers as Record<string, string>),
+      },
+    });
+  } else {
+    response = await fetch(endpoint, {
+      ...options,
+      headers: {
+        ...defaultHeaders,
+        ...(options?.headers as Record<string, string>),
+      },
+    });
   }
 
-  const data: ConvexResponse<T> = await response.json();
+  // Parse response body first to get detailed error message
+  let data: ConvexResponse<T>;
+  try {
+    data = await response.json();
+  } catch {
+    // If JSON parsing fails, throw generic error
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+    throw new Error('Invalid JSON response from API');
+  }
+
+  if (!response.ok) {
+    // Extract error message from response body if available
+    const errorMessage = data?.error || `API Error: ${response.status} ${response.statusText}`;
+    throw new Error(errorMessage);
+  }
 
   // Cache successful GET responses
   if ((!options?.method || options.method === 'GET') && cache && cacheKey) {

@@ -1,8 +1,15 @@
-import { NextRequest } from 'next/server';
-import { appwritePartners, normalizeQueryParams } from '@/lib/appwrite/api';
-import { buildApiRoute } from '@/lib/api/middleware';
-import { successResponse, errorResponse, parseBody } from '@/lib/api/route-helpers';
-import { verifyCsrfToken, requireAuthenticatedUser } from '@/lib/api/auth-utils';
+import { NextRequest } from "next/server";
+import { appwritePartners, normalizeQueryParams } from "@/lib/appwrite/api";
+import { buildApiRoute } from "@/lib/api/middleware";
+import {
+  successResponse,
+  errorResponse,
+  parseBody,
+} from "@/lib/api/route-helpers";
+import {
+  verifyCsrfToken,
+  requireAuthenticatedUser,
+} from "@/lib/api/auth-utils";
 
 // TypeScript interfaces
 interface PartnerFilters {
@@ -43,35 +50,38 @@ function validatePartnerData(data: PartnerData): ValidationResult {
 
   // Required fields
   if (!data.name || data.name.trim().length < 2) {
-    errors.push('Partner adı en az 2 karakter olmalıdır');
+    errors.push("Partner adı en az 2 karakter olmalıdır");
   }
 
-  if (!data.type || !['organization', 'individual', 'sponsor'].includes(data.type)) {
-    errors.push('Geçersiz partner türü');
+  if (
+    !data.type ||
+    !["organization", "individual", "sponsor"].includes(data.type)
+  ) {
+    errors.push("Geçersiz partner türü");
   }
 
   if (
     !data.partnership_type ||
-    !['donor', 'supplier', 'volunteer', 'sponsor', 'service_provider'].includes(
-      data.partnership_type
+    !["donor", "supplier", "volunteer", "sponsor", "service_provider"].includes(
+      data.partnership_type,
     )
   ) {
-    errors.push('Geçersiz işbirliği türü');
+    errors.push("Geçersiz işbirliği türü");
   }
 
   // Email validation (optional but if provided must be valid)
   if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-    errors.push('Geçerli bir email adresi giriniz');
+    errors.push("Geçerli bir email adresi giriniz");
   }
 
   // Phone validation (optional but if provided must be valid)
   if (data.phone && !/^[0-9\s\-\+\(\)]{10,15}$/.test(data.phone)) {
-    errors.push('Geçerli bir telefon numarası giriniz');
+    errors.push("Geçerli bir telefon numarası giriniz");
   }
 
   // Status validation
-  if (data.status && !['active', 'inactive', 'pending'].includes(data.status)) {
-    errors.push('Geçersiz durum değeri');
+  if (data.status && !["active", "inactive", "pending"].includes(data.status)) {
+    errors.push("Geçersiz durum değeri");
   }
 
   return {
@@ -85,8 +95,8 @@ function validatePartnerData(data: PartnerData): ValidationResult {
  * List partners with pagination and filters
  */
 export const GET = buildApiRoute({
-  requireModule: 'partners',
-  allowedMethods: ['GET'],
+  requireModule: "partners",
+  allowedMethods: ["GET"],
   rateLimit: { maxRequests: 100, windowMs: 60000 },
 })(async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
@@ -94,19 +104,32 @@ export const GET = buildApiRoute({
 
   // Extract filters from query params
   const filters: PartnerFilters = {};
-  if (searchParams.get('type')) filters.type = searchParams.get('type') || undefined;
-  if (searchParams.get('status')) filters.status = searchParams.get('status') || undefined;
-  if (searchParams.get('partnership_type'))
-    filters.partnership_type = searchParams.get('partnership_type') || undefined;
+  if (searchParams.get("type"))
+    filters.type = searchParams.get("type") || undefined;
+  if (searchParams.get("status"))
+    filters.status = searchParams.get("status") || undefined;
+  if (searchParams.get("partnership_type"))
+    filters.partnership_type =
+      searchParams.get("partnership_type") || undefined;
 
-    const response = await appwritePartners.list({
-      limit: params.limit,
-      skip: params.skip,
-      search: params.search,
-      type: filters?.type,
-      status: filters?.status,
-      partnership_type: filters?.partnership_type,
-    });
+  const response = await appwritePartners.list({
+    limit: params.limit,
+    skip: params.skip,
+    search: params.search,
+    type: filters?.type as
+      | "organization"
+      | "individual"
+      | "sponsor"
+      | undefined,
+    status: filters?.status as "pending" | "active" | "inactive" | undefined,
+    partnership_type: filters?.partnership_type as
+      | "sponsor"
+      | "donor"
+      | "supplier"
+      | "volunteer"
+      | "service_provider"
+      | undefined,
+  });
 
   const partners = response.documents || [];
   const total = response.total || 0;
@@ -119,29 +142,30 @@ export const GET = buildApiRoute({
  * Create new partner
  */
 export const POST = buildApiRoute({
-  requireModule: 'partners',
-  allowedMethods: ['POST'],
+  requireModule: "partners",
+  allowedMethods: ["POST"],
   rateLimit: { maxRequests: 50, windowMs: 60000 },
   supportOfflineSync: true,
 })(async (request: NextRequest) => {
   await verifyCsrfToken(request);
   await requireAuthenticatedUser();
 
-  const { data: body, error: parseError } = await parseBody<PartnerData>(request);
+  const { data: body, error: parseError } =
+    await parseBody<PartnerData>(request);
   if (parseError || !body) {
-    return errorResponse(parseError || 'Veri bulunamadı', 400);
+    return errorResponse(parseError || "Veri bulunamadı", 400);
   }
 
   // Validate partner data
   const validation = validatePartnerData(body);
   if (!validation.isValid) {
-    return errorResponse('Doğrulama hatası', 400, validation.errors);
+    return errorResponse("Doğrulama hatası", 400, validation.errors);
   }
 
   // Prepare Appwrite mutation data
   const partnerData = {
-    name: body.name || '',
-    type: body.type as 'organization' | 'individual' | 'sponsor',
+    name: body.name || "",
+    type: body.type as "organization" | "individual" | "sponsor",
     contact_person: body.contact_person,
     email: body.email,
     phone: body.phone,
@@ -149,15 +173,15 @@ export const POST = buildApiRoute({
     website: body.website,
     tax_number: body.tax_number,
     partnership_type: body.partnership_type as
-      | 'donor'
-      | 'supplier'
-      | 'volunteer'
-      | 'sponsor'
-      | 'service_provider',
+      | "donor"
+      | "supplier"
+      | "volunteer"
+      | "sponsor"
+      | "service_provider",
     collaboration_start_date: body.collaboration_start_date,
     collaboration_end_date: body.collaboration_end_date,
     notes: body.notes,
-    status: (body.status as 'active' | 'inactive' | 'pending') || 'active',
+    status: (body.status as "active" | "inactive" | "pending") || "active",
     total_contribution: body.total_contribution || 0,
     contribution_count: body.contribution_count || 0,
     logo_url: body.logo_url,
@@ -165,5 +189,5 @@ export const POST = buildApiRoute({
 
   const response = await appwritePartners.create(partnerData);
 
-  return successResponse(response, 'Partner başarıyla oluşturuldu', 201);
+  return successResponse(response, "Partner başarıyla oluşturuldu", 201);
 });

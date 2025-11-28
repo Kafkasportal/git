@@ -5,6 +5,7 @@ import { successResponse, errorResponse, parseBody } from '@/lib/api/route-helpe
 import { verifyCsrfToken, requireAuthenticatedUser } from '@/lib/api/auth-utils';
 import { sanitizePhone } from '@/lib/sanitization';
 import { phoneSchema } from '@/lib/validations/shared-validators';
+import logger from '@/lib/logger';
 import type { DonationDocument, Document } from '@/types/database';
 import type { PaymentMethod } from '@/lib/api/types';
 
@@ -95,6 +96,22 @@ export const POST = buildApiRoute({
     return errorResponse('Doğrulama hatası', 400, validation.errors);
   }
 
+  // Validate required fields before sending to Appwrite
+  const missingFields: string[] = [];
+  if (!validation.normalizedData.donation_type?.trim()) {
+    missingFields.push('Bağış türü');
+  }
+  if (!validation.normalizedData.donation_purpose?.trim()) {
+    missingFields.push('Bağış amacı');
+  }
+  if (!validation.normalizedData.receipt_number?.trim()) {
+    missingFields.push('Makbuz numarası');
+  }
+  
+  if (missingFields.length > 0) {
+    return errorResponse('Zorunlu alanlar eksik', 400, missingFields);
+  }
+
   const donationData = {
     donor_name: validation.normalizedData.donor_name || '',
     donor_phone: validation.normalizedData.donor_phone || '',
@@ -113,7 +130,18 @@ export const POST = buildApiRoute({
       | 'cancelled',
   };
 
-  const response = await appwriteDonations.create(donationData);
-
-  return successResponse(response, 'Bağış başarıyla oluşturuldu', 201);
+  try {
+    const response = await appwriteDonations.create(donationData);
+    return successResponse(response, 'Bağış başarıyla oluşturuldu', 201);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Bilinmeyen hata';
+    // Log the detailed error for debugging
+    logger.error('Donation create error', { error, donationData: { ...donationData, donor_phone: '***' } });
+    
+    // Return user-friendly error
+    if (errorMessage.includes('unique') || errorMessage.includes('duplicate')) {
+      return errorResponse('Bu makbuz numarası zaten kullanılmış', 409);
+    }
+    return errorResponse(`Bağış kaydedilemedi: ${errorMessage}`, 500);
+  }
 });
