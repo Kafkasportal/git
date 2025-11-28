@@ -5,16 +5,24 @@ import { lazyLoadComponent } from '@/lib/performance';
 import { ServiceWorkerRegister } from '@/components/pwa/ServiceWorkerRegister';
 import { NetworkStatusIndicator } from '@/components/pwa/NetworkStatusIndicator';
 
-// Using system fonts for better performance and offline support
-// Google Fonts (Inter, Poppins, Montserrat) can be re-enabled if needed
-// See: https://nextjs.org/docs/app/building-your-application/optimizing/fonts
+import { Inter, Outfit } from 'next/font/google';
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-body',
+});
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-heading',
+});
+
 const fontVariables = {
-  '--font-body':
-    'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-  '--font-heading':
-    'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-  '--font-heading-alt':
-    'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  '--font-body': inter.style.fontFamily,
+  '--font-heading': outfit.style.fontFamily,
+  '--font-heading-alt': outfit.style.fontFamily,
 } as const;
 
 // Lazy load analytics components for better initial page load

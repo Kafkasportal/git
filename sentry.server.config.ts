@@ -14,7 +14,7 @@ Sentry.init({
     // Enable release tracking
     release: process.env.NEXT_PUBLIC_APP_VERSION || undefined,
     // Server-side performance monitoring
-    beforeSend(event, _hint) {
+    beforeSend(event: Sentry.ErrorEvent, _hint: Sentry.EventHint) {
       // Filter out development errors in production
       return event;
     },

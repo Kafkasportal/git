@@ -16,7 +16,7 @@ Sentry.init({
     // Enable release tracking
     release: process.env.NEXT_PUBLIC_APP_VERSION || undefined,
     // Set sample rates for production
-    beforeSend(event, _hint) {
+    beforeSend(event: Sentry.ErrorEvent, _hint: Sentry.EventHint) {
       // Only send errors in production
       return event;
     },
