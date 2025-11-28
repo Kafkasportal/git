@@ -13,6 +13,8 @@ import { toast } from 'sonner';
 import logger from '@/lib/logger';
 import { ArrowUpRight, Download, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { BulkActionsToolbar } from '@/components/ui/bulk-actions-toolbar';
 
 // Performance monitoring imports
 import { useFPSMonitor } from '@/lib/performance-monitor';
@@ -78,9 +80,11 @@ export default function BeneficiariesPage() {
   const { prefetch } = usePrefetchWithCache();
 
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [search, setSearch] = useState('');
   const [showQuickAddModal, setShowQuickAddModal] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
   // Use cached query with performance optimization
   const {
@@ -149,6 +153,56 @@ export default function BeneficiariesPage() {
   const handleShowModal = useCallback(() => {
     setShowQuickAddModal(true);
   }, []);
+
+  // Bulk operations mutations
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (_ids: string[]) => {
+      // TODO: Replace with actual bulk delete API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return { success: true };
+    },
+    onSuccess: () => {
+      toast.success(`${selectedItems.size} kayıt başarıyla silindi`);
+      setSelectedItems(new Set());
+      queryClient.invalidateQueries({ queryKey: ['beneficiaries-cached'] });
+      queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
+      refetch();
+      fallbackQuery.refetch();
+    },
+    onError: () => {
+      toast.error('Kayıtlar silinirken bir hata oluştu');
+    },
+  });
+
+  const bulkStatusUpdateMutation = useMutation({
+    mutationFn: async ({ ids: _ids, status }: { ids: string[]; status: string }) => {
+      // TODO: Replace with actual bulk status update API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return { success: true, status };
+    },
+    onSuccess: (_, variables) => {
+      const statusLabel = variables.status === 'AKTIF' ? 'Aktif' : 'Pasif';
+      toast.success(`${selectedItems.size} kayıt ${statusLabel} olarak güncellendi`);
+      setSelectedItems(new Set());
+      queryClient.invalidateQueries({ queryKey: ['beneficiaries-cached'] });
+      queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
+      refetch();
+      fallbackQuery.refetch();
+    },
+    onError: () => {
+      toast.error('Durum güncellenirken bir hata oluştu');
+    },
+  });
+
+  const handleBulkDelete = useCallback(() => {
+    const ids = Array.from(selectedItems);
+    bulkDeleteMutation.mutate(ids);
+  }, [selectedItems, bulkDeleteMutation]);
+
+  const handleBulkStatusChange = useCallback((status: string) => {
+    const ids = Array.from(selectedItems);
+    bulkStatusUpdateMutation.mutate({ ids, status });
+  }, [selectedItems, bulkStatusUpdateMutation]);
 
   // Performance monitoring
   React.useEffect(() => {
@@ -416,6 +470,19 @@ export default function BeneficiariesPage() {
         </Suspense>
       )}
 
+      {/* Bulk Actions Toolbar */}
+      <BulkActionsToolbar
+        selectedCount={selectedItems.size}
+        onClearSelection={() => setSelectedItems(new Set())}
+        onDelete={handleBulkDelete}
+        onStatusChange={handleBulkStatusChange}
+        statusOptions={[
+          { value: 'AKTIF', label: 'Aktif Yap' },
+          { value: 'PASIF', label: 'Pasif Yap' },
+        ]}
+        isLoading={bulkDeleteMutation.isPending || bulkStatusUpdateMutation.isPending}
+      />
+
       <Card className="w-full">
         <CardHeader className="pb-4">
           <CardTitle>İhtiyaç Sahipleri Listesi</CardTitle>
@@ -447,6 +514,10 @@ export default function BeneficiariesPage() {
                 router.push(`/yardim/ihtiyac-sahipleri/${item._id}`);
               }
             }}
+            selectable={true}
+            selectedItems={selectedItems}
+            onSelectionChange={setSelectedItems}
+            getItemId={(item) => item._id || ''}
           />
         </CardContent>
       </Card>

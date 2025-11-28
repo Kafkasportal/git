@@ -34,6 +34,11 @@ interface VirtualizedDataTableProps<T> {
   // Virtual scrolling props
   rowHeight?: number;
   containerHeight?: number;
+  // Bulk selection props
+  selectable?: boolean;
+  selectedItems?: Set<string>;
+  onSelectionChange?: (selectedIds: Set<string>) => void;
+  getItemId?: (item: T) => string;
 }
 
 function VirtualizedDataTable<T>({
@@ -52,6 +57,10 @@ function VirtualizedDataTable<T>({
   refetch,
   rowHeight = 60,
   containerHeight = 600,
+  selectable = false,
+  selectedItems = new Set(),
+  onSelectionChange,
+  getItemId = (item: T) => (item as any)._id || (item as any).id || String(item),
 }: VirtualizedDataTableProps<T>) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
@@ -92,6 +101,34 @@ function VirtualizedDataTable<T>({
     setScrollTop(newScrollTop);
   }, []);
 
+  // Selection handlers
+  const handleSelectAll = useCallback(() => {
+    if (!selectable || !onSelectionChange) return;
+
+    if (selectedItems.size === data.length) {
+      onSelectionChange(new Set());
+    } else {
+      const allIds = new Set(data.map(getItemId));
+      onSelectionChange(allIds);
+    }
+  }, [selectable, selectedItems, data, onSelectionChange, getItemId]);
+
+  const handleSelectItem = useCallback((item: T, event: React.MouseEvent) => {
+    if (!selectable || !onSelectionChange) return;
+    event.stopPropagation();
+
+    const itemId = getItemId(item);
+    const newSelection = new Set(selectedItems);
+
+    if (newSelection.has(itemId)) {
+      newSelection.delete(itemId);
+    } else {
+      newSelection.add(itemId);
+    }
+
+    onSelectionChange(newSelection);
+  }, [selectable, selectedItems, onSelectionChange, getItemId]);
+
   // Memoized row renderer
   const RowRenderer = memo(function RowRenderer({
     item,
@@ -119,14 +156,25 @@ function VirtualizedDataTable<T>({
         aria-rowindex={index + 2}
         data-row
       >
+        {selectable && (
+          <div className="flex-none w-12 px-2">
+            <input
+              type="checkbox"
+              checked={selectedItems.has(getItemId(item))}
+              onChange={(e) => handleSelectItem(item, e as any)}
+              onClick={(e) => e.stopPropagation()}
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+          </div>
+        )}
         {columns.map((column) => {
           const hasFixed = Boolean(
             column.className &&
-              (column.className.includes('flex-none') ||
-                column.className.includes('w-[') ||
-                column.className.includes('basis-') ||
-                column.className.includes('grow-0') ||
-                column.className.includes('shrink-0'))
+            (column.className.includes('flex-none') ||
+              column.className.includes('w-[') ||
+              column.className.includes('basis-') ||
+              column.className.includes('grow-0') ||
+              column.className.includes('shrink-0'))
           );
 
           // Allow column-level overflow control. If the column explicitly sets
@@ -276,14 +324,24 @@ function VirtualizedDataTable<T>({
             }}
             role="row"
           >
+            {selectable && (
+              <div className="flex-none w-12 px-2">
+                <input
+                  type="checkbox"
+                  checked={selectedItems.size === data.length && data.length > 0}
+                  onChange={handleSelectAll}
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+              </div>
+            )}
             {columns.map((column, columnIndex) => {
               const hasFixed = Boolean(
                 column.className &&
-                  (column.className.includes('flex-none') ||
-                    column.className.includes('w-[') ||
-                    column.className.includes('basis-') ||
-                    column.className.includes('grow-0') ||
-                    column.className.includes('shrink-0'))
+                (column.className.includes('flex-none') ||
+                  column.className.includes('w-[') ||
+                  column.className.includes('basis-') ||
+                  column.className.includes('grow-0') ||
+                  column.className.includes('shrink-0'))
               );
               return (
                 <div
