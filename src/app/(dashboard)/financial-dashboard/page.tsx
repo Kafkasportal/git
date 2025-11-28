@@ -56,49 +56,68 @@ function FinancialDashboardPageContent() {
     to: endOfMonth(new Date()),
   });
 
-  // Fetch dashboard stats from server-side aggregation API
-  const { data: stats } = useQuery({
-    queryKey: ['financial-stats', dateRange.from, dateRange.to],
+  // Fetch metrics from optimized endpoint
+  const { data: metricsData } = useQuery({
+    queryKey: ['financial-metrics', dateRange.from, dateRange.to],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (dateRange.from) params.append('from', dateRange.from.toISOString());
       if (dateRange.to) params.append('to', dateRange.to.toISOString());
-      
-      const res = await fetch(`/api/financial/stats?${params.toString()}`);
+
+      const res = await fetch(`/api/finance/metrics?${params.toString()}`);
       if (!res.ok) {
-        throw new Error('Finansal istatistikler alınamadı');
+        throw new Error('Finansal metrikler alınamadı');
       }
       return res.json();
     },
     enabled: !!dateRange.from && !!dateRange.to,
   });
 
-  const metrics = stats?.data?.totals;
+  // Fetch monthly trends and categories from optimized endpoint
+  const { data: monthlyDataResponse } = useQuery({
+    queryKey: ['financial-monthly', dateRange.from, dateRange.to],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (dateRange.from) params.append('from', dateRange.from.toISOString());
+      if (dateRange.to) params.append('to', dateRange.to.toISOString());
+
+      const res = await fetch(`/api/finance/monthly?${params.toString()}`);
+      if (!res.ok) {
+        throw new Error('Aylık finansal veriler alınamadı');
+      }
+      return res.json();
+    },
+    enabled: !!dateRange.from && !!dateRange.to,
+  });
+
+  const metrics = metricsData?.data;
 
   const monthlyData = useMemo(() => {
-    if (!stats?.data?.trends) return [];
-    return stats.data.trends.map((t: { date: string; income: number; expense: number }) => ({
-      month: t.date,
-      income: t.income,
-      expenses: t.expense,
-    }));
-  }, [stats]);
+    if (!monthlyDataResponse?.data?.trends) return [];
+    return monthlyDataResponse.data.trends.map(
+      (t: { date: string; income: number; expense: number }) => ({
+        month: t.date,
+        income: t.income,
+        expenses: t.expense,
+      })
+    );
+  }, [monthlyDataResponse]);
 
   const incomeByCategory = useMemo(() => {
-    if (!stats?.data?.categories?.income) return [];
-    return Object.entries(stats.data.categories.income).map(([name, value]) => ({
+    if (!monthlyDataResponse?.data?.categories?.income) return [];
+    return Object.entries(monthlyDataResponse.data.categories.income).map(([name, value]) => ({
       name,
       value: value as number,
     }));
-  }, [stats]);
+  }, [monthlyDataResponse]);
 
   const expensesByCategory = useMemo(() => {
-    if (!stats?.data?.categories?.expense) return [];
-    return Object.entries(stats.data.categories.expense).map(([name, value]) => ({
+    if (!monthlyDataResponse?.data?.categories?.expense) return [];
+    return Object.entries(monthlyDataResponse.data.categories.expense).map(([name, value]) => ({
       name,
       value: value as number,
     }));
-  }, [stats]);
+  }, [monthlyDataResponse]);
 
   // Fetch all records for table view
 
