@@ -87,29 +87,29 @@ describe('Sanitization Library', () => {
   });
 
   describe('sanitizePhone', () => {
-    it('should format Turkish phone with country code', () => {
+    it('should format Turkish phone to 5XXXXXXXXX format', () => {
       const input = '05551234567';
       const output = sanitizePhone(input);
-      // Turkish mobile numbers start with 5, so 0555 is valid
-      expect(output).toBe('+905551234567');
+      // Turkish mobile numbers are normalized to 5XXXXXXXXX format (without +90)
+      expect(output).toBe('5551234567');
     });
 
-    it('should accept phone with country code', () => {
+    it('should normalize phone with country code to 5XXXXXXXXX', () => {
       const input = '905551234567'; // Without + sign
       const output = sanitizePhone(input);
-      expect(output).toBe('+905551234567');
+      expect(output).toBe('5551234567');
     });
 
     it('should handle formatted phone', () => {
       const input = '0555 123 45 67';
       const output = sanitizePhone(input);
-      expect(output).toBe('+905551234567');
+      expect(output).toBe('5551234567');
     });
 
-    it('should accept phone with plus sign', () => {
+    it('should normalize phone with plus sign to 5XXXXXXXXX', () => {
       const input = '+905551234567';
       const output = sanitizePhone(input);
-      expect(output).toBe('+905551234567');
+      expect(output).toBe('5551234567');
     });
 
     it('should reject invalid phone', () => {

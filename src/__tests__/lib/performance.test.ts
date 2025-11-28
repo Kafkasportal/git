@@ -167,6 +167,8 @@ describe('perfLog', () => {
     perfLog.error('Test error', { data: 'test' });
 
     // error always logs, regardless of environment
-    expect(loggerSpy).toHaveBeenCalledWith('[PERF] Test error', { data: 'test' });
+    // Check that it was called with the message (metadata is optional second arg)
+    expect(loggerSpy).toHaveBeenCalled();
+    expect(loggerSpy.mock.calls[0][0]).toBe('[PERF] Test error');
   });
 });

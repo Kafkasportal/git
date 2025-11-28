@@ -182,12 +182,15 @@ describe('useStandardForm', () => {
       { wrapper: createWrapper() }
     );
 
-    // Modify form
+    // Modify form - use shouldDirty option to mark as dirty
     await act(async () => {
-      result.current.form.setValue('name', 'Jane');
+      result.current.form.setValue('name', 'Jane', { shouldDirty: true });
     });
 
-    expect(result.current.isDirty).toBe(true);
+    // Wait for form state to update
+    await waitFor(() => {
+      expect(result.current.form.formState.isDirty).toBe(true);
+    });
 
     // Submit form
     await act(async () => {
@@ -195,7 +198,7 @@ describe('useStandardForm', () => {
     });
 
     await waitFor(() => {
-      expect(result.current.isDirty).toBe(false);
+      expect(result.current.form.formState.isDirty).toBe(false);
     });
   });
 

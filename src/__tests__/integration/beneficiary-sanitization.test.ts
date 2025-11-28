@@ -51,18 +51,19 @@ describe('Beneficiary Sanitization Integration', () => {
   });
 
   describe('Phone Sanitization + Validation', () => {
-    it('should sanitize Turkish phone to international format', () => {
+    it('should sanitize Turkish phone to 5XXXXXXXXX format', () => {
       const rawPhone = '0555 123 45 67';
       const sanitized = sanitizePhone(rawPhone);
 
-      expect(sanitized).toBe('+905551234567');
+      // Project standard: phone format is 5XXXXXXXXX (without +90)
+      expect(sanitized).toBe('5551234567');
 
-      // Validate with schema - use format without +90
+      // Validate with schema - schema accepts 5XXXXXXXXX format
       const data = {
         firstName: 'Ahmet',
         lastName: 'Yılmaz',
         nationality: 'Türkiye',
-        mobilePhone: '5551234567', // Schema accepts 5XXXXXXXXX format
+        mobilePhone: sanitized, // Use sanitized value directly
         category: BeneficiaryCategory.IHTIYAC_SAHIBI_AILE,
         fundRegion: FundRegion.SERBEST,
         fileConnection: FileConnection.CALISMA_SAHASI,
@@ -80,11 +81,12 @@ describe('Beneficiary Sanitization Integration', () => {
       expect(sanitized).toBeNull();
     });
 
-    it('should handle phone with country code', () => {
+    it('should normalize phone with country code to 5XXXXXXXXX', () => {
       const rawPhone = '+90 555 123 45 67';
       const sanitized = sanitizePhone(rawPhone);
 
-      expect(sanitized).toBe('+905551234567');
+      // Project standard: removes +90 prefix
+      expect(sanitized).toBe('5551234567');
     });
   });
 
@@ -246,7 +248,7 @@ describe('Beneficiary Sanitization Integration', () => {
         expect(result.data.firstName).toBe('Ahmet');
         expect(result.data.lastName).toBe('Yılmaz');
         expect(result.data.identityNumber).toBe('11111111110');
-        expect(result.data.mobilePhone).toBe('+905551234567');
+        expect(result.data.mobilePhone).toBe('5551234567'); // 5XXXXXXXXX format
         expect(result.data.email).toBe('ahmet@example.com');
         expect(result.data.monthlyIncome).toBe(5000);
         expect(result.data.monthlyExpense).toBe(3000);
@@ -307,8 +309,8 @@ describe('Beneficiary Sanitization Integration', () => {
         phone: sanitizePhone(contact.phone) || contact.phone,
       }));
 
-      expect(sanitizedContacts[0].phone).toBe('+905551234567');
-      expect(sanitizedContacts[1].phone).toBe('+905559876543');
+      expect(sanitizedContacts[0].phone).toBe('5551234567');
+      expect(sanitizedContacts[1].phone).toBe('5559876543');
 
       // Validate with schema
       const data = {
