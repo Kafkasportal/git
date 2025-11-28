@@ -57,8 +57,10 @@ dev-debug.log
 *.sw?
 # But allow specific cursor files
 !.cursor/mcp_settings.example.json
+!.cursor/mcp.json.example
 !.cursor/README.md
 .cursor/mcp_settings.json
+.cursor/mcp.json
 
 # Quick setup script with real credentials (NEVER commit!)
 # scripts/quick-setup.ts  # Uncomment after initial setup
