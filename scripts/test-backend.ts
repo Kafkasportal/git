@@ -137,8 +137,8 @@ async function main() {
   
   const provider = testBackendProvider();
   console.log('');
-  
-  const _appwriteConfig = testAppwriteConfig();
+
+  testAppwriteConfig();
   console.log('');
   
   testAppwriteLibrary();

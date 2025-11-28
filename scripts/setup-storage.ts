@@ -86,7 +86,7 @@ async function createBucket(bucketConfig: typeof buckets[0]) {
       true, // enabled
       undefined, // compression
       undefined, // encryption
-      undefined, // antivirus
+      undefined as unknown as boolean, // antivirus
     );
 
     console.log(`   ✓ Bucket created successfully`);

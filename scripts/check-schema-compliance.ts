@@ -56,6 +56,7 @@ interface CollectionConfig {
 }
 
 // Parse collections from appwrite-setup.ts
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function _parseCollectionsFromSetup(): CollectionConfig[] {
   try {
     const setupFile = readFileSync(join(__dirname, 'appwrite-setup.ts'), 'utf-8');
@@ -200,18 +201,18 @@ async function checkCollection(
   try {
     // Get collection
     const _collection = await databases.getCollection(databaseId, collectionId);
-    
+
     // Get attributes
     const attributes = await databases.listAttributes(databaseId, collectionId);
-    
+
     const actualAttributes = attributes.attributes.map(attr => ({
       key: attr.key,
       type: attr.type,
-      size: attr.size,
+      size: 'size' in attr ? attr.size : undefined,
       required: attr.required,
-      array: attr.array,
-      default: attr.default,
-      elements: attr.elements,
+      array: attr.array ?? false,
+      default: 'default' in attr ? attr.default : undefined,
+      elements: 'elements' in attr ? attr.elements : undefined,
     }));
 
     // Compare if expected attributes provided
