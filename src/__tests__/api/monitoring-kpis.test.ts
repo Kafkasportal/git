@@ -3,6 +3,12 @@ import { GET } from '@/app/api/monitoring/kpis/route';
 
 // Mock Appwrite
 vi.mock('@/lib/appwrite/server', () => ({
+    serverDatabases: {
+        listDocuments: vi.fn().mockResolvedValue({
+            total: 10,
+            documents: [],
+        }),
+    },
     getDatabases: vi.fn(() => ({
         listDocuments: vi.fn().mockResolvedValue({
             total: 10,
@@ -11,11 +17,16 @@ vi.mock('@/lib/appwrite/server', () => ({
     })),
 }));
 
-// Mock session
-vi.mock('@/lib/session', () => ({
-    getSession: vi.fn().mockResolvedValue({
-        user: { id: 'test-user', email: 'test@example.com' },
-    }),
+// Mock config
+vi.mock('@/lib/appwrite/config', () => ({
+    appwriteConfig: {
+        databaseId: 'test-db',
+        collections: {
+            tasks: 'tasks',
+            aidApplications: 'applications',
+            meetings: 'meetings',
+        },
+    },
 }));
 
 describe('GET /api/monitoring/kpis', () => {
@@ -28,19 +39,21 @@ describe('GET /api/monitoring/kpis', () => {
         const data = await response.json();
 
         expect(response.status).toBe(200);
-        expect(data).toHaveProperty('pendingTasks');
-        expect(data).toHaveProperty('upcomingMeetings');
-        expect(data).toHaveProperty('activeBeneficiaries');
-        expect(data).toHaveProperty('monthlyDonations');
+        expect(data).toHaveProperty('success', true);
+        expect(data.data).toHaveProperty('pendingOperations');
+        expect(data.data).toHaveProperty('trackedWorkItems');
+        expect(data.data).toHaveProperty('calendarEvents');
+        expect(data.data).toHaveProperty('plannedMeetings');
     });
 
     it('returns numeric values for all KPIs', async () => {
         const response = await GET();
         const data = await response.json();
+        const kpis = data.data;
 
-        expect(typeof data.pendingTasks).toBe('number');
-        expect(typeof data.upcomingMeetings).toBe('number');
-        expect(typeof data.activeBeneficiaries).toBe('number');
-        expect(typeof data.monthlyDonations).toBe('number');
+        expect(typeof kpis.pendingOperations.total).toBe('number');
+        expect(typeof kpis.trackedWorkItems.total).toBe('number');
+        expect(typeof kpis.calendarEvents.total).toBe('number');
+        expect(typeof kpis.plannedMeetings.total).toBe('number');
     });
 });
