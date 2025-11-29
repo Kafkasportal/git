@@ -420,8 +420,9 @@ const baseConfig: NextConfig = {
   },
 
   // Output optimization
-  // Disable standalone for Appwrite Cloud Functions (causes deployment issues)
-  output: process.env.NEXT_STANDALONE === 'false' || isWindows || process.env.APPWRITE_FUNCTION_ID ? undefined : 'standalone',
+  // Disable standalone for Appwrite Cloud Functions and Windows (causes deployment issues)
+  // Appwrite Open Runtimes has issues with standalone mode during deployment
+  output: process.env.NEXT_STANDALONE === 'false' || isWindows || process.env.APPWRITE_FUNCTION_ID || process.env.APPWRITE_FUNCTION_ENV ? undefined : 'standalone',
   poweredByHeader: false, // Remove X-Powered-By header for security
 
   // Build performance hints - optimized for better memory usage
