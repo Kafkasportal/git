@@ -112,6 +112,7 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^14.0.4",
+    "@rollup/rollup-linux-x64-gnu": "^4.21.2",
     "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.1",
@@ -128,8 +129,8 @@
     "@types/twilio": "^3.19.2",
     "@types/webpack": "^5.28.5",
     "@vitejs/plugin-react": "^4.0.4",
-    "@vitest/coverage-v8": "^4.0.8",
-    "@vitest/ui": "^4.0.6",
+    "@vitest/coverage-v8": "^4.0.14",
+    "@vitest/ui": "^4.0.14",
     "dotenv": "^17.2.3",
     "eslint": "^9",
     "eslint-config-next": "16.0.3",
@@ -140,8 +141,11 @@
     "tailwindcss": "^4",
     "tsx": "^4.20.6",
     "typescript": "^5",
-    "vitest": "^4.0.8",
+    "vitest": "^4.0.14",
     "web-vitals": "^5.1.0",
     "webpack": "^5.103.0"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.53.3"
   }
 }
