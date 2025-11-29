@@ -1,101 +1,152 @@
-# MCP (Model Context Protocol) Kurulum Kılavuzu
+# MCP (Model Context Protocol) Kurulum Rehberi
+
+Bu dokümantasyon, Cursor IDE'de MCP sunucularının nasıl kurulacağını açıklamaktadır.
 
 ## MCP Nedir?
 
-Model Context Protocol (MCP), AI asistanlarının harici kaynaklara ve araçlara güvenli bir şekilde erişmesini sağlayan bir protokoldür. Cursor IDE'de MCP sunucularını kullanarak, AI asistanınız proje dosyalarına, GitHub repository'lerine, Appwrite veritabanına ve diğer hizmetlere erişebilir.
+MCP (Model Context Protocol), AI asistanlarının (Cursor, Claude vb.) harici araçlar ve servislerle iletişim kurmasını sağlayan açık bir protokoldür. MCP sayesinde AI asistanınız:
+
+- **Dosya Sistemi**: Proje dosyalarınıza erişebilir
+- **GitHub**: Issue, PR ve repo yönetimi yapabilir
+- **Appwrite**: Veritabanı, auth ve storage işlemlerini yönetebilir
+- **Memory**: Oturum bazlı bilgi saklayabilir
+- **Sequential Thinking**: Karmaşık problemleri adım adım çözebilir
+- **Fetch**: API istekleri yapabilir
 
 ## Kurulum Adımları
 
-### 1. Environment Variable'ları Ayarlama
+### 1. Node.js Gereksinimi
 
-Proje kök dizininde `.env.local` dosyası oluşturun (veya mevcut dosyayı düzenleyin) ve aşağıdaki environment variable'ları ekleyin:
+MCP sunucuları `npx` ile çalıştığı için sisteminizde Node.js (v18+) kurulu olmalıdır.
 
 ```bash
-# Appwrite Configuration
-NEXT_PUBLIC_APPWRITE_ENDPOINT=https://fra.cloud.appwrite.io/v1
-NEXT_PUBLIC_APPWRITE_PROJECT_ID=6927aa95001c4c6b488b
-NEXT_PUBLIC_APPWRITE_PROJECT_NAME=kafkasportal
-APPWRITE_API_KEY=your_appwrite_api_key_here
-APPWRITE_DATABASE_ID=kafkasder_db
-
-# GitHub Token (for MCP)
-GITHUB_PERSONAL_ACCESS_TOKEN=your_github_token_here
+node --version  # v18 veya üstü olmalı
 ```
 
-**Önemli Notlar:**
-- `APPWRITE_API_KEY` ve `GITHUB_PERSONAL_ACCESS_TOKEN` değerlerini gerçek token'larınızla değiştirin
-- `.env.local` dosyası git'e commit edilmez (`.gitignore` içinde)
+### 2. MCP Yapılandırma Dosyasını Oluşturma
 
-### 2. MCP Konfigürasyon Dosyasını Oluşturma
-
-`.cursor/mcp.json.example` dosyasını kopyalayarak `.cursor/mcp.json` dosyası oluşturun:
+Proje kök dizininde `.cursor/mcp.json.example` dosyası bulunmaktadır. Bu dosyayı kopyalayarak kendi yapılandırmanızı oluşturun:
 
 ```bash
 cp .cursor/mcp.json.example .cursor/mcp.json
 ```
 
-**Alternatif olarak:** Global MCP konfigürasyonu için `~/.cursor/mcp.json` dosyasını düzenleyebilirsiniz.
+### 3. Environment Variable'ları Ayarlama
 
-### 3. Environment Variable'ları Güncelleme
+`.env.local` dosyanızda aşağıdaki değişkenlerin tanımlı olduğundan emin olun:
 
-Oluşturduğunuz `.cursor/mcp.json` (veya `~/.cursor/mcp.json`) dosyasındaki environment variable referansları otomatik olarak sisteminizdeki environment variable'lardan okunur. 
+```env
+# Appwrite Configuration
+NEXT_PUBLIC_APPWRITE_ENDPOINT=https://fra.cloud.appwrite.io/v1
+NEXT_PUBLIC_APPWRITE_PROJECT_ID=6927aa95001c4c6b488b
+APPWRITE_API_KEY=your_appwrite_api_key_here
 
-Eğer environment variable'lar farklı bir konumda tanımlıysa, MCP konfigürasyon dosyasındaki `${VARIABLE_NAME}` formatındaki referanslar doğru şekilde çözümlenecektir.
+# GitHub Token
+GITHUB_PERSONAL_ACCESS_TOKEN=your_github_token_here
+```
+
+#### GitHub Token Oluşturma
+
+1. GitHub'a giriş yapın
+2. [Settings > Developer settings > Personal access tokens > Tokens (classic)](https://github.com/settings/tokens) sayfasına gidin
+3. "Generate new token (classic)" tıklayın
+4. Aşağıdaki izinleri seçin:
+   - `repo` (Full control of private repositories)
+   - `read:org` (Read org membership)
+   - `read:user` (Read user profile data)
+5. Token'ı oluşturun ve güvenli bir yere kaydedin
+
+#### Appwrite API Key Oluşturma
+
+1. [Appwrite Console](https://cloud.appwrite.io) adresine gidin
+2. Projenizi seçin
+3. Settings > API Keys bölümüne gidin
+4. Yeni bir API Key oluşturun
+5. Gerekli scope'ları seçin (databases.*, users.*, teams.*, storage.*)
 
 ### 4. Cursor'u Yeniden Başlatma
 
-MCP konfigürasyon değişikliklerinin etkili olması için:
+MCP yapılandırması değiştikten sonra Cursor'u tamamen kapatıp yeniden açın:
 
-1. Cursor IDE'yi tamamen kapatın
-2. Cursor'u yeniden açın
+1. Cursor'u kapatın (Cmd+Q / Ctrl+Q)
+2. Cursor'u tekrar açın
+3. Projenizi açın
 
-Bu adım, MCP sunucularının yeni konfigürasyonla başlatılmasını sağlar.
+### 5. MCP Sunucularını Test Etme
 
-### 5. Test Etme
+Cursor'da MCP sunucularının çalıştığını doğrulamak için:
 
-MCP sunucularının düzgün çalıştığını test etmek için:
+1. Cursor'da Chat panelini açın (Cmd+L / Ctrl+L)
+2. Aşağıdaki komutları deneyin:
 
-1. Cursor'da yeni bir chat başlatın
-2. AI asistanına şu komutları deneyin:
-   - "Proje dosyalarını listele" (filesystem server testi)
-   - "GitHub repository'deki son commit'leri göster" (github server testi)
-   - "Appwrite veritabanındaki collection'ları listele" (appwrite server testi)
+**Dosya Sistemi Testi:**
+```
+Proje kök dizinindeki dosyaları listele
+```
 
-Eğer MCP sunucuları düzgün çalışıyorsa, AI asistanı bu istekleri yerine getirebilecektir.
+**GitHub Testi:**
+```
+Bu reponun açık issue'larını listele
+```
 
-## MCP Sunucuları
-
-Bu projede yapılandırılmış MCP sunucuları:
-
-1. **filesystem**: Proje dosyalarına erişim sağlar
-2. **github**: GitHub repository, issue ve PR yönetimi
-3. **appwrite**: Appwrite veritabanı, authentication ve storage yönetimi
-4. **memory**: Oturum bazlı bilgi saklama
-5. **sequential-thinking**: Karmaşık problemleri adım adım çözme
-6. **fetch**: API istekleri yapma
+**Appwrite Testi:**
+```
+Appwrite veritabanındaki collection'ları listele
+```
 
 ## Sorun Giderme
 
-### MCP Sunucuları Başlamıyor
+### MCP Sunucuları Görünmüyor
 
-- Environment variable'ların doğru tanımlandığından emin olun
-- `.cursor/mcp.json` dosyasının JSON formatının geçerli olduğunu kontrol edin
-- Cursor'u tamamen kapatıp yeniden açmayı deneyin
+1. `.cursor/mcp.json` dosyasının doğru konumda olduğundan emin olun
+2. JSON sözdiziminin geçerli olduğunu kontrol edin
+3. Cursor'u yeniden başlatın
 
-### GitHub Token Hatası
+### "Command not found" Hatası
 
-- GitHub Personal Access Token'ınızın geçerli olduğundan emin olun
-- Token'ın gerekli izinlere sahip olduğunu kontrol edin (repo, read:org, vb.)
+```bash
+# npx'in çalıştığından emin olun
+npx --version
+
+# Node.js sürümünü kontrol edin
+node --version
+```
+
+### GitHub Token Çalışmıyor
+
+1. Token'ın süresinin dolmadığından emin olun
+2. Gerekli izinlerin verildiğini kontrol edin
+3. `.env.local` dosyasında token'ın doğru ayarlandığını doğrulayın
 
 ### Appwrite Bağlantı Hatası
 
-- `APPWRITE_API_KEY` değerinin doğru olduğundan emin olun
-- Appwrite endpoint URL'inin erişilebilir olduğunu kontrol edin
-- Project ID'nin doğru olduğunu doğrulayın
+1. `APPWRITE_ENDPOINT` değerinin doğru olduğunu kontrol edin
+2. `APPWRITE_PROJECT_ID` değerinin proje ID'si ile eşleştiğini doğrulayın
+3. API Key'in gerekli izinlere sahip olduğunu kontrol edin
 
-## Ek Kaynaklar
+## Güvenlik Notları
 
-- [Model Context Protocol Dokümantasyonu](https://modelcontextprotocol.io/)
-- [Cursor MCP Dokümantasyonu](https://docs.cursor.com/mcp)
+⚠️ **Önemli Uyarılar:**
 
+- `.cursor/mcp.json` dosyası hassas bilgiler içerebilir, **asla commit etmeyin**
+- `.env.local` dosyası da commit edilmemelidir
+- API anahtarlarını ve token'ları güvenli bir şekilde saklayın
+- Token'ları düzenli olarak rotate edin
+- Minimum gerekli izinleri verin
 
+## Mevcut MCP Sunucuları
+
+| Sunucu | Açıklama |
+|--------|----------|
+| `filesystem` | Proje dosyalarına erişim |
+| `github` | GitHub repo, issue, PR yönetimi |
+| `appwrite` | Appwrite veritabanı, auth, storage yönetimi |
+| `memory` | Oturum bazlı bilgi saklama |
+| `sequential-thinking` | Karmaşık problemleri adım adım çözme |
+| `fetch` | API istekleri |
+
+## Kaynaklar
+
+- [MCP Resmi Dokümantasyonu](https://modelcontextprotocol.io/)
+- [Cursor MCP Dokümantasyonu](https://docs.cursor.com/advanced/mcp)
+- [Appwrite Dokümantasyonu](https://appwrite.io/docs)
