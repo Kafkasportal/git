@@ -19,6 +19,7 @@ import dynamic from 'next/dynamic';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { BulkActionsToolbar } from '@/components/ui/bulk-actions-toolbar';
 import { toast } from 'sonner';
+import type { DonationDocument } from '@/types/database';
 
 const DonationForm = dynamic(
   () => import('@/components/forms/DonationForm').then((mod) => ({ default: mod.DonationForm })),
@@ -48,9 +49,9 @@ export default function DonationsPage() {
       }),
   });
 
-  const donations = data?.data || [];
+  const donationsList: DonationDocument[] = ((data?.data ?? []) as DonationDocument[]);
 
-  const totalAmount = donations.reduce((sum, d) => sum + d.amount, 0);
+  const totalAmount = donationsList.reduce((sum, d) => sum + d.amount, 0);
 
   // Bulk operations mutations
   const bulkDeleteMutation = useMutation({
@@ -96,7 +97,7 @@ export default function DonationsPage() {
     bulkStatusUpdateMutation.mutate({ ids, status });
   };
 
-  const columns: DataTableColumn<(typeof donations)[0]>[] = [
+  const columns: DataTableColumn<(typeof donationsList)[0]>[] = [
     {
       key: 'donor',
       label: 'Bağışçı',
@@ -229,7 +230,7 @@ export default function DonationsPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data?.total || donations.length}</div>
+            <div className="text-2xl font-bold">{data?.total || donationsList.length}</div>
           </CardContent>
         </Card>
 
@@ -250,7 +251,7 @@ export default function DonationsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {donations.reduce((sum, d) => sum + d.amount, 0).toLocaleString('tr-TR')} ₺
+              {donationsList.reduce((sum, d) => sum + d.amount, 0).toLocaleString('tr-TR')} ₺
             </div>
           </CardContent>
         </Card>
@@ -291,11 +292,11 @@ export default function DonationsPage() {
       <Card className="w-full">
         <CardHeader className="pb-4">
           <CardTitle>Bağış Listesi</CardTitle>
-          <CardDescription>Toplam {data?.total || donations.length} bağış kaydı</CardDescription>
+          <CardDescription>Toplam {data?.total || donationsList.length} bağış kaydı</CardDescription>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
           <VirtualizedDataTable
-            data={donations}
+            data={donationsList}
             columns={columns}
             isLoading={isLoading}
             emptyMessage="Bağış kaydı bulunamadı"

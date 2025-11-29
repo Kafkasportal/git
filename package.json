@@ -4,7 +4,7 @@
   "description": "Dernek Yönetim Sistemi - Next.js 16 + Appwrite. Modern non-profit association management system.",
   "private": true,
   "engines": {
-    "node": "20.x",
+    "node": ">=20.x",
     "npm": ">=9.0.0"
   },
   "scripts": {
@@ -66,7 +66,6 @@
     "ai": "^5.0.93",
     "appwrite": "^21.4.0",
     "bcryptjs": "^3.0.3",
-    "beasties": "^0.3.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
