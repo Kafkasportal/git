@@ -30,9 +30,19 @@ import { successResponse, errorResponse, parseBody } from '@/lib/api/route-helpe
 import { requireAuthenticatedUser, verifyCsrfToken } from '@/lib/api/auth-utils';
 import logger from '@/lib/logger';
 import { z } from 'zod';
-import { sendSMS } from '@/lib/services/sms';
+import { sendBulkSMS } from '@/lib/services/sms';
 import { sendEmail } from '@/lib/services/email';
 import { sendBulkWhatsAppMessages } from '@/lib/services/whatsapp';
+
+/**
+ * Common result type for bulk message operations
+ */
+interface BulkMessageResult {
+  total: number;
+  successful: number;
+  failed: number;
+  failedRecipients: Array<{ recipient: string; error: string }>;
+}
 
 // Validation schema
 const bulkMessageSchema = z.object({
@@ -47,72 +57,41 @@ const bulkMessageSchema = z.object({
 });
 
 /**
- * Send bulk SMS messages
+ * Convert SMS bulk result to standard format
+ * Uses existing sendBulkSMS service function to avoid code duplication
  */
 async function sendBulkSMSMessages(
   recipients: string[],
   message: string
-): Promise<{
-  total: number;
-  successful: number;
-  failed: number;
-  failedRecipients: Array<{ recipient: string; error: string }>;
-}> {
-  const result = {
+): Promise<BulkMessageResult> {
+  const result = await sendBulkSMS(recipients, message);
+
+  return {
     total: recipients.length,
-    successful: 0,
-    failed: 0,
-    failedRecipients: [] as Array<{ recipient: string; error: string }>,
+    successful: result.success,
+    failed: result.failed,
+    failedRecipients: result.results
+      .filter((r) => !r.success)
+      .map((r) => ({
+        recipient: r.phone,
+        error: r.error || 'SMS gönderilemedi',
+      })),
   };
-
-  for (const phone of recipients) {
-    try {
-      const success = await sendSMS({ to: phone, message });
-
-      if (success) {
-        result.successful++;
-      } else {
-        result.failed++;
-        result.failedRecipients.push({
-          recipient: phone,
-          error: 'SMS gönderilemedi',
-        });
-      }
-
-      // Rate limiting - 1 second between messages
-      if (recipients.length > 1) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-    } catch (error) {
-      result.failed++;
-      result.failedRecipients.push({
-        recipient: phone,
-        error: error instanceof Error ? error.message : 'Bilinmeyen hata',
-      });
-    }
-  }
-
-  return result;
 }
 
 /**
- * Send bulk Email messages
+ * Send bulk Email messages with rate limiting and error tracking
  */
 async function sendBulkEmailMessages(
   recipients: string[],
   message: string,
   subject?: string
-): Promise<{
-  total: number;
-  successful: number;
-  failed: number;
-  failedRecipients: Array<{ recipient: string; error: string }>;
-}> {
-  const result = {
+): Promise<BulkMessageResult> {
+  const result: BulkMessageResult = {
     total: recipients.length,
     successful: 0,
     failed: 0,
-    failedRecipients: [] as Array<{ recipient: string; error: string }>,
+    failedRecipients: [],
   };
 
   const emailSubject = subject || 'Kafkasder - Bilgilendirme';
@@ -186,12 +165,7 @@ export const POST = buildApiRoute({
     messageLength: message.length,
   });
 
-  let result: {
-    total: number;
-    successful: number;
-    failed: number;
-    failedRecipients: Array<{ recipient: string; error: string }>;
-  };
+  let result: BulkMessageResult;
 
   // Send messages based on type
   switch (type) {
