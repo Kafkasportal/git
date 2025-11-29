@@ -204,7 +204,7 @@ export const navigationModules: NavigationModule[] = [
       {
         name: 'İletişim Ayarları',
         href: '/ayarlar/iletisim',
-        description: 'Email, SMS, WhatsApp yapılandırması',
+        description: 'Email, SMS yapılandırması',
       },
       {
         name: 'Güvenlik Ayarları',

@@ -19,7 +19,7 @@ async function getCommunicationLogsHandler(request: NextRequest) {
     await requireModuleAccess('messages');
 
     const searchParams = request.nextUrl.searchParams;
-    const type = searchParams.get('type') as 'email' | 'sms' | 'whatsapp' | null;
+    const type = searchParams.get('type') as 'email' | 'sms' | null;
     const status = searchParams.get('status') as 'sent' | 'failed' | 'pending' | null;
     const limit = parseInt(searchParams.get('limit') || '100');
 

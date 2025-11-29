@@ -69,7 +69,7 @@ src/
 | **Yardım Programları** | İhtiyaç sahipleri, başvurular, nakit yardım | `/yardim/*` |
 | **Burs Sistemi** | Öğrenci bursları, başvurular, yetim destek | `/burs/*` |
 | **Finansal Yönetim** | Gelir-gider takibi, mali raporlar | `/fon/*` |
-| **İletişim** | SMS, e-posta, toplu mesaj, WhatsApp | `/mesaj/*` |
+| **İletişim** | SMS, e-posta, toplu mesaj | `/mesaj/*` |
 | **İş Yönetimi** | Görevler, toplantılar, karar takibi | `/is/*` |
 | **Ortak Yönetimi** | Partner kuruluşlar | `/partner/*` |
 | **Kullanıcı Yönetimi** | Roller, yetkiler, denetim kayıtları | `/kullanici/*` |

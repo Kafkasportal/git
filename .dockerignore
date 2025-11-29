@@ -64,9 +64,6 @@ Thumbs.db
 tmp
 temp
 
-# WhatsApp session data (don't include in image)
-.whatsapp-session
-
 # Docker
 Dockerfile*
 docker-compose*

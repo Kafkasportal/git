@@ -600,38 +600,6 @@ Bildirim listesi.
 
 ---
 
-## 📱 WhatsApp Entegrasyonu
-
-### `GET /api/whatsapp/status`
-
-WhatsApp bağlantı durumu.
-
-### `POST /api/whatsapp/initialize`
-
-WhatsApp client başlat.
-
-### `GET /api/whatsapp/qr`
-
-QR kod al.
-
-### `POST /api/whatsapp/send`
-
-Mesaj gönder.
-
-**Request:**
-```json
-{
-  "to": "905551234567",
-  "message": "Merhaba, bu bir test mesajıdır."
-}
-```
-
-### `POST /api/whatsapp/send-bulk`
-
-Toplu mesaj gönder.
-
----
-
 ## 🚨 Hata Yanıtları
 
 Tüm API'ler tutarlı hata formatı kullanır:

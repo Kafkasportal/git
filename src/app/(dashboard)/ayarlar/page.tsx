@@ -64,7 +64,7 @@ const settingCategories: SettingCategory[] = [
   },
   {
     title: 'İletişim Ayarları',
-    description: 'Email, SMS ve WhatsApp kanallarını yapılandırın',
+    description: 'Email ve SMS kanallarını yapılandırın',
     icon: MessageSquare,
     href: '/ayarlar/iletisim',
     badge: 'Yeni',
@@ -72,7 +72,6 @@ const settingCategories: SettingCategory[] = [
     features: [
       'SMTP Email yapılandırması',
       'Twilio SMS entegrasyonu',
-      'WhatsApp Business API',
       'Test gönderim araçları',
     ],
   },
@@ -326,7 +325,7 @@ export default function SettingsPage() {
             <div>
               <h4 className="font-medium mb-1">İletişim Kanalları</h4>
               <p className="text-muted-foreground">
-                Email, SMS ve WhatsApp kanallarını yapılandırın. Test modları ile güvenli test
+                Email ve SMS kanallarını yapılandırın. Test modları ile güvenli test
                 yapabilirsiniz.
               </p>
             </div>

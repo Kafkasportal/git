@@ -52,7 +52,7 @@ Uygulama `http://localhost:3000` adresinde çalışacak.
 | **Yardım Programları** | İhtiyaç sahipleri, başvurular, nakit yardım |
 | **Burs Sistemi** | Öğrenci bursları, başvurular, yetim destek |
 | **Finansal Yönetim** | Gelir-gider takibi, mali raporlar |
-| **İletişim** | SMS, e-posta, toplu mesaj, WhatsApp |
+| **İletişim** | SMS, e-posta, toplu mesaj |
 | **İş Yönetimi** | Görevler, toplantılar, karar takibi |
 | **Kullanıcı Yönetimi** | Roller, yetkiler, denetim kayıtları |
 

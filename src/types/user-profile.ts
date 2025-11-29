@@ -154,7 +154,7 @@ export function validatePassport(passportInfo: PassportInfo): PassportValidation
 // Communication Preferences
 // ============================================================================
 
-export type CommunicationChannel = 'email' | 'sms' | 'phone' | 'whatsapp';
+export type CommunicationChannel = 'email' | 'sms' | 'phone';
 
 export interface CommunicationChannelConfig {
   id: CommunicationChannel;
@@ -181,12 +181,6 @@ export const COMMUNICATION_CHANNELS: Record<CommunicationChannel, CommunicationC
     label: 'Phone',
     labelTr: 'Telefon',
     icon: 'Phone',
-  },
-  whatsapp: {
-    id: 'whatsapp',
-    label: 'WhatsApp',
-    labelTr: 'WhatsApp',
-    icon: 'MessageCircle',
   },
 };
 

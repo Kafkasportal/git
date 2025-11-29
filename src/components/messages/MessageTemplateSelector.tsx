@@ -26,7 +26,7 @@ import {
 interface MessageTemplate {
   id: string;
   name: string;
-  message_type: 'sms' | 'email' | 'internal' | 'whatsapp';
+  message_type: 'sms' | 'email' | 'internal';
   subject?: string;
   content: string;
   variables?: string[];
@@ -36,7 +36,7 @@ interface MessageTemplate {
 }
 
 interface MessageTemplateSelectorProps {
-  messageType: 'sms' | 'email' | 'internal' | 'whatsapp';
+  messageType: 'sms' | 'email' | 'internal';
   onSelect: (template: MessageTemplate) => void;
   onSaveAsTemplate?: (data: MessageTemplateFormData) => void;
 }
@@ -272,7 +272,7 @@ export function MessageTemplateSelector({
     onSaveAsTemplate?.(data);
   };
 
-  const getMessageTypeIcon = (type: 'sms' | 'email' | 'internal' | 'whatsapp') => {
+  const getMessageTypeIcon = (type: 'sms' | 'email' | 'internal') => {
     switch (type) {
       case 'sms':
         return <Phone className="h-4 w-4" />;
@@ -409,7 +409,7 @@ function SaveTemplateForm({
   onSave,
   onCancel,
 }: {
-  messageType: 'sms' | 'email' | 'internal' | 'whatsapp';
+  messageType: 'sms' | 'email' | 'internal';
   onSave: (data: MessageTemplateFormData) => void;
   onCancel: () => void;
 }) {

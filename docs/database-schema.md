@@ -668,7 +668,7 @@ interface MessageDocument {
   $id: string;
   $createdAt: string;
   
-  message_type: 'sms' | 'email' | 'internal' | 'whatsapp';
+  message_type: 'sms' | 'email' | 'internal';
   
   sender: string;            // User ID
   recipients: string[];      // E-posta, telefon veya User ID

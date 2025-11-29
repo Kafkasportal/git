@@ -15,7 +15,7 @@
 2. **Yardım Programları**: İhtiyaç sahiplerinin kaydı, başvuru süreçleri ve yardım dağıtımı
 3. **Burs Sistemi**: Öğrenci burs başvuruları, takibi ve ödemeleri
 4. **Finansal Yönetim**: Gelir-gider takibi, mali raporlama
-5. **İletişim Yönetimi**: SMS, e-posta, WhatsApp ile toplu mesajlaşma
+5. **İletişim Yönetimi**: SMS, e-posta ile toplu mesajlaşma
 6. **İş Yönetimi**: Toplantılar, görevler, karar takibi
 7. **Kullanıcı Yönetimi**: Rol ve yetki sistemi, denetim kayıtları
 8. **Sistem Ayarları**: Tema, marka, güvenlik ve parametre yönetimi
@@ -231,7 +231,7 @@
 
 **Özellikler:**
 - Wizard-based mesaj gönderme (4 adım)
-- Mesaj türü seçimi (SMS, Email, WhatsApp)
+- Mesaj türü seçimi (SMS, Email)
 - Alıcı seçimi ve yönetimi
 - Mesaj içeriği oluşturma
 - Önizleme

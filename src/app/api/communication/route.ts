@@ -1,11 +1,11 @@
 /**
- * GET /api/communication?type=email|sms|whatsapp
+ * GET /api/communication?type=email|sms
  * Get communication settings by type
  *
  * GET /api/communication (no type)
  * Get all communication settings
  *
- * PUT /api/communication?type=email|sms|whatsapp
+ * PUT /api/communication?type=email|sms
  * Update communication settings by type
  */
 
@@ -39,11 +39,11 @@ async function getCommunicationHandler(request: NextRequest) {
 
     if (type) {
       // Get specific type
-      if (!['email', 'sms', 'whatsapp'].includes(type)) {
+      if (!['email', 'sms'].includes(type)) {
         return NextResponse.json(
           {
             success: false,
-            error: 'Geçersiz iletişim türü (email, sms, whatsapp olmalı)',
+            error: 'Geçersiz iletişim türü (email, sms olmalı)',
           },
           { status: 400 }
         );
@@ -53,16 +53,14 @@ async function getCommunicationHandler(request: NextRequest) {
       settings = setting?.value || {};
     } else {
       // Get all types
-      const [email, sms, whatsapp] = await Promise.all([
+      const [email, sms] = await Promise.all([
         appwriteSystemSettings.getSetting('communication', 'email'),
         appwriteSystemSettings.getSetting('communication', 'sms'),
-        appwriteSystemSettings.getSetting('communication', 'whatsapp'),
       ]);
 
       settings = {
         email: email?.value || {},
         sms: sms?.value || {},
-        whatsapp: whatsapp?.value || {},
       };
     }
 
@@ -110,11 +108,11 @@ async function updateCommunicationHandler(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
 
-    if (!type || !['email', 'sms', 'whatsapp'].includes(type)) {
+    if (!type || !['email', 'sms'].includes(type)) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Geçersiz iletişim türü (email, sms, whatsapp olmalı)',
+          error: 'Geçersiz iletişim türü (email, sms olmalı)',
         },
         { status: 400 }
       );

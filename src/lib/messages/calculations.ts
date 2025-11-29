@@ -1,4 +1,4 @@
-export type MessageType = 'sms' | 'email' | 'whatsapp';
+export type MessageType = 'sms' | 'email';
 
 export interface SendingResult {
   success: number;
@@ -73,7 +73,6 @@ export function getMessageTypeLabel(type: MessageType): string {
   const labels: Record<MessageType, string> = {
     sms: 'SMS',
     email: 'E-Posta',
-    whatsapp: 'WhatsApp',
   };
 
   return labels[type] || type;
@@ -86,7 +85,6 @@ export function getMessageTypeIcon(type: MessageType): string {
   const icons: Record<MessageType, string> = {
     sms: '📱',
     email: '✉️',
-    whatsapp: '💬',
   };
 
   return icons[type] || '📨';
