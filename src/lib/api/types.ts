@@ -144,7 +144,7 @@ export interface TaskUpdateInput extends Partial<TaskCreateInput> {
 }
 
 // ========================================
-// TODO TYPES
+// Todo/Task Type Definitions
 // ========================================
 
 export interface TodoCreateInput {
