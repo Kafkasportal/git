@@ -16,7 +16,7 @@ vi.mock('@/lib/appwrite/api', () => ({
 // Mock auth
 vi.mock('@/lib/api/auth-utils', () => ({
   requireModuleAccess: vi.fn().mockResolvedValue({
-    user: { id: 'test-user', permissions: ['workflow:read'] },
+    user: { id: 'test-user', email: 'test@example.com', name: 'Test User', isActive: true, permissions: ['workflow:read'] },
   }),
   verifyCsrfToken: vi.fn().mockResolvedValue(undefined),
   buildErrorResponse: vi.fn().mockReturnValue(null),

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockAuthResponse } from '../test-utils';
 import { GET, PATCH, DELETE } from '@/app/api/users/[id]/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
@@ -24,7 +25,8 @@ vi.mock('@/lib/api/route-helpers', () => ({
 // Mock auth
 vi.mock('@/lib/api/auth-utils', () => ({
   requireAuthenticatedUser: vi.fn().mockResolvedValue({
-    user: { id: 'test-user', permissions: ['users:manage'] },
+    session: { sessionId: 'test-session', userId: 'test-user-id' },
+    user: { id: 'test-user', email: 'test@example.com', name: 'Test User', isActive: true, permissions: ['users:manage'] },
   }),
   verifyCsrfToken: vi.fn().mockResolvedValue(undefined),
   buildErrorResponse: vi.fn().mockReturnValue(null),
@@ -91,9 +93,9 @@ describe('GET /api/users/[id]', () => {
   });
 
   it('returns 403 when user does not have users:manage permission', async () => {
-    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValueOnce({
-      user: { id: 'test-user', permissions: [] },
-    });
+    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValueOnce(
+      createMockAuthResponse({ permissions: [] })
+    );
 
     const request = new NextRequest('http://localhost/api/users/test-id');
     const params = Promise.resolve({ id: 'test-id' });
@@ -300,9 +302,9 @@ describe('PATCH /api/users/[id]', () => {
   });
 
   it('returns 403 when user does not have users:manage permission', async () => {
-    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValueOnce({
-      user: { id: 'test-user', permissions: [] },
-    });
+    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValueOnce(
+      createMockAuthResponse({ permissions: [] })
+    );
 
     const updateData = {
       name: 'Updated Name',
@@ -391,9 +393,9 @@ describe('DELETE /api/users/[id]', () => {
   });
 
   it('returns 403 when user does not have users:manage permission', async () => {
-    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValueOnce({
-      user: { id: 'test-user', permissions: [] },
-    });
+    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValueOnce(
+      createMockAuthResponse({ permissions: [] })
+    );
 
     const request = new NextRequest('http://localhost/api/users/test-id', {
       method: 'DELETE',

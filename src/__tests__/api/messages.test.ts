@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockDocuments, createMockAuthResponse } from '../test-utils';
 import { GET, POST } from '@/app/api/messages/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
@@ -19,7 +20,8 @@ vi.mock('@/lib/appwrite/api', () => ({
 // Mock auth
 vi.mock('@/lib/api/auth-utils', () => ({
   requireModuleAccess: vi.fn().mockResolvedValue({
-    user: { id: 'test-user', permissions: [] },
+    session: { sessionId: 'test-session', userId: 'test-user-id' },
+    user: { id: 'test-user', email: 'test@example.com', name: 'Test User', isActive: true, permissions: [] },
   }),
   verifyCsrfToken: vi.fn().mockResolvedValue(undefined),
   buildErrorResponse: vi.fn().mockReturnValue(null),
@@ -38,7 +40,7 @@ describe('GET /api/messages', () => {
   });
 
   it('returns messages list successfully', async () => {
-    const mockMessages = [
+    const mockMessagesData = [
       {
         _id: '1',
         message_type: 'internal',
@@ -58,6 +60,7 @@ describe('GET /api/messages', () => {
         is_bulk: false,
       },
     ];
+    const mockMessages = createMockDocuments(mockMessagesData);
 
     vi.mocked(appwriteApi.appwriteMessages.list).mockResolvedValue({
       documents: mockMessages,
@@ -75,14 +78,14 @@ describe('GET /api/messages', () => {
   });
 
   it('filters by inbox tab', async () => {
-    const mockMessages = [
+    const mockMessages = createMockDocuments([
       {
         _id: '1',
         message_type: 'internal',
         recipient: 'test-user',
         content: 'Inbox message',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteMessages.list).mockResolvedValue({
       documents: mockMessages,
@@ -102,14 +105,14 @@ describe('GET /api/messages', () => {
   });
 
   it('filters by sent tab', async () => {
-    const mockMessages = [
+    const mockMessages = createMockDocuments([
       {
         _id: '1',
         message_type: 'internal',
         sender: 'test-user',
         content: 'Sent message',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteMessages.list).mockResolvedValue({
       documents: mockMessages,
@@ -129,7 +132,7 @@ describe('GET /api/messages', () => {
   });
 
   it('filters by drafts tab', async () => {
-    const mockMessages = [
+    const mockMessages = createMockDocuments([
       {
         _id: '1',
         message_type: 'internal',
@@ -137,7 +140,7 @@ describe('GET /api/messages', () => {
         status: 'draft',
         content: 'Draft message',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteMessages.list).mockResolvedValue({
       documents: mockMessages,
@@ -158,13 +161,13 @@ describe('GET /api/messages', () => {
   });
 
   it('filters by message_type', async () => {
-    const mockMessages = [
+    const mockMessages = createMockDocuments([
       {
         _id: '1',
         message_type: 'sms',
         content: 'SMS message',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteMessages.list).mockResolvedValue({
       documents: mockMessages,
@@ -193,17 +196,17 @@ describe('GET /api/messages', () => {
   });
 
   it('allows admin users to view all messages', async () => {
-    vi.mocked(authUtils.requireModuleAccess).mockResolvedValueOnce({
-      user: { id: 'admin-user', permissions: ['users:manage'] },
-    });
+    vi.mocked(authUtils.requireModuleAccess).mockResolvedValueOnce(
+      createMockAuthResponse({ id: 'admin-user', permissions: ['users:manage'] as any })
+    );
 
-    const mockMessages = [
+    const mockMessages = createMockDocuments([
       {
         _id: '1',
         sender: 'other-user',
         content: 'Admin can see this',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteMessages.list).mockResolvedValue({
       documents: mockMessages,
@@ -425,9 +428,9 @@ describe('POST /api/messages', () => {
   });
 
   it('allows admin users to create bulk messages', async () => {
-    vi.mocked(authUtils.requireModuleAccess).mockResolvedValueOnce({
-      user: { id: 'admin-user', permissions: ['users:manage'] },
-    });
+    vi.mocked(authUtils.requireModuleAccess).mockResolvedValueOnce(
+      createMockAuthResponse({ id: 'admin-user', permissions: ['users:manage'] as any })
+    );
 
     const bulkMessage = {
       message_type: 'internal',

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockDocuments } from '../test-utils';
 import { GET, POST } from '@/app/api/todos/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
@@ -45,7 +46,7 @@ vi.mock('@/lib/api/route-helpers', () => ({
 // Mock auth
 vi.mock('@/lib/api/auth-utils', () => ({
   requireAuthenticatedUser: vi.fn().mockResolvedValue({
-    user: { id: 'test-user', permissions: ['todos:read'] },
+    user: { id: 'test-user', email: 'test@example.com', name: 'Test User', isActive: true, permissions: ['todos:read'] },
   }),
   verifyCsrfToken: vi.fn().mockResolvedValue(undefined),
 }));
@@ -126,7 +127,7 @@ describe('GET /api/todos', () => {
   });
 
   it('returns todos list successfully', async () => {
-    const mockTodos = [
+    const mockTodos = createMockDocuments([
       {
         _id: '1',
         title: 'Todo 1',
@@ -141,7 +142,7 @@ describe('GET /api/todos', () => {
         completed: true,
         created_by: 'user1',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteTodos.list).mockResolvedValue({
       documents: mockTodos,
@@ -159,13 +160,13 @@ describe('GET /api/todos', () => {
   });
 
   it('filters by completed status', async () => {
-    const mockTodos = [
+    const mockTodos = createMockDocuments([
       {
         _id: '1',
         title: 'Completed Todo',
         completed: true,
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteTodos.list).mockResolvedValue({
       documents: mockTodos,
@@ -180,13 +181,13 @@ describe('GET /api/todos', () => {
   });
 
   it('filters by priority', async () => {
-    const mockTodos = [
+    const mockTodos = createMockDocuments([
       {
         _id: '1',
         title: 'High Priority Todo',
         priority: 'high',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteTodos.list).mockResolvedValue({
       documents: mockTodos,

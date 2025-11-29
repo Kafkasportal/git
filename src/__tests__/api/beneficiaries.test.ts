@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockDocuments } from '../test-utils';
 import { GET, POST } from '@/app/api/beneficiaries/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
@@ -56,7 +57,7 @@ describe('GET /api/beneficiaries', () => {
   });
 
   it('returns beneficiaries list successfully', async () => {
-    const mockBeneficiaries = [
+    const mockBeneficiaries = createMockDocuments([
       {
         _id: '1',
         name: 'Test Beneficiary',
@@ -75,7 +76,7 @@ describe('GET /api/beneficiaries', () => {
         city: 'Ankara',
         status: 'PASIF',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteBeneficiaries.list).mockResolvedValue({
       documents: mockBeneficiaries,
@@ -93,13 +94,13 @@ describe('GET /api/beneficiaries', () => {
   });
 
   it('filters by city', async () => {
-    const mockBeneficiaries = [
+    const mockBeneficiaries = createMockDocuments([
       {
         _id: '1',
         name: 'Test Beneficiary',
         city: 'Istanbul',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteBeneficiaries.list).mockResolvedValue({
       documents: mockBeneficiaries,

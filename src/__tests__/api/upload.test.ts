@@ -116,7 +116,7 @@ describe('GET /api/upload', () => {
   });
 
   it('returns file download URL successfully', async () => {
-    const mockUrl = new URL('https://example.com/file');
+    const mockUrl = 'https://example.com/file';
     vi.mocked(appwriteApi.appwriteStorage.getFileView).mockReturnValue(mockUrl);
 
     const request = new NextRequest('http://localhost/api/upload?storageId=test-storage-id');
@@ -177,7 +177,7 @@ describe('DELETE /api/upload', () => {
   });
 
   it('deletes file successfully', async () => {
-    vi.mocked(appwriteApi.appwriteStorage.deleteFile).mockResolvedValue(undefined);
+    vi.mocked(appwriteApi.appwriteStorage.deleteFile).mockResolvedValue({ success: true });
 
     const request = new NextRequest('http://localhost/api/upload?storageId=test-storage-id', {
       method: 'DELETE',

@@ -3,6 +3,7 @@ import { GET, POST } from '@/app/api/users/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
 import * as authUtils from '@/lib/api/auth-utils';
+import { createMockDocuments, createMockAuthResponse } from '../test-utils';
 
 // Mock Appwrite API
 vi.mock('@/lib/appwrite/api', () => ({
@@ -15,7 +16,8 @@ vi.mock('@/lib/appwrite/api', () => ({
 // Mock auth
 vi.mock('@/lib/api/auth-utils', () => ({
   requireAuthenticatedUser: vi.fn().mockResolvedValue({
-    user: { id: 'test-user', permissions: ['users:manage'] },
+    session: { sessionId: 'test-session', userId: 'test-user-id' },
+    user: { id: 'test-user', email: 'test@example.com', name: 'Test User', isActive: true, permissions: ['users:manage'] },
   }),
   verifyCsrfToken: vi.fn().mockResolvedValue(undefined),
   buildErrorResponse: vi.fn().mockReturnValue(null),
@@ -35,7 +37,7 @@ vi.mock('@/lib/api/route-helpers', () => ({
     const body = await request.json();
     return { data: body, error: null };
   }),
-  handleApiError: vi.fn(async (error, logger, context, message) => {
+  handleApiError: vi.fn(async (_error, _logger, _context, message) => {
     return new Response(JSON.stringify({ success: false, error: message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
@@ -67,7 +69,7 @@ describe('GET /api/users', () => {
   });
 
   it('returns users list successfully', async () => {
-    const mockUsers = [
+    const mockUsersData = [
       {
         _id: '1',
         name: 'Test User 1',
@@ -85,6 +87,7 @@ describe('GET /api/users', () => {
         isActive: true,
       },
     ];
+    const mockUsers = createMockDocuments(mockUsersData);
 
     vi.mocked(appwriteApi.appwriteUsers.list).mockResolvedValue({
       documents: mockUsers,
@@ -102,13 +105,13 @@ describe('GET /api/users', () => {
   });
 
   it('filters by search', async () => {
-    const mockUsers = [
+    const mockUsers = createMockDocuments([
       {
         _id: '1',
         name: 'Test User',
         email: 'test@example.com',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteUsers.list).mockResolvedValue({
       documents: mockUsers,
@@ -127,13 +130,13 @@ describe('GET /api/users', () => {
   });
 
   it('filters by role', async () => {
-    const mockUsers = [
+    const mockUsers = createMockDocuments([
       {
         _id: '1',
         name: 'Admin User',
         role: 'Admin',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteUsers.list).mockResolvedValue({
       documents: mockUsers,
@@ -152,13 +155,13 @@ describe('GET /api/users', () => {
   });
 
   it('filters by isActive', async () => {
-    const mockUsers = [
+    const mockUsers = createMockDocuments([
       {
         _id: '1',
         name: 'Active User',
         isActive: true,
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteUsers.list).mockResolvedValue({
       documents: mockUsers,
@@ -194,9 +197,9 @@ describe('GET /api/users', () => {
   });
 
   it('returns 403 when user does not have users:manage permission', async () => {
-    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValueOnce({
-      user: { id: 'test-user', permissions: [] },
-    });
+    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValueOnce(
+      createMockAuthResponse({ permissions: [] })
+    );
 
     const request = new NextRequest('http://localhost/api/users');
     const response = await GET(request);
@@ -433,9 +436,9 @@ describe('POST /api/users', () => {
   });
 
   it('returns 403 when user does not have users:manage permission', async () => {
-    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValueOnce({
-      user: { id: 'test-user', permissions: [] },
-    });
+    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValueOnce(
+      createMockAuthResponse({ permissions: [] })
+    );
 
     const newUser = {
       name: 'Test User',

@@ -59,7 +59,7 @@ describe('useNotificationStream', () => {
 
   it('handles connection open event', () => {
     let eventSourceInstance: any = null;
-    (global.EventSource as any).mockImplementation((url: string, options: any) => {
+    (global.EventSource as any).mockImplementation((_url: string, _options: any) => {
       eventSourceInstance = {
         onopen: null,
         onmessage: null,
@@ -112,7 +112,6 @@ describe('useNotificationStream', () => {
 
   it('handles reconnection on error', () => {
     let eventSourceInstance: any = null;
-    let reconnectTimeout: NodeJS.Timeout | null = null;
 
     (global.EventSource as any).mockImplementation(() => {
       eventSourceInstance = {

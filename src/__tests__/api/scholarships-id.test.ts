@@ -23,7 +23,7 @@ vi.mock('@/lib/api/route-helpers', () => ({
 // Mock auth
 vi.mock('@/lib/api/auth-utils', () => ({
   requireModuleAccess: vi.fn().mockResolvedValue({
-    user: { id: 'test-user', permissions: ['scholarship:read'] },
+    user: { id: 'test-user', email: 'test@example.com', name: 'Test User', isActive: true, permissions: ['scholarship:read'] },
   }),
   verifyCsrfToken: vi.fn().mockResolvedValue(undefined),
   buildErrorResponse: vi.fn().mockReturnValue(null),

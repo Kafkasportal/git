@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockDocuments } from '../test-utils';
 import { GET, POST } from '@/app/api/aid-applications/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
@@ -20,7 +21,7 @@ vi.mock('@/lib/appwrite/api', () => ({
 // Mock auth
 vi.mock('@/lib/api/auth-utils', () => ({
   requireModuleAccess: vi.fn().mockResolvedValue({
-    user: { id: 'test-user', permissions: ['beneficiaries:read'] },
+    user: { id: 'test-user', email: 'test@example.com', name: 'Test User', isActive: true, permissions: ['beneficiaries:read'] },
   }),
   verifyCsrfToken: vi.fn().mockResolvedValue(undefined),
   buildErrorResponse: vi.fn().mockReturnValue(null),
@@ -45,7 +46,7 @@ describe('GET /api/aid-applications', () => {
   });
 
   it('returns aid applications list successfully', async () => {
-    const mockApplications = [
+    const mockApplicationsData = [
       {
         _id: '1',
         applicant_name: 'Test Applicant 1',
@@ -61,6 +62,7 @@ describe('GET /api/aid-applications', () => {
         status: 'open',
       },
     ];
+    const mockApplications = createMockDocuments(mockApplicationsData);
 
     vi.mocked(appwriteApi.appwriteAidApplications.list).mockResolvedValue({
       documents: mockApplications,
@@ -78,13 +80,13 @@ describe('GET /api/aid-applications', () => {
   });
 
   it('filters by stage', async () => {
-    const mockApplications = [
+    const mockApplications = createMockDocuments([
       {
         _id: '1',
         applicant_name: 'Test Applicant',
         stage: 'draft',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteAidApplications.list).mockResolvedValue({
       documents: mockApplications,
@@ -103,13 +105,13 @@ describe('GET /api/aid-applications', () => {
   });
 
   it('filters by beneficiary_id', async () => {
-    const mockApplications = [
+    const mockApplications = createMockDocuments([
       {
         _id: '1',
         applicant_name: 'Test Applicant',
         beneficiary_id: 'beneficiary-1',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteAidApplications.list).mockResolvedValue({
       documents: mockApplications,

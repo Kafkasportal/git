@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockDocuments } from '../test-utils';
 import { GET, POST } from '@/app/api/workflow-notifications/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
@@ -20,7 +21,7 @@ vi.mock('@/lib/appwrite/api', () => ({
 // Mock auth
 vi.mock('@/lib/api/auth-utils', () => ({
   requireModuleAccess: vi.fn().mockResolvedValue({
-    user: { id: 'test-user', permissions: ['workflow:read'] },
+    user: { id: 'test-user', email: 'test@example.com', name: 'Test User', isActive: true, permissions: ['workflow:read'] },
   }),
   verifyCsrfToken: vi.fn().mockResolvedValue(undefined),
   buildErrorResponse: vi.fn().mockReturnValue(null),
@@ -39,7 +40,7 @@ describe('GET /api/workflow-notifications', () => {
   });
 
   it('returns notifications list successfully', async () => {
-    const mockNotifications = [
+    const mockNotificationsData = [
       {
         _id: '1',
         recipient: 'user1',
@@ -55,6 +56,7 @@ describe('GET /api/workflow-notifications', () => {
         status: 'gonderildi',
       },
     ];
+    const mockNotifications = createMockDocuments(mockNotificationsData);
 
     vi.mocked(appwriteApi.appwriteWorkflowNotifications.list).mockResolvedValue({
       documents: mockNotifications,
@@ -71,13 +73,13 @@ describe('GET /api/workflow-notifications', () => {
   });
 
   it('filters by recipient', async () => {
-    const mockNotifications = [
+    const mockNotifications = createMockDocuments([
       {
         _id: '1',
         recipient: 'user1',
         title: 'Notification',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteWorkflowNotifications.list).mockResolvedValue({
       documents: mockNotifications,
@@ -96,13 +98,13 @@ describe('GET /api/workflow-notifications', () => {
   });
 
   it('filters by status', async () => {
-    const mockNotifications = [
+    const mockNotifications = createMockDocuments([
       {
         _id: '1',
         status: 'okundu',
         title: 'Read Notification',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteWorkflowNotifications.list).mockResolvedValue({
       documents: mockNotifications,
@@ -121,13 +123,13 @@ describe('GET /api/workflow-notifications', () => {
   });
 
   it('filters by category', async () => {
-    const mockNotifications = [
+    const mockNotifications = createMockDocuments([
       {
         _id: '1',
         category: 'rapor',
         title: 'Report Notification',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteWorkflowNotifications.list).mockResolvedValue({
       documents: mockNotifications,

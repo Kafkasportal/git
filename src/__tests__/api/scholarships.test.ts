@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockDocuments } from '../test-utils';
 import { GET, POST } from '@/app/api/scholarships/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
@@ -20,7 +21,7 @@ vi.mock('@/lib/appwrite/api', () => ({
 // Mock auth
 vi.mock('@/lib/api/auth-utils', () => ({
   requireModuleAccess: vi.fn().mockResolvedValue({
-    user: { id: 'test-user', permissions: ['scholarship:read'] },
+    user: { id: 'test-user', email: 'test@example.com', name: 'Test User', isActive: true, permissions: ['scholarship:read'] },
   }),
   verifyCsrfToken: vi.fn().mockResolvedValue(undefined),
   buildErrorResponse: vi.fn().mockReturnValue(null),
@@ -81,7 +82,7 @@ describe('GET /api/scholarships', () => {
   });
 
   it('returns scholarships list successfully', async () => {
-    const mockScholarships = [
+    const mockScholarships = createMockDocuments([
       {
         _id: '1',
         title: 'Scholarship 1',
@@ -98,7 +99,7 @@ describe('GET /api/scholarships', () => {
         category: 'sports',
         is_active: true,
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteScholarships.list).mockResolvedValue({
       documents: mockScholarships,
@@ -116,13 +117,13 @@ describe('GET /api/scholarships', () => {
   });
 
   it('filters by category', async () => {
-    const mockScholarships = [
+    const mockScholarships = createMockDocuments([
       {
         _id: '1',
         title: 'Academic Scholarship',
         category: 'academic',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteScholarships.list).mockResolvedValue({
       documents: mockScholarships,
@@ -141,13 +142,13 @@ describe('GET /api/scholarships', () => {
   });
 
   it('filters by isActive', async () => {
-    const mockScholarships = [
+    const mockScholarships = createMockDocuments([
       {
         _id: '1',
         title: 'Active Scholarship',
         is_active: true,
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteScholarships.list).mockResolvedValue({
       documents: mockScholarships,
@@ -273,7 +274,7 @@ describe('POST /api/scholarships', () => {
     const { z } = await import('zod');
     const { scholarshipCreateSchema } = await import('@/lib/validations/scholarship');
     vi.mocked(scholarshipCreateSchema.parse).mockImplementationOnce(() => {
-      throw new z.ZodError([{ path: ['title'], message: 'Title is required' }]);
+      throw new z.ZodError([{ path: ['title'], message: 'Title is required', code: 'custom' } as any]);
     });
 
     const invalidScholarship = {

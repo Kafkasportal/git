@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockDocuments } from '../test-utils';
 import { GET } from '@/app/api/storage/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
@@ -35,7 +36,7 @@ describe('GET /api/storage', () => {
   });
 
   it('returns file list successfully', async () => {
-    const mockFiles = [
+    const mockFiles = createMockDocuments([
       {
         _id: '1',
         storageId: 'storage-1',
@@ -48,7 +49,7 @@ describe('GET /api/storage', () => {
         bucket: 'documents',
         documentType: 'image',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteFiles.list).mockResolvedValue({
       documents: mockFiles,
@@ -66,13 +67,13 @@ describe('GET /api/storage', () => {
   });
 
   it('filters by beneficiaryId', async () => {
-    const mockFiles = [
+    const mockFiles = createMockDocuments([
       {
         _id: '1',
         beneficiaryId: 'ben-1',
         storageId: 'storage-1',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteFiles.list).mockResolvedValue({
       documents: mockFiles,
@@ -92,13 +93,13 @@ describe('GET /api/storage', () => {
   });
 
   it('filters by bucket', async () => {
-    const mockFiles = [
+    const mockFiles = createMockDocuments([
       {
         _id: '1',
         bucket: 'images',
         storageId: 'storage-1',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteFiles.list).mockResolvedValue({
       documents: mockFiles,
@@ -118,13 +119,13 @@ describe('GET /api/storage', () => {
   });
 
   it('filters by documentType', async () => {
-    const mockFiles = [
+    const mockFiles = createMockDocuments([
       {
         _id: '1',
         documentType: 'pdf',
         storageId: 'storage-1',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteFiles.list).mockResolvedValue({
       documents: mockFiles,

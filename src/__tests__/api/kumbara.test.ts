@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockDocuments } from '../test-utils';
 import { GET, POST } from '@/app/api/kumbara/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
@@ -53,7 +54,7 @@ describe('GET /api/kumbara', () => {
   });
 
   it('returns kumbara donations list successfully', async () => {
-    const mockDonations = [
+    const mockDonations = createMockDocuments([
       {
         _id: '1',
         donor_name: 'Test Donor',
@@ -76,7 +77,7 @@ describe('GET /api/kumbara', () => {
         collection_date: '2024-01-02T00:00:00Z',
         status: 'completed',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteDonations.list).mockResolvedValue({
       documents: mockDonations,
@@ -94,7 +95,7 @@ describe('GET /api/kumbara', () => {
   });
 
   it('filters only kumbara donations', async () => {
-    const mockDonations = [
+    const mockDonations = createMockDocuments([
       {
         _id: '1',
         is_kumbara: true,
@@ -105,7 +106,7 @@ describe('GET /api/kumbara', () => {
         is_kumbara: false, // Should be filtered out
         donor_name: 'Test 2',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteDonations.list).mockResolvedValue({
       documents: mockDonations.filter((d) => d.is_kumbara),
