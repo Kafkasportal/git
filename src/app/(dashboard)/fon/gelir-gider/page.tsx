@@ -85,12 +85,53 @@ export default function IncomeExpensePage() {
     setIsDeleteDialogOpen(true);
   };
 
-  // Edit mutation
+  // Edit mutation with optimistic updates
   const editMutation = useMutation({
-    mutationFn: async (data: Partial<FinanceRecord>) => {
-      // TODO: Replace with actual API call when backend is ready
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return data;
+    mutationFn: async (data: Partial<FinanceRecord> & { id: string }) => {
+      const { id, ...updateData } = data;
+      const response = await fetch(`/api/finance/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(updateData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'İşlem güncellenirken bir hata oluştu');
+      }
+
+      const result = await response.json();
+      return result.data;
+    },
+    onMutate: async (newData) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['finance-records'] });
+
+      // Snapshot previous value
+      const previousRecords = queryClient.getQueryData(['finance-records']);
+
+      // Optimistically update
+      queryClient.setQueryData(['finance-records'], (old: { data: FinanceRecord[]; total: number } | undefined) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: old.data.map((record) =>
+            record._id === newData.id ? { ...record, ...newData } : record
+          ),
+        };
+      });
+
+      return { previousRecords };
+    },
+    onError: (error, _newData, context) => {
+      // Rollback on error
+      if (context?.previousRecords) {
+        queryClient.setQueryData(['finance-records'], context.previousRecords);
+      }
+      toast.error(error instanceof Error ? error.message : 'İşlem güncellenirken bir hata oluştu');
     },
     onSuccess: () => {
       toast.success('İşlem başarıyla güncellendi');
@@ -98,25 +139,57 @@ export default function IncomeExpensePage() {
       setSelectedRecord(null);
       queryClient.invalidateQueries({ queryKey: ['finance-records'] });
     },
-    onError: () => {
-      toast.error('İşlem güncellenirken bir hata oluştu');
-    },
   });
 
-  // Delete mutation
+  // Delete mutation with optimistic updates
   const deleteMutation = useMutation({
-    mutationFn: async () => {
-      // TODO: Replace with actual API call when backend is ready
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/finance/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'İşlem silinirken bir hata oluştu');
+      }
+
+      return { success: true };
+    },
+    onMutate: async (id) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['finance-records'] });
+
+      // Snapshot previous value
+      const previousRecords = queryClient.getQueryData(['finance-records']);
+
+      // Optimistically update
+      queryClient.setQueryData(['finance-records'], (old: { data: FinanceRecord[]; total: number } | undefined) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: old.data.filter((record) => record._id !== id),
+          total: old.total - 1,
+        };
+      });
+
+      return { previousRecords };
+    },
+    onError: (error, _id, context) => {
+      // Rollback on error
+      if (context?.previousRecords) {
+        queryClient.setQueryData(['finance-records'], context.previousRecords);
+      }
+      toast.error(error instanceof Error ? error.message : 'İşlem silinirken bir hata oluştu');
     },
     onSuccess: () => {
       toast.success('İşlem başarıyla silindi');
       setIsDeleteDialogOpen(false);
       setSelectedRecord(null);
       queryClient.invalidateQueries({ queryKey: ['finance-records'] });
-    },
-    onError: () => {
-      toast.error('İşlem silinirken bir hata oluştu');
     },
   });
 
@@ -173,7 +246,10 @@ export default function IncomeExpensePage() {
           open={isEditDialogOpen}
           onOpenChange={setIsEditDialogOpen}
           record={selectedRecord}
-          onSave={editMutation.mutateAsync}
+          onSave={async (data) => {
+            if (!selectedRecord?._id) return;
+            await editMutation.mutateAsync({ ...data, id: selectedRecord._id });
+          }}
           isLoading={editMutation.isPending}
         />
       )}
@@ -183,7 +259,10 @@ export default function IncomeExpensePage() {
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         record={selectedRecord}
-        onConfirm={deleteMutation.mutateAsync}
+        onConfirm={async () => {
+          if (!selectedRecord?._id) return;
+          await deleteMutation.mutateAsync(selectedRecord._id);
+        }}
         isLoading={deleteMutation.isPending}
       />
     </div>

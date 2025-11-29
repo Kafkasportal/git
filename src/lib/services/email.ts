@@ -5,6 +5,8 @@
 
 import nodemailer from 'nodemailer';
 import Handlebars from 'handlebars';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { getServerEnv, hasEmailConfig } from '@/lib/env-validation';
 import logger from '@/lib/logger';
 
@@ -18,8 +20,19 @@ interface EmailOptions {
   templateData?: Record<string, any>;
 }
 
-// Email Templates
-const emailTemplates: Record<string, string> = {
+// Load email templates from filesystem
+function loadEmailTemplate(templateName: string): string | null {
+  try {
+    const templatePath = join(process.cwd(), 'src', 'templates', 'email', `${templateName}.html`);
+    return readFileSync(templatePath, 'utf-8');
+  } catch (error) {
+    logger.warn(`Email template not found: ${templateName}`, { error });
+    return null;
+  }
+}
+
+// Email Templates - fallback to inline templates if files don't exist
+const inlineEmailTemplates: Record<string, string> = {
   welcome: `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h1 style="color: #0066cc;">Hoş Geldiniz!</h1>
@@ -30,26 +43,19 @@ const emailTemplates: Record<string, string> = {
       <p style="color: #666; font-size: 12px;">Bu otomatik bir mesajdır. Lütfen yanıtlamayınız.</p>
     </div>
   `,
-  passwordReset: `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h1 style="color: #0066cc;">Şifre Sıfırlama</h1>
-      <p>Merhaba {{name}},</p>
-      <p>Şifrenizi sıfırlamak için aşağıdaki butona tıklayın:</p>
-      <a href="{{resetLink}}" style="display: inline-block; background: #0066cc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 20px 0;">Şifremi Sıfırla</a>
-      <p style="color: #666;">Link 1 saat geçerlidir.</p>
-      <hr style="border: 1px solid #eee; margin: 20px 0;" />
-      <p style="color: #666; font-size: 12px;">Bu emaili siz talep etmediyseniz, lütfen görmezden gelin.</p>
-    </div>
-  `,
-  notification: `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #0066cc;">{{title}}</h2>
-      <p>{{message}}</p>
-      <hr style="border: 1px solid #eee; margin: 20px 0;" />
-      <p style="color: #666; font-size: 12px;">Dernek Yönetim Sistemi</p>
-    </div>
-  `,
 };
+
+// Get email template (from file or inline fallback)
+function getEmailTemplate(templateName: string): string | null {
+  // Try to load from filesystem first
+  const fileTemplate = loadEmailTemplate(templateName);
+  if (fileTemplate) {
+    return fileTemplate;
+  }
+
+  // Fallback to inline template
+  return inlineEmailTemplates[templateName] || null;
+}
 
 // Create reusable transporter (singleton)
 let transporter: nodemailer.Transporter | null = null;

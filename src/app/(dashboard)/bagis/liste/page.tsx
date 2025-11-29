@@ -55,35 +55,77 @@ export default function DonationsPage() {
 
   // Bulk operations mutations
   const bulkDeleteMutation = useMutation({
-    mutationFn: async (_ids: string[]) => {
-      // TODO: Replace with actual bulk delete API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return { success: true };
+    mutationFn: async (ids: string[]) => {
+      const response = await fetch('/api/donations/bulk-delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ ids }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Bağışlar silinirken bir hata oluştu');
+      }
+
+      const result = await response.json();
+      return result.data;
     },
-    onSuccess: () => {
-      toast.success(`${selectedItems.size} bağış başarıyla silindi`);
+    onSuccess: (data) => {
+      const deleted = data?.deleted || selectedItems.size;
+      const failed = data?.failed || 0;
+      
+      if (failed > 0) {
+        toast.warning(`${deleted} bağış silindi, ${failed} bağış silinemedi`);
+      } else {
+        toast.success(`${deleted} bağış başarıyla silindi`);
+      }
+      
       setSelectedItems(new Set());
       queryClient.invalidateQueries({ queryKey: ['donations'] });
     },
-    onError: () => {
-      toast.error('Bağışlar silinirken bir hata oluştu');
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Bağışlar silinirken bir hata oluştu');
     },
   });
 
   const bulkStatusUpdateMutation = useMutation({
-    mutationFn: async ({ ids: _ids, status }: { ids: string[]; status: string }) => {
-      // TODO: Replace with actual bulk status update API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return { success: true, status };
+    mutationFn: async ({ ids, status }: { ids: string[]; status: string }) => {
+      const response = await fetch('/api/donations/bulk-update-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ ids, status }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Durum güncellenirken bir hata oluştu');
+      }
+
+      const result = await response.json();
+      return result.data;
     },
-    onSuccess: (_, variables) => {
-      const statusLabel = variables.status === 'completed' ? 'Tamamlandı' : 'Beklemede';
-      toast.success(`${selectedItems.size} bağış ${statusLabel} olarak güncellendi`);
+    onSuccess: (data, variables) => {
+      const updated = data?.updated || selectedItems.size;
+      const failed = data?.failed || 0;
+      const statusLabel = variables.status === 'completed' ? 'Tamamlandı' : variables.status === 'cancelled' ? 'İptal Edildi' : 'Beklemede';
+      
+      if (failed > 0) {
+        toast.warning(`${updated} bağış ${statusLabel} olarak güncellendi, ${failed} bağış güncellenemedi`);
+      } else {
+        toast.success(`${updated} bağış ${statusLabel} olarak güncellendi`);
+      }
+      
       setSelectedItems(new Set());
       queryClient.invalidateQueries({ queryKey: ['donations'] });
     },
-    onError: () => {
-      toast.error('Durum güncellenirken bir hata oluştu');
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Durum güncellenirken bir hata oluştu');
     },
   });
 
