@@ -420,7 +420,8 @@ const baseConfig: NextConfig = {
   },
 
   // Output optimization
-  output: process.env.NEXT_STANDALONE === 'false' || isWindows ? undefined : 'standalone',
+  // Disable standalone for Appwrite Cloud Functions (causes deployment issues)
+  output: process.env.NEXT_STANDALONE === 'false' || isWindows || process.env.APPWRITE_FUNCTION_ID ? undefined : 'standalone',
   poweredByHeader: false, // Remove X-Powered-By header for security
 
   // Build performance hints - optimized for better memory usage
