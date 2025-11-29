@@ -274,7 +274,7 @@ describe('POST /api/scholarships', () => {
     const { z } = await import('zod');
     const { scholarshipCreateSchema } = await import('@/lib/validations/scholarship');
     vi.mocked(scholarshipCreateSchema.parse).mockImplementationOnce(() => {
-      throw new z.ZodError([{ path: ['title'], message: 'Title is required' }]);
+      throw new z.ZodError([{ path: ['title'], message: 'Title is required', code: 'custom' } as any]);
     });
 
     const invalidScholarship = {

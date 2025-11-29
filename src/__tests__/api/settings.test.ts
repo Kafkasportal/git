@@ -136,7 +136,7 @@ describe('POST /api/settings', () => {
       },
     };
 
-    vi.mocked(appwriteApi.appwriteSystemSettings.updateSettings).mockResolvedValue(undefined);
+    vi.mocked(appwriteApi.appwriteSystemSettings.updateSettings).mockResolvedValue({ success: true });
 
     const request = new NextRequest('http://localhost/api/settings', {
       method: 'POST',
@@ -254,7 +254,7 @@ describe('PUT /api/settings', () => {
       },
     };
 
-    vi.mocked(appwriteApi.appwriteSystemSettings.updateSettings).mockResolvedValue(undefined);
+    vi.mocked(appwriteApi.appwriteSystemSettings.updateSettings).mockResolvedValue({ success: true });
 
     const request = new NextRequest('http://localhost/api/settings', {
       method: 'PUT',
@@ -333,7 +333,7 @@ describe('DELETE /api/settings', () => {
   });
 
   it('resets all settings successfully', async () => {
-    vi.mocked(appwriteApi.appwriteSystemSettings.resetSettings).mockResolvedValue(undefined);
+    vi.mocked(appwriteApi.appwriteSystemSettings.resetSettings).mockResolvedValue({ success: true });
 
     const request = new NextRequest('http://localhost/api/settings', {
       method: 'DELETE',
@@ -351,7 +351,7 @@ describe('DELETE /api/settings', () => {
   });
 
   it('resets settings by category', async () => {
-    vi.mocked(appwriteApi.appwriteSystemSettings.resetSettings).mockResolvedValue(undefined);
+    vi.mocked(appwriteApi.appwriteSystemSettings.resetSettings).mockResolvedValue({ success: true });
 
     const request = new NextRequest('http://localhost/api/settings?category=general', {
       method: 'DELETE',

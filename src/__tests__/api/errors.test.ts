@@ -327,7 +327,7 @@ describe('POST /api/errors', () => {
   });
 
   it('requires authentication', async () => {
-    const authError = { status: 401, body: { success: false, error: 'Unauthorized' } };
+    const authError = { status: 401, body: { success: false, error: 'Unauthorized', code: 'UNAUTHORIZED' } };
     vi.mocked(authUtils.buildErrorResponse).mockReturnValue(authError);
     vi.mocked(authUtils.requireAuthenticatedUser).mockRejectedValue(new Error('Unauthorized'));
 
