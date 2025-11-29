@@ -48,7 +48,6 @@ Bu plan, Dernek Yönetim Sistemi'nin eksikliklerini gidermek ve gelişmiş özel
 #### Görev 1.1: Bağış Listesi Bulk Operations
 **Öncelik:** 🔴 YÜKSEK  
 **Süre:** 3 gün  
-**Sorumlu:** Backend Developer
 
 **Yapılacaklar:**
 - [ ] Bulk delete API endpoint'i oluştur (`/api/donations/bulk-delete`)
@@ -73,7 +72,6 @@ Bu plan, Dernek Yönetim Sistemi'nin eksikliklerini gidermek ve gelişmiş özel
 #### Görev 1.2: İhtiyaç Sahipleri Export Fonksiyonu
 **Öncelik:** 🔴 YÜKSEK  
 **Süre:** 2 gün  
-**Sorumlu:** Full-stack Developer
 
 **Yapılacaklar:**
 - [ ] CSV export fonksiyonunu implement et
@@ -99,7 +97,6 @@ Bu plan, Dernek Yönetim Sistemi'nin eksikliklerini gidermek ve gelişmiş özel
 #### Görev 1.3: Gelir-Gider Edit/Delete Mutations
 **Öncelik:** 🔴 YÜKSEK  
 **Süre:** 4 gün  
-**Sorumlu:** Backend Developer
 
 **Yapılacaklar:**
 - [ ] Edit transaction API endpoint'i oluştur (`/api/finance/transactions/[id]`)
@@ -126,7 +123,6 @@ Bu plan, Dernek Yönetim Sistemi'nin eksikliklerini gidermek ve gelişmiş özel
 #### Görev 1.4: Real-time Bildirimler
 **Öncelik:** 🔴 YÜKSEK  
 **Süre:** 5 gün  
-**Sorumlu:** Full-stack Developer
 
 **Yapılacaklar:**
 - [ ] WebSocket veya Server-Sent Events (SSE) entegrasyonu
@@ -151,7 +147,6 @@ Bu plan, Dernek Yönetim Sistemi'nin eksikliklerini gidermek ve gelişmiş özel
 #### Görev 1.5: Email/SMS Entegrasyonu
 **Öncelik:** 🔴 YÜKSEK  
 **Süre:** 4 gün  
-**Sorumlu:** Backend Developer
 
 **Yapılacaklar:**
 - [ ] SMTP email servisi entegrasyonu
@@ -180,7 +175,6 @@ Bu plan, Dernek Yönetim Sistemi'nin eksikliklerini gidermek ve gelişmiş özel
 #### Görev 1.6: Test Suite Oluşturma
 **Öncelik:** 🟡 ORTA  
 **Süre:** 6 gün  
-**Sorumlu:** QA Engineer + Developer
 
 **Yapılacaklar:**
 - [ ] Vitest konfigürasyonu
@@ -210,7 +204,6 @@ Bu plan, Dernek Yönetim Sistemi'nin eksikliklerini gidermek ve gelişmiş özel
 #### Görev 2.1: Bağış Detay Sayfası
 **Öncelik:** 🟡 ORTA  
 **Süre:** 3 gün  
-**Sorumlu:** Frontend Developer
 
 **Yapılacaklar:**
 - [ ] Bağış detay sayfası oluştur (`/bagis/[id]`)
@@ -232,7 +225,6 @@ Bu plan, Dernek Yönetim Sistemi'nin eksikliklerini gidermek ve gelişmiş özel
 #### Görev 2.2: Kumbara Detay Sayfası
 **Öncelik:** 🟡 ORTA  
 **Süre:** 3 gün  
-**Sorumlu:** Frontend Developer
 
 **Yapılacaklar:**
 - [ ] Kumbara detay sayfası oluştur (`/bagis/kumbara/[id]`)
@@ -254,7 +246,6 @@ Bu plan, Dernek Yönetim Sistemi'nin eksikliklerini gidermek ve gelişmiş özel
 #### Görev 2.3: Kullanıcı Detay Sayfası
 **Öncelik:** 🟡 ORTA  
 **Süre:** 4 gün  
-**Sorumlu:** Frontend Developer
 
 **Yapılacaklar:**
 - [ ] Kullanıcı detay sayfası oluştur (`/kullanici/[id]`)
@@ -278,7 +269,6 @@ Bu plan, Dernek Yönetim Sistemi'nin eksikliklerini gidermek ve gelişmiş özel
 #### Görev 2.4: Detaylı Raporlar
 **Öncelik:** 🟡 ORTA  
 **Süre:** 5 gün  
-**Sorumlu:** Full-stack Developer
 
 **Yapılacaklar:**
 - [ ] Rapor oluşturma sayfası
@@ -303,7 +293,6 @@ Bu plan, Dernek Yönetim Sistemi'nin eksikliklerini gidermek ve gelişmiş özel
 #### Görev 2.5: Özelleştirilebilir Rapor Şablonları
 **Öncelik:** 🟢 DÜŞÜK  
 **Süre:** 4 gün  
-**Sorumlu:** Frontend Developer
 
 **Yapılacaklar:**
 - [ ] Şablon editörü
@@ -326,7 +315,6 @@ Bu plan, Dernek Yönetim Sistemi'nin eksikliklerini gidermek ve gelişmiş özel
 #### Görev 2.6: Dosya Yükleme ve Yönetimi
 **Öncelik:** 🟡 ORTA  
 **Süre:** 5 gün  
-**Sorumlu:** Full-stack Developer
 
 **Yapılacaklar:**
 - [ ] Appwrite Storage entegrasyonu
@@ -355,7 +343,6 @@ Bu plan, Dernek Yönetim Sistemi'nin eksikliklerini gidermek ve gelişmiş özel
 #### Görev 3.1: Bütçe Oluşturma ve Takibi
 **Öncelik:** 🟢 DÜŞÜK  
 **Süre:** 6 gün  
-**Sorumlu:** Full-stack Developer
 
 **Yapılacaklar:**
 - [ ] Bütçe oluşturma sayfası
@@ -380,7 +367,6 @@ Bu plan, Dernek Yönetim Sistemi'nin eksikliklerini gidermek ve gelişmiş özel
 #### Görev 3.2: Gerçek Veri Entegrasyonu
 **Öncelik:** 🟡 ORTA  
 **Süre:** 4 gün  
-**Sorumlu:** Backend Developer
 
 **Yapılacaklar:**
 - [ ] Analytics API endpoint'leri
@@ -402,7 +388,6 @@ Bu plan, Dernek Yönetim Sistemi'nin eksikliklerini gidermek ve gelişmiş özel
 #### Görev 3.3: Özelleştirilebilir Dashboard'lar
 **Öncelik:** 🟢 DÜŞÜK  
 **Süre:** 5 gün  
-**Sorumlu:** Frontend Developer
 
 **Yapılacaklar:**
 - [ ] Dashboard editörü
@@ -425,7 +410,6 @@ Bu plan, Dernek Yönetim Sistemi'nin eksikliklerini gidermek ve gelişmiş özel
 #### Görev 3.4: PWA Geliştirmeleri
 **Öncelik:** 🟡 ORTA  
 **Süre:** 5 gün  
-**Sorumlu:** Frontend Developer
 
 **Yapılacaklar:**
 - [ ] Service Worker optimizasyonu
@@ -490,14 +474,6 @@ Ay 5-6: Faz 3 - Gelişmiş Özellikler
 
 ## 👥 Kaynak Gereksinimleri
 
-### Ekip Yapısı
-
-- **Backend Developer:** 1 kişi (tam zamanlı)
-- **Frontend Developer:** 1 kişi (tam zamanlı)
-- **Full-stack Developer:** 1 kişi (tam zamanlı)
-- **QA Engineer:** 0.5 kişi (yarı zamanlı)
-- **UI/UX Designer:** 0.25 kişi (ihtiyaç halinde)
-
 ### Teknoloji Gereksinimleri
 
 - **Development:** Mevcut
@@ -508,7 +484,6 @@ Ay 5-6: Faz 3 - Gelişmiş Özellikler
 
 ### Bütçe Tahmini
 
-- **Geliştirme:** 6 ay x ekip maliyeti
 - **Infrastructure:** Aylık hosting/cloud maliyeti
 - **Third-party Services:** Email, SMS servisleri
 - **Tools:** Development ve monitoring araçları
@@ -537,18 +512,12 @@ Ay 5-6: Faz 3 - Gelişmiş Özellikler
    - **Risk:** Planlanan özelliklerin genişlemesi
    - **Mitigasyon:** Sıkı scope yönetimi, önceliklendirme
 
-2. **Ekip Değişiklikleri**
-   - **Risk:** Ekip üyelerinin değişmesi
-   - **Mitigasyon:** Dokümantasyon, knowledge sharing
-
 ---
 
 ## 📊 İlerleme Takibi
 
 ### Haftalık Checklist
 
-- [ ] Sprint planlama toplantısı
-- [ ] Daily standup'lar
 - [ ] Code review'lar tamamlandı
 - [ ] Testler geçti
 - [ ] Dokümantasyon güncellendi

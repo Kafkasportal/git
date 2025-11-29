@@ -1,7 +1,5 @@
 # Dernek Yönetim Sistemi
 
-[![Lint and Type Check](https://github.com/Kafkasportal/git/actions/workflows/lint.yml/badge.svg)](https://github.com/Kafkasportal/git/actions/workflows/lint.yml)
-[![Node.js CI](https://github.com/Kafkasportal/git/actions/workflows/test.yml/badge.svg)](https://github.com/Kafkasportal/git/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Modern sivil toplum kuruluşları için geliştirilmiş kapsamlı bir yönetim platformu. Bağış takibi, ihtiyaç sahibi yönetimi, burs programları, finansal operasyonlar ve iletişim süreçlerini tek bir çatı altında toplar.
@@ -78,11 +76,6 @@ Detaylı dokümantasyon için [docs/](./docs/) klasörüne bakın:
 - [Veritabanı Şeması](./docs/database-schema.md)
 - [Yetkilendirme](./docs/authorization.md)
 - [Form Yönetimi](./docs/forms.md)
-- [Test Yazımı](./docs/testing.md)
-
-## 🤝 Katkıda Bulunma
-
-Katkıda bulunmak için [CONTRIBUTING.md](./CONTRIBUTING.md) dosyasını okuyun.
 
 ## 🔐 Güvenlik
 
