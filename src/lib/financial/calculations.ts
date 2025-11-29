@@ -28,34 +28,43 @@ export interface FinancialStats {
 
 /**
  * Calculate financial statistics from records
+ * Optimized to use a single pass over the array instead of multiple filter/reduce operations
  */
 export function calculateFinancialStats(records: FinanceRecord[], total: number): FinancialStats {
-  const totalIncome = records
-    .filter((r) => r.record_type === 'income' && r.status === 'approved')
-    .reduce((sum, r) => sum + r.amount, 0);
+  let totalIncome = 0;
+  let totalExpense = 0;
+  let pendingIncome = 0;
+  let pendingExpense = 0;
+  let approvedRecords = 0;
 
-  const totalExpense = records
-    .filter((r) => r.record_type === 'expense' && r.status === 'approved')
-    .reduce((sum, r) => sum + r.amount, 0);
+  // Single pass over the array for better performance
+  for (const record of records) {
+    const { record_type, status, amount } = record;
 
-  const netIncome = totalIncome - totalExpense;
-
-  const pendingIncome = records
-    .filter((r) => r.record_type === 'income' && r.status === 'pending')
-    .reduce((sum, r) => sum + r.amount, 0);
-
-  const pendingExpense = records
-    .filter((r) => r.record_type === 'expense' && r.status === 'pending')
-    .reduce((sum, r) => sum + r.amount, 0);
+    if (status === 'approved') {
+      approvedRecords++;
+      if (record_type === 'income') {
+        totalIncome += amount;
+      } else if (record_type === 'expense') {
+        totalExpense += amount;
+      }
+    } else if (status === 'pending') {
+      if (record_type === 'income') {
+        pendingIncome += amount;
+      } else if (record_type === 'expense') {
+        pendingExpense += amount;
+      }
+    }
+  }
 
   return {
     totalIncome,
     totalExpense,
-    netIncome,
+    netIncome: totalIncome - totalExpense,
     pendingIncome,
     pendingExpense,
     totalRecords: total,
-    approvedRecords: records.filter((r) => r.status === 'approved').length,
+    approvedRecords,
   };
 }
 
