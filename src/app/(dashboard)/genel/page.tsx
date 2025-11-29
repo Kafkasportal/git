@@ -122,6 +122,21 @@ export default function DashboardPage() {
     },
   });
 
+  // Fetch recent audit logs for activity feed
+  const { data: auditLogsData } = useQuery({
+    queryKey: ['audit-logs', 'recent'],
+    queryFn: async () => {
+      const response = await fetch('/api/audit-logs?limit=5');
+      if (!response.ok) {
+        throw new Error('Failed to fetch audit logs');
+      }
+      const result = await response.json();
+      return result.data || [];
+    },
+    staleTime: 1 * 60 * 1000, // 1 minute
+    initialData: [],
+  });
+
   // Fetch chart data from aggregation API
   const { data: chartData } = useQuery({
     queryKey: ['dashboard', 'charts'],
@@ -307,29 +322,103 @@ export default function DashboardPage() {
     },
   ];
 
-  const recentActivities = [
-    {
-      type: 'success',
-      title: 'Yeni bağış kaydedildi',
-      description: '500 ₺ bağış kaydı oluşturuldu',
-      time: '2 dakika önce',
-      icon: CheckCircle2,
-    },
-    {
-      type: 'info',
-      title: 'İhtiyaç sahibi güncellendi',
-      description: 'Ahmet Yılmaz bilgileri güncellendi',
-      time: '15 dakika önce',
-      icon: AlertCircle,
-    },
-    {
-      type: 'success',
-      title: 'Yeni kullanıcı eklendi',
-      description: 'Yeni yetkili kullanıcı oluşturuldu',
-      time: '1 saat önce',
-      icon: Users,
-    },
-  ];
+  // Helper function to format time ago
+  const formatTimeAgo = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return 'Az önce';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} dakika önce`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} saat önce`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} gün önce`;
+    return date.toLocaleDateString('tr-TR');
+  };
+
+  // Type definitions for audit logs and activities
+  interface AuditLog {
+    $id: string;
+    $createdAt: string;
+    action: string;
+    resource: string;
+    user_id: string;
+    status: 'success' | 'failure';
+  }
+
+  interface Activity {
+    type: 'success' | 'info' | 'warning';
+    title: string;
+    description: string;
+    time: string;
+    icon: typeof CheckCircle2 | typeof AlertCircle | typeof Users;
+  }
+
+  // Helper function to get activity details from audit log
+  const getActivityDetails = (log: AuditLog) => {
+    const action = log.action?.toLowerCase() || '';
+    const resource = log.resource?.toLowerCase() || '';
+
+    let title = '';
+    let description = '';
+    let icon: typeof CheckCircle2 | typeof AlertCircle | typeof Users = CheckCircle2;
+    let type: 'success' | 'info' | 'warning' = 'info';
+
+    if (action === 'create') {
+      type = 'success';
+      icon = CheckCircle2;
+      if (resource.includes('donation')) {
+        title = 'Yeni bağış kaydedildi';
+        description = 'Bağış kaydı oluşturuldu';
+      } else if (resource.includes('beneficiar')) {
+        title = 'Yeni ihtiyaç sahibi eklendi';
+        description = 'İhtiyaç sahibi kaydı oluşturuldu';
+      } else if (resource.includes('user')) {
+        title = 'Yeni kullanıcı eklendi';
+        description = 'Kullanıcı kaydı oluşturuldu';
+      } else {
+        title = 'Yeni kayıt oluşturuldu';
+        description = `${resource} kaydı eklendi`;
+      }
+    } else if (action === 'update') {
+      type = 'info';
+      icon = AlertCircle;
+      if (resource.includes('donation')) {
+        title = 'Bağış güncellendi';
+        description = 'Bağış bilgileri güncellendi';
+      } else if (resource.includes('beneficiar')) {
+        title = 'İhtiyaç sahibi güncellendi';
+        description = 'Bilgiler güncellendi';
+      } else if (resource.includes('user')) {
+        title = 'Kullanıcı güncellendi';
+        description = 'Kullanıcı bilgileri güncellendi';
+      } else {
+        title = 'Kayıt güncellendi';
+        description = `${resource} bilgileri güncellendi`;
+      }
+    } else if (action === 'delete') {
+      type = 'warning';
+      icon = AlertCircle;
+      title = 'Kayıt silindi';
+      description = `${resource} kaydı silindi`;
+    } else {
+      title = 'İşlem gerçekleştirildi';
+      description = `${action} - ${resource}`;
+    }
+
+    return { title, description, icon, type };
+  };
+
+  // Map audit logs to activities
+  const recentActivities: Activity[] = (auditLogsData || []).map((log: AuditLog) => {
+    const details = getActivityDetails(log);
+    return {
+      type: details.type,
+      title: details.title,
+      description: details.description,
+      time: formatTimeAgo(log.$createdAt),
+      icon: details.icon,
+    };
+  });
 
   return (
     <div data-testid="dashboard-root">
@@ -572,40 +661,47 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentActivities.map((activity, index) => {
-                  const Icon = activity.icon;
-                  return (
-                    <div
-                      key={index}
-                      className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:shadow-sm transition-shadow"
-                    >
+                {recentActivities.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Henüz aktivite bulunmuyor</p>
+                  </div>
+                ) : (
+                  recentActivities.map((activity, index) => {
+                    const Icon = activity.icon;
+                    return (
                       <div
-                        className={cn(
-                          'flex h-8 w-8 items-center justify-center rounded-full',
-                          activity.type === 'success' && 'bg-green-500/10',
-                          activity.type === 'info' && 'bg-blue-500/10',
-                          activity.type === 'warning' && 'bg-yellow-500/10'
-                        )}
+                        key={index}
+                        className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:shadow-sm transition-shadow"
                       >
-                        <Icon
+                        <div
                           className={cn(
-                            'h-4 w-4',
-                            activity.type === 'success' && 'text-green-600',
-                            activity.type === 'info' && 'text-blue-600',
-                            activity.type === 'warning' && 'text-yellow-600'
+                            'flex h-8 w-8 items-center justify-center rounded-full',
+                            activity.type === 'success' && 'bg-green-500/10',
+                            activity.type === 'info' && 'bg-blue-500/10',
+                            activity.type === 'warning' && 'bg-yellow-500/10'
                           )}
-                        />
+                        >
+                          <Icon
+                            className={cn(
+                              'h-4 w-4',
+                              activity.type === 'success' && 'text-green-600',
+                              activity.type === 'info' && 'text-blue-600',
+                              activity.type === 'warning' && 'text-yellow-600'
+                            )}
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium">{activity.title}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {activity.description}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">{activity.time}</p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">{activity.title}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {activity.description}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">{activity.time}</p>
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </div>
             </CardContent>
           </Card>
