@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -222,7 +222,7 @@ export default function DonationReportsPage() {
     };
   }, [donations, dateRange, customStartDate, customEndDate]);
 
-  const handleExportExcel = () => {
+  const handleExportExcel = useCallback(() => {
     if (!reportData) return;
 
     const csvContent = [
@@ -261,9 +261,9 @@ export default function DonationReportsPage() {
     link.download = `bagis-raporu-${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
     toast.success('Rapor Excel formatında indirildi');
-  };
+  }, [reportData]);
 
-  const handleExportPDF = () => {
+  const handleExportPDF = useCallback(() => {
     if (!reportData) return;
     try {
       generateDonationPDF(reportData);
@@ -272,7 +272,7 @@ export default function DonationReportsPage() {
       logger.error('Donation report PDF export failed', { error });
       toast.error('PDF oluşturulurken hata oluştu');
     }
-  };
+  }, [reportData]);
 
   if (isLoading) {
     return (

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { FinanceRecord, matchesDateFilter } from '@/lib/financial/calculations';
 
 interface UseFinancialDataParams {
@@ -99,8 +100,9 @@ export function useFinancialData({
   customStartDate = '',
   customEndDate = '',
 }: UseFinancialDataParams = {}) {
-  return useQuery({
-    queryKey: [
+  // Memoize query key
+  const queryKey = useMemo(
+    () => [
       'finance-records',
       page,
       search,
@@ -111,7 +113,12 @@ export function useFinancialData({
       customStartDate,
       customEndDate,
     ],
-    queryFn: async (): Promise<FinancialDataResponse> => {
+    [page, search, recordTypeFilter, categoryFilter, statusFilter, dateFilter, customStartDate, customEndDate]
+  );
+
+  // Memoize query function
+  const queryFn = useMemo(
+    () => async (): Promise<FinancialDataResponse> => {
       const mockRecords = generateMockFinancialRecords();
 
       const filtered = mockRecords.filter((record) => {
@@ -152,5 +159,11 @@ export function useFinancialData({
         total: filtered.length,
       });
     },
+    [search, recordTypeFilter, categoryFilter, statusFilter, dateFilter, customStartDate, customEndDate, page, limit]
+  );
+
+  return useQuery({
+    queryKey,
+    queryFn,
   });
 }

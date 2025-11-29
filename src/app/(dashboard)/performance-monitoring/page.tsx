@@ -68,7 +68,7 @@ export default function PerformanceMonitoringPage() {
     return 0;
   };
 
-  // Real-time monitoring
+  // Real-time monitoring - optimized interval (2000ms → 5000ms for better performance)
   useEffect(() => {
     if (!isMonitoring) return;
 
@@ -84,7 +84,7 @@ export default function PerformanceMonitoringPage() {
         timestamp: new Date().toISOString(),
       });
       setLastUpdate(new Date());
-    }, 2000);
+    }, 5000); // Increased from 2000ms to 5000ms for better performance
 
     return () => {
       clearInterval(interval);

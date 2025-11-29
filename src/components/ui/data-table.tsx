@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
@@ -51,7 +51,7 @@ export interface DataTableProps<T> {
   refetch?: () => void;
 }
 
-export function DataTable<T extends Record<string, unknown>>({
+function DataTableComponent<T extends Record<string, unknown>>({
   data,
   columns,
   isLoading = false,
@@ -72,17 +72,85 @@ export function DataTable<T extends Record<string, unknown>>({
 }: DataTableProps<T>) {
   const [internalSearch, setInternalSearch] = useState('');
   const effectiveSearchValue = searchValue ?? internalSearch;
-  const handleSearchChange = onSearchChange ?? setInternalSearch;
+  
+  // Memoize search change handler
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      if (onSearchChange) {
+        onSearchChange(value);
+      } else {
+        setInternalSearch(value);
+      }
+    },
+    [onSearchChange]
+  );
 
-  // Filter data if internal search is used
-  const filteredData =
-    searchable && !onSearchChange
-      ? data.filter((item) =>
-          Object.values(item).some((value) =>
-            String(value).toLowerCase().includes(effectiveSearchValue.toLowerCase())
-          )
-        )
-      : data;
+  // Memoize filtered data calculation
+  const filteredData = useMemo(() => {
+    if (!searchable || onSearchChange) {
+      return data;
+    }
+    if (!effectiveSearchValue) {
+      return data;
+    }
+    const searchLower = effectiveSearchValue.toLowerCase();
+    return data.filter((item) =>
+      Object.values(item).some((value) =>
+        String(value).toLowerCase().includes(searchLower)
+      )
+    );
+  }, [data, searchable, onSearchChange, effectiveSearchValue]);
+
+  // Memoize row click handler
+  const handleRowClick = useCallback(
+    (item: T, index: number) => {
+      onRowClick?.(item, index);
+    },
+    [onRowClick]
+  );
+
+  // Memoize pagination handlers
+  const handlePageChange = useCallback(
+    (page: number) => {
+      pagination?.onPageChange(page);
+    },
+    [pagination]
+  );
+
+  const handleFirstPage = useCallback(() => {
+    if (pagination) {
+      handlePageChange(1);
+    }
+  }, [pagination, handlePageChange]);
+
+  const handlePreviousPage = useCallback(() => {
+    if (pagination && pagination.page > 1) {
+      handlePageChange(pagination.page - 1);
+    }
+  }, [pagination, handlePageChange]);
+
+  const handleNextPage = useCallback(() => {
+    if (pagination && pagination.page < pagination.totalPages) {
+      handlePageChange(pagination.page + 1);
+    }
+  }, [pagination, handlePageChange]);
+
+  const handleLastPage = useCallback(() => {
+    if (pagination) {
+      handlePageChange(pagination.totalPages);
+    }
+  }, [pagination, handlePageChange]);
+
+  const handlePageInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (!pagination) return;
+      const page = parseInt(e.target.value);
+      if (page >= 1 && page <= pagination.totalPages) {
+        handlePageChange(page);
+      }
+    },
+    [pagination, handlePageChange]
+  );
 
   return (
     <div className={cn('space-y-4', className)}>
@@ -94,9 +162,7 @@ export function DataTable<T extends Record<string, unknown>>({
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 value={effectiveSearchValue}
-                onChange={(e) => {
-                  handleSearchChange(e.target.value);
-                }}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder={searchPlaceholder}
                 className="pl-9"
               />
@@ -235,7 +301,7 @@ export function DataTable<T extends Record<string, unknown>>({
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.3) }}
-                        onClick={() => onRowClick?.(item, index)}
+                        onClick={() => handleRowClick(item, index)}
                         className={cn(
                           'border-b border-border/50 transition-all duration-200 group',
                           striped && index % 2 === 0 && 'bg-muted/30',
@@ -249,7 +315,7 @@ export function DataTable<T extends Record<string, unknown>>({
                         onKeyDown={(e) => {
                           if (onRowClick && (e.key === 'Enter' || e.key === ' ')) {
                             e.preventDefault();
-                            onRowClick(item, index);
+                            handleRowClick(item, index);
                           }
                         }}
                         aria-label={
@@ -293,9 +359,7 @@ export function DataTable<T extends Record<string, unknown>>({
             <Button
               variant="outline"
               size="icon-sm"
-              onClick={() => {
-                pagination.onPageChange(1);
-              }}
+              onClick={handleFirstPage}
               disabled={pagination.page === 1}
               aria-label="İlk sayfa"
             >
@@ -304,9 +368,7 @@ export function DataTable<T extends Record<string, unknown>>({
             <Button
               variant="outline"
               size="icon-sm"
-              onClick={() => {
-                pagination.onPageChange(pagination.page - 1);
-              }}
+              onClick={handlePreviousPage}
               disabled={pagination.page === 1}
               aria-label="Önceki sayfa"
             >
@@ -318,21 +380,14 @@ export function DataTable<T extends Record<string, unknown>>({
                 min={1}
                 max={pagination.totalPages}
                 value={pagination.page}
-                onChange={(e) => {
-                  const page = parseInt(e.target.value);
-                  if (page >= 1 && page <= pagination.totalPages) {
-                    pagination.onPageChange(page);
-                  }
-                }}
+                onChange={handlePageInputChange}
                 className="w-16 text-center h-8"
               />
             </div>
             <Button
               variant="outline"
               size="icon-sm"
-              onClick={() => {
-                pagination.onPageChange(pagination.page + 1);
-              }}
+              onClick={handleNextPage}
               disabled={pagination.page === pagination.totalPages}
               aria-label="Sonraki sayfa"
             >
@@ -341,9 +396,7 @@ export function DataTable<T extends Record<string, unknown>>({
             <Button
               variant="outline"
               size="icon-sm"
-              onClick={() => {
-                pagination.onPageChange(pagination.totalPages);
-              }}
+              onClick={handleLastPage}
               disabled={pagination.page === pagination.totalPages}
               aria-label="Son sayfa"
             >
@@ -355,3 +408,8 @@ export function DataTable<T extends Record<string, unknown>>({
     </div>
   );
 }
+
+// Memoized DataTable component for performance optimization
+export const DataTable = memo(DataTableComponent) as <T extends Record<string, unknown>>(
+  props: DataTableProps<T>
+) => React.ReactElement;

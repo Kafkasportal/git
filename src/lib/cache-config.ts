@@ -330,21 +330,21 @@ export function createOptimizedQueryClient(): QueryClient {
     defaultOptions: {
       queries: {
         // Default to longer caching in dev for faster navigation
-        staleTime: isDev ? CACHE_TIMES.LONG : CACHE_TIMES.STANDARD,
-        gcTime: isDev ? GC_TIMES.VERY_LONG : GC_TIMES.STANDARD,
+        staleTime: isDev ? CACHE_TIMES.VERY_LONG : CACHE_TIMES.STANDARD, // Increased for dev
+        gcTime: isDev ? GC_TIMES.VERY_LONG * 2 : GC_TIMES.STANDARD, // Keep cache longer in dev
 
         // Network optimization - reduce refetches in dev
-        refetchOnWindowFocus: false,
-        refetchOnReconnect: !isDev, // Disabled in dev for faster navigation
-        refetchOnMount: !isDev, // Disabled in dev to use cache more aggressively
+        refetchOnWindowFocus: false, // Disabled for better performance
+        refetchOnReconnect: false, // Disabled in both dev and prod for faster navigation
+        refetchOnMount: false, // Disabled to use cache more aggressively
 
         // Background refetch - critical for performance
         refetchInterval: false, // Disabled by default, enable per-query if needed
         refetchIntervalInBackground: false,
 
         // Retry configuration with exponential backoff
-        retry: isDev ? 1 : 2, // Less retries in dev
-        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+        retry: isDev ? 0 : 1, // No retries in dev, 1 in prod
+        retryDelay: (attemptIndex) => Math.min(500 * 2 ** attemptIndex, 5000), // Faster retry
 
         // Network mode - 'online' by default, 'always' for critical data
         networkMode: 'online',
@@ -362,7 +362,7 @@ export function createOptimizedQueryClient(): QueryClient {
       mutations: {
         // Retry mutations once on network errors
         retry: isDev ? 0 : 1, // No retries in dev
-        retryDelay: 1000,
+        retryDelay: 500, // Faster retry
 
         // Network mode for mutations
         networkMode: 'online',

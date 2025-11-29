@@ -12,6 +12,7 @@ import React, {
   useEffect,
   useState,
   useCallback,
+  useMemo,
 } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -303,18 +304,33 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     // This function is kept for API compatibility but is a no-op
   }, []);
 
-  const value: SettingsContextValue = {
-    settings,
-    isLoading,
-    getSetting,
-    currentTheme,
-    themePresets: themePresets as ThemePreset[],
-    setTheme,
-    themeMode,
-    setThemeMode,
-    resolvedThemeMode,
-    refreshSettings,
-  };
+  // Memoize context value to prevent unnecessary re-renders
+  const value: SettingsContextValue = useMemo(
+    () => ({
+      settings,
+      isLoading,
+      getSetting,
+      currentTheme,
+      themePresets: themePresets as ThemePreset[],
+      setTheme,
+      themeMode,
+      setThemeMode,
+      resolvedThemeMode,
+      refreshSettings,
+    }),
+    [
+      settings,
+      isLoading,
+      getSetting,
+      currentTheme,
+      themePresets,
+      setTheme,
+      themeMode,
+      setThemeMode,
+      resolvedThemeMode,
+      refreshSettings,
+    ]
+  );
 
   return (
     <SettingsContext.Provider value={value}>

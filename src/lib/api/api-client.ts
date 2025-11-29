@@ -1,24 +1,20 @@
 'use client';
 
 /**
- * Appwrite API Client
+ * Appwrite API Client - Compatibility Wrapper
  *
- * Client-side wrapper that calls Next.js API routes which internally use Appwrite.
- * This provides a clean interface for components to use while keeping the actual
- * Appwrite implementation hidden behind API routes.
+ * This file provides backward compatibility for the old API client interface.
+ * It wraps the new CRUD factory to maintain existing code compatibility.
  *
- * @deprecated Use the new CRUD factory from './crud-factory' for better DRY principle
+ * @deprecated Use the new CRUD factory from './crud-factory' directly for better DRY principle
+ * This file will be removed in a future version.
  */
 
 import type {
   QueryParams,
   ConvexResponse,
-  PartnerDocument,
   CreateDocumentData,
   UpdateDocumentData,
-} from '@/types/database';
-import { getCache } from '@/lib/api-cache';
-import type {
   BeneficiaryDocument,
   UserDocument,
   DonationDocument,
@@ -29,140 +25,51 @@ import type {
   WorkflowNotificationDocument,
   MessageDocument,
   AidApplicationDocument,
+  PartnerDocument,
 } from '@/types/database';
 import type { PermissionValue } from '@/types/permissions';
+import { fetchWithCsrf } from '@/lib/csrf';
 
 // Import the new CRUD factory
 import {
-  beneficiaries,
-  donations,
-  tasks,
-  users,
-  meetings,
-  messages,
-  aidApplications,
-  partners,
-  scholarships,
-  createApiClient,
+  beneficiaries as beneficiariesCrud,
+  donations as donationsCrud,
+  tasks as tasksCrud,
+  users as usersCrud,
+  meetings as meetingsCrud,
+  messages as messagesCrud,
+  aidApplications as aidApplicationsCrud,
+  partners as partnersCrud,
 } from './crud-factory';
-
-// Re-export the factory-created clients
-export {
-  beneficiaries,
-  donations,
-  tasks,
-  users,
-  meetings,
-  messages,
-  aidApplications,
-  partners,
-  scholarships,
-  createApiClient,
-};
-
-/**
- * Generic API client for making requests to Appwrite API routes
- * Internal use only - not exported to avoid HMR conflicts
- */
-async function apiRequest<T>(
-  endpoint: string,
-  options?: RequestInit & { cache?: boolean },
-  cacheKey?: string
-): Promise<ConvexResponse<T>> {
-  const cache = getCache<ConvexResponse<T>>('api');
-
-  // Try to get from cache first (for GET requests)
-  if (!options?.method || options.method === 'GET') {
-    const cachedData = cache?.get(cacheKey || endpoint);
-    if (cachedData) {
-      return cachedData;
-    }
-  }
-
-  try {
-    const response = await fetch(endpoint, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
-      credentials: 'include',
-    });
-
-    const data = await response.json();
-
-    if (!response.ok || !data.success) {
-      return {
-        data: null,
-        error: data.error || `HTTP ${response.status}`,
-      };
-    }
-
-    const result: ConvexResponse<T> = {
-      data: data.data as T,
-      error: null,
-      total: data.total,
-    };
-
-    // Cache the successful response (for GET requests)
-    if (!options?.method || options.method === 'GET') {
-      cache?.set(cacheKey || endpoint, result);
-    }
-
-    return result;
-  } catch (error) {
-    return {
-      data: null,
-      error: error instanceof Error ? error.message : 'Network error',
-    };
-  }
-}
 
 /**
  * Appwrite-based API client that uses Next.js API routes
+ * Wraps the new CRUD factory for backward compatibility
  */
 export const apiClient = {
-  // Beneficiaries
+  // Beneficiaries - wrapped from CRUD factory
   beneficiaries: {
     getBeneficiaries: async (
       params?: QueryParams
     ): Promise<ConvexResponse<BeneficiaryDocument[]>> => {
-      const searchParams = new URLSearchParams();
-      if (params?.page) searchParams.set('page', params.page.toString());
-      if (params?.limit) searchParams.set('limit', params.limit.toString());
-      if (params?.search) searchParams.set('search', params.search);
-      if (params?.filters?.status) searchParams.set('status', String(params.filters.status));
-      if (params?.filters?.city) searchParams.set('city', String(params.filters.city));
-
-      const endpoint = `/api/beneficiaries?${searchParams.toString()}`;
-      const cacheKey = `beneficiaries:${searchParams.toString()}`;
-
-      return apiRequest<BeneficiaryDocument[]>(endpoint, undefined, cacheKey);
+      return beneficiariesCrud.getAll(params);
     },
     getBeneficiary: async (id: string): Promise<ConvexResponse<BeneficiaryDocument>> => {
-      return apiRequest<BeneficiaryDocument>(`/api/beneficiaries/${id}`);
+      return beneficiariesCrud.getById(id);
     },
     createBeneficiary: async (
       data: CreateDocumentData<BeneficiaryDocument>
     ): Promise<ConvexResponse<BeneficiaryDocument>> => {
-      return apiRequest<BeneficiaryDocument>('/api/beneficiaries', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return beneficiariesCrud.create(data);
     },
     updateBeneficiary: async (
       id: string,
       data: UpdateDocumentData<BeneficiaryDocument>
     ): Promise<ConvexResponse<BeneficiaryDocument>> => {
-      return apiRequest<BeneficiaryDocument>(`/api/beneficiaries/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      });
+      return beneficiariesCrud.update(id, data);
     },
     deleteBeneficiary: async (id: string): Promise<ConvexResponse<null>> => {
-      return apiRequest<null>(`/api/beneficiaries/${id}`, {
-        method: 'DELETE',
-      });
+      return beneficiariesCrud.delete(id);
     },
     getAidHistory: async (_beneficiaryId: string) => {
       // Stub implementation - returns empty array
@@ -170,260 +77,213 @@ export const apiClient = {
     },
   },
 
-  // Donations
+  // Donations - wrapped from CRUD factory
   donations: {
     getDonations: async (params?: QueryParams): Promise<ConvexResponse<DonationDocument[]>> => {
-      const searchParams = new URLSearchParams();
-      if (params?.page) searchParams.set('page', params.page.toString());
-      if (params?.limit) searchParams.set('limit', params.limit.toString());
-      if (params?.search) searchParams.set('search', params.search);
-
-      const endpoint = `/api/donations?${searchParams.toString()}`;
-      const cacheKey = `donations:${searchParams.toString()}`;
-
-      return apiRequest<DonationDocument[]>(endpoint, undefined, cacheKey);
+      return donationsCrud.getAll(params);
     },
     getDonation: async (id: string): Promise<ConvexResponse<DonationDocument>> => {
-      return apiRequest<DonationDocument>(`/api/donations/${id}`);
+      return donationsCrud.getById(id);
     },
     createDonation: async (
       data: CreateDocumentData<DonationDocument>
     ): Promise<ConvexResponse<DonationDocument>> => {
-      return apiRequest<DonationDocument>('/api/donations', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return donationsCrud.create(data);
     },
     updateDonation: async (
       id: string,
       data: UpdateDocumentData<DonationDocument>
     ): Promise<ConvexResponse<DonationDocument>> => {
-      return apiRequest<DonationDocument>(`/api/donations/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      });
+      return donationsCrud.update(id, data);
     },
     deleteDonation: async (id: string): Promise<ConvexResponse<null>> => {
-      return apiRequest<null>(`/api/donations/${id}`, {
-        method: 'DELETE',
-      });
+      return donationsCrud.delete(id);
     },
   },
 
-  // Tasks
+  // Tasks - wrapped from CRUD factory
   tasks: {
     getTasks: async (params?: QueryParams): Promise<ConvexResponse<TaskDocument[]>> => {
-      const searchParams = new URLSearchParams();
-      if (params?.page) searchParams.set('page', params.page.toString());
-      if (params?.limit) searchParams.set('limit', params.limit.toString());
-      if (params?.search) searchParams.set('search', params.search);
-      if (params?.filters?.status) searchParams.set('status', String(params.filters.status));
-      if (params?.filters?.priority) searchParams.set('priority', String(params.filters.priority));
-      if (params?.filters?.assigned_to)
-        searchParams.set('assigned_to', String(params.filters.assigned_to));
-
-      return apiRequest<TaskDocument[]>(`/api/tasks?${searchParams.toString()}`);
+      return tasksCrud.getAll(params);
     },
     getTask: async (id: string): Promise<ConvexResponse<TaskDocument>> => {
-      return apiRequest<TaskDocument>(`/api/tasks/${id}`);
+      return tasksCrud.getById(id);
     },
     createTask: async (
       data: CreateDocumentData<TaskDocument>
     ): Promise<ConvexResponse<TaskDocument>> => {
-      return apiRequest<TaskDocument>('/api/tasks', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return tasksCrud.create(data);
     },
     updateTask: async (
       id: string,
       data: UpdateDocumentData<TaskDocument>
     ): Promise<ConvexResponse<TaskDocument>> => {
-      return apiRequest<TaskDocument>(`/api/tasks/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      });
+      return tasksCrud.update(id, data);
     },
     updateTaskStatus: async (
       id: string,
       status: TaskDocument['status']
     ): Promise<ConvexResponse<TaskDocument>> => {
-      return apiRequest<TaskDocument>(`/api/tasks/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ status }),
-      });
+      return tasksCrud.update(id, { status } as UpdateDocumentData<TaskDocument>);
     },
     deleteTask: async (id: string): Promise<ConvexResponse<null>> => {
-      return apiRequest<null>(`/api/tasks/${id}`, {
-        method: 'DELETE',
-      });
+      return tasksCrud.delete(id);
     },
   },
 
-  // Meetings
+  // Meetings - wrapped from CRUD factory
   meetings: {
     getMeetings: async (params?: QueryParams): Promise<ConvexResponse<MeetingDocument[]>> => {
-      const searchParams = new URLSearchParams();
-      if (params?.page) searchParams.set('page', params.page.toString());
-      if (params?.limit) searchParams.set('limit', params.limit.toString());
-      if (params?.search) searchParams.set('search', params.search);
-      if (params?.filters?.status) searchParams.set('status', String(params.filters.status));
-
-      return apiRequest<MeetingDocument[]>(`/api/meetings?${searchParams.toString()}`);
+      return meetingsCrud.getAll(params);
     },
     getMeetingsByTab: async (
       _userId: string,
       tab: string
     ): Promise<ConvexResponse<MeetingDocument[]>> => {
       // Helper method for backward compatibility
-      return apiClient.meetings.getMeetings({
+      return meetingsCrud.getAll({
         filters: { status: tab === 'all' ? undefined : tab },
       });
     },
     getMeeting: async (id: string): Promise<ConvexResponse<MeetingDocument>> => {
-      return apiRequest<MeetingDocument>(`/api/meetings/${id}`);
+      return meetingsCrud.getById(id);
     },
     createMeeting: async (
       data: CreateDocumentData<MeetingDocument>
     ): Promise<ConvexResponse<MeetingDocument>> => {
-      return apiRequest<MeetingDocument>('/api/meetings', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return meetingsCrud.create(data);
     },
     updateMeeting: async (
       id: string,
       data: UpdateDocumentData<MeetingDocument>
     ): Promise<ConvexResponse<MeetingDocument>> => {
-      return apiRequest<MeetingDocument>(`/api/meetings/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      });
+      return meetingsCrud.update(id, data);
     },
     updateMeetingStatus: async (
       id: string,
       status: string
     ): Promise<ConvexResponse<MeetingDocument>> => {
-      return apiRequest<MeetingDocument>(`/api/meetings/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ status }),
-      });
+      return meetingsCrud.update(id, { status } as UpdateDocumentData<MeetingDocument>);
     },
     deleteMeeting: async (id: string): Promise<ConvexResponse<null>> => {
-      return apiRequest<null>(`/api/meetings/${id}`, {
-        method: 'DELETE',
-      });
+      return meetingsCrud.delete(id);
     },
   },
 
-  // Meeting Decisions
+  // Meeting Decisions - minimal wrapper (not in CRUD factory yet)
   meetingDecisions: {
     getDecisions: async (
-      params?: QueryParams
+      meetingIdOrParams?: string | { meeting_id?: string; limit?: number }
     ): Promise<ConvexResponse<MeetingDecisionDocument[]>> => {
-      const searchParams = new URLSearchParams();
-      if (params?.page) searchParams.set('page', params.page.toString());
-      if (params?.limit) searchParams.set('limit', params.limit.toString());
-      if (params?.filters?.meeting_id) {
-        searchParams.set('meeting_id', String(params.filters.meeting_id));
+      let url = '/api/meeting-decisions';
+      if (typeof meetingIdOrParams === 'string') {
+        url += `?meeting_id=${meetingIdOrParams}`;
+      } else if (meetingIdOrParams) {
+        const params = new URLSearchParams();
+        if (meetingIdOrParams.meeting_id) params.set('meeting_id', meetingIdOrParams.meeting_id);
+        if (meetingIdOrParams.limit) params.set('limit', meetingIdOrParams.limit.toString());
+        if (params.toString()) url += `?${params.toString()}`;
       }
-      if (params?.filters?.owner) {
-        searchParams.set('owner', String(params.filters.owner));
-      }
-      if (params?.filters?.status) {
-        searchParams.set('status', String(params.filters.status));
-      }
-
-      return apiRequest<MeetingDecisionDocument[]>(
-        `/api/meeting-decisions?${searchParams.toString()}`
-      );
-    },
-    getDecision: async (id: string): Promise<ConvexResponse<MeetingDecisionDocument>> => {
-      return apiRequest<MeetingDecisionDocument>(`/api/meeting-decisions/${id}`);
+      const response = await fetch(url);
+      const data = await response.json();
+      return data;
     },
     createDecision: async (
       data: CreateDocumentData<MeetingDecisionDocument>
     ): Promise<ConvexResponse<MeetingDecisionDocument>> => {
-      return apiRequest<MeetingDecisionDocument>('/api/meeting-decisions', {
+      const response = await fetchWithCsrf('/api/meeting-decisions', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+      const result = await response.json();
+      return result;
     },
     updateDecision: async (
       id: string,
       data: UpdateDocumentData<MeetingDecisionDocument>
     ): Promise<ConvexResponse<MeetingDecisionDocument>> => {
-      return apiRequest<MeetingDecisionDocument>(`/api/meeting-decisions/${id}`, {
+      const response = await fetchWithCsrf(`/api/meeting-decisions/${id}`, {
         method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+      const result = await response.json();
+      return result;
     },
     deleteDecision: async (id: string): Promise<ConvexResponse<null>> => {
-      return apiRequest<null>(`/api/meeting-decisions/${id}`, {
+      const response = await fetchWithCsrf(`/api/meeting-decisions/${id}`, {
         method: 'DELETE',
       });
+      const result = await response.json();
+      return result;
     },
   },
 
-  // Meeting Action Items
+  // Meeting Action Items - minimal wrapper
   meetingActionItems: {
     getActionItems: async (
-      params?: QueryParams
+      meetingIdOrParams?: string | { meeting_id?: string; limit?: number; filters?: { assigned_to?: string } }
     ): Promise<ConvexResponse<MeetingActionItemDocument[]>> => {
-      const searchParams = new URLSearchParams();
-      if (params?.page) searchParams.set('page', params.page.toString());
-      if (params?.limit) searchParams.set('limit', params.limit.toString());
-      if (params?.filters?.meeting_id) {
-        searchParams.set('meeting_id', String(params.filters.meeting_id));
+      let url = '/api/meeting-action-items';
+      if (typeof meetingIdOrParams === 'string') {
+        url += `?meeting_id=${meetingIdOrParams}`;
+      } else if (meetingIdOrParams) {
+        const params = new URLSearchParams();
+        if (meetingIdOrParams.meeting_id) params.set('meeting_id', meetingIdOrParams.meeting_id);
+        if (meetingIdOrParams.limit) params.set('limit', meetingIdOrParams.limit.toString());
+        if (meetingIdOrParams.filters?.assigned_to) params.set('assigned_to', meetingIdOrParams.filters.assigned_to);
+        if (params.toString()) url += `?${params.toString()}`;
       }
-      if (params?.filters?.assigned_to) {
-        searchParams.set('assigned_to', String(params.filters.assigned_to));
-      }
-      if (params?.filters?.status) {
-        searchParams.set('status', String(params.filters.status));
-      }
-
-      return apiRequest<MeetingActionItemDocument[]>(
-        `/api/meeting-action-items?${searchParams.toString()}`
-      );
-    },
-    getActionItem: async (id: string): Promise<ConvexResponse<MeetingActionItemDocument>> => {
-      return apiRequest<MeetingActionItemDocument>(`/api/meeting-action-items/${id}`);
+      const response = await fetch(url);
+      const data = await response.json();
+      return data;
     },
     createActionItem: async (
       data: CreateDocumentData<MeetingActionItemDocument>
     ): Promise<ConvexResponse<MeetingActionItemDocument>> => {
-      return apiRequest<MeetingActionItemDocument>('/api/meeting-action-items', {
+      const response = await fetchWithCsrf('/api/meeting-action-items', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+      const result = await response.json();
+      return result;
     },
     updateActionItem: async (
       id: string,
       data: UpdateDocumentData<MeetingActionItemDocument>
     ): Promise<ConvexResponse<MeetingActionItemDocument>> => {
-      return apiRequest<MeetingActionItemDocument>(`/api/meeting-action-items/${id}`, {
+      const response = await fetchWithCsrf(`/api/meeting-action-items/${id}`, {
         method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+      const result = await response.json();
+      return result;
     },
     updateActionItemStatus: async (
       id: string,
       payload: { status: MeetingActionItemDocument['status']; changed_by: string; note?: string }
     ): Promise<ConvexResponse<MeetingActionItemDocument>> => {
-      return apiRequest<MeetingActionItemDocument>(`/api/meeting-action-items/${id}`, {
+      const response = await fetchWithCsrf(`/api/meeting-action-items/${id}`, {
         method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+      const result = await response.json();
+      return result;
     },
     deleteActionItem: async (id: string): Promise<ConvexResponse<null>> => {
-      return apiRequest<null>(`/api/meeting-action-items/${id}`, {
+      const response = await fetchWithCsrf(`/api/meeting-action-items/${id}`, {
         method: 'DELETE',
       });
+      const result = await response.json();
+      return result;
     },
   },
 
-  // Workflow Notifications
+  // Workflow Notifications - minimal wrapper
   workflowNotifications: {
     getNotifications: async (
       params?: QueryParams
@@ -441,103 +301,96 @@ export const apiClient = {
         searchParams.set('category', String(params.filters.category));
       }
 
-      return apiRequest<WorkflowNotificationDocument[]>(
-        `/api/workflow-notifications?${searchParams.toString()}`
-      );
+      const response = await fetch(`/api/workflow-notifications?${searchParams.toString()}`);
+      const data = await response.json();
+      return data;
     },
     getNotification: async (id: string): Promise<ConvexResponse<WorkflowNotificationDocument>> => {
-      return apiRequest<WorkflowNotificationDocument>(`/api/workflow-notifications/${id}`);
+      const response = await fetch(`/api/workflow-notifications/${id}`);
+      const data = await response.json();
+      return data;
     },
     createNotification: async (
       data: CreateDocumentData<WorkflowNotificationDocument>
     ): Promise<ConvexResponse<WorkflowNotificationDocument>> => {
-      return apiRequest<WorkflowNotificationDocument>('/api/workflow-notifications', {
+      const response = await fetchWithCsrf('/api/workflow-notifications', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+      const result = await response.json();
+      return result;
     },
     markNotificationSent: async (
       id: string,
       sent_at?: string
     ): Promise<ConvexResponse<WorkflowNotificationDocument>> => {
-      return apiRequest<WorkflowNotificationDocument>(`/api/workflow-notifications/${id}`, {
+      const response = await fetchWithCsrf(`/api/workflow-notifications/${id}`, {
         method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'gonderildi', sent_at }),
       });
+      const result = await response.json();
+      return result;
     },
     markNotificationRead: async (
       id: string,
       read_at?: string
     ): Promise<ConvexResponse<WorkflowNotificationDocument>> => {
-      return apiRequest<WorkflowNotificationDocument>(`/api/workflow-notifications/${id}`, {
+      const response = await fetchWithCsrf(`/api/workflow-notifications/${id}`, {
         method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'okundu', read_at }),
       });
+      const result = await response.json();
+      return result;
     },
     deleteNotification: async (id: string): Promise<ConvexResponse<null>> => {
-      return apiRequest<null>(`/api/workflow-notifications/${id}`, {
+      const response = await fetchWithCsrf(`/api/workflow-notifications/${id}`, {
         method: 'DELETE',
       });
+      const result = await response.json();
+      return result;
     },
   },
 
-  // Messages
+  // Messages - wrapped from CRUD factory
   messages: {
     getMessages: async (params?: QueryParams): Promise<ConvexResponse<MessageDocument[]>> => {
-      const searchParams = new URLSearchParams();
-      if (params?.page) searchParams.set('page', params.page.toString());
-      if (params?.limit) searchParams.set('limit', params.limit.toString());
-      if (params?.search) searchParams.set('search', params.search);
-      if (params?.filters) {
-        Object.entries(params.filters).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            searchParams.set(key, String(value));
-          }
-        });
-      }
-
-      return apiRequest<MessageDocument[]>(`/api/messages?${searchParams.toString()}`);
+      return messagesCrud.getAll(params);
     },
     getMessage: async (id: string): Promise<ConvexResponse<MessageDocument>> => {
-      return apiRequest<MessageDocument>(`/api/messages/${id}`);
+      return messagesCrud.getById(id);
     },
     createMessage: async (
       data: CreateDocumentData<MessageDocument>
     ): Promise<ConvexResponse<MessageDocument>> => {
-      return apiRequest<MessageDocument>('/api/messages', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return messagesCrud.create(data);
     },
     updateMessage: async (
       id: string,
       data: UpdateDocumentData<MessageDocument>
     ): Promise<ConvexResponse<MessageDocument>> => {
-      return apiRequest<MessageDocument>(`/api/messages/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      });
+      return messagesCrud.update(id, data);
     },
     sendMessage: async (id: string): Promise<ConvexResponse<MessageDocument>> => {
-      return apiRequest<MessageDocument>(`/api/messages/${id}`, {
+      const response = await fetchWithCsrf(`/api/messages/${id}`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'send' }),
       });
+      const result = await response.json();
+      return result;
     },
     deleteMessage: async (id: string): Promise<ConvexResponse<null>> => {
-      return apiRequest<null>(`/api/messages/${id}`, {
-        method: 'DELETE',
-      });
+      return messagesCrud.delete(id);
     },
     markAsRead: async (id: string, _userId: string): Promise<ConvexResponse<MessageDocument>> => {
-      return apiRequest<MessageDocument>(`/api/messages/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ is_read: true }),
-      });
+      return messagesCrud.update(id, { is_read: true } as UpdateDocumentData<MessageDocument>);
     },
   },
 
-  // Users
+  // Users - wrapped from CRUD factory
   users: {
     getUsers: async (params?: {
       search?: string;
@@ -548,20 +401,10 @@ export const apiClient = {
         isActive?: boolean;
       };
     }): Promise<ConvexResponse<UserDocument[]>> => {
-      const searchParams = new URLSearchParams();
-      if (params?.page) searchParams.set('page', params.page.toString());
-      if (params?.limit) searchParams.set('limit', params.limit.toString());
-      if (params?.search) searchParams.set('search', params.search);
-      if (params?.filters?.role) searchParams.set('role', params.filters.role);
-      if (params?.filters?.isActive !== undefined) {
-        searchParams.set('isActive', String(params.filters.isActive));
-      }
-
-      const query = searchParams.toString();
-      return apiRequest<UserDocument[]>(`/api/users${query ? `?${query}` : ''}`);
+      return usersCrud.getAll(params);
     },
     getUser: async (id: string): Promise<ConvexResponse<UserDocument>> => {
-      return apiRequest<UserDocument>(`/api/users/${id}`);
+      return usersCrud.getById(id);
     },
     createUser: async (data: {
       name: string;
@@ -572,69 +415,44 @@ export const apiClient = {
       isActive: boolean;
       phone?: string;
     }): Promise<ConvexResponse<UserDocument>> => {
-      return apiRequest<UserDocument>('/api/users', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return usersCrud.create(data as CreateDocumentData<UserDocument>);
     },
     updateUser: async (
       id: string,
       data: Record<string, unknown>
     ): Promise<ConvexResponse<UserDocument>> => {
-      return apiRequest<UserDocument>(`/api/users/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(data),
-      });
+      return usersCrud.update(id, data as UpdateDocumentData<UserDocument>);
     },
     deleteUser: async (id: string): Promise<ConvexResponse<null>> => {
-      return apiRequest<null>(`/api/users/${id}`, {
-        method: 'DELETE',
-      });
+      return usersCrud.delete(id);
     },
   },
 
-  // Partners
+  // Partners - wrapped from CRUD factory
   partners: {
     getPartners: async (params?: QueryParams): Promise<ConvexResponse<PartnerDocument[]>> => {
-      const searchParams = new URLSearchParams();
-      if (params?.page) searchParams.set('page', params.page.toString());
-      if (params?.limit) searchParams.set('limit', params.limit.toString());
-      if (params?.search) searchParams.set('search', params.search);
-      if (params?.filters?.type) searchParams.set('type', String(params.filters.type));
-      if (params?.filters?.status) searchParams.set('status', String(params.filters.status));
-      if (params?.filters?.partnership_type)
-        searchParams.set('partnership_type', String(params.filters.partnership_type));
-
-      return apiRequest<PartnerDocument[]>(`/api/partners?${searchParams.toString()}`);
+      return partnersCrud.getAll(params);
     },
     getPartner: async (id: string): Promise<ConvexResponse<PartnerDocument>> => {
-      return apiRequest<PartnerDocument>(`/api/partners/${id}`);
+      return partnersCrud.getById(id);
     },
     createPartner: async (
       data: CreateDocumentData<PartnerDocument>
     ): Promise<ConvexResponse<PartnerDocument>> => {
-      return apiRequest<PartnerDocument>('/api/partners', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return partnersCrud.create(data);
     },
     updatePartner: async (
       id: string,
       data: UpdateDocumentData<PartnerDocument>
     ): Promise<ConvexResponse<PartnerDocument>> => {
-      return apiRequest<PartnerDocument>(`/api/partners/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      });
+      return partnersCrud.update(id, data);
     },
     deletePartner: async (id: string): Promise<ConvexResponse<null>> => {
-      return apiRequest<null>(`/api/partners/${id}`, {
-        method: 'DELETE',
-      });
+      return partnersCrud.delete(id);
     },
   },
 
-  // Aid Applications
+  // Aid Applications - wrapped from CRUD factory
   aidApplications: {
     getAidApplications: async (
       params?: QueryParams & {
@@ -645,72 +463,55 @@ export const apiClient = {
         };
       }
     ): Promise<ConvexResponse<AidApplicationDocument[]>> => {
-      const searchParams = new URLSearchParams();
-      if (params?.page) searchParams.set('page', params.page.toString());
-      if (params?.limit) searchParams.set('limit', params.limit.toString());
-      if (params?.search) searchParams.set('search', params.search);
-      if (params?.filters?.stage) searchParams.set('stage', params.filters.stage);
-      if (params?.filters?.status) searchParams.set('status', params.filters.status);
-      if (params?.filters?.beneficiary_id)
-        searchParams.set('beneficiary_id', params.filters.beneficiary_id);
-
-      const endpoint = `/api/aid-applications?${searchParams.toString()}`;
-      const cacheKey = `aid-applications:${searchParams.toString()}`;
-
-      return apiRequest<AidApplicationDocument[]>(endpoint, undefined, cacheKey);
+      return aidApplicationsCrud.getAll(params);
     },
     getAidApplication: async (
       id: string
     ): Promise<ConvexResponse<AidApplicationDocument | null>> => {
-      return apiRequest<AidApplicationDocument | null>(`/api/aid-applications/${id}`);
+      return aidApplicationsCrud.getById(id);
     },
     createAidApplication: async (
       data: CreateDocumentData<AidApplicationDocument>
     ): Promise<ConvexResponse<AidApplicationDocument>> => {
-      return apiRequest<AidApplicationDocument>('/api/aid-applications', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return aidApplicationsCrud.create(data);
     },
     updateAidApplication: async (
       id: string,
       data: UpdateDocumentData<AidApplicationDocument>
     ): Promise<ConvexResponse<AidApplicationDocument>> => {
-      return apiRequest<AidApplicationDocument>(`/api/aid-applications/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(data),
-      });
+      return aidApplicationsCrud.update(id, data);
     },
     updateStage: async (
       id: string,
       stage: AidApplicationDocument['stage']
     ): Promise<ConvexResponse<AidApplicationDocument>> => {
-      return apiRequest<AidApplicationDocument>(`/api/aid-applications/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ stage }),
-      });
+      return aidApplicationsCrud.update(id, { stage } as UpdateDocumentData<AidApplicationDocument>);
     },
     deleteAidApplication: async (id: string): Promise<ConvexResponse<null>> => {
-      return apiRequest<null>(`/api/aid-applications/${id}`, {
-        method: 'DELETE',
-      });
+      return aidApplicationsCrud.delete(id);
     },
   },
 
-  // Monitoring
+  // Monitoring - direct API calls
   monitoring: {
     getEnhancedKPIs: async (): Promise<ConvexResponse<any>> => {
-      return apiRequest<any>('/api/monitoring/kpis');
+      const response = await fetch('/api/monitoring/kpis');
+      const data = await response.json();
+      return data;
     },
     getDashboardStats: async (): Promise<ConvexResponse<any>> => {
-      return apiRequest<any>('/api/monitoring/stats');
+      const response = await fetch('/api/monitoring/stats');
+      const data = await response.json();
+      return data;
     },
     getCurrencyRates: async (): Promise<ConvexResponse<any>> => {
-      return apiRequest<any>('/api/monitoring/currency');
+      const response = await fetch('/api/monitoring/currency');
+      const data = await response.json();
+      return data;
     },
   },
 
-  // Analytics
+  // Analytics - direct API calls
   analytics: {
     trackEvent: async (data: {
       event: string;
@@ -718,65 +519,36 @@ export const apiClient = {
       userId?: string;
       sessionId?: string;
     }): Promise<ConvexResponse<any>> => {
-      return apiRequest<any>('/api/analytics', {
+      const response = await fetchWithCsrf('/api/analytics', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+      const result = await response.json();
+      return result;
     },
     getStats: async (params?: { limit?: number }): Promise<ConvexResponse<any>> => {
       const searchParams = new URLSearchParams();
       if (params?.limit) searchParams.set('limit', params.limit.toString());
-      return apiRequest<any>(`/api/analytics?${searchParams.toString()}`);
+      const response = await fetch(`/api/analytics?${searchParams.toString()}`);
+      const data = await response.json();
+      return data;
     },
   },
 };
 
-// Cache Management Utilities
-export const cacheUtils = {
-  /**
-   * Invalidate cache for a specific data type
-   */
-  invalidateCache: (dataType: string) => {
-    const cache = getCache<unknown>(dataType);
-    cache.clear();
-  },
-
-  /**
-   * Invalidate cache for multiple data types
-   */
-  invalidateCaches: (dataTypes: string[]) => {
-    dataTypes.forEach((type) => {
-      const cache = getCache<unknown>(type);
-      cache.clear();
-    });
-  },
-
-  /**
-   * Get cache statistics
-   */
-  getCacheStats: (dataType: string) => {
-    const cache = getCache<unknown>(dataType);
-    return cache.getStats();
-  },
-
-  /**
-   * Get cache size
-   */
-  getCacheSize: (dataType: string) => {
-    const cache = getCache<unknown>(dataType);
-    return cache.size();
-  },
-
-  /**
-   * Clear all caches
-   */
-  clearAllCaches: () => {
-    ['beneficiaries', 'donations', 'tasks', 'meetings', 'default'].forEach((type) => {
-      const cache = getCache<unknown>(type);
-      cache.clear();
-    });
-  },
-};
+// Export individual entity clients for convenience (re-export from crud-factory)
+export { 
+  beneficiaries,
+  donations,
+  tasks,
+  meetings,
+  messages,
+  aidApplications,
+  partners,
+  scholarships,
+  createApiClient 
+} from './crud-factory';
 
 // Backward compatibility export
 export const legacyApiClient = apiClient;

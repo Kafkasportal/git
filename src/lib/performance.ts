@@ -64,48 +64,6 @@ export function reportWebVitals(metric: unknown) {
   // });
 }
 
-// Cache utilities
-export class Cache {
-  private static instance: Cache;
-  private cache = new Map<string, { data: unknown; timestamp: number; ttl: number }>();
-
-  static getInstance(): Cache {
-    if (!Cache.instance) {
-      Cache.instance = new Cache();
-    }
-    return Cache.instance;
-  }
-
-  set(key: string, data: unknown, ttl: number = 5 * 60 * 1000): void {
-    // 5 minutes default
-    this.cache.set(key, {
-      data,
-      timestamp: Date.now(),
-      ttl,
-    });
-  }
-
-  get<T>(key: string): T | null {
-    const item = this.cache.get(key);
-    if (!item) return null;
-
-    if (Date.now() - item.timestamp > item.ttl) {
-      this.cache.delete(key);
-      return null;
-    }
-
-    return item.data as T;
-  }
-
-  clear(): void {
-    this.cache.clear();
-  }
-
-  delete(key: string): void {
-    this.cache.delete(key);
-  }
-}
-
 // Lazy loading utilities
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function lazyLoadComponent<T extends React.ComponentType<any>>(

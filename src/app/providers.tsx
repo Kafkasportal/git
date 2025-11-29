@@ -70,20 +70,29 @@ export function Providers({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Periodic cache cleanup
+  // Periodic cache cleanup - optimized for better performance
   useEffect(() => {
-    // Clean up expired cache entries every 5 minutes
+    // Clean up expired cache entries every 10 minutes (increased from 5 for better performance)
     const cleanupInterval = setInterval(
       async () => {
-        const cleaned = await persistentCache.cleanup();
-        if (cleaned > 0 && process.env.NODE_ENV === "development") {
-          // Cleanup logged by persistent cache
+        try {
+          const cleaned = await persistentCache.cleanup();
+          if (cleaned > 0 && process.env.NODE_ENV === "development") {
+            // Cleanup logged by persistent cache
+          }
+        } catch (error) {
+          // Silently handle cleanup errors to prevent memory leaks
+          if (process.env.NODE_ENV === "development") {
+            logger.warn("Cache cleanup error", { error: error instanceof Error ? error.message : String(error) });
+          }
         }
       },
-      5 * 60 * 1000,
+      10 * 60 * 1000, // Increased from 5 minutes to 10 minutes
     );
 
-    return () => clearInterval(cleanupInterval);
+    return () => {
+      clearInterval(cleanupInterval);
+    };
   }, []);
 
   // Wait for Zustand persist hydration to finish and update store flag

@@ -14,7 +14,7 @@ Bu döküman, Dernek Yönetim Sistemi'ni kurmak ve çalıştırmak için gereken
 
 Appwrite sunucusuna ihtiyacınız var:
 - **Cloud**: [cloud.appwrite.io](https://cloud.appwrite.io) (Ücretsiz plan mevcut)
-- **Self-hosted**: Docker ile kendi sunucunuzda
+- **Self-hosted**: Kendi sunucunuzda
 
 ---
 
@@ -348,19 +348,6 @@ curl http://localhost:3000/api/monitoring/rate-limit
 2. Vercel'e bağlayın
 3. Ortam değişkenlerini ekleyin
 4. Deploy
-
-### Docker
-
-```bash
-# Image oluştur
-docker build -t dernek-panel .
-
-# Container başlat
-docker run -p 3000:3000 \
-  -e NEXT_PUBLIC_APPWRITE_ENDPOINT=... \
-  -e NEXT_PUBLIC_APPWRITE_PROJECT_ID=... \
-  dernek-panel
-```
 
 ### Self-hosted
 

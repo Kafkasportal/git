@@ -1,14 +1,17 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo, memo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
 import { ModernSidebar } from '@/components/ui/modern-sidebar';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
-import { AnalyticsTrackerComponent } from '@/components/ui/analytics-tracker';
-import { KeyboardShortcuts } from '@/components/ui/keyboard-shortcuts';
-import { AdvancedSearchModal, useAdvancedSearch } from '@/components/ui/advanced-search-modal';
+// Lazy load heavy components for better performance
+import dynamic from 'next/dynamic';
+const AnalyticsTrackerComponent = dynamic(() => import('@/components/ui/analytics-tracker').then(mod => ({ default: mod.AnalyticsTrackerComponent })), { ssr: false });
+const KeyboardShortcuts = dynamic(() => import('@/components/ui/keyboard-shortcuts').then(mod => ({ default: mod.KeyboardShortcuts })), { ssr: false });
+const AdvancedSearchModal = dynamic(() => import('@/components/ui/advanced-search-modal').then(mod => ({ default: mod.AdvancedSearchModal })), { ssr: false });
+import { useAdvancedSearch } from '@/components/ui/advanced-search-modal';
 import {
   LogOut,
   Menu,
@@ -36,7 +39,7 @@ import { beneficiaries, donations } from '@/lib/api/crud-factory';
 import { PerformanceMonitor } from '@/lib/performance-monitor';
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const queryClient = useQueryClient();
@@ -104,6 +107,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     },
     []
   );
+
+  // Memoize user initials to prevent recalculation
+  const userInitials = useMemo(() => {
+    return user?.name ? getInitials(user.name) : 'U';
+  }, [user?.name, getInitials]);
+
+  // Memoize role badge variant
+  const roleBadgeVariant = useMemo(() => {
+    return getRoleBadgeVariant(user?.role);
+  }, [user?.role, getRoleBadgeVariant]);
 
   // Initialize auth on mount (only once)
   useEffect(() => {
@@ -390,12 +403,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-slate-100/80 transition-all duration-200 active:scale-95"
                   aria-label="Kullanıcı menüsünü aç"
                 >
-                  <Avatar size="sm" className="h-8 w-8 ring-2 ring-slate-200">
-                    <AvatarImage src={user?.avatar ?? undefined} alt={user?.name} />
-                    <AvatarFallback className="bg-linear-to-br from-blue-600 to-blue-700 text-white text-xs font-semibold">
-                      {user?.name ? getInitials(user.name) : 'U'}
-                    </AvatarFallback>
-                  </Avatar>
+                    <Avatar size="sm" className="h-8 w-8 ring-2 ring-slate-200">
+                      <AvatarImage src={user?.avatar ?? undefined} alt={user?.name} />
+                      <AvatarFallback className="bg-linear-to-br from-blue-600 to-blue-700 text-white text-xs font-semibold">
+                        {userInitials}
+                      </AvatarFallback>
+                    </Avatar>
                   <ChevronDown
                     className={cn(
                       'h-4 w-4 text-slate-500 transition-transform duration-200',
@@ -410,7 +423,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <Avatar className="h-11 w-11 ring-2 ring-slate-200">
                       <AvatarImage src={user?.avatar ?? undefined} />
                       <AvatarFallback className={newLocal}>
-                        {user?.name ? getInitials(user.name) : 'U'}
+                        {userInitials}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
@@ -418,7 +431,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         {user?.name || 'Kullanıcı'}
                       </p>
                       <p className="text-xs text-slate-500 truncate mt-0.5">{user?.email || ''}</p>
-                      <Badge variant={getRoleBadgeVariant(user?.role)} className="text-xs mt-2">
+                      <Badge variant={roleBadgeVariant} className="text-xs mt-2">
                         {user?.role || 'Viewer'}
                       </Badge>
                     </div>
@@ -531,3 +544,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     </div>
   );
 }
+
+// Memoized version for performance optimization
+export default memo(DashboardLayoutComponent);

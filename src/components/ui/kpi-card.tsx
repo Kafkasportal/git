@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -62,7 +63,7 @@ const colorThemes = {
   },
 };
 
-export function KPICard({
+function KPICardComponent({
   title,
   value,
   icon: Icon,
@@ -124,3 +125,6 @@ export function KPICard({
     </Card>
   );
 }
+
+// Memoized version for performance optimization
+export const KPICard = memo(KPICardComponent);

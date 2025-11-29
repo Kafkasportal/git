@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo, memo } from 'react';
 import dynamic from 'next/dynamic';
 import { useAuthStore } from '@/stores/authStore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,7 +36,8 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Suspense } from 'react';
 
-// Lazy load chart components to reduce initial bundle size
+// Lazy load Recharts components - optimized for better code splitting
+// Using individual dynamic imports for better tree shaking
 const DynamicAreaChart = dynamic(() => import('recharts').then((mod) => mod.AreaChart), {
   ssr: false,
   loading: () => (
@@ -46,22 +48,16 @@ const DynamicAreaChart = dynamic(() => import('recharts').then((mod) => mod.Area
 });
 
 const DynamicArea = dynamic(() => import('recharts').then((mod) => mod.Area), { ssr: false });
-
 const DynamicXAxis = dynamic(() => import('recharts').then((mod) => mod.XAxis), { ssr: false });
-
 const DynamicYAxis = dynamic(() => import('recharts').then((mod) => mod.YAxis), { ssr: false });
-
 const DynamicCartesianGrid = dynamic(() => import('recharts').then((mod) => mod.CartesianGrid), {
   ssr: false,
 });
-
 const DynamicTooltip = dynamic(() => import('recharts').then((mod) => mod.Tooltip), { ssr: false });
-
 const DynamicResponsiveContainer = dynamic(
   () => import('recharts').then((mod) => mod.ResponsiveContainer),
   { ssr: false }
 );
-
 const DynamicPieChart = dynamic(() => import('recharts').then((mod) => mod.PieChart), {
   ssr: false,
   loading: () => (
@@ -70,12 +66,10 @@ const DynamicPieChart = dynamic(() => import('recharts').then((mod) => mod.PieCh
     </div>
   ),
 });
-
 const DynamicPie = dynamic(() => import('recharts').then((mod) => mod.Pie), { ssr: false });
-
 const DynamicCell = dynamic(() => import('recharts').then((mod) => mod.Cell), { ssr: false });
 
-export default function DashboardPage() {
+function DashboardPageComponent() {
   const { user, isAuthenticated, isLoading } = useAuthStore();
 
   // Fetch real data
@@ -162,8 +156,9 @@ export default function DashboardPage() {
     },
   });
 
-  const donationData = chartData?.donationTrend || [];
-  const categoryData = chartData?.categoryData || [];
+  // Memoize chart data to prevent unnecessary recalculations
+  const donationData = useMemo(() => chartData?.donationTrend || [], [chartData?.donationTrend]);
+  const categoryData = useMemo(() => chartData?.categoryData || [], [chartData?.categoryData]);
 
   // Show loading if still loading
   if (isLoading || !enhancedKPIs || !dashboardStats) {
@@ -771,3 +766,6 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+// Memoized version for performance optimization
+export default memo(DashboardPageComponent);

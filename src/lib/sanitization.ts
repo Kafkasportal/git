@@ -3,6 +3,8 @@
  * Prevents XSS, SQL injection, and other security vulnerabilities
  */
 
+import { memoize } from '@/lib/utils/memoization';
+
 // Lazy import DOMPurify to avoid build-time jsdom issues
 let DOMPurify: typeof import('isomorphic-dompurify').default | null = null;
 
@@ -65,15 +67,18 @@ export function sanitizeHtml(html: string): string {
 
 /**
  * Sanitize plain text by removing HTML tags and special characters
+ * Memoized for performance optimization
  */
-export function sanitizeText(text: string): string {
+const _sanitizeText = (text: string): string => {
   if (!text) return '';
 
   return text
     .replace(/<[^>]*>/g, '') // Remove HTML tags
     .replace(/[<>'"]/g, '') // Remove special characters
     .trim();
-}
+};
+
+export const sanitizeText = memoize(_sanitizeText, 500); // Cache up to 500 text sanitizations
 
 /**
  * Sanitize email address

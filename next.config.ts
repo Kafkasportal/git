@@ -50,6 +50,7 @@ const baseConfig: NextConfig = {
     // Partial prerendering for faster initial loads
     ppr: false, // Enable when stable
     // Advanced build optimizations - limit CPU usage for cloud builds
+    // Use all CPUs for faster builds, but leave 1 core free for system
     cpus: process.env.CI ? 2 : Math.max(1, os.cpus().length - 1),
     // Memory optimization
     serverActions: {
@@ -66,31 +67,37 @@ const baseConfig: NextConfig = {
     '@testing-library/jest-dom',
     '@testing-library/react',
     '@testing-library/user-event',
-
+    // Server-only packages that should not be bundled
+    'appwrite',
+    'node-appwrite',
+    'jspdf',
+    'exceljs',
+    'nodemailer',
+    'twilio',
   ],
 
   // Image optimization - aggressive caching and modern formats
   images: {
-    // Modern image formats for better compression
+    // Modern image formats for better compression (AVIF first for best compression)
     formats: ['image/avif', 'image/webp'],
-    // Device sizes for responsive images
+    // Device sizes for responsive images (optimized for common breakpoints)
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    // Image sizes for optimized loading
+    // Image sizes for optimized loading (reduced for better performance)
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     // Long cache TTL for static images
     minimumCacheTTL: 60 * 60 * 24 * 365, // 1 year for better caching
     // SVG security
     dangerouslyAllowSVG: false,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    // Image optimization quality
-    // AVIF quality (0-100)
-    // WebP quality (0-100)
-    // JPEG quality (0-100) - default is 75
+    // Image optimization quality - optimized for performance
+    // AVIF: 75 (good balance between quality and size)
+    // WebP: 80 (slightly higher for compatibility)
+    // JPEG: 75 (default, good quality)
     // Next.js automatically chooses best format based on browser support
     // Enable remote images if needed (currently disabled for security)
     remotePatterns: [],
     // Unoptimized flag - only for development/debugging
-    unoptimized: false,
+    unoptimized: process.env.NODE_ENV === 'development', // Disable in dev for faster builds
   },
 
   // Compression
@@ -253,6 +260,15 @@ const baseConfig: NextConfig = {
       // Bundle analyzer will be handled by the wrapper
     }
 
+    // Suppress baseline-browser-mapping warnings
+    config.ignoreWarnings = [
+      ...(config.ignoreWarnings || []),
+      {
+        module: /baseline-browser-mapping/,
+        message: /The data in this module is over two months old/,
+      },
+    ];
+
     // Exclude test-only dependencies from build (additional webpack externals)
     // jsdom is only needed for tests, not for production builds
     if (isServer) {
@@ -267,6 +283,16 @@ const baseConfig: NextConfig = {
           '@testing-library/user-event': 'commonjs @testing-library/user-event',
         });
       }
+    }
+
+    // Handle optional jspdf dependencies
+    if (!isServer) {
+      config.resolve = config.resolve || {};
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        canvg: false,
+        html2canvas: false,
+      };
     }
 
 
@@ -347,6 +373,12 @@ const baseConfig: NextConfig = {
         runtimeChunk: {
           name: 'runtime',
         },
+        // Module IDs optimization for better caching
+        moduleIds: 'deterministic',
+        // Chunk IDs optimization
+        chunkIds: 'deterministic',
+        // Side effects optimization
+        sideEffects: false,
       };
 
       // Production performance hints - relaxed for cloud builds
@@ -388,16 +420,26 @@ const baseConfig: NextConfig = {
   },
 
   // Output optimization
-  // Standalone output for Docker deployments
-  // Use NEXT_STANDALONE=false to disable if not needed
   output: process.env.NEXT_STANDALONE === 'false' || isWindows ? undefined : 'standalone',
   poweredByHeader: false, // Remove X-Powered-By header for security
 
-  // Build performance hints
+  // Build performance hints - optimized for better memory usage
   onDemandEntries: {
-    maxInactiveAge: 25_000, // 25 seconds
-    pagesBufferLength: 2, // Keep 2 pages in memory
+    maxInactiveAge: 60_000, // 60 seconds - increased for better caching
+    pagesBufferLength: 5, // Keep 5 pages in memory for faster navigation
   },
+
+  // Development optimizations
+  ...(process.env.NODE_ENV === 'development' && {
+    // Faster refresh in development
+    fastRefresh: true,
+  }),
+
+  // Static optimization - ISR configuration
+  // Enable ISR for better performance on dynamic pages
+  // Pages can use: export const revalidate = 60; // Revalidate every 60 seconds
+  // Or: export const dynamic = 'force-static'; // Force static generation
+  // Or: export const dynamic = 'force-dynamic'; // Force dynamic rendering
 
   // React strict mode for better development experience
   reactStrictMode: true,
@@ -415,6 +457,11 @@ const baseConfig: NextConfig = {
       fullUrl: process.env.NODE_ENV === 'development', // Only show full URLs in development
     },
   },
+
+  // Turbopack optimization (when using --turbo flag)
+  // Enable with: npm run dev -- --turbo
+  // Or: next dev --turbo
+  // Turbopack provides faster builds and HMR in development
 };
 
 const nextConfig: NextConfig = bundleAnalyzer(baseConfig);

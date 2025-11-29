@@ -41,11 +41,11 @@ export async function GET() {
         Query.greaterThan('$createdAt', dateString),
         Query.limit(1),
       ]),
-      // Donation Amounts (Fetch last 100 to sum - optimization needed for large datasets)
+      // Donation Amounts (Fetch last 50 to sum - optimized for better performance)
       serverDatabases.listDocuments(databaseId, collections.donations, [
-        Query.limit(100),
+        Query.limit(50), // Reduced from 100
         Query.orderDesc('$createdAt'),
-        Query.select(['amount']),
+        Query.select(['amount']), // Only fetch amount field
       ]),
       // Active Users (using serverUsers API)
       serverUsers.list([Query.limit(1)]),

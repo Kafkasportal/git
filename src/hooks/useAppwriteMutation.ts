@@ -8,6 +8,7 @@ import {
   UseMutationOptions,
   useQueryClient,
 } from "@tanstack/react-query";
+import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { useOnlineStatus } from "./useOnlineStatus";
 import { queueOfflineMutation } from "@/lib/offline-sync";
@@ -50,8 +51,9 @@ export function useAppwriteMutation<
   const queryClient = useQueryClient();
   const { isOffline } = useOnlineStatus();
 
-  return useMutation<TData, TError, TVariables>({
-    mutationFn: async (variables: TVariables) => {
+  // Memoize mutation function
+  const memoizedMutationFn = useCallback(
+    async (variables: TVariables) => {
       // Check if offline and offline queue is enabled
       if (isOffline && enableOfflineQueue) {
         // Determine mutation type from HTTP method or context
@@ -96,8 +98,12 @@ export function useAppwriteMutation<
       // Execute mutation normally if online
       return mutationFn(variables);
     },
-    ...options,
-    onSuccess: (data, variables, context) => {
+    [isOffline, enableOfflineQueue, queryKey, collection, mutationFn]
+  );
+
+  // Memoize success handler
+  const memoizedOnSuccess = useCallback(
+    (data: TData, variables: TVariables, context: unknown) => {
       // Only invalidate queries and show toasts if mutation was actually executed (not queued)
       if (!isOffline || !enableOfflineQueue) {
         // Invalidate queries
@@ -116,7 +122,12 @@ export function useAppwriteMutation<
         onSuccess?.(data, variables, context);
       }
     },
-    onError: (error, variables, context) => {
+    [isOffline, enableOfflineQueue, queryKey, queryClient, showSuccessToast, successMessage, onSuccess]
+  );
+
+  // Memoize error handler
+  const memoizedOnError = useCallback(
+    (error: TError, variables: TVariables, context: unknown) => {
       // Show error toast
       if (showErrorToast) {
         const message =
@@ -131,5 +142,13 @@ export function useAppwriteMutation<
       // Call callbacks
       onError?.(error, variables, context);
     },
+    [showErrorToast, errorMessage, onError]
+  );
+
+  return useMutation<TData, TError, TVariables>({
+    mutationFn: memoizedMutationFn,
+    ...options,
+    onSuccess: memoizedOnSuccess,
+    onError: memoizedOnError,
   });
 }

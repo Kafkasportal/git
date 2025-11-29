@@ -1,41 +1,24 @@
 import logger from '@/lib/logger';
 
-// Lazy import DOMPurify to avoid build-time jsdom issues
-let DOMPurify: typeof import('isomorphic-dompurify').default | null = null;
-
-async function getDOMPurify() {
-  if (!DOMPurify) {
-    DOMPurify = (await import('isomorphic-dompurify')).default;
-  }
-  return DOMPurify;
-}
-
 // Input sanitization utilities
+// @deprecated Use functions from '@/lib/sanitization' instead
+// This class is kept for backward compatibility only
 export class InputSanitizer {
   static async sanitizeHtml(input: string): Promise<string> {
-    const purify = await getDOMPurify();
-    return purify.sanitize(input, {
-      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-      ALLOWED_ATTR: [],
-    });
+    const { sanitizeHtmlAsync } = await import('@/lib/sanitization');
+    return sanitizeHtmlAsync(input);
   }
 
-  // Synchronous version for backward compatibility (uses sync import)
+  // Synchronous version for backward compatibility
   static sanitizeHtmlSync(input: string): string {
-    // This is a fallback - in production, prefer async version
-    // For build-time compatibility, we'll use a simple regex-based sanitization
-    // In runtime, this should use the async version
-    return input.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+    const { sanitizeHtml } = require('@/lib/sanitization');
+    return sanitizeHtml(input);
   }
 
   static sanitizeText(input: string): string {
-    // Remove potentially dangerous characters
-    return input.replace(/[<>'"&]/g, '');
+    const { sanitizeText } = require('@/lib/sanitization');
+    return sanitizeText(input);
   }
-
-  // Note: Email validation is now done inline in API routes
-  // Phone and TC validation should use shared-validators.ts schemas
-  // SQL injection prevention should use parameterized queries, not string escaping
 }
 
 // Rate limiting utilities

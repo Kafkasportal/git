@@ -49,7 +49,7 @@ import {
 } from '@/lib/sanitization';
 
 // Error handling
-import { formatErrorMessage } from '@/lib/errors';
+import { formatErrorMessage } from '@/lib/errors/AppError';
 import logger from '@/lib/logger';
 
 // Use central validation schema (mernisCheck is already included)

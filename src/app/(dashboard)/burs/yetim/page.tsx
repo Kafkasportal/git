@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { scholarshipApplicationsApi, scholarshipPaymentsApi } from '@/lib/api/scholarships';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -132,18 +132,18 @@ export default function OrphansPage() {
     return { total, active, pending, totalSupport };
   }, [orphans]);
 
-  const handleViewDetails = (orphan: { _id?: string; $id?: string; [key: string]: unknown }) => {
+  const handleViewDetails = useCallback((orphan: { _id?: string; $id?: string; [key: string]: unknown }) => {
     setSelectedOrphan({ ...orphan, _id: orphan._id || orphan.$id || '' } as typeof selectedOrphan);
     setIsDetailDialogOpen(true);
-  };
+  }, []);
 
-  // Calculate total paid for an orphan
-  const getTotalPaid = (applicationId: string) => {
+  // Calculate total paid for an orphan - memoized
+  const getTotalPaid = useCallback((applicationId: string) => {
     const orphanPayments = payments.filter(
       (p: { application_id?: string; status?: string; [key: string]: unknown }) => p.application_id === applicationId && p.status === 'paid'
     );
     return orphanPayments.reduce((sum: number, p: { amount?: number; [key: string]: unknown }) => sum + (p.amount || 0), 0);
-  };
+  }, [payments]);
 
   return (
     <div className="space-y-6 p-6">

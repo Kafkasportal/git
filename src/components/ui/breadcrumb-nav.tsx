@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronRight, Home } from 'lucide-react';
@@ -42,7 +43,7 @@ const PATH_TRANSLATIONS: Record<string, string> = {
   'performance-monitoring': 'Performans İzleme',
 };
 
-export function BreadcrumbNav() {
+function BreadcrumbNavComponent() {
   const pathname = usePathname();
 
   // Generate breadcrumb items from pathname
@@ -136,3 +137,6 @@ export function BreadcrumbNav() {
     </nav>
   );
 }
+
+// Memoized version for performance optimization
+export const BreadcrumbNav = memo(BreadcrumbNavComponent);

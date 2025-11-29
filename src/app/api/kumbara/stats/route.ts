@@ -16,10 +16,10 @@ async function getKumbaraStatsHandler(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'overview';
 
-    // Fetch all kumbara donations for stats calculation
+    // Fetch kumbara donations for stats calculation - optimized limit
     const result = await appwriteDonations.list({
       is_kumbara: true, // Only fetch kumbara donations
-      limit: 10000, // Get all records for stats
+      limit: 1000, // Reduced from 10000 for better performance
     });
 
     const donations = result.documents as Record<string, unknown>[];

@@ -4,6 +4,8 @@ import {
   cloneElement,
   forwardRef,
   isValidElement,
+  memo,
+  useCallback,
   type ElementType,
   type ReactElement,
   type ReactNode,
@@ -129,7 +131,7 @@ export const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
   ) => {
     const styles = variantStyles[variant] ?? variantStyles.default;
 
-    const renderIcon = () => {
+    const renderIcon = useCallback(() => {
       if (!icon) {
         return null;
       }
@@ -160,7 +162,7 @@ export const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
 
       // Unsupported type; avoid rendering raw objects
       return null;
-    };
+    }, [icon, styles.icon]);
 
     return (
       <div
@@ -231,6 +233,9 @@ export const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
 );
 
 StatCard.displayName = 'StatCard';
+
+// Memoized version for performance optimization
+export const MemoizedStatCard = memo(StatCard);
 
 /**
  * Skeleton version for loading states

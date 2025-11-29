@@ -1,3 +1,4 @@
+import { memo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +16,7 @@ interface TransactionListProps {
   onDeleteRecord?: (record: FinanceRecord) => void;
 }
 
-export function TransactionList({
+function TransactionListComponent({
   records,
   isLoading,
   total,
@@ -83,6 +84,9 @@ export function TransactionList({
   );
 }
 
+// Memoized TransactionList component for performance optimization
+export const TransactionList = memo(TransactionListComponent);
+
 interface TransactionRowProps {
   record: FinanceRecord;
   onView?: (record: FinanceRecord) => void;
@@ -90,8 +94,21 @@ interface TransactionRowProps {
   onDelete?: (record: FinanceRecord) => void;
 }
 
-function TransactionRow({ record, onView, onEdit, onDelete }: TransactionRowProps) {
+const TransactionRow = memo(function TransactionRow({ record, onView, onEdit, onDelete }: TransactionRowProps) {
   const statusInfo = STATUS_LABELS[record.status];
+
+  // Memoize click handlers
+  const handleView = useCallback(() => {
+    onView?.(record);
+  }, [onView, record]);
+
+  const handleEdit = useCallback(() => {
+    onEdit?.(record);
+  }, [onEdit, record]);
+
+  const handleDelete = useCallback(() => {
+    onDelete?.(record);
+  }, [onDelete, record]);
 
   return (
     <div className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
@@ -130,11 +147,11 @@ function TransactionRow({ record, onView, onEdit, onDelete }: TransactionRowProp
 
         {/* Action Buttons */}
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" className="gap-1" onClick={() => onView?.(record)}>
+          <Button size="sm" variant="outline" className="gap-1" onClick={handleView}>
             <Eye className="h-4 w-4" />
             Görüntüle
           </Button>
-          <Button size="sm" variant="outline" className="gap-1" onClick={() => onEdit?.(record)}>
+          <Button size="sm" variant="outline" className="gap-1" onClick={handleEdit}>
             <Edit className="h-4 w-4" />
             Düzenle
           </Button>
@@ -142,7 +159,7 @@ function TransactionRow({ record, onView, onEdit, onDelete }: TransactionRowProp
             size="sm"
             variant="outline"
             className="gap-1 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-            onClick={() => onDelete?.(record)}
+            onClick={handleDelete}
           >
             <Trash2 className="h-4 w-4" />
             Sil
@@ -151,7 +168,7 @@ function TransactionRow({ record, onView, onEdit, onDelete }: TransactionRowProp
       </div>
     </div>
   );
-}
+});
 
 interface DetailFieldProps {
   label: string;

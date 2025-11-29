@@ -106,13 +106,17 @@ async function getAnalyticsHandler(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '1000');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '500'), 500); // Reduced from 1000, max 500
 
-    // Fetch recent events for aggregation
+    // Fetch recent events for aggregation - only fetch necessary fields
     const events = await serverDatabases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.collections.analyticsEvents,
-      [Query.limit(limit), Query.orderDesc('$createdAt')]
+      [
+        Query.select(['event_type', 'properties', '$createdAt']), // Only fetch necessary fields
+        Query.limit(limit),
+        Query.orderDesc('$createdAt')
+      ]
     );
 
     // Simple in-memory aggregation

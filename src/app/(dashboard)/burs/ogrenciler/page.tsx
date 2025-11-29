@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -194,7 +194,7 @@ export default function StudentsPage() {
     await createMutation.mutateAsync(data);
   };
 
-  const handleExportExcel = () => {
+  const handleExportExcel = useCallback(() => {
     const csvContent = [
       ['Rapor Türü', 'Öğrenci Burs Listesi'],
       ['Tarih', new Date().toLocaleDateString('tr-TR')],
@@ -236,7 +236,7 @@ export default function StudentsPage() {
     link.download = `ogrenci-burs-listesi-${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
     toast.success('Öğrenci listesi Excel formatında indirildi');
-  };
+  }, [memoizedStudents]);
 
   if (isLoading) {
     return (

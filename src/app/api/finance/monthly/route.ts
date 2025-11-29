@@ -56,7 +56,7 @@ async function getFinancialMonthlyHandler(request: NextRequest): Promise<NextRes
     // Build optimized queries - only fetch necessary fields
     const queries: string[] = [
       Query.select(['amount', 'record_type', 'transaction_date', 'category']), // Only needed fields
-      Query.limit(10000), // Higher limit for accurate trends
+      Query.limit(1000), // Reduced from 10000 for better performance
     ];
 
     if (from) {

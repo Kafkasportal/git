@@ -208,9 +208,9 @@ export default function FundReportsPage() {
     link.download = `finans-raporu-${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
     toast.success('Finans raporu Excel formatında indirildi');
-  };
+  }, [reportData, reportType, dateRange, customStartDate, customEndDate]);
 
-  const handleExportPDF = () => {
+  const handleExportPDF = useCallback(() => {
     if (!reportData) return;
     try {
       generateFinancialReportPDF(reportData);
@@ -219,7 +219,7 @@ export default function FundReportsPage() {
       logger.error('Fund report PDF export failed', { error });
       toast.error('PDF oluşturulurken hata oluştu');
     }
-  };
+  }, [reportData]);
 
   if (isLoading) {
     return (

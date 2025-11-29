@@ -1,5 +1,7 @@
 'use client';
 
+import { useMemo } from 'react';
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { donations } from '@/lib/api/crud-factory';
@@ -44,14 +46,19 @@ export default function DonationsPage() {
     queryFn: () =>
       donations.getAll({
         page: 1,
-        limit: 10000, // Load all data for virtual scrolling
+        limit: 50, // Optimized for better performance - use pagination
         search,
       }),
   });
 
-  const donationsList: DonationDocument[] = ((data?.data ?? []) as DonationDocument[]);
+  // Memoize donations list and total amount to prevent unnecessary recalculations
+  const donationsList = useMemo(() => {
+    return ((data?.data ?? []) as DonationDocument[]);
+  }, [data?.data]);
 
-  const totalAmount = donationsList.reduce((sum, d) => sum + d.amount, 0);
+  const totalAmount = useMemo(() => {
+    return donationsList.reduce((sum, d) => sum + d.amount, 0);
+  }, [donationsList]);
 
   // Bulk operations mutations
   const bulkDeleteMutation = useMutation({

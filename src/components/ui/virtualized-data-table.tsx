@@ -41,7 +41,7 @@ interface VirtualizedDataTableProps<T> {
   getItemId?: (item: T) => string;
 }
 
-function VirtualizedDataTable<T>({
+function VirtualizedDataTableComponent<T>({
   data,
   columns,
   isLoading = false,
@@ -66,6 +66,9 @@ function VirtualizedDataTable<T>({
   const [scrollTop, setScrollTop] = useState(0);
   const [calculatedHeight, setCalculatedHeight] = useState(containerHeight);
 
+  // Memoize columns to prevent unnecessary recalculations
+  const memoizedColumns = useMemo(() => columns, [columns]);
+
   // Calculate responsive height based on viewport
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -82,11 +85,12 @@ function VirtualizedDataTable<T>({
     return () => window.removeEventListener('resize', calculateHeight);
   }, [containerHeight]);
 
-  // Memoized virtual scrolling calculations
+  // Memoized virtual scrolling calculations - optimized overscan (10 → 5)
   const virtualItems = useMemo(() => {
     const visibleItemCount = Math.ceil(calculatedHeight / rowHeight);
-    const startIndex = Math.max(0, Math.floor(scrollTop / rowHeight) - 5);
-    const endIndex = Math.min(data.length - 1, startIndex + visibleItemCount + 10);
+    const overscan = 5; // Reduced from 10 for better performance
+    const startIndex = Math.max(0, Math.floor(scrollTop / rowHeight) - overscan);
+    const endIndex = Math.min(data.length - 1, startIndex + visibleItemCount + overscan);
 
     return {
       startIndex,
@@ -167,7 +171,7 @@ function VirtualizedDataTable<T>({
             />
           </div>
         )}
-        {columns.map((column) => {
+        {memoizedColumns.map((column) => {
           const hasFixed = Boolean(
             column.className &&
             (column.className.includes('flex-none') ||
@@ -191,7 +195,7 @@ function VirtualizedDataTable<T>({
               key={column.key}
               className={cn(baseCell, defaultOverflow, 'text-sm', column.className)}
               role="cell"
-              aria-colindex={columns.findIndex((col) => col.key === column.key) + 1}
+              aria-colindex={memoizedColumns.findIndex((col) => col.key === column.key) + 1}
             >
               {column.render ? column.render(item) : String((item as any)[column.key] ?? '-')}
             </div>
@@ -308,7 +312,7 @@ function VirtualizedDataTable<T>({
           onScroll={handleScroll}
           role="table"
           aria-rowcount={data.length + 1}
-          aria-colcount={columns.length}
+          aria-colcount={memoizedColumns.length}
           data-testid="virtualizedTable"
         >
           {/* Header */}
@@ -334,7 +338,7 @@ function VirtualizedDataTable<T>({
                 />
               </div>
             )}
-            {columns.map((column, columnIndex) => {
+            {memoizedColumns.map((column, columnIndex) => {
               const hasFixed = Boolean(
                 column.className &&
                 (column.className.includes('flex-none') ||
@@ -433,4 +437,5 @@ function VirtualizedDataTable<T>({
   );
 }
 
-export { VirtualizedDataTable };
+// Memoized version for performance optimization
+export const VirtualizedDataTable = memo(VirtualizedDataTableComponent) as typeof VirtualizedDataTableComponent;

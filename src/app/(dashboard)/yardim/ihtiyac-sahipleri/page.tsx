@@ -19,6 +19,7 @@ import { BulkActionsToolbar } from '@/components/ui/bulk-actions-toolbar';
 // Performance monitoring imports
 import { useFPSMonitor } from '@/lib/performance-monitor';
 import { useCachedQuery, usePrefetchWithCache } from '@/lib/api-cache';
+import { useDebouncedValue } from '@/lib/performance/hooks';
 
 // Unified skeleton with all features
 import { TableSkeleton } from '@/components/ui/skeleton';
@@ -83,50 +84,59 @@ export default function BeneficiariesPage() {
   const queryClient = useQueryClient();
 
   const [search, setSearch] = useState('');
+  // Debounce search to reduce API calls (300ms delay)
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [showQuickAddModal, setShowQuickAddModal] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [isExporting, setIsExporting] = useState(false);
 
   // Use cached query with performance optimization
+  // Reduced limit for better performance - use pagination instead of loading all data
   const {
     data: cachedData,
     isLoading,
     error,
     refetch,
   } = useCachedQuery<{ success: boolean; data: BeneficiaryDocument[]; total: number }>({
-    queryKey: ['beneficiaries-cached', search],
+    queryKey: ['beneficiaries-cached', debouncedSearch],
     endpoint: '/api/beneficiaries',
     params: {
       page: 1,
-      limit: 10000, // Load all data for virtual scrolling
-      search,
+      limit: 50, // Optimized for better performance - use pagination
+      search: debouncedSearch,
     },
     dataType: 'beneficiaries',
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 10 * 60 * 1000, // 10 minutes - increased for better caching
     enabled: true,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   // Fallback to direct API if cached query fails
   const fallbackQuery = useQuery({
-    queryKey: ['beneficiaries', search],
+    queryKey: ['beneficiaries', debouncedSearch],
     queryFn: () =>
       fetchBeneficiariesDirectly({
         page: 1,
-        limit: 10000,
-        search,
+        limit: 50, // Optimized for better performance
+        search: debouncedSearch,
       }),
     enabled: !cachedData && !isLoading,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const beneficiaries = (cachedData?.data ||
     fallbackQuery.data?.data ||
     []) as BeneficiaryDocument[];
 
-  // Tablo için 1'den başlayan satır numarası ekle
-  const tableData = beneficiaries.map((item, index) => ({
-    ...item,
-    rowIndex: index + 1,
-  }));
+  // Memoize table data to prevent unnecessary recalculations
+  const tableData = useMemo(() => {
+    return beneficiaries.map((item: BeneficiaryDocument, index: number) => ({
+      ...item,
+      rowIndex: index + 1,
+    }));
+  }, [beneficiaries]);
 
   // Memoized handlers
   const handleModalClose = useCallback(() => {

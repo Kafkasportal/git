@@ -12,14 +12,14 @@ import type {
 import { getCache } from '@/lib/api-cache';
 import { fetchWithCsrf } from '@/lib/csrf';
 
-// Cache TTL configuration per entity type
+// Cache TTL configuration per entity type - Optimized for better performance
 const CACHE_TTL = {
-  beneficiaries: 5 * 60 * 1000, // 5 minutes
-  donations: 3 * 60 * 1000, // 3 minutes
+  beneficiaries: 15 * 60 * 1000, // 15 minutes (increased from 5)
+  donations: 10 * 60 * 1000, // 10 minutes (increased from 3)
   tasks: 2 * 60 * 1000, // 2 minutes
   todos: 2 * 60 * 1000, // 2 minutes
-  users: 4 * 60 * 1000, // 4 minutes
-  meetings: 3 * 60 * 1000, // 3 minutes
+  users: 20 * 60 * 1000, // 20 minutes (increased from 4)
+  meetings: 10 * 60 * 1000, // 10 minutes (increased from 3)
   messages: 1 * 60 * 1000, // 1 minute (real-time)
   default: 2 * 60 * 1000, // 2 minutes
 } as const;
@@ -176,17 +176,31 @@ export function createCrudOperations<T>(
 
 /**
  * Pre-configured CRUD operations for common entities
+ * Typed exports for better TypeScript support
  */
-export const beneficiaries = createCrudOperations('beneficiaries', 'beneficiaries');
-export const donations = createCrudOperations('donations', 'donations');
-export const tasks = createCrudOperations('tasks', 'tasks');
-export const todos = createCrudOperations('todos', 'todos');
-export const users = createCrudOperations('users', 'users');
-export const meetings = createCrudOperations('meetings', 'meetings');
-export const messages = createCrudOperations('messages', 'messages');
-export const aidApplications = createCrudOperations('aid-applications', 'default');
-export const partners = createCrudOperations('partners', 'default');
-export const scholarships = createCrudOperations('scholarships', 'default');
+import type {
+  BeneficiaryDocument,
+  DonationDocument,
+  TaskDocument,
+  TodoDocument,
+  UserDocument,
+  MeetingDocument,
+  MessageDocument,
+  AidApplicationDocument,
+  PartnerDocument,
+  ScholarshipDocument,
+} from '@/types/database';
+
+export const beneficiaries = createCrudOperations<BeneficiaryDocument>('beneficiaries', 'beneficiaries');
+export const donations = createCrudOperations<DonationDocument>('donations', 'donations');
+export const tasks = createCrudOperations<TaskDocument>('tasks', 'tasks');
+export const todos = createCrudOperations<TodoDocument>('todos', 'todos');
+export const users = createCrudOperations<UserDocument>('users', 'users');
+export const meetings = createCrudOperations<MeetingDocument>('meetings', 'meetings');
+export const messages = createCrudOperations<MessageDocument>('messages', 'messages');
+export const aidApplications = createCrudOperations<AidApplicationDocument>('aid-applications', 'default');
+export const partners = createCrudOperations<PartnerDocument>('partners', 'default');
+export const scholarships = createCrudOperations<ScholarshipDocument>('scholarships', 'default');
 
 /**
  * Export factory function for custom entities

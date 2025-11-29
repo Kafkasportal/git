@@ -31,7 +31,8 @@ async function getFinancialStatsHandler(request: NextRequest) {
     const databaseId = appwriteConfig.databaseId;
 
     const queries: string[] = [
-      Query.limit(5000), // Max limit to get most records for aggregation
+      Query.select(['amount', 'record_type', 'transaction_date', 'category']), // Only fetch necessary fields
+      Query.limit(1000), // Reduced from 5000 for better performance
     ];
 
     if (from) {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -29,7 +29,6 @@ import {
   Save,
   Phone,
   AtSign,
-  MessageCircle,
 } from 'lucide-react';
 import {
   messageSchema,
@@ -180,7 +179,7 @@ export function MessageForm({
     },
   });
 
-  const handleAddRecipient = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleAddRecipient = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter') return;
 
     const rawInput = recipientInput.trim();
@@ -233,17 +232,17 @@ export function MessageForm({
     setSelectedRecipients(updatedRecipients);
     setValue('recipients', updatedRecipients);
     setRecipientInput('');
-  };
+  }, [messageType, recipientInput, selectedRecipients, users, isLoadingUsers, setValue]);
 
-  const handleRemoveRecipient = (recipientToRemove: string) => {
+  const handleRemoveRecipient = useCallback((recipientToRemove: string) => {
     const updatedRecipients = selectedRecipients.filter(
       (recipient) => recipient !== recipientToRemove
     );
     setSelectedRecipients(updatedRecipients);
     setValue('recipients', updatedRecipients);
-  };
+  }, [selectedRecipients, setValue]);
 
-  const onSubmit = async (data: MessageFormData) => {
+  const onSubmit = useCallback(async (data: MessageFormData) => {
     if (!user?.id) {
       toast.error('Gönderen kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapın.');
       return;
@@ -262,9 +261,9 @@ export function MessageForm({
     } else {
       await createMessageMutation.mutateAsync(submissionData);
     }
-  };
+  }, [user, selectedRecipients, selectedTemplate, isEditMode, messageId, updateMessageMutation, createMessageMutation]);
 
-  const handleSend = async (data: MessageFormData) => {
+  const handleSend = useCallback(async (data: MessageFormData) => {
     if (!user?.id) {
       toast.error('Gönderen kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapın.');
       return;
@@ -302,9 +301,10 @@ export function MessageForm({
         await sendMessageMutation.mutateAsync((result.data as { _id: string })._id);
       }
     }
-  };
+  }, [user, selectedRecipients, selectedTemplate, isEditMode, messageId, updateMessageMutation, createMessageMutation, sendMessageMutation]);
 
-  const getRecipientPlaceholder = () => {
+  // Memoize helper functions
+  const getRecipientPlaceholder = useCallback(() => {
     switch (messageType) {
       case 'sms':
         return 'Telefon numarası girin (5XXXXXXXXX)';
@@ -315,9 +315,9 @@ export function MessageForm({
       default:
         return 'Alıcı girin';
     }
-  };
+  }, [messageType]);
 
-  const getRecipientIcon = () => {
+  const getRecipientIcon = useCallback(() => {
     switch (messageType) {
       case 'sms':
         return <Phone className="h-4 w-4" />;
@@ -328,9 +328,9 @@ export function MessageForm({
       default:
         return <MessageSquare className="h-4 w-4" />;
     }
-  };
+  }, [messageType]);
 
-  const getRecipientLabel = (recipient: string) => {
+  const getRecipientLabel = useCallback((recipient: string) => {
     if (messageType === 'internal') {
       const matchedUser = users.find((u) => u._id === recipient);
       if (matchedUser) {
@@ -347,9 +347,9 @@ export function MessageForm({
     }
 
     return recipient;
-  };
+  }, [messageType, users]);
 
-  const getContentPlaceholder = () => {
+  const getContentPlaceholder = useCallback(() => {
     switch (messageType) {
       case 'sms':
         return 'SMS mesajınızı yazın (max 160 karakter)';
@@ -360,9 +360,9 @@ export function MessageForm({
       default:
         return 'Mesaj içeriğinizi yazın';
     }
-  };
+  }, [messageType]);
 
-  const getContentRows = () => {
+  const getContentRows = useCallback(() => {
     switch (messageType) {
       case 'sms':
         return 4;
@@ -373,9 +373,9 @@ export function MessageForm({
       default:
         return 6;
     }
-  };
+  }, [messageType]);
 
-  const getContentMaxLength = () => {
+  const getContentMaxLength = useCallback(() => {
     switch (messageType) {
       case 'sms':
         return 160;
@@ -386,11 +386,17 @@ export function MessageForm({
       default:
         return 5000;
     }
-  };
+  }, [messageType]);
 
-  const smsMessageCount = messageType === 'sms' ? getSmsMessageCount(content) : 1;
-  const estimatedCost =
-    messageType === 'sms' ? estimateSmsCost(selectedRecipients.length, content) : 0;
+  // Memoize calculated values
+  const smsMessageCount = useMemo(
+    () => (messageType === 'sms' ? getSmsMessageCount(content) : 1),
+    [messageType, content]
+  );
+  const estimatedCost = useMemo(
+    () => (messageType === 'sms' ? estimateSmsCost(selectedRecipients.length, content) : 0),
+    [messageType, selectedRecipients.length, content]
+  );
 
   return (
     <Card className="w-full mx-auto shadow-none border-none">
@@ -640,3 +646,6 @@ export function MessageForm({
     </Card>
   );
 }
+
+// Memoized version for performance optimization
+export const MemoizedMessageForm = memo(MessageForm);

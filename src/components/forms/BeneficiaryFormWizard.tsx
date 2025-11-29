@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, useMemo, memo } from 'react';
 import { useForm, FormProvider, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -28,7 +28,7 @@ import { HealthInfoStep } from './beneficiary-steps/HealthInfoStep';
 // Import validation and types
 import { beneficiarySchema, type BeneficiaryFormData } from '@/lib/validations/beneficiary';
 import { apiClient as api } from '@/lib/api/api-client';
-import { formatErrorMessage } from '@/lib/errors';
+import { formatErrorMessage } from '@/lib/errors/AppError';
 import type { CreateDocumentData, BeneficiaryDocument } from '@/types/database';
 
 interface BeneficiaryFormWizardProps {
@@ -147,24 +147,8 @@ export function BeneficiaryFormWizard({
     },
   });
 
-  // Handle step navigation
-  const nextStep = async () => {
-    const stepFields = getFieldsForStep(currentStep);
-    const isValid = await trigger(stepFields);
-
-    if (isValid && currentStep < FORM_STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const prevStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  // Get fields to validate for current step
-  const getFieldsForStep = (step: number): (keyof BeneficiaryFormData)[] => {
+  // Get fields to validate for current step - memoized
+  const getFieldsForStep = useCallback((step: number): (keyof BeneficiaryFormData)[] => {
     switch (step) {
       case 0: // Personal Info
         return ['firstName', 'lastName', 'identityNumber', 'mobilePhone'];
@@ -179,7 +163,23 @@ export function BeneficiaryFormWizard({
       default:
         return [];
     }
-  };
+  }, []);
+
+  // Handle step navigation - memoized
+  const nextStep = useCallback(async () => {
+    const stepFields = getFieldsForStep(currentStep);
+    const isValid = await trigger(stepFields);
+
+    if (isValid && currentStep < FORM_STEPS.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  }, [currentStep, getFieldsForStep, trigger]);
+
+  const prevStep = useCallback(() => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  }, [currentStep]);
 
   // UPDATE MUTATION
   const updateMutation = useMutation({
@@ -239,24 +239,36 @@ export function BeneficiaryFormWizard({
     },
   });
 
-  // Handle form submission
-  const onSubmit: SubmitHandler<BeneficiaryFormData> = async (data) => {
-    setIsSubmitting(true);
-    try {
-      if (isUpdateMode && beneficiaryId) {
-        await updateMutation.mutateAsync(data);
-      } else {
-        await createMutation.mutateAsync(data);
+  // Handle form submission - memoized
+  const onSubmit: SubmitHandler<BeneficiaryFormData> = useCallback(
+    async (data) => {
+      setIsSubmitting(true);
+      try {
+        if (isUpdateMode && beneficiaryId) {
+          await updateMutation.mutateAsync(data);
+        } else {
+          await createMutation.mutateAsync(data);
+        }
+      } catch (_error) {
+        // Error is handled in mutation
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (_error) {
-      // Error is handled in mutation
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    },
+    [isUpdateMode, beneficiaryId, updateMutation, createMutation]
+  );
 
-  const progress = ((currentStep + 1) / FORM_STEPS.length) * 100;
-  const CurrentStepComponent = FORM_STEPS[currentStep].component;
+  // Memoize progress calculation
+  const progress = useMemo(
+    () => ((currentStep + 1) / FORM_STEPS.length) * 100,
+    [currentStep]
+  );
+
+  // Memoize current step component
+  const CurrentStepComponent = useMemo(
+    () => FORM_STEPS[currentStep].component,
+    [currentStep]
+  );
 
   return (
     <ErrorBoundary fallback={<FormError onClose={onCancel} />}>
@@ -341,3 +353,6 @@ export function BeneficiaryFormWizard({
     </ErrorBoundary>
   );
 }
+
+// Memoized version for performance optimization
+export const MemoizedBeneficiaryFormWizard = memo(BeneficiaryFormWizard);
