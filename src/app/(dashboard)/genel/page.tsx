@@ -33,7 +33,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { Suspense, useMemo } from 'react';
+import { Suspense } from 'react';
 
 // Lazy load chart components to reduce initial bundle size
 const DynamicAreaChart = dynamic(() => import('recharts').then((mod) => mod.AreaChart), {
@@ -443,7 +443,7 @@ export default function DashboardPage() {
                         paddingAngle={5}
                         dataKey="value"
                       >
-                        {categoryData.map((entry, index) => (
+                        {categoryData.map((entry: { name: string; color: string; value: number }, index: number) => (
                           <DynamicCell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </DynamicPie>
@@ -459,7 +459,7 @@ export default function DashboardPage() {
                 </div>
               </Suspense>
               <div className="flex flex-wrap gap-2 mt-4">
-                {categoryData.map((item, index) => (
+                {categoryData.map((item: { name: string; color: string; value: number }, index: number) => (
                   <div key={index} className="flex items-center gap-2 text-xs">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
                     <span className="text-muted-foreground">{item.name}</span>

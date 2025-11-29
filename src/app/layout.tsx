@@ -5,24 +5,12 @@ import { lazyLoadComponent } from '@/lib/performance';
 import { ServiceWorkerRegister } from '@/components/pwa/ServiceWorkerRegister';
 import { NetworkStatusIndicator } from '@/components/pwa/NetworkStatusIndicator';
 
-import { Inter, Outfit } from 'next/font/google';
-
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-body',
-});
-
-const outfit = Outfit({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-heading',
-});
-
+// Use system fonts as fallback when Google Fonts is unavailable
+// This prevents build failures in restricted network environments
 const fontVariables = {
-  '--font-body': inter.style.fontFamily,
-  '--font-heading': outfit.style.fontFamily,
-  '--font-heading-alt': outfit.style.fontFamily,
+  '--font-body': 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  '--font-heading': 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  '--font-heading-alt': 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
 } as const;
 
 // Lazy load analytics components for better initial page load

@@ -407,9 +407,9 @@ const baseConfig: NextConfig = {
   },
 
   // Output optimization
-  // Standalone output disabled for faster builds and smaller artifacts
-  // Re-enable if you need standalone deployment
-  output: process.env.NEXT_STANDALONE === 'true' && !isWindows ? 'standalone' : undefined,
+  // Standalone output for Docker deployments
+  // Use NEXT_STANDALONE=false to disable if not needed
+  output: process.env.NEXT_STANDALONE === 'false' || isWindows ? undefined : 'standalone',
   poweredByHeader: false, // Remove X-Powered-By header for security
 
   // Build performance hints

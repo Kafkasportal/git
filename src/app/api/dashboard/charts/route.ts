@@ -36,7 +36,7 @@ export const GET = buildApiRoute({
     }
 
     // Aggregate donations by month
-    donations.forEach((donation) => {
+    donations.forEach((donation: any) => {
       if (donation.status === 'completed') {
         const createdDate = new Date(donation.$createdAt || donation._creationTime || Date.now());
         const monthKey = `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}`;
@@ -60,7 +60,7 @@ export const GET = buildApiRoute({
     }));
 
     // Aggregate category data from aid applications
-    let categoryData = [];
+    let categoryData: any[] = [];
 
     try {
       const aidApplicationsResponse = await appwriteAidApplications.list({
@@ -93,7 +93,7 @@ export const GET = buildApiRoute({
         // Fallback: Aggregate by donation purpose
         const purposeMap = new Map<string, number>();
 
-        donations.forEach((donation) => {
+        donations.forEach((donation: any) => {
           if (donation.status === 'completed') {
             const purpose = donation.donation_purpose || 'Diğer';
             purposeMap.set(purpose, (purposeMap.get(purpose) || 0) + 1);

@@ -1,0 +1,73 @@
+# ===================================
+# KAFKASDER PANEL - .dockerignore
+# ===================================
+# Exclude files and directories from Docker builds
+
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+.pnpm-debug.log*
+
+# Next.js
+.next
+out
+dist
+build
+
+# Environment files
+.env
+.env*.local
+.env.development
+.env.test
+
+# Testing
+coverage
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__
+.vitest
+
+# Development
+.git
+.gitignore
+.github
+.husky
+.vscode
+.cursor
+.idea
+*.swp
+*.swo
+*~
+
+# Documentation
+README.md
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+SECURITY.md
+LICENSE
+docs
+
+# Scripts
+scripts
+cli
+
+# Temporary files
+*.log
+.DS_Store
+Thumbs.db
+.cache
+tmp
+temp
+
+# WhatsApp session data (don't include in image)
+.whatsapp-session
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
