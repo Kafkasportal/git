@@ -1,0 +1,15 @@
+{
+    "projectId": "6927aa95001c4c6b488b",
+    "projectName": "Dernek Yönetim Sistemi",
+    "databases": [
+        {
+            "$id": "kafkasder_db",
+            "name": "Kafkasder DB",
+            "enabled": true
+        }
+    ],
+    "collections": [],
+    "functions": [],
+    "buckets": [],
+    "teams": []
+}
