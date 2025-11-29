@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/api-client';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,25 @@ import { useNotificationStream } from '@/hooks/useNotificationStream';
 interface NotificationCenterProps {
   userId: string;
 }
+
+// Static category icon mappings - defined outside component to avoid recreation
+const CATEGORY_ICONS: Record<string, string> = {
+  meeting: '📅',
+  gorev: '✅',
+  rapor: '📊',
+  hatirlatma: '⏰',
+};
+
+// Static category color mappings - defined outside component to avoid recreation
+const CATEGORY_COLORS: Record<string, string> = {
+  meeting: 'bg-blue-100 text-blue-800',
+  gorev: 'bg-green-100 text-green-800',
+  rapor: 'bg-purple-100 text-purple-800',
+  hatirlatma: 'bg-orange-100 text-orange-800',
+};
+
+const DEFAULT_CATEGORY_ICON = '📢';
+const DEFAULT_CATEGORY_COLOR = 'bg-gray-100 text-gray-800';
 
 export function NotificationCenter({ userId }: NotificationCenterProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -111,55 +130,30 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
     },
   });
 
-  // Filter notifications based on active tab
-  const filteredNotifications = allNotifications?.filter((notification) => {
+  // Memoize filtered notifications to avoid recalculating on every render
+  const filteredNotifications = useMemo(() => {
+    if (!allNotifications) return [];
     if (activeTab === 'unread') {
-      return notification.status !== 'okundu';
+      return allNotifications.filter((notification) => notification.status !== 'okundu');
     }
-    return true;
-  });
+    return allNotifications;
+  }, [allNotifications, activeTab]);
 
-  const handleMarkAsRead = async (notificationId: string) => {
+  const handleMarkAsRead = useCallback((notificationId: string) => {
     markAsReadMutation.mutate(notificationId);
-  };
+  }, [markAsReadMutation]);
 
-  const handleMarkAllAsRead = async () => {
+  const handleMarkAllAsRead = useCallback(() => {
     markAllAsReadMutation.mutate();
-  };
+  }, [markAllAsReadMutation]);
 
-  const handleDelete = async (notificationId: string) => {
+  const handleDelete = useCallback((notificationId: string) => {
     deleteNotificationMutation.mutate(notificationId);
-  };
+  }, [deleteNotificationMutation]);
 
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'meeting':
-        return '📅';
-      case 'gorev':
-        return '✅';
-      case 'rapor':
-        return '📊';
-      case 'hatirlatma':
-        return '⏰';
-      default:
-        return '📢';
-    }
-  };
-
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'meeting':
-        return 'bg-blue-100 text-blue-800';
-      case 'gorev':
-        return 'bg-green-100 text-green-800';
-      case 'rapor':
-        return 'bg-purple-100 text-purple-800';
-      case 'hatirlatma':
-        return 'bg-orange-100 text-orange-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
+  // Simple lookup functions - no useCallback needed as they're pure and lightweight
+  const getCategoryIcon = (category: string) => CATEGORY_ICONS[category] || DEFAULT_CATEGORY_ICON;
+  const getCategoryColor = (category: string) => CATEGORY_COLORS[category] || DEFAULT_CATEGORY_COLOR;
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>

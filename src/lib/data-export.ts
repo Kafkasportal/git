@@ -14,6 +14,20 @@ interface ExportOptions {
 }
 
 /**
+ * Helper: Collect all unique keys from data rows efficiently
+ * Uses a Set to avoid duplicate keys and iterates once
+ */
+function collectAllKeys(data: DataRow[]): string[] {
+  const keysSet = new Set<string>();
+  for (const row of data) {
+    for (const key of Object.keys(row)) {
+      keysSet.add(key);
+    }
+  }
+  return Array.from(keysSet);
+}
+
+/**
  * Export data to CSV
  */
 export function exportToCSV(data: DataRow[], options: ExportOptions = {}) {
@@ -25,8 +39,8 @@ export function exportToCSV(data: DataRow[], options: ExportOptions = {}) {
   const filename = options.filename || `export_${Date.now()}.csv`;
 
   try {
-    // Get all keys from data
-    const keys = Array.from(new Set(data.flatMap((row) => Object.keys(row))));
+    // Get all keys from data using optimized helper
+    const keys = collectAllKeys(data);
 
     // Create CSV header
     const header = keys.map(escapeCSV).join(',');
@@ -106,8 +120,8 @@ export function exportToTSV(data: DataRow[], options: ExportOptions = {}) {
   const filename = options.filename || `export_${Date.now()}.tsv`;
 
   try {
-    // Get all keys from data
-    const keys = Array.from(new Set(data.flatMap((row) => Object.keys(row))));
+    // Get all keys from data using optimized helper
+    const keys = collectAllKeys(data);
 
     // Create TSV header
     const header = keys.join('\t');
@@ -149,8 +163,8 @@ export async function exportToPDF(data: DataRow[], title: string, options: Expor
   const filename = options.filename || `export_${Date.now()}.pdf`;
 
   try {
-    // Create HTML table
-    const keys = Array.from(new Set(data.flatMap((row) => Object.keys(row))));
+    // Create HTML table using optimized key collection
+    const keys = collectAllKeys(data);
 
     const html = `
       <html>
@@ -223,7 +237,8 @@ export function exportToMultiSheet(
   try {
     const content = sheets
       .map((sheet) => {
-        const keys = Array.from(new Set(sheet.data.flatMap((row) => Object.keys(row))));
+        // Use optimized key collection
+        const keys = collectAllKeys(sheet.data);
 
         const header = `# ${sheet.name}\n${keys.map(escapeCSV).join(',')}`;
 
