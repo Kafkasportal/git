@@ -16,7 +16,7 @@ const testMessageSchema = z.object({
   subject: z.string().optional(),
   message: z.string().min(1, 'Mesaj gerekli'),
   template: z.string().optional(),
-  templateData: z.record(z.unknown()).optional(),
+  templateData: z.record(z.string(), z.unknown()).optional(),
 });
 
 /**

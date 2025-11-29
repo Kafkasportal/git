@@ -64,7 +64,7 @@ export function BeneficiaryQuickAddModal({ open, onOpenChange }: BeneficiaryQuic
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingFileNumber, setIsGeneratingFileNumber] = useState(false);
 
-  const form = useForm<QuickAddBeneficiaryFormData>({
+  const form = useForm({
     resolver: zodResolver(quickAddBeneficiarySchema),
     mode: 'onChange',
     defaultValues: {

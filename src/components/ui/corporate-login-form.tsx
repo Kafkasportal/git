@@ -48,8 +48,6 @@ export function CorporateLoginForm({
   // Admin test credentials - always available for easy login
   const adminEmail = 'admin@kafkasder.com';
   const adminPassword = process.env.NEXT_PUBLIC_ADMIN_TEST_PASSWORD || 'Admin123!';
-  const devEmail = 'mcp-login@example.com';
-  const devPassword = 'SecurePass123!';
 
   // Fetch admin info on mount
   useEffect(() => {

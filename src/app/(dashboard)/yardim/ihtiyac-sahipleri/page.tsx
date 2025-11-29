@@ -61,7 +61,6 @@ import {
   exportToExcel,
   exportToCSV,
   type ExportColumn,
-  ExportType,
   maskTCNo,
   formatDate,
 } from '@/lib/export/export-service';
@@ -147,11 +146,10 @@ export default function BeneficiariesPage() {
       },
       { header: 'Telefon', key: 'phone' },
       { header: 'E-posta', key: 'email' },
-      { header: 'Kategori', key: 'category' },
       { header: 'Durum', key: 'status' },
       {
         header: 'Oluşturulma Tarihi',
-        key: 'created_at',
+        key: '$createdAt' as keyof BeneficiaryDocument,
         formatter: (value) => (value ? formatDate(String(value)) : ''),
       },
     ],

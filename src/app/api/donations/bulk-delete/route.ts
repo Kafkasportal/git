@@ -33,7 +33,7 @@ export const POST = buildApiRoute({
   // Validate request body
   const validationResult = bulkDeleteSchema.safeParse(body);
   if (!validationResult.success) {
-    return errorResponse('Geçersiz istek verisi', 400, validationResult.error.errors.map(e => e.message));
+    return errorResponse('Geçersiz istek verisi', 400, validationResult.error.issues.map((e) => e.message));
   }
 
   const { ids } = validationResult.data;

@@ -7,19 +7,11 @@ import logger from '@/lib/logger';
 import { z } from 'zod';
 
 /**
- * Valid donation statuses
- */
-const validStatuses = ['pending', 'completed', 'cancelled'] as const;
-type DonationStatus = (typeof validStatuses)[number];
-
-/**
  * Request body schema for bulk status update
  */
 const bulkStatusUpdateSchema = z.object({
   ids: z.array(z.string().min(1)).min(1, 'En az bir ID gerekli'),
-  status: z.enum(validStatuses, {
-    errorMap: () => ({ message: 'Geçersiz durum. Geçerli değerler: pending, completed, cancelled' }),
-  }),
+  status: z.enum(['pending', 'completed', 'cancelled']),
 });
 
 /**
@@ -42,7 +34,7 @@ export const POST = buildApiRoute({
   // Validate request body
   const validationResult = bulkStatusUpdateSchema.safeParse(body);
   if (!validationResult.success) {
-    return errorResponse('Geçersiz istek verisi', 400, validationResult.error.errors.map(e => e.message));
+    return errorResponse('Geçersiz istek verisi', 400, validationResult.error.issues.map((e) => e.message));
   }
 
   const { ids, status } = validationResult.data;
