@@ -335,14 +335,32 @@ export default function DashboardPage() {
     return date.toLocaleDateString('tr-TR');
   };
 
+  // Type definitions for audit logs and activities
+  interface AuditLog {
+    $id: string;
+    $createdAt: string;
+    action: string;
+    resource: string;
+    user_id: string;
+    status: 'success' | 'failure';
+  }
+
+  interface Activity {
+    type: 'success' | 'info' | 'warning';
+    title: string;
+    description: string;
+    time: string;
+    icon: typeof CheckCircle2 | typeof AlertCircle | typeof Users;
+  }
+
   // Helper function to get activity details from audit log
-  const getActivityDetails = (log: any) => {
+  const getActivityDetails = (log: AuditLog) => {
     const action = log.action?.toLowerCase() || '';
     const resource = log.resource?.toLowerCase() || '';
 
     let title = '';
     let description = '';
-    let icon = CheckCircle2;
+    let icon: typeof CheckCircle2 | typeof AlertCircle | typeof Users = CheckCircle2;
     let type: 'success' | 'info' | 'warning' = 'info';
 
     if (action === 'create') {
@@ -391,7 +409,7 @@ export default function DashboardPage() {
   };
 
   // Map audit logs to activities
-  const recentActivities = (auditLogsData || []).map((log: any) => {
+  const recentActivities: Activity[] = (auditLogsData || []).map((log: AuditLog) => {
     const details = getActivityDetails(log);
     return {
       type: details.type,
