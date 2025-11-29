@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -161,7 +161,7 @@ export default function FundReportsPage() {
 
   const reportData = displayedData;
 
-  const handleExportExcel = () => {
+  const handleExportExcel = useCallback(() => {
     if (!reportData) return;
 
     const csvContent = [
