@@ -1,15 +1,14 @@
 # ===================================
 # KAFKASDER PANEL - Dockerfile
 # ===================================
-# Multi-stage Docker build for Next.js app with WhatsApp support
-# Includes Chromium for Puppeteer/WhatsApp Web.js
+# Multi-stage Docker build for Next.js app
 
 # ===================================
 # Stage 1: Dependencies
 # ===================================
 FROM node:20-alpine AS deps
 
-# Install system dependencies for node-gyp and Chromium
+# Install system dependencies for node-gyp
 RUN apk add --no-cache \
     libc6-compat \
     python3 \
@@ -21,8 +20,7 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install dependencies with Puppeteer skip (we'll use system Chromium)
-ENV PUPPETEER_SKIP_DOWNLOAD=true
+# Install dependencies
 RUN npm ci --only=production && \
     npm cache clean --force
 
@@ -49,7 +47,6 @@ COPY . .
 # Set environment variables for build
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-ENV PUPPETEER_SKIP_DOWNLOAD=true
 
 # Build the Next.js app
 RUN npm run build
@@ -61,22 +58,9 @@ FROM node:20-alpine AS runner
 
 WORKDIR /app
 
-# Install Chromium and required libraries for WhatsApp Web.js
+# Install minimal runtime dependencies
 RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
-    udev \
-    xvfb \
-    dbus
-
-# Set Chromium executable path for Puppeteer
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-ENV PUPPETEER_SKIP_DOWNLOAD=true
+    ca-certificates
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \
@@ -91,10 +75,6 @@ ENV PORT=3000
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-
-# Create directory for WhatsApp session data
-RUN mkdir -p .whatsapp-session && \
-    chown -R nextjs:nodejs .whatsapp-session
 
 # Set user
 USER nextjs

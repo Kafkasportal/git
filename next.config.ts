@@ -1,7 +1,6 @@
 import type { NextConfig } from 'next';
 import withBundleAnalyzer from '@next/bundle-analyzer';
 import os from 'os';
-import webpack from 'webpack';
 const isWindows = os.platform() === 'win32';
 
 const bundleAnalyzer = withBundleAnalyzer({
@@ -67,10 +66,7 @@ const baseConfig: NextConfig = {
     '@testing-library/jest-dom',
     '@testing-library/react',
     '@testing-library/user-event',
-    // WhatsApp Web.js is server-only (uses Puppeteer, requires Node.js environment)
-    'whatsapp-web.js',
-    'puppeteer',
-    'puppeteer-core',
+
   ],
 
   // Image optimization - aggressive caching and modern formats
@@ -257,9 +253,8 @@ const baseConfig: NextConfig = {
       // Bundle analyzer will be handled by the wrapper
     }
 
-    // Exclude test-only dependencies and server-only packages from build (additional webpack externals)
+    // Exclude test-only dependencies from build (additional webpack externals)
     // jsdom is only needed for tests, not for production builds
-    // whatsapp-web.js is server-only (uses Puppeteer, requires Node.js environment)
     if (isServer) {
       config.externals = config.externals || [];
       if (Array.isArray(config.externals)) {
@@ -270,25 +265,11 @@ const baseConfig: NextConfig = {
           '@testing-library/jest-dom': 'commonjs @testing-library/jest-dom',
           '@testing-library/react': 'commonjs @testing-library/react',
           '@testing-library/user-event': 'commonjs @testing-library/user-event',
-          'whatsapp-web.js': 'commonjs whatsapp-web.js',
-          puppeteer: 'commonjs puppeteer',
-          'puppeteer-core': 'commonjs puppeteer-core',
         });
       }
     }
 
-    // Ignore whatsapp-web.js in client-side builds
-    // This prevents Next.js from trying to bundle whatsapp-web.js for the client
-    // The serverExternalPackages config above should handle this, but adding extra protection
-    if (!isServer) {
-      // Use webpack IgnorePlugin to completely ignore whatsapp-web.js in client builds
-      config.plugins = config.plugins || [];
-      config.plugins.push(
-        new webpack.IgnorePlugin({
-          resourceRegExp: /^whatsapp-web\.js$/,
-        })
-      );
-    }
+
 
     // Production optimizations
     if (!dev && !isServer) {

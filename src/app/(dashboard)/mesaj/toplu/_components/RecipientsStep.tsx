@@ -20,7 +20,7 @@ const RecipientSelector = dynamic(
 );
 
 interface RecipientsStepProps {
-  messageType: 'sms' | 'email' | 'internal' | 'whatsapp';
+  messageType: 'sms' | 'email' | 'internal';
   selectedRecipients: string[];
   onRecipientsChange: (recipients: string[]) => void;
 }

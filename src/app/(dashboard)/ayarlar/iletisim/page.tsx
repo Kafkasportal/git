@@ -2,7 +2,7 @@
 
 /**
  * Communication Settings Page
- * Manage Email/SMTP, SMS/Twilio, and WhatsApp configurations
+ * Manage Email/SMTP and SMS/Twilio configurations
  */
 
 import { useState, useEffect, useRef } from 'react';
@@ -65,16 +65,6 @@ export default function CommunicationSettingsPage() {
     testMode: true,
   });
 
-  // WhatsApp form state
-  const [whatsappForm, setWhatsappForm] = useState({
-    phoneNumberId: '',
-    accessToken: '',
-    businessAccountId: '',
-    webhookVerifyToken: '',
-    enabled: false,
-    testMode: true,
-  });
-
   // Track previous data key to prevent re-initialization
   const previousDataKeyRef = useRef<string>('');
 
@@ -122,18 +112,6 @@ export default function CommunicationSettingsPage() {
         testMode: settings.sms.testMode ?? true,
       });
     }
-
-    // Update WhatsApp form only if WhatsApp settings exist
-    if (settings.whatsapp && Object.keys(settings.whatsapp).length > 0) {
-      setWhatsappForm({
-        phoneNumberId: settings.whatsapp.phoneNumberId || '',
-        accessToken: settings.whatsapp.accessToken || '',
-        businessAccountId: settings.whatsapp.businessAccountId || '',
-        webhookVerifyToken: settings.whatsapp.webhookVerifyToken || '',
-        enabled: settings.whatsapp.enabled ?? false,
-        testMode: settings.whatsapp.testMode ?? true,
-      });
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settingsData?.data]);
 
@@ -143,8 +121,8 @@ export default function CommunicationSettingsPage() {
       type,
       data,
     }: {
-      type: 'email' | 'sms' | 'whatsapp';
-      data: Record<string, any>;
+      type: 'email' | 'sms';
+      data: Record<string, unknown>;
     }) => {
       const response = await fetch(`/api/communication?type=${type}`, {
         method: 'PUT',
@@ -178,11 +156,6 @@ export default function CommunicationSettingsPage() {
     updateMutation.mutate({ type: 'sms', data: smsForm });
   };
 
-  const handleWhatsAppSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateMutation.mutate({ type: 'whatsapp', data: whatsappForm });
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -204,13 +177,13 @@ export default function CommunicationSettingsPage() {
             İletişim Ayarları
           </h1>
           <p className="text-muted-foreground mt-1">
-            E-posta, SMS ve WhatsApp iletişim kanallarını yapılandırın
+            E-posta ve SMS iletişim kanallarını yapılandırın
           </p>
         </div>
       </div>
 
       <Tabs defaultValue="email" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="email" className="flex items-center gap-2">
             <Mail className="w-4 h-4" />
             E-posta (SMTP)
@@ -218,10 +191,6 @@ export default function CommunicationSettingsPage() {
           <TabsTrigger value="sms" className="flex items-center gap-2">
             <Phone className="w-4 h-4" />
             SMS (Twilio)
-          </TabsTrigger>
-          <TabsTrigger value="whatsapp" className="flex items-center gap-2">
-            <MessageSquare className="w-4 h-4" />
-            WhatsApp
           </TabsTrigger>
         </TabsList>
 
@@ -537,148 +506,6 @@ export default function CommunicationSettingsPage() {
                   >
                     <Send className="w-4 h-4 mr-2" />
                     Test SMS Gönder
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </form>
-        </TabsContent>
-
-        {/* WhatsApp Tab */}
-        <TabsContent value="whatsapp" className="space-y-6">
-          <form onSubmit={handleWhatsAppSubmit}>
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <MessageSquare className="w-5 h-5" />
-                      WhatsApp Business API Ayarları
-                    </CardTitle>
-                    <CardDescription>Meta WhatsApp Business API yapılandırması</CardDescription>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="whatsapp-enabled">Aktif</Label>
-                    <Switch
-                      id="whatsapp-enabled"
-                      checked={whatsappForm.enabled}
-                      onCheckedChange={(checked) =>
-                        setWhatsappForm({ ...whatsappForm, enabled: checked })
-                      }
-                    />
-                    {whatsappForm.enabled ? (
-                      <Badge variant="default" className="ml-2">
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        Aktif
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary" className="ml-2">
-                        <XCircle className="w-3 h-3 mr-1" />
-                        Pasif
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="wa-phone-id">Phone Number ID *</Label>
-                    <Input
-                      id="wa-phone-id"
-                      value={whatsappForm.phoneNumberId}
-                      onChange={(e) =>
-                        setWhatsappForm({ ...whatsappForm, phoneNumberId: e.target.value })
-                      }
-                      placeholder="123456789012345"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="wa-token" className="flex items-center gap-2">
-                      <Shield className="w-4 h-4" />
-                      Access Token *
-                    </Label>
-                    <Input
-                      id="wa-token"
-                      type="password"
-                      value={whatsappForm.accessToken}
-                      onChange={(e) =>
-                        setWhatsappForm({ ...whatsappForm, accessToken: e.target.value })
-                      }
-                      placeholder="••••••••••••••••••••••••••••••••"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="wa-business-id">Business Account ID *</Label>
-                    <Input
-                      id="wa-business-id"
-                      value={whatsappForm.businessAccountId}
-                      onChange={(e) =>
-                        setWhatsappForm({ ...whatsappForm, businessAccountId: e.target.value })
-                      }
-                      placeholder="123456789012345"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="wa-webhook" className="flex items-center gap-2">
-                      <Key className="w-4 h-4" />
-                      Webhook Verify Token *
-                    </Label>
-                    <Input
-                      id="wa-webhook"
-                      type="password"
-                      value={whatsappForm.webhookVerifyToken}
-                      onChange={(e) =>
-                        setWhatsappForm({ ...whatsappForm, webhookVerifyToken: e.target.value })
-                      }
-                      placeholder="••••••••"
-                      required
-                    />
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="wa-test-mode"
-                      checked={whatsappForm.testMode}
-                      onCheckedChange={(checked) =>
-                        setWhatsappForm({ ...whatsappForm, testMode: checked })
-                      }
-                    />
-                    <Label htmlFor="wa-test-mode">
-                      Test Modu (Mesaj gönderilmez, sadece log kaydı tutulur)
-                    </Label>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-2 pt-4 border-t">
-                  <Button type="submit" disabled={updateMutation.isPending} className="flex-1">
-                    {updateMutation.isPending ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                        Kaydediliyor...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Kaydet
-                      </>
-                    )}
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => toast.info('Test WhatsApp özelliği yakında gelecek')}
-                  >
-                    <Send className="w-4 h-4 mr-2" />
-                    Test Mesaj Gönder
                   </Button>
                 </div>
               </CardContent>

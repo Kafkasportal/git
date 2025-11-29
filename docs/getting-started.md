@@ -85,9 +85,6 @@ SMTP_PORT=587
 SMTP_USER=your-email@example.com
 SMTP_PASS=your-password
 
-# WhatsApp (opsiyonel)
-WHATSAPP_SESSION_PATH=./whatsapp-session
-
 # Twilio SMS (opsiyonel)
 TWILIO_ACCOUNT_SID=your-sid
 TWILIO_AUTH_TOKEN=your-token

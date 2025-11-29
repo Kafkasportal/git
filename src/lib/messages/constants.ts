@@ -1,7 +1,6 @@
 export const MESSAGE_TYPES = {
   SMS: 'sms',
   EMAIL: 'email',
-  WHATSAPP: 'whatsapp',
 } as const;
 
 export const WIZARD_STEPS = {
@@ -28,5 +27,4 @@ export const STEP_DESCRIPTIONS = {
 export const MESSAGE_TYPE_LABELS = {
   sms: 'SMS',
   email: 'E-Posta',
-  whatsapp: 'WhatsApp',
 } as const;

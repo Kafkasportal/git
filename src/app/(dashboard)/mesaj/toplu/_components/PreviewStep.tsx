@@ -8,7 +8,7 @@ import { AlertCircle, Eye } from 'lucide-react';
 import { calculateEstimatedSendTime, getMessageTypeIcon } from '@/lib/messages/calculations';
 import { getSmsMessageCount } from '@/lib/validations/message';
 
-type MessageType = 'sms' | 'email' | 'whatsapp';
+type MessageType = 'sms' | 'email';
 
 interface PreviewStepProps {
   messageType: MessageType;
@@ -124,7 +124,6 @@ function getMessageTypeLabel(type: MessageType): string {
   const labels: Record<MessageType, string> = {
     sms: 'SMS',
     email: 'E-Posta',
-    whatsapp: 'WhatsApp',
   };
   return labels[type] || type;
 }

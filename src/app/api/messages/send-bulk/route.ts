@@ -1,12 +1,12 @@
 /**
  * POST /api/messages/send-bulk
- * Send bulk messages via SMS, Email, or WhatsApp
+ * Send bulk messages via SMS or Email
  * Supports multiple message types and recipient lists
  * Requires authentication and messages module access
  *
  * REQUEST BODY:
  * {
- *   type: 'sms' | 'email' | 'whatsapp',
+ *   type: 'sms' | 'email',
  *   recipients: string[], // Phone numbers or email addresses
  *   message: string,
  *   subject?: string, // Required for email
@@ -32,7 +32,6 @@ import logger from '@/lib/logger';
 import { z } from 'zod';
 import { sendBulkSMS } from '@/lib/services/sms';
 import { sendEmail } from '@/lib/services/email';
-import { sendBulkWhatsAppMessages } from '@/lib/services/whatsapp';
 
 /**
  * Common result type for bulk message operations
@@ -46,7 +45,7 @@ interface BulkMessageResult {
 
 // Validation schema
 const bulkMessageSchema = z.object({
-  type: z.enum(['sms', 'email', 'whatsapp']),
+  type: z.enum(['sms', 'email']),
   recipients: z
     .array(z.string().min(1, 'Alıcı bilgisi boş olamaz'))
     .min(1, 'En az bir alıcı belirtmelisiniz')
@@ -177,28 +176,6 @@ export const POST = buildApiRoute({
       result = await sendBulkEmailMessages(recipients, message, subject);
       break;
 
-    case 'whatsapp':
-      try {
-        const whatsappResult = await sendBulkWhatsAppMessages(recipients, message);
-        result = {
-          total: whatsappResult.total,
-          successful: whatsappResult.successful,
-          failed: whatsappResult.failed,
-          failedRecipients: whatsappResult.failedRecipients.map((phone) => ({
-            recipient: phone,
-            error: 'WhatsApp mesajı gönderilemedi',
-          })),
-        };
-      } catch (error) {
-        // WhatsApp client not initialized
-        return errorResponse(
-          'WhatsApp servisi hazır değil. Lütfen önce WhatsApp QR kodunu okutun.',
-          503,
-          [error instanceof Error ? error.message : 'Unknown error']
-        );
-      }
-      break;
-
     default:
       return errorResponse('Geçersiz mesaj tipi', 400);
   }
@@ -217,7 +194,7 @@ export const POST = buildApiRoute({
     const { appwriteCommunicationLogs } = await import('@/lib/appwrite/api');
     
     const logData = {
-      type: type as 'email' | 'sms' | 'whatsapp',
+      type: type as 'email' | 'sms',
       recipient_count: recipients.length,
       message,
       successful: result.successful,

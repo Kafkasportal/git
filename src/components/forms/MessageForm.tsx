@@ -51,7 +51,7 @@ interface MessageFormProps {
   onCancel?: () => void;
   initialData?: Partial<MessageFormData>;
   messageId?: string; // For edit mode
-  defaultMessageType?: 'sms' | 'email' | 'internal' | 'whatsapp';
+  defaultMessageType?: 'sms' | 'email' | 'internal';
 }
 
 export function MessageForm({
@@ -413,13 +413,12 @@ export function MessageForm({
                 <SelectValue placeholder="Mesaj türü seçin" />
               </SelectTrigger>
               <SelectContent>
-                {['sms', 'email', 'internal', 'whatsapp'].map((type) => (
+                {['sms', 'email', 'internal'].map((type) => (
                   <SelectItem key={type} value={type}>
                     <div className="flex items-center gap-2">
                       {type === 'sms' && <Phone className="h-4 w-4" />}
                       {type === 'email' && <Mail className="h-4 w-4" />}
                       {type === 'internal' && <Users className="h-4 w-4" />}
-                      {type === 'whatsapp' && <MessageCircle className="h-4 w-4" />}
                       {getMessageTypeLabel(type as MessageFormData['message_type'])}
                     </div>
                   </SelectItem>
