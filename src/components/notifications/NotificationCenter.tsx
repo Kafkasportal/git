@@ -151,14 +151,9 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
     deleteNotificationMutation.mutate(notificationId);
   }, [deleteNotificationMutation]);
 
-  // Use lookup tables instead of switch statements for better performance
-  const getCategoryIcon = useCallback((category: string) => {
-    return CATEGORY_ICONS[category] || DEFAULT_CATEGORY_ICON;
-  }, []);
-
-  const getCategoryColor = useCallback((category: string) => {
-    return CATEGORY_COLORS[category] || DEFAULT_CATEGORY_COLOR;
-  }, []);
+  // Simple lookup functions - no useCallback needed as they're pure and lightweight
+  const getCategoryIcon = (category: string) => CATEGORY_ICONS[category] || DEFAULT_CATEGORY_ICON;
+  const getCategoryColor = (category: string) => CATEGORY_COLORS[category] || DEFAULT_CATEGORY_COLOR;
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>

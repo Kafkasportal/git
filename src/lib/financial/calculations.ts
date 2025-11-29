@@ -29,6 +29,7 @@ export interface FinancialStats {
 /**
  * Calculate financial statistics from records
  * Optimized to use a single pass over the array instead of multiple filter/reduce operations
+ * (reduces time complexity from O(6n) to O(n))
  */
 export function calculateFinancialStats(records: FinanceRecord[], total: number): FinancialStats {
   let totalIncome = 0;
