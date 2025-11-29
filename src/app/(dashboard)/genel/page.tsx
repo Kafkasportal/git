@@ -122,30 +122,33 @@ export default function DashboardPage() {
     },
   });
 
-  // ⚠️ TODO: Charts are still using static data. Implement aggregation API for charts.
-  // Sample chart data - memoized to prevent re-renders (moved before early returns)
-  const donationData = useMemo(
-    () => [
-      { month: 'Oca', amount: 4500, beneficiaries: 12 },
-      { month: 'Şub', amount: 5200, beneficiaries: 15 },
-      { month: 'Mar', amount: 4800, beneficiaries: 11 },
-      { month: 'Nis', amount: 6100, beneficiaries: 18 },
-      { month: 'May', amount: 5800, beneficiaries: 16 },
-      { month: 'Haz', amount: 7200, beneficiaries: 22 },
-    ],
-    []
-  );
+  // Fetch chart data from aggregation API
+  const { data: chartData } = useQuery({
+    queryKey: ['dashboard', 'charts'],
+    queryFn: async () => {
+      const response = await fetch('/api/dashboard/charts');
+      if (!response.ok) throw new Error('Failed to fetch chart data');
+      const data = await response.json();
+      return data.data;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    initialData: {
+      donationTrend: [
+        { month: 'Oca', amount: 0, beneficiaries: 0 },
+        { month: 'Şub', amount: 0, beneficiaries: 0 },
+        { month: 'Mar', amount: 0, beneficiaries: 0 },
+        { month: 'Nis', amount: 0, beneficiaries: 0 },
+        { month: 'May', amount: 0, beneficiaries: 0 },
+        { month: 'Haz', amount: 0, beneficiaries: 0 },
+      ],
+      categoryData: [
+        { name: 'Genel Bağış', value: 100, color: '#8884d8' },
+      ],
+    },
+  });
 
-  const categoryData = useMemo(
-    () => [
-      { name: 'Ramazan Paketi', value: 35, color: '#8884d8' },
-      { name: 'Eğitim Yardımı', value: 25, color: '#82ca9d' },
-      { name: 'Sağlık Desteği', value: 20, color: '#ffc658' },
-      { name: 'Gıda Yardımı', value: 15, color: '#ff7300' },
-      { name: 'Diğer', value: 5, color: '#00ff00' },
-    ],
-    []
-  );
+  const donationData = chartData?.donationTrend || [];
+  const categoryData = chartData?.categoryData || [];
 
   // Show loading if still loading
   if (isLoading || !enhancedKPIs || !dashboardStats) {

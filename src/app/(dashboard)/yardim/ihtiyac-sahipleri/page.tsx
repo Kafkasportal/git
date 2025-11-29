@@ -237,10 +237,21 @@ export default function BeneficiariesPage() {
 
   // Bulk operations mutations
   const bulkDeleteMutation = useMutation({
-    mutationFn: async (_ids: string[]) => {
-      // TODO: Replace with actual bulk delete API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return { success: true };
+    mutationFn: async (ids: string[]) => {
+      const response = await fetch('/api/beneficiaries/bulk-delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ids }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Silme işlemi başarısız');
+      }
+
+      return await response.json();
     },
     onSuccess: () => {
       toast.success(`${selectedItems.size} kayıt başarıyla silindi`);
@@ -256,10 +267,21 @@ export default function BeneficiariesPage() {
   });
 
   const bulkStatusUpdateMutation = useMutation({
-    mutationFn: async ({ ids: _ids, status }: { ids: string[]; status: string }) => {
-      // TODO: Replace with actual bulk status update API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return { success: true, status };
+    mutationFn: async ({ ids, status }: { ids: string[]; status: string }) => {
+      const response = await fetch('/api/beneficiaries/bulk-update-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ids, status }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Durum güncelleme işlemi başarısız');
+      }
+
+      return await response.json();
     },
     onSuccess: (_, variables) => {
       const statusLabel = variables.status === 'AKTIF' ? 'Aktif' : 'Pasif';
