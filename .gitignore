@@ -21,6 +21,8 @@ junit.xml
 /.next/
 /out/
 next-env.d.ts
+.next/cache/
+.tsbuildinfo
 
 # Production
 /build

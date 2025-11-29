@@ -49,9 +49,9 @@ const baseConfig: NextConfig = {
     optimizeServerReact: true,
     // Partial prerendering for faster initial loads
     ppr: false, // Enable when stable
-    // Advanced build optimizations - limit CPU usage for cloud builds
-    // Use all CPUs for faster builds, but leave 1 core free for system
-    cpus: process.env.CI ? 2 : Math.max(1, os.cpus().length - 1),
+    // Advanced build optimizations - optimize CPU usage for faster builds
+    // In CI: use 2 CPUs, locally: use all available CPUs minus 1
+    cpus: process.env.CI ? (process.env.BUILD_CPUS ? parseInt(process.env.BUILD_CPUS) : 2) : Math.max(1, os.cpus().length - 1),
     // Memory optimization
     serverActions: {
       bodySizeLimit: '15mb', // Increased to accommodate file uploads (default file limit is 10MB)
