@@ -75,9 +75,7 @@ export const scholarshipsApi = {
     is_active: boolean;
   }) => {
     try {
-      const result = (await appwriteScholarships.create(data)) as {
-        $id: string;
-      };
+      const result = await appwriteScholarships.create(data) as { $id: string };
       return {
         success: true,
         data: { _id: result.$id },
@@ -235,9 +233,7 @@ export const scholarshipApplicationsApi = {
     documents?: string[];
   }) => {
     try {
-      const result = (await appwriteScholarshipApplications.create(data)) as {
-        $id: string;
-      };
+      const result = await appwriteScholarshipApplications.create(data) as { $id: string };
       return {
         success: true,
         data: { _id: result.$id },
@@ -353,9 +349,7 @@ export const scholarshipPaymentsApi = {
     notes?: string;
   }) => {
     try {
-      const result = (await appwriteScholarshipPayments.create(data)) as {
-        $id: string;
-      };
+      const result = await appwriteScholarshipPayments.create(data) as { $id: string };
       return {
         success: true,
         data: { _id: result.$id },

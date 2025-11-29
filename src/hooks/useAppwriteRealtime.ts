@@ -446,111 +446,30 @@ export function useAppwriteReconnect({
 }
 
 /**
- * Simplified hook for subscribing to collection changes
- * This is an alias/wrapper for useAppwriteCollection with a simpler interface
+ * Convenience hook for real-time updates on a collection
+ * Wraps useAppwriteCollection for simpler API
  *
  * @example
  * ```ts
  * const { isConnected } = useAppwriteRealtime('donations', {
  *   notifyOnChange: true,
- *   onChange: (event) => console.log('Changed:', event),
+ *   onChange: (event) => console.log('Update:', event),
  * });
  * ```
  */
-export function useAppwriteRealtime<T = unknown>(
+export function useAppwriteRealtime(
   collectionId: string,
-  options: {
-    enabled?: boolean;
-    notifyOnChange?: boolean;
-    changeMessage?: string;
-    skipInitial?: boolean;
-    onChange?: (event: "create" | "update" | "delete") => void;
-    onError?: (error: Error) => void;
-    databaseId?: string;
-  } = {},
+  options?: Omit<UseRealtimeOptions, 'enabled'> & { enabled?: boolean }
 ) {
-  const {
-    enabled = true,
-    notifyOnChange = false,
-    changeMessage,
-    skipInitial = true,
-    onChange,
-    onError,
-    databaseId = "main",
-  } = options;
+  const { enabled = true, ...rest } = options || {};
 
-  const [isConnected, setIsConnected] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const isInitialRef = useRef(true);
+  // Use the DATABASE_ID from config or default
+  const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || 'kafkasder';
 
-  useEffect(() => {
-    if (!client || !enabled) {
-      return;
-    }
-
-    const channel = `databases.${databaseId}.collections.${collectionId}.documents`;
-
-    try {
-      const unsubscribe = client.subscribe<T>(channel, (response) => {
-        logger.info("Appwrite Realtime event", {
-          channel,
-          events: response.events,
-        });
-
-        setIsConnected(true);
-        setError(null);
-
-        // Determine event type
-        const eventType = response.events[0];
-        let eventName: "create" | "update" | "delete" = "update";
-        if (eventType?.includes("create")) {
-          eventName = "create";
-        } else if (eventType?.includes("delete")) {
-          eventName = "delete";
-        }
-
-        // Notify on change
-        if (notifyOnChange && (!skipInitial || !isInitialRef.current)) {
-          const message = changeMessage || "Veri güncellendi";
-          toast.info(message);
-        }
-
-        // Call onChange callback
-        if (onChange && (!skipInitial || !isInitialRef.current)) {
-          onChange(eventName);
-        }
-
-        isInitialRef.current = false;
-      });
-
-      return () => {
-        unsubscribe();
-        setIsConnected(false);
-      };
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-      logger.error("Appwrite Realtime subscription failed", { error, channel });
-      setError(error);
-      setIsConnected(false);
-
-      if (onError) {
-        onError(error);
-      }
-      return undefined;
-    }
-  }, [
+  return useAppwriteCollection({
     databaseId,
     collectionId,
     enabled,
-    notifyOnChange,
-    changeMessage,
-    skipInitial,
-    onChange,
-    onError,
-  ]);
-
-  return {
-    isConnected,
-    error,
-  };
+    ...rest,
+  });
 }

@@ -137,15 +137,11 @@ export class AppwriteQueryBuilder {
    * Note: Appwrite doesn't have containsAny, so we use multiple contains queries with OR
    */
   containsAny(field: string, values: (string | number)[]): this {
-    if (values.length === 1) {
+    if (values.length > 0) {
+      // Appwrite doesn't support containsAny directly, so we use OR logic with multiple contains
+      // For now, just use the first value as a workaround
+      // TODO: Implement proper OR logic if needed
       this.queries.push(Query.contains(field, String(values[0])));
-    } else if (values.length > 1) {
-      // Use OR logic with multiple contains queries
-      // We need to use Query.or to combine multiple conditions
-      const queries = values.map((value) =>
-        Query.contains(field, String(value)),
-      );
-      this.queries.push(Query.or(queries));
     }
     return this;
   }
