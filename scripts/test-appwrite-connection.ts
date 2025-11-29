@@ -19,9 +19,9 @@ console.log('🔍 Appwrite Bağlantı Testi Başlatılıyor...\n');
 
 // Configuration check
 console.log('📋 Yapılandırma Kontrolü:');
-console.log(`  Endpoint: ${endpoint ? '✅ ' + endpoint : '❌ Eksik'}`);
-console.log(`  Project ID: ${projectId ? '✅ ' + projectId : '❌ Eksik'}`);
-console.log(`  Database ID: ${databaseId ? '✅ ' + databaseId : '❌ Eksik'}`);
+console.log(`  Endpoint: ${endpoint ? `✅ ${endpoint}` : '❌ Eksik'}`);
+console.log(`  Project ID: ${projectId ? `✅ ${projectId}` : '❌ Eksik'}`);
+console.log(`  Database ID: ${databaseId ? `✅ ${databaseId}` : '❌ Eksik'}`);
 console.log(`  API Key: ${apiKey ? '✅ [SET]' : '❌ Eksik'}\n`);
 
 if (!endpoint || !projectId || !databaseId || !apiKey) {
@@ -88,7 +88,7 @@ async function testConnection() {
         const response = await databases.listDocuments(databaseId, collectionName, []);
         console.log(`  ✅ ${collectionName}: ${response.total} doküman bulundu`);
         if (response.documents.length > 0) {
-          console.log(`     İlk doküman örneği:`, JSON.stringify(response.documents[0], null, 2).substring(0, 200) + '...');
+          console.log(`     İlk doküman örneği:`, `${JSON.stringify(response.documents[0], null, 2).substring(0, 200)}...`);
         }
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error);

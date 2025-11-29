@@ -18,6 +18,7 @@
 import { Client, LocalAuth, Message } from 'whatsapp-web.js';
 import logger from '@/lib/logger';
 import path from 'path';
+import fs from 'fs';
 
 interface WhatsAppMessageOptions {
   to: string | string[];
@@ -100,7 +101,6 @@ export async function initializeWhatsApp(): Promise<void> {
 
       for (const chromePath of possiblePaths) {
         try {
-          const fs = require('fs');
           if (fs.existsSync(chromePath)) {
             executablePath = chromePath;
             logger.info('Found system Chrome/Chromium', {
@@ -109,7 +109,7 @@ export async function initializeWhatsApp(): Promise<void> {
             });
             break;
           }
-        } catch (error) {
+        } catch (_error) {
           // Continue checking other paths
         }
       }

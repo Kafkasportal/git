@@ -5,11 +5,15 @@ import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  // Override PostCSS config for tests to prevent TailwindCSS v4/lightningcss native binding issues
+  css: {
+    postcss: {},
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/__tests__/setup.ts'],
     globals: true,
-    css: true,
+    css: false,
     include: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx'],
     exclude: [
       '**/node_modules/**',

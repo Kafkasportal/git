@@ -145,7 +145,7 @@ async function testAuth() {
       }
     }
 
-    console.log('\n' + '='.repeat(50));
+    console.log(`\n${'='.repeat(50)}`);
     console.log('✅ All authentication tests passed!');
     console.log('\n📝 Test Summary:');
     console.log('   ✅ User registration');
@@ -159,7 +159,7 @@ async function testAuth() {
     console.log('   You may want to delete this user from Appwrite Console if not needed.');
 
   } catch (error: any) {
-    console.error('\n' + '='.repeat(50));
+    console.error(`\n${'='.repeat(50)}`);
     console.error('❌ Authentication test failed!');
     console.error(`\nError: ${error.message}`);
     console.error(`Code: ${error.code || 'N/A'}`);

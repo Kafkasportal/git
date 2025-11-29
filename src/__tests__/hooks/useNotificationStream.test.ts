@@ -103,9 +103,8 @@ describe('useNotificationStream', () => {
     vi.useFakeTimers();
     renderHook(() => useNotificationStream('test-user'));
 
-    await waitFor(() => {
-      expect(eventSourceInstance).toBeTruthy();
-    });
+    // Wait for initial connection
+    expect(eventSourceInstance).toBeTruthy();
 
     if (eventSourceInstance.onerror) {
       eventSourceInstance.onerror(new Error('Connection error'));
@@ -119,12 +118,11 @@ describe('useNotificationStream', () => {
     vi.useRealTimers();
   });
 
-  it('cleans up connection on unmount', async () => {
+  it('cleans up connection on unmount', () => {
     const { unmount } = renderHook(() => useNotificationStream('test-user'));
 
-    await waitFor(() => {
-      expect(eventSourceInstance).toBeTruthy();
-    });
+    // Check connection was made
+    expect(eventSourceInstance).toBeTruthy();
 
     unmount();
 

@@ -6,11 +6,11 @@
  * For manual setup, see docs/APPWRITE_CONSOLE_SETUP.md
  */
 
-import { Client, Account } from 'appwrite';
+import { Client as _Client, Account as _Account } from 'appwrite';
 
 // Configuration
-const ENDPOINT = 'https://fra.cloud.appwrite.io/v1';
-const PROJECT_ID = '6927aa95001c4c6b488b';
+const _ENDPOINT = 'https://fra.cloud.appwrite.io/v1';
+const _PROJECT_ID = '6927aa95001c4c6b488b';
 const API_KEY = 'standard_68e4323dcc1c339e02d9ab6c370dcda3e25663664525243e634350e8fb1d0e403f48003a8b9f3cab9c14ff093f7ec352757e54cbca45e34cdf307d2e72955d1af600758d0d13fe4b9b5e4c8cdcf80c866e677c004b405301b72bbf2cdb8897f03a4bd2d5a9931f9f68d357a08d5e67680778a001dfea6ca70251296e839ef308';
 
 console.log('🔧 Appwrite Console Setup Script\n');
