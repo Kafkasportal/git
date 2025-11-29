@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import logger from '@/lib/logger';
-import { appwriteFinanceRecords } from '@/lib/appwrite/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -57,123 +56,68 @@ function FinancialDashboardPageContent() {
     to: endOfMonth(new Date()),
   });
 
-  // Fetch dashboard metrics
-  // Dashboard metrics API endpoint not yet implemented
-  // Currently calculating from all records (performance impact for large datasets)
-  // See docs/ISSUES.md - Issue #5: Financial Dashboard API Endpoints
-  const { data: metrics } = useQuery({
-    queryKey: ['finance-metrics', dateRange.from, dateRange.to],
+  // Fetch metrics from optimized endpoint
+  const { data: metricsData } = useQuery({
+    queryKey: ['financial-metrics', dateRange.from, dateRange.to],
     queryFn: async () => {
-      const response = await appwriteFinanceRecords.list({
-        limit: 1000,
-      });
-      const records = response.documents || [];
-      
-      const filtered = records.filter((r: { date?: string; [key: string]: unknown }) => {
-        if (!r.date) return false;
-        const recordDate = new Date(r.date);
-        return (!dateRange.from || recordDate >= dateRange.from) && 
-               (!dateRange.to || recordDate <= dateRange.to);
-      });
+      const params = new URLSearchParams();
+      if (dateRange.from) params.append('from', dateRange.from.toISOString());
+      if (dateRange.to) params.append('to', dateRange.to.toISOString());
 
-      const income = filtered
-        .filter((r: { type?: string; [key: string]: unknown }) => r.type === 'income')
-        .reduce((sum: number, r: { amount?: number; [key: string]: unknown }) => sum + (r.amount || 0), 0);
-      
-      const expenses = filtered
-        .filter((r: { type?: string; [key: string]: unknown }) => r.type === 'expense')
-        .reduce((sum: number, r: { amount?: number; [key: string]: unknown }) => sum + (r.amount || 0), 0);
-
-      return {
-        totalIncome: income,
-        totalExpenses: expenses,
-        netIncome: income - expenses,
-        recordCount: filtered.length,
-      };
+      const res = await fetch(`/api/finance/metrics?${params.toString()}`);
+      if (!res.ok) {
+        throw new Error('Finansal metrikler alınamadı');
+      }
+      return res.json();
     },
     enabled: !!dateRange.from && !!dateRange.to,
   });
 
-  // Fetch monthly data for charts
-  // Monthly data API endpoint not yet implemented
-  // See docs/ISSUES.md - Issue #5: Financial Dashboard API Endpoints
-  const { data: monthlyData } = useQuery({
-    queryKey: ['finance-monthly'],
+  // Fetch monthly trends and categories from optimized endpoint
+  const { data: monthlyDataResponse } = useQuery({
+    queryKey: ['financial-monthly', dateRange.from, dateRange.to],
     queryFn: async () => {
-      const response = await appwriteFinanceRecords.list({ limit: 1000 });
-      const records = response.documents || [];
-      
-      // Group by month
-      const monthly: Record<string, { income: number; expenses: number }> = {};
-      records.forEach((r: { date?: string; type?: string; amount?: number; [key: string]: unknown }) => {
-        if (!r.date) return;
-        const date = new Date(r.date);
-        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        if (!monthly[monthKey]) {
-          monthly[monthKey] = { income: 0, expenses: 0 };
-        }
-        if (r.type === 'income') {
-          monthly[monthKey].income += r.amount || 0;
-        } else if (r.type === 'expense') {
-          monthly[monthKey].expenses += r.amount || 0;
-        }
-      });
+      const params = new URLSearchParams();
+      if (dateRange.from) params.append('from', dateRange.from.toISOString());
+      if (dateRange.to) params.append('to', dateRange.to.toISOString());
 
-      return Object.entries(monthly)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .slice(-12)
-        .map(([month, data]) => ({ month, income: data.income, expenses: data.expenses }));
-    },
-  });
-
-  // Fetch category breakdown
-  const { data: incomeByCategory } = useQuery({
-    queryKey: ['finance-income-category', dateRange.from, dateRange.to],
-    queryFn: async () => {
-      const response = await appwriteFinanceRecords.list({ limit: 1000 });
-      const records = response.documents || [];
-      
-      const filtered = records.filter((r: { date?: string; type?: string; [key: string]: unknown }) => {
-        if (r.type !== 'income' || !r.date) return false;
-        const recordDate = new Date(r.date);
-        return (!dateRange.from || recordDate >= dateRange.from) && 
-               (!dateRange.to || recordDate <= dateRange.to);
-      });
-
-      const byCategory: Record<string, number> = {};
-      filtered.forEach((r: { category?: string; amount?: number; [key: string]: unknown }) => {
-        const cat = r.category || 'Diğer';
-        byCategory[cat] = (byCategory[cat] || 0) + (r.amount || 0);
-      });
-
-      return Object.entries(byCategory).map(([name, value]) => ({ name, value }));
+      const res = await fetch(`/api/finance/monthly?${params.toString()}`);
+      if (!res.ok) {
+        throw new Error('Aylık finansal veriler alınamadı');
+      }
+      return res.json();
     },
     enabled: !!dateRange.from && !!dateRange.to,
   });
 
-  const { data: expensesByCategory } = useQuery({
-    queryKey: ['finance-expense-category', dateRange.from, dateRange.to],
-    queryFn: async () => {
-      const response = await appwriteFinanceRecords.list({ limit: 1000 });
-      const records = response.documents || [];
-      
-      const filtered = records.filter((r: { date?: string; type?: string; [key: string]: unknown }) => {
-        if (r.type !== 'expense' || !r.date) return false;
-        const recordDate = new Date(r.date);
-        return (!dateRange.from || recordDate >= dateRange.from) && 
-               (!dateRange.to || recordDate <= dateRange.to);
-      });
+  const metrics = metricsData?.data;
 
-      const byCategory: Record<string, number> = {};
-      filtered.forEach((r: { category?: string; amount?: number; [key: string]: unknown }) => {
-        const cat = r.category || 'Diğer';
-        byCategory[cat] = (byCategory[cat] || 0) + (r.amount || 0);
-      });
+  const monthlyData = useMemo(() => {
+    if (!monthlyDataResponse?.data?.trends) return [];
+    return monthlyDataResponse.data.trends.map(
+      (t: { date: string; income: number; expense: number }) => ({
+        month: t.date,
+        income: t.income,
+        expenses: t.expense,
+      })
+    );
+  }, [monthlyDataResponse]);
 
-      return Object.entries(byCategory).map(([name, value]) => ({ name, value }));
-    },
-    enabled: !!dateRange.from && !!dateRange.to,
-  });
+  const incomeByCategory = useMemo(() => {
+    if (!monthlyDataResponse?.data?.categories?.income) return [];
+    return Object.entries(monthlyDataResponse.data.categories.income).map(([name, value]) => ({
+      name,
+      value: value as number,
+    }));
+  }, [monthlyDataResponse]);
+
+  const expensesByCategory = useMemo(() => {
+    if (!monthlyDataResponse?.data?.categories?.expense) return [];
+    return Object.entries(monthlyDataResponse.data.categories.expense).map(([name, value]) => ({
+      name,
+      value: value as number,
+    }));
+  }, [monthlyDataResponse]);
 
   // Fetch all records for table view
 

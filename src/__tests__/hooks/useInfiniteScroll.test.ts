@@ -1,259 +1,150 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook } from '@testing-library/react';
-import { useInfiniteScroll, usePaginatedQuery } from '@/hooks/useInfiniteScroll';
+/**
+ * useInfiniteScroll Tests
+ */
 
-// Mock TanStack Query
-vi.mock('@tanstack/react-query', () => ({
-  useInfiniteQuery: vi.fn(),
-}));
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  useInfiniteScroll,
+  usePaginatedQuery,
+} from "@/hooks/useInfiniteScroll";
+import React from "react";
 
-import { useInfiniteQuery } from '@tanstack/react-query';
-import type { UseInfiniteQueryResult } from '@tanstack/react-query';
+// Create a wrapper with QueryClient
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+  const Wrapper = ({ children }: { children: React.ReactNode }) =>
+    React.createElement(QueryClientProvider, { client: queryClient }, children);
+  Wrapper.displayName = "QueryClientWrapper";
+  return Wrapper;
+};
 
-describe('useInfiniteScroll Hook', () => {
+describe("useInfiniteScroll", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should initialize with correct options', () => {
-    const mockUseInfiniteQuery = vi.mocked(useInfiniteQuery);
-    mockUseInfiniteQuery.mockReturnValue({
-      data: { pages: [] },
-      fetchNextPage: vi.fn(),
-      hasNextPage: true,
-      isFetching: false,
-      isFetchingNextPage: false,
-      isLoading: false,
-    } as unknown as UseInfiniteQueryResult);
-
-    renderHook(() =>
-      useInfiniteScroll({
-        queryKey: ['test'],
-        queryFn: vi.fn(),
-      })
-    );
-
-    expect(mockUseInfiniteQuery).toHaveBeenCalledWith(
-      expect.objectContaining({
-        queryKey: ['test'],
-        initialPageParam: 1,
-        getNextPageParam: expect.any(Function),
-      })
-    );
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
-  it('should handle custom limit and initial page param', () => {
-    const mockUseInfiniteQuery = vi.mocked(useInfiniteQuery);
-    mockUseInfiniteQuery.mockReturnValue({
-      data: { pages: [] },
-      fetchNextPage: vi.fn(),
-      hasNextPage: true,
-      isFetching: false,
-      isFetchingNextPage: false,
-      isLoading: false,
-    } as unknown as UseInfiniteQueryResult);
+  it("should initialize with empty data and loading state", async () => {
+    const mockQueryFn = vi.fn().mockResolvedValue({ data: [], total: 0 });
 
-    renderHook(() =>
-      useInfiniteScroll({
-        limit: 50,
-        initialPageParam: 5,
-        queryKey: ['test'],
-        queryFn: vi.fn(),
-      })
+    const { result } = renderHook(
+      () =>
+        useInfiniteScroll({
+          queryKey: ["test"],
+          queryFn: mockQueryFn,
+          limit: 20,
+        }),
+      { wrapper: createWrapper() },
     );
 
-    expect(mockUseInfiniteQuery).toHaveBeenCalledWith(
-      expect.objectContaining({
-        queryKey: ['test'],
-        initialPageParam: 5,
-      })
-    );
-  });
+    // Initially loading
+    expect(result.current.isLoading).toBe(true);
 
-  it('should return flat data from pages', () => {
-    const mockUseInfiniteQuery = vi.mocked(useInfiniteQuery);
-    mockUseInfiniteQuery.mockReturnValue({
-      data: {
-        pages: [
-          { items: ['item1', 'item2'], total: 10 },
-          { items: ['item3', 'item4'], total: 10 },
-        ],
-      },
-      fetchNextPage: vi.fn(),
-      hasNextPage: true,
-      isFetching: false,
-      isFetchingNextPage: false,
-      isLoading: false,
-    } as unknown as UseInfiniteQueryResult);
-
-    const { result } = renderHook(() =>
-      useInfiniteScroll({
-        queryKey: ['test'],
-        queryFn: vi.fn(),
-      })
-    );
-
-    expect(result.current.data).toEqual(['item1', 'item2', 'item3', 'item4']);
-    expect(result.current.total).toBe(10);
-  });
-
-  it('should handle empty data', () => {
-    const mockUseInfiniteQuery = vi.mocked(useInfiniteQuery);
-    mockUseInfiniteQuery.mockReturnValue({
-      data: undefined,
-      fetchNextPage: vi.fn(),
-      hasNextPage: true,
-      isFetching: false,
-      isFetchingNextPage: false,
-      isLoading: false,
-    } as unknown as UseInfiniteQueryResult);
-
-    const { result } = renderHook(() =>
-      useInfiniteScroll({
-        queryKey: ['test'],
-        queryFn: vi.fn(),
-      })
-    );
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
 
     expect(result.current.data).toEqual([]);
     expect(result.current.total).toBe(0);
   });
 
-  it('should provide ref for intersection observer', () => {
-    const mockUseInfiniteQuery = vi.mocked(useInfiniteQuery);
-    mockUseInfiniteQuery.mockReturnValue({
-      data: { pages: [] },
-      fetchNextPage: vi.fn(),
-      hasNextPage: true,
-      isFetching: false,
-      isFetchingNextPage: false,
-      isLoading: false,
-    } as unknown as UseInfiniteQueryResult);
+  it("should fetch and return data", async () => {
+    const mockData = [{ id: 1 }, { id: 2 }];
+    const mockQueryFn = vi.fn().mockResolvedValue({ data: mockData, total: 2 });
 
-    const { result } = renderHook(() =>
-      useInfiniteScroll({
-        queryKey: ['test'],
-        queryFn: vi.fn(),
-      })
+    const { result } = renderHook(
+      () =>
+        useInfiniteScroll({
+          queryKey: ["test-data"],
+          queryFn: mockQueryFn,
+          limit: 20,
+        }),
+      { wrapper: createWrapper() },
     );
 
-    expect(result.current.ref).toBeDefined();
-    expect(result.current.ref.current).toBe(null); // Will be set after mount
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.data).toEqual(mockData);
+    expect(result.current.total).toBe(2);
+    expect(mockQueryFn).toHaveBeenCalledWith(1); // First page
   });
 
-  it('should pass through all state properties', () => {
-    const mockUseInfiniteQuery = vi.mocked(useInfiniteQuery);
-    mockUseInfiniteQuery.mockReturnValue({
-      data: { pages: [] },
-      fetchNextPage: vi.fn(),
-      hasNextPage: false,
-      isFetching: true,
-      isFetchingNextPage: true,
-      isLoading: true,
-    } as unknown as UseInfiniteQueryResult);
+  it("should indicate hasMore when total exceeds fetched items", async () => {
+    const mockData = Array.from({ length: 20 }, (_, i) => ({ id: i }));
+    const mockQueryFn = vi
+      .fn()
+      .mockResolvedValue({ data: mockData, total: 100 });
 
-    const { result } = renderHook(() =>
-      useInfiniteScroll({
-        queryKey: ['test'],
-        queryFn: vi.fn(),
-      })
+    const { result } = renderHook(
+      () =>
+        useInfiniteScroll({
+          queryKey: ["test-more"],
+          queryFn: mockQueryFn,
+          limit: 20,
+        }),
+      { wrapper: createWrapper() },
     );
 
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.hasMore).toBe(true);
+  });
+
+  it("should indicate no more data when all items fetched", async () => {
+    const mockData = [{ id: 1 }, { id: 2 }];
+    const mockQueryFn = vi.fn().mockResolvedValue({ data: mockData, total: 2 });
+
+    const { result } = renderHook(
+      () =>
+        useInfiniteScroll({
+          queryKey: ["test-no-more"],
+          queryFn: mockQueryFn,
+          limit: 20,
+        }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
     expect(result.current.hasMore).toBe(false);
-    expect(result.current.isLoading).toBe(true);
-    expect(result.current.isFetchingNextPage).toBe(true);
-    expect(result.current.fetchNextPage).toBeDefined();
   });
 });
 
-describe('usePaginatedQuery Hook', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+describe("usePaginatedQuery", () => {
+  it("should return paginated data with total pages", async () => {
+    const mockData = Array.from({ length: 10 }, (_, i) => ({ id: i }));
+    const mockQueryFn = vi
+      .fn()
+      .mockResolvedValue({ data: mockData, total: 50 });
 
-  it('should initialize with correct query configuration', () => {
-    const mockUseInfiniteQuery = vi.mocked(useInfiniteQuery);
-    mockUseInfiniteQuery.mockReturnValue({
-      data: { pages: [{ items: [], total: 0 }] },
-      isLoading: false,
-      error: null,
-      refetch: vi.fn(),
-    } as unknown as UseInfiniteQueryResult);
-
-    const queryFn = vi.fn();
-
-    renderHook(() => usePaginatedQuery(['test'], queryFn, 25));
-
-    expect(mockUseInfiniteQuery).toHaveBeenCalledWith(
-      expect.objectContaining({
-        queryKey: ['test'],
-        queryFn: expect.any(Function),
-        initialPageParam: 1,
-        getNextPageParam: expect.any(Function),
-      })
+    const { result } = renderHook(
+      () => usePaginatedQuery(["paginated-test"], mockQueryFn, 10),
+      { wrapper: createWrapper() },
     );
-  });
 
-  it('should return flattened items and pagination data', () => {
-    const mockUseInfiniteQuery = vi.mocked(useInfiniteQuery);
-    mockUseInfiniteQuery.mockReturnValue({
-      data: {
-        pages: [{ items: ['item1', 'item2'], total: 50, nextPage: 2 }],
-      },
-      isLoading: false,
-      error: null,
-      refetch: vi.fn(),
-    } as unknown as UseInfiniteQueryResult);
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
 
-    const { result } = renderHook(() => usePaginatedQuery(['test'], vi.fn(), 20));
-
-    expect(result.current.items).toEqual(['item1', 'item2']);
+    expect(result.current.items).toEqual(mockData);
     expect(result.current.total).toBe(50);
-    expect(result.current.totalPages).toBe(3); // 50/20 = 2.5 => 3
-  });
-
-  it('should handle loading state', () => {
-    const mockUseInfiniteQuery = vi.mocked(useInfiniteQuery);
-    mockUseInfiniteQuery.mockReturnValue({
-      data: { pages: [{ items: [], total: 0 }] },
-      isLoading: true,
-      error: null,
-      refetch: vi.fn(),
-    } as unknown as UseInfiniteQueryResult);
-
-    const { result } = renderHook(() => usePaginatedQuery(['test'], vi.fn()));
-
-    expect(result.current.isLoading).toBe(true);
-  });
-
-  it('should handle error state', () => {
-    const mockUseInfiniteQuery = vi.mocked(useInfiniteQuery);
-    mockUseInfiniteQuery.mockReturnValue({
-      data: { pages: [{ items: [], total: 0 }] },
-      isLoading: false,
-      error: new Error('Query failed'),
-      refetch: vi.fn(),
-    } as unknown as UseInfiniteQueryResult);
-
-    const { result } = renderHook(() => usePaginatedQuery(['test'], vi.fn()));
-
-    expect(result.current.error).toEqual(new Error('Query failed'));
-  });
-
-  it('should provide refetch function', () => {
-    const mockUseInfiniteQuery = vi.mocked(useInfiniteQuery);
-    const mockRefetch = vi.fn();
-
-    mockUseInfiniteQuery.mockReturnValue({
-      data: { pages: [{ items: [], total: 0 }] },
-      isLoading: false,
-      error: null,
-      refetch: mockRefetch,
-    } as unknown as UseInfiniteQueryResult);
-
-    const { result } = renderHook(() => usePaginatedQuery(['test'], vi.fn()));
-
-    expect(result.current.refetch).toBeDefined();
-    expect(result.current.refetch).toBe(mockRefetch);
+    expect(result.current.totalPages).toBe(5);
   });
 });

@@ -7,3 +7,10 @@ export function cn(...inputs: ClassValue[]) {
 
 // Re-export document utilities
 export * from './utils/document';
+
+export function formatCurrency(amount: number, currency: string = 'TRY', locale: string = 'tr-TR') {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+  }).format(amount);
+}

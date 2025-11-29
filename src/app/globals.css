@@ -9,10 +9,11 @@
      Modern, professional gray-based design
      ======================================== */
 
-  /* Font Variables - Missing Definitions */
-  --font-geist-sans: 'Inter', system-ui, sans-serif;
-  --font-geist-mono:
-    'JetBrains Mono', 'Fira Code', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+  /* Font Variables - Using Next.js Font Optimization */
+  --font-geist-sans: var(--font-body);
+  --font-geist-mono: 'JetBrains Mono', 'Fira Code', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
 
   /* Ring Offset Background */
   --ring-offset-background: var(--background);

@@ -1,131 +1,387 @@
-import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { GET, POST, PUT, DELETE } from '@/app/api/settings/route';
 import { NextRequest } from 'next/server';
+import * as appwriteApi from '@/lib/appwrite/api';
+import * as authUtils from '@/lib/api/auth-utils';
 
-// Mock dependencies
-vi.mock('@/lib/api/auth-utils', () => ({
-  requireAuthenticatedUser: vi.fn(),
-  verifyCsrfToken: vi.fn(),
-  buildErrorResponse: vi.fn().mockReturnValue(null),
-}));
-
-vi.mock('@/lib/rate-limit', () => ({
-  readOnlyRateLimit: <T>(handler: T) => handler,
-  dataModificationRateLimit: <T>(handler: T) => handler,
-}));
-
+// Mock Appwrite API
 vi.mock('@/lib/appwrite/api', () => ({
   appwriteSystemSettings: {
     getAll: vi.fn(),
     getByCategory: vi.fn(),
-    upsert: vi.fn(),
+    updateSettings: vi.fn(),
+    resetSettings: vi.fn(),
   },
 }));
 
+// Mock auth
+vi.mock('@/lib/api/auth-utils', () => ({
+  requireAuthenticatedUser: vi.fn(),
+  verifyCsrfToken: vi.fn().mockResolvedValue(undefined),
+  buildErrorResponse: vi.fn().mockReturnValue(null),
+}));
+
+// Mock logger
 vi.mock('@/lib/logger', () => ({
   default: {
     error: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
   },
 }));
 
-import { requireAuthenticatedUser, verifyCsrfToken } from '@/lib/api/auth-utils';
-import { appwriteSystemSettings } from '@/lib/appwrite/api';
+// Mock rate limit
+vi.mock('@/lib/rate-limit', () => ({
+  readOnlyRateLimit: vi.fn((fn) => fn),
+  dataModificationRateLimit: vi.fn((fn) => fn),
+}));
 
-describe('Settings API Route', () => {
+describe('GET /api/settings', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValue({
+      user: {
+        id: 'test-user',
+        permissions: ['settings:manage'],
+      },
+    } as any);
   });
 
-  describe('GET /api/settings', () => {
-    it('should return 403 if user lacks settings:manage permission', async () => {
-      (requireAuthenticatedUser as Mock).mockResolvedValue({
-        user: { id: 'user-1', permissions: [] },
-        sessionId: 'session-1',
-      });
+  it('returns all settings successfully', async () => {
+    const mockSettings = {
+      general: { theme: 'light' },
+      notifications: { email: true },
+    };
 
-      const { GET } = await import('@/app/api/settings/route');
-      const request = new NextRequest('http://localhost:3000/api/settings');
-      const response = await GET(request);
-      const data = await response.json();
+    vi.mocked(appwriteApi.appwriteSystemSettings.getAll).mockResolvedValue(mockSettings as any);
 
-      expect(response.status).toBe(403);
-      expect(data.success).toBe(false);
-    });
+    const request = new NextRequest('http://localhost/api/settings');
+    const response = await GET(request);
+    const data = await response.json();
 
-    it('should return all settings for authorized user', async () => {
-      const mockSettings = { theme: 'dark', language: 'tr' };
-      (requireAuthenticatedUser as Mock).mockResolvedValue({
-        user: { id: 'user-1', permissions: ['settings:manage'] },
-        sessionId: 'session-1',
-      });
-      (appwriteSystemSettings.getAll as Mock).mockResolvedValue(mockSettings);
-
-      const { GET } = await import('@/app/api/settings/route');
-      const request = new NextRequest('http://localhost:3000/api/settings');
-      const response = await GET(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.success).toBe(true);
-      expect(data.data).toEqual(mockSettings);
-    });
-
-    it('should return settings by category when specified', async () => {
-      const mockSettings = { darkMode: true };
-      (requireAuthenticatedUser as Mock).mockResolvedValue({
-        user: { id: 'user-1', permissions: ['settings:manage'] },
-        sessionId: 'session-1',
-      });
-      (appwriteSystemSettings.getByCategory as Mock).mockResolvedValue(mockSettings);
-
-      const { GET } = await import('@/app/api/settings/route');
-      const request = new NextRequest('http://localhost:3000/api/settings?category=appearance');
-      const response = await GET(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.success).toBe(true);
-      expect(appwriteSystemSettings.getByCategory).toHaveBeenCalledWith('appearance');
-    });
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
+    expect(data.data).toEqual(mockSettings);
   });
 
-  describe('POST /api/settings', () => {
-    it('should require CSRF token for modifications', async () => {
-      (verifyCsrfToken as Mock).mockResolvedValue(false);
+  it('returns settings by category', async () => {
+    const mockSettings = {
+      theme: 'light',
+      language: 'tr',
+    };
 
-      const { POST } = await import('@/app/api/settings/route');
-      const request = new NextRequest('http://localhost:3000/api/settings', {
-        method: 'POST',
-        body: JSON.stringify({ settings: [] }),
-        headers: { 'Content-Type': 'application/json' },
-      });
-      const response = await POST(request);
+    vi.mocked(appwriteApi.appwriteSystemSettings.getByCategory).mockResolvedValue(
+      mockSettings as any
+    );
 
-      expect(response.status).toBe(403);
+    const request = new NextRequest('http://localhost/api/settings?category=general');
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
+    expect(data.data).toEqual(mockSettings);
+    expect(vi.mocked(appwriteApi.appwriteSystemSettings.getByCategory)).toHaveBeenCalledWith(
+      'general'
+    );
+  });
+
+  it('requires settings:manage permission', async () => {
+    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValue({
+      user: {
+        id: 'test-user',
+        permissions: [], // No settings:manage permission
+      },
+    } as any);
+
+    const request = new NextRequest('http://localhost/api/settings');
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(data.success).toBe(false);
+    expect(data.error).toBe('Bu işlemi gerçekleştirmek için yetkiniz yok');
+  });
+
+  it('handles errors gracefully', async () => {
+    vi.mocked(appwriteApi.appwriteSystemSettings.getAll).mockRejectedValue(
+      new Error('Database error')
+    );
+
+    const request = new NextRequest('http://localhost/api/settings');
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.success).toBe(false);
+    expect(data.error).toBe('Ayarlar alınırken hata oluştu');
+  });
+});
+
+describe('POST /api/settings', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValue({
+      user: {
+        id: 'test-user',
+        permissions: ['settings:manage'],
+      },
+    } as any);
+  });
+
+  it('updates settings by category successfully', async () => {
+    const updateData = {
+      category: 'general',
+      settings: {
+        theme: 'dark',
+        language: 'en',
+      },
+    };
+
+    vi.mocked(appwriteApi.appwriteSystemSettings.updateSettings).mockResolvedValue({ success: true });
+
+    const request = new NextRequest('http://localhost/api/settings', {
+      method: 'POST',
+      body: JSON.stringify(updateData),
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
-    it('should update settings with valid request', async () => {
-      (verifyCsrfToken as Mock).mockResolvedValue(true);
-      (requireAuthenticatedUser as Mock).mockResolvedValue({
-        user: { id: 'user-1', permissions: ['settings:manage'] },
-        sessionId: 'session-1',
-      });
-      (appwriteSystemSettings.upsert as Mock).mockResolvedValue({ success: true });
+    const response = await POST(request);
+    const data = await response.json();
 
-      const { POST } = await import('@/app/api/settings/route');
-      const request = new NextRequest('http://localhost:3000/api/settings', {
-        method: 'POST',
-        body: JSON.stringify({
-          settings: [{ key: 'theme', value: 'dark', category: 'appearance' }],
-        }),
-        headers: { 'Content-Type': 'application/json' },
-      });
-      const response = await POST(request);
-      const data = await response.json();
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
+    expect(data.message).toBe('Ayarlar başarıyla kaydedildi');
+    expect(vi.mocked(appwriteApi.appwriteSystemSettings.updateSettings)).toHaveBeenCalledWith(
+      'general',
+      updateData.settings,
+      'test-user'
+    );
+  });
 
-      expect(response.status).toBe(200);
-      expect(data.success).toBe(true);
+  it('validates category and settings are required', async () => {
+    const invalidData = {
+      // Missing category and settings
+    };
+
+    const request = new NextRequest('http://localhost/api/settings', {
+      method: 'POST',
+      body: JSON.stringify(invalidData),
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.success).toBe(false);
+    expect(data.error).toBe('Kategori ve ayarlar gerekli');
+  });
+
+  it('requires settings:manage permission', async () => {
+    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValue({
+      user: {
+        id: 'test-user',
+        permissions: [],
+      },
+    } as any);
+
+    const updateData = {
+      category: 'general',
+      settings: { theme: 'dark' },
+    };
+
+    const request = new NextRequest('http://localhost/api/settings', {
+      method: 'POST',
+      body: JSON.stringify(updateData),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(data.success).toBe(false);
+  });
+
+  it('handles update errors gracefully', async () => {
+    vi.mocked(appwriteApi.appwriteSystemSettings.updateSettings).mockRejectedValue(
+      new Error('Database error')
+    );
+
+    const updateData = {
+      category: 'general',
+      settings: { theme: 'dark' },
+    };
+
+    const request = new NextRequest('http://localhost/api/settings', {
+      method: 'POST',
+      body: JSON.stringify(updateData),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.success).toBe(false);
+    expect(data.error).toBe('Ayarlar kaydedilirken hata oluştu');
+  });
+});
+
+describe('PUT /api/settings', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValue({
+      user: {
+        id: 'test-user',
+        permissions: ['settings:manage'],
+      },
+    } as any);
+  });
+
+  it('updates all settings successfully', async () => {
+    const updateData = {
+      settings: {
+        general: { theme: 'dark' },
+        notifications: { email: false },
+      },
+    };
+
+    vi.mocked(appwriteApi.appwriteSystemSettings.updateSettings).mockResolvedValue({ success: true });
+
+    const request = new NextRequest('http://localhost/api/settings', {
+      method: 'PUT',
+      body: JSON.stringify(updateData),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const response = await PUT(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
+    expect(data.message).toBe('Tüm ayarlar başarıyla güncellendi');
+  });
+
+  it('validates settings format', async () => {
+    const invalidData = {
+      settings: 'not an object',
+    };
+
+    const request = new NextRequest('http://localhost/api/settings', {
+      method: 'PUT',
+      body: JSON.stringify(invalidData),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const response = await PUT(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.success).toBe(false);
+    expect(data.error).toBe('Geçersiz ayarlar formatı');
+  });
+
+  it('handles update errors gracefully', async () => {
+    vi.mocked(appwriteApi.appwriteSystemSettings.updateSettings).mockRejectedValue(
+      new Error('Database error')
+    );
+
+    const updateData = {
+      settings: {
+        general: { theme: 'dark' },
+      },
+    };
+
+    const request = new NextRequest('http://localhost/api/settings', {
+      method: 'PUT',
+      body: JSON.stringify(updateData),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const response = await PUT(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.success).toBe(false);
+    expect(data.error).toBe('Ayarlar güncellenirken hata oluştu');
+  });
+});
+
+describe('DELETE /api/settings', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValue({
+      user: {
+        id: 'test-user',
+        permissions: ['settings:manage'],
+      },
+    } as any);
+  });
+
+  it('resets all settings successfully', async () => {
+    vi.mocked(appwriteApi.appwriteSystemSettings.resetSettings).mockResolvedValue({ success: true });
+
+    const request = new NextRequest('http://localhost/api/settings', {
+      method: 'DELETE',
+    });
+
+    const response = await DELETE(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
+    expect(data.message).toBe('Tüm ayarlar sıfırlandı');
+    expect(vi.mocked(appwriteApi.appwriteSystemSettings.resetSettings)).toHaveBeenCalledWith(
+      undefined
+    );
+  });
+
+  it('resets settings by category', async () => {
+    vi.mocked(appwriteApi.appwriteSystemSettings.resetSettings).mockResolvedValue({ success: true });
+
+    const request = new NextRequest('http://localhost/api/settings?category=general', {
+      method: 'DELETE',
+    });
+
+    const response = await DELETE(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
+    expect(data.message).toBe('general kategorisi sıfırlandı');
+    expect(vi.mocked(appwriteApi.appwriteSystemSettings.resetSettings)).toHaveBeenCalledWith(
+      'general'
+    );
+  });
+
+  it('handles reset errors gracefully', async () => {
+    vi.mocked(appwriteApi.appwriteSystemSettings.resetSettings).mockRejectedValue(
+      new Error('Database error')
+    );
+
+    const request = new NextRequest('http://localhost/api/settings', {
+      method: 'DELETE',
+    });
+
+    const response = await DELETE(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.success).toBe(false);
+    expect(data.error).toBe('Ayarlar sıfırlanırken hata oluştu');
   });
 });

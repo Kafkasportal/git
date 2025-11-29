@@ -38,7 +38,7 @@ import {
   FileDown,
 } from 'lucide-react';
 import { generateAidListPDF } from '@/lib/utils/pdf-export';
-import { apiClient as api } from '@/lib/api/api-client';
+import { aidApplications } from '@/lib/api/crud-factory';
 import type { AidApplicationDocument } from '@/types/database';
 
 interface AidRecord extends AidApplicationDocument {
@@ -99,7 +99,7 @@ export default function AidListPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['aid-list', page, search, stageFilter, statusFilter],
     queryFn: () =>
-      api.aidApplications.getAidApplications({
+      aidApplications.getAll({
         page,
         limit,
         search,

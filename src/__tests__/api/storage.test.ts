@@ -1,121 +1,182 @@
-import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockDocuments } from '../test-utils';
+import { GET } from '@/app/api/storage/route';
 import { NextRequest } from 'next/server';
+import * as appwriteApi from '@/lib/appwrite/api';
+import * as authUtils from '@/lib/api/auth-utils';
 
-// Mock dependencies
+// Mock Appwrite API
+vi.mock('@/lib/appwrite/api', () => ({
+  appwriteFiles: {
+    list: vi.fn(),
+  },
+}));
+
+// Mock auth
 vi.mock('@/lib/api/auth-utils', () => ({
   requireAuthenticatedUser: vi.fn(),
   buildErrorResponse: vi.fn().mockReturnValue(null),
 }));
 
-vi.mock('@/lib/appwrite/api', () => ({
-  appwriteFiles: {
-    list: vi.fn(),
-    get: vi.fn(),
-    upload: vi.fn(),
-    delete: vi.fn(),
-  },
-}));
-
+// Mock logger
 vi.mock('@/lib/logger', () => ({
   default: {
     error: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
   },
 }));
 
-import { requireAuthenticatedUser } from '@/lib/api/auth-utils';
-import { appwriteFiles } from '@/lib/appwrite/api';
-
-describe('Storage API Route', () => {
+describe('GET /api/storage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValue({
+      user: {
+        id: 'test-user',
+      },
+    } as any);
   });
 
-  describe('GET /api/storage', () => {
-    it('should require authentication', async () => {
-      (requireAuthenticatedUser as Mock).mockRejectedValue(new Error('Unauthorized'));
+  it('returns file list successfully', async () => {
+    const mockFiles = createMockDocuments([
+      {
+        _id: '1',
+        storageId: 'storage-1',
+        bucket: 'documents',
+        documentType: 'pdf',
+      },
+      {
+        _id: '2',
+        storageId: 'storage-2',
+        bucket: 'documents',
+        documentType: 'image',
+      },
+    ]);
 
-      const { GET } = await import('@/app/api/storage/route');
-      const request = new NextRequest('http://localhost:3000/api/storage');
-      const response = await GET(request);
-      const data = await response.json();
+    vi.mocked(appwriteApi.appwriteFiles.list).mockResolvedValue({
+      documents: mockFiles,
+      total: 2,
+    } as any);
 
-      expect(response.status).toBe(500);
-      expect(data.success).toBe(false);
-    });
+    const request = new NextRequest('http://localhost/api/storage');
+    const response = await GET(request);
+    const data = await response.json();
 
-    it('should list files for authenticated user', async () => {
-      const mockFiles = {
-        documents: [
-          { $id: 'file-1', name: 'document.pdf', storageId: 'storage-1' },
-          { $id: 'file-2', name: 'image.jpg', storageId: 'storage-2' },
-        ],
-        total: 2,
-      };
-      (requireAuthenticatedUser as Mock).mockResolvedValue({
-        user: { id: 'user-1' },
-        sessionId: 'session-1',
-      });
-      (appwriteFiles.list as Mock).mockResolvedValue(mockFiles);
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
+    expect(data.data).toHaveLength(2);
+    expect(data.total).toBe(2);
+  });
 
-      const { GET } = await import('@/app/api/storage/route');
-      const request = new NextRequest('http://localhost:3000/api/storage');
-      const response = await GET(request);
-      const data = await response.json();
+  it('filters by beneficiaryId', async () => {
+    const mockFiles = createMockDocuments([
+      {
+        _id: '1',
+        beneficiaryId: 'ben-1',
+        storageId: 'storage-1',
+      },
+    ]);
 
-      expect(response.status).toBe(200);
-      expect(data.success).toBe(true);
-      expect(data.data).toHaveLength(2);
-      expect(data.total).toBe(2);
-    });
+    vi.mocked(appwriteApi.appwriteFiles.list).mockResolvedValue({
+      documents: mockFiles,
+      total: 1,
+    } as any);
 
-    it('should filter by beneficiaryId', async () => {
-      (requireAuthenticatedUser as Mock).mockResolvedValue({
-        user: { id: 'user-1' },
-        sessionId: 'session-1',
-      });
-      (appwriteFiles.list as Mock).mockResolvedValue({ documents: [], total: 0 });
+    const request = new NextRequest('http://localhost/api/storage?beneficiaryId=ben-1');
+    const response = await GET(request);
+    await response.json();
 
-      const { GET } = await import('@/app/api/storage/route');
-      const request = new NextRequest('http://localhost:3000/api/storage?beneficiaryId=ben-123');
-      await GET(request);
+    expect(response.status).toBe(200);
+    expect(vi.mocked(appwriteApi.appwriteFiles.list)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        beneficiaryId: 'ben-1',
+      })
+    );
+  });
 
-      expect(appwriteFiles.list).toHaveBeenCalledWith(
-        expect.objectContaining({ beneficiaryId: 'ben-123' })
-      );
-    });
+  it('filters by bucket', async () => {
+    const mockFiles = createMockDocuments([
+      {
+        _id: '1',
+        bucket: 'images',
+        storageId: 'storage-1',
+      },
+    ]);
 
-    it('should filter by bucket', async () => {
-      (requireAuthenticatedUser as Mock).mockResolvedValue({
-        user: { id: 'user-1' },
-        sessionId: 'session-1',
-      });
-      (appwriteFiles.list as Mock).mockResolvedValue({ documents: [], total: 0 });
+    vi.mocked(appwriteApi.appwriteFiles.list).mockResolvedValue({
+      documents: mockFiles,
+      total: 1,
+    } as any);
 
-      const { GET } = await import('@/app/api/storage/route');
-      const request = new NextRequest('http://localhost:3000/api/storage?bucket=avatars');
-      await GET(request);
+    const request = new NextRequest('http://localhost/api/storage?bucket=images');
+    const response = await GET(request);
+    await response.json();
 
-      expect(appwriteFiles.list).toHaveBeenCalledWith(
-        expect.objectContaining({ bucket: 'avatars' })
-      );
-    });
+    expect(response.status).toBe(200);
+    expect(vi.mocked(appwriteApi.appwriteFiles.list)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bucket: 'images',
+      })
+    );
+  });
 
-    it('should filter by documentType', async () => {
-      (requireAuthenticatedUser as Mock).mockResolvedValue({
-        user: { id: 'user-1' },
-        sessionId: 'session-1',
-      });
-      (appwriteFiles.list as Mock).mockResolvedValue({ documents: [], total: 0 });
+  it('filters by documentType', async () => {
+    const mockFiles = createMockDocuments([
+      {
+        _id: '1',
+        documentType: 'pdf',
+        storageId: 'storage-1',
+      },
+    ]);
 
-      const { GET } = await import('@/app/api/storage/route');
-      const request = new NextRequest('http://localhost:3000/api/storage?documentType=receipt');
-      await GET(request);
+    vi.mocked(appwriteApi.appwriteFiles.list).mockResolvedValue({
+      documents: mockFiles,
+      total: 1,
+    } as any);
 
-      expect(appwriteFiles.list).toHaveBeenCalledWith(
-        expect.objectContaining({ documentType: 'receipt' })
-      );
-    });
+    const request = new NextRequest('http://localhost/api/storage?documentType=pdf');
+    const response = await GET(request);
+    await response.json();
+
+    expect(response.status).toBe(200);
+    expect(vi.mocked(appwriteApi.appwriteFiles.list)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        documentType: 'pdf',
+      })
+    );
+  });
+
+  it('handles empty list', async () => {
+    vi.mocked(appwriteApi.appwriteFiles.list).mockResolvedValue({
+      documents: [],
+      total: 0,
+    } as any);
+
+    const request = new NextRequest('http://localhost/api/storage');
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.data).toEqual([]);
+    expect(data.total).toBe(0);
+  });
+
+  it('requires authentication', async () => {
+    vi.mocked(authUtils.requireAuthenticatedUser).mockRejectedValue(new Error('Unauthorized'));
+
+    const request = new NextRequest('http://localhost/api/storage');
+    const response = await GET(request);
+
+    expect(response.status).toBeGreaterThanOrEqual(400);
+  });
+
+  it('handles errors gracefully', async () => {
+    vi.mocked(appwriteApi.appwriteFiles.list).mockRejectedValue(new Error('Database error'));
+
+    const request = new NextRequest('http://localhost/api/storage');
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.success).toBe(false);
+    expect(data.error).toBe('Dosyalar alınamadı');
   });
 });

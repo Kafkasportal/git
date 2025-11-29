@@ -235,6 +235,43 @@ export interface ScholarshipDocument extends Document {
   status: 'active' | 'paused' | 'completed';
 }
 
+export interface ScholarshipApplicationDocument extends Document {
+  scholarship_id: string;
+  student_id?: string;
+  applicant_name: string;
+  applicant_tc_no: string;
+  applicant_phone: string;
+  applicant_email?: string;
+  university?: string;
+  department?: string;
+  grade_level?: string;
+  gpa?: number;
+  academic_year?: string;
+  monthly_income?: number;
+  family_income?: number;
+  father_occupation?: string;
+  mother_occupation?: string;
+  sibling_count?: number;
+  is_orphan?: boolean;
+  has_disability?: boolean;
+  essay?: string;
+  documents?: string[];
+  status:
+    | 'draft'
+    | 'submitted'
+    | 'under_review'
+    | 'approved'
+    | 'rejected'
+    | 'waitlisted'
+    | 'active'
+    | 'pending'
+    | 'completed';
+  reviewer_notes?: string;
+  reviewed_by?: string;
+  reviewed_at?: string;
+  submitted_at?: string;
+}
+
 // Tasks Collection (Portal Plus - 188 bekleyen iş)
 export interface TaskDocument extends Document {
   title: string;

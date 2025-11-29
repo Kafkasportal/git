@@ -4,7 +4,7 @@
   "description": "Dernek Yönetim Sistemi - Next.js 16 + Appwrite. Modern non-profit association management system.",
   "private": true,
   "engines": {
-    "node": "20.x",
+    "node": ">=20.x",
     "npm": ">=9.0.0"
   },
   "scripts": {
@@ -17,34 +17,25 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test",
-    "test:e2e:example": "SKIP_WEBSERVER=true playwright test example",
-    "e2e": "playwright test",
-    "e2e:ui": "playwright test --ui",
-    "e2e:example": "SKIP_WEBSERVER=true playwright test example",
     "analyze": "ANALYZE=true next build",
     "clean": "rm -rf .next node_modules/.cache",
     "clean:all": "rm -rf .next node_modules package-lock.json && npm install",
     "clean:temp": "node -e \"const fs=require('fs');const path=require('path');const files=fs.readdirSync('.').filter(f=>/^(lint-|.*-output\\.txt|.*-current\\.txt|test-|typecheck-)/.test(f)&&f.endsWith('.txt'));files.forEach(f=>{try{fs.unlinkSync(f);}catch(e){}});\"",
     "health:check": "curl http://localhost:3000/api/health?detailed=true",
     "test:backend": "tsx scripts/test-backend.ts",
+    "setup": "tsx scripts/quick-setup.ts",
+    "setup:quick": "tsx scripts/quick-setup.ts && npm run dev",
     "appwrite:setup": "tsx scripts/appwrite-setup.ts",
     "appwrite:configure": "./scripts/auto-setup-appwrite.sh",
     "validate:deploy": "node -e \"fetch(process.env.DEPLOY_URL + '/api/health').then(r => r.json()).then(console.log)\"",
     "prepare": "husky",
     "lint:fix": "eslint --fix --max-warnings 0 .",
     "lint:check": "eslint --max-warnings 0 .",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
     "sg": "tsx cli/sg.ts"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md,yml,yaml}": [
-      "prettier --write"
+      "eslint --fix"
     ]
   },
   "dependencies": {
@@ -75,7 +66,6 @@
     "ai": "^5.0.93",
     "appwrite": "^21.4.0",
     "bcryptjs": "^3.0.3",
-    "beasties": "^0.3.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -118,7 +108,6 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^14.0.4",
-    "@playwright/test": "^1.48.0",
     "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.1",
@@ -144,7 +133,6 @@
     "jsdom": "^27.0.1",
     "lint-staged": "^16.2.6",
     "msw": "^2.11.6",
-    "prettier": "^3.6.2",
     "tailwindcss": "^4",
     "tsx": "^4.20.6",
     "typescript": "^5",

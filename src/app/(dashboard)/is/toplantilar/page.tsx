@@ -1,31 +1,51 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import dynamic from 'next/dynamic';
-import { DemoBanner } from '@/components/ui/demo-banner';
-import { MeetingsHeader } from './_components/MeetingsHeader';
-import { useAuthStore } from '@/stores/authStore';
-import { meetings as meetingsApi } from '@/lib/api/api-client';
-import type { MeetingDocument } from '@/types/database';
-import { Calendar, CheckCircle, XCircle } from 'lucide-react';
-import { MeetingForm } from '@/components/forms/MeetingForm';
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import dynamic from "next/dynamic";
+import { toast } from "sonner";
+import { DemoBanner } from "@/components/ui/demo-banner";
+import { MeetingsHeader } from "./_components/MeetingsHeader";
+import { useAuthStore } from "@/stores/authStore";
+import { meetings as meetingsApi } from "@/lib/api/api-client";
+import type { MeetingDocument } from "@/types/database";
+import { Calendar, CheckCircle, XCircle } from "lucide-react";
+import { MeetingForm } from "@/components/forms/MeetingForm";
 
 // Lazy load heavy components
 const CalendarView = dynamic(
-  () => import('@/components/meetings/CalendarView').then((m) => ({ default: m.CalendarView })),
+  () =>
+    import("@/components/meetings/CalendarView").then((m) => ({
+      default: m.CalendarView,
+    })),
   {
     loading: () => <div className="p-8 text-center">Yükleniyor...</div>,
     ssr: false,
-  }
+  },
 );
 
 // MeetingListView component is not implemented yet
@@ -36,44 +56,54 @@ const CalendarView = dynamic(
 
 export default function MeetingsPage() {
   const { user: _user } = useAuthStore();
+  const queryClient = useQueryClient();
 
   // View state
-  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
+  const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedMeeting, setSelectedMeeting] = useState<MeetingDocument | null>(null);
+  const [selectedMeeting, setSelectedMeeting] =
+    useState<MeetingDocument | null>(null);
+  const [meetingToDelete, setMeetingToDelete] = useState<string | null>(null);
 
   // Filter state (unused for now since list view is not implemented)
-  const [_search, _setSearch] = useState('');
-  const [_statusFilter, _setStatusFilter] = useState('all');
-  const [_meetingTypeFilter, _setMeetingTypeFilter] = useState('all');
+  const [_search, _setSearch] = useState("");
+  const [_statusFilter, _setStatusFilter] = useState("all");
+  const [_meetingTypeFilter, _setMeetingTypeFilter] = useState("all");
 
   // Fetch meetings
   const { data: meetingsData, isLoading } = useQuery({
-    queryKey: ['meetings'],
+    queryKey: ["meetings"],
     queryFn: () => meetingsApi.getAll(),
   });
 
-  const meetings: MeetingDocument[] = (meetingsData?.data as MeetingDocument[]) || [];
+  const meetings: MeetingDocument[] =
+    (meetingsData?.data as MeetingDocument[]) || [];
 
   // Calculate statistics
   const totalMeetings = meetings.length;
-  const upcomingMeetings = meetings.filter((m) => new Date(m.meeting_date) > new Date()).length;
-  const completedMeetings = meetings.filter((m) => m.status === 'completed').length;
-  const cancelledMeetings = meetings.filter((m) => m.status === 'cancelled').length;
+  const upcomingMeetings = meetings.filter(
+    (m) => new Date(m.meeting_date) > new Date(),
+  ).length;
+  const completedMeetings = meetings.filter(
+    (m) => m.status === "completed",
+  ).length;
+  const cancelledMeetings = meetings.filter(
+    (m) => m.status === "cancelled",
+  ).length;
 
-  // Delete meeting functionality not yet implemented
-  // See docs/ISSUES.md - Issue #9: Meeting Delete Functionality
-  // const deleteMeetingMutation = useMutation({
-  //   mutationFn: (meetingId: string) => meetingsApi.delete(meetingId),
-  //   onSuccess: () => {
-  //     queryClient.invalidateQueries({ queryKey: ['meetings'] });
-  //     setMeetingToDelete(null);
-  //     toast.success('Toplantı silindi');
-  //   },
-  //   onError: () => {
-  //     toast.error('Toplantı silinemedi');
-  //   },
-  // });
+  // Delete meeting mutation
+  const deleteMeetingMutation = useMutation({
+    mutationFn: (meetingId: string) => meetingsApi.delete(meetingId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["meetings"] });
+      setMeetingToDelete(null);
+      setSelectedMeeting(null); // Close the details modal if open
+      toast.success("Toplantı silindi");
+    },
+    onError: () => {
+      toast.error("Toplantı silinemedi");
+    },
+  });
 
   return (
     <div className="space-y-6">
@@ -91,12 +121,16 @@ export default function MeetingsPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Toplam Toplantı</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Toplam Toplantı
+            </CardTitle>
             <Calendar className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalMeetings}</div>
-            <p className="text-xs text-muted-foreground mt-1">Tüm toplantılar</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Tüm toplantılar
+            </p>
           </CardContent>
         </Card>
 
@@ -106,8 +140,12 @@ export default function MeetingsPage() {
             <Calendar className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{upcomingMeetings}</div>
-            <p className="text-xs text-muted-foreground mt-1">Gelecek toplantılar</p>
+            <div className="text-2xl font-bold text-green-600">
+              {upcomingMeetings}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Gelecek toplantılar
+            </p>
           </CardContent>
         </Card>
 
@@ -118,7 +156,9 @@ export default function MeetingsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{completedMeetings}</div>
-            <p className="text-xs text-muted-foreground mt-1">Tamamlanan toplantılar</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Tamamlanan toplantılar
+            </p>
           </CardContent>
         </Card>
 
@@ -128,8 +168,12 @@ export default function MeetingsPage() {
             <XCircle className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{cancelledMeetings}</div>
-            <p className="text-xs text-muted-foreground mt-1">İptal edilen toplantılar</p>
+            <div className="text-2xl font-bold text-red-600">
+              {cancelledMeetings}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              İptal edilen toplantılar
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -137,7 +181,9 @@ export default function MeetingsPage() {
       {/* Main View */}
       <Card>
         <CardHeader>
-          <CardTitle>{viewMode === 'calendar' ? 'Takvim Görünümü' : 'Liste Görünümü'}</CardTitle>
+          <CardTitle>
+            {viewMode === "calendar" ? "Takvim Görünümü" : "Liste Görünümü"}
+          </CardTitle>
           <CardDescription>Toplantılarınızı yönetin</CardDescription>
         </CardHeader>
         <CardContent>
@@ -145,7 +191,7 @@ export default function MeetingsPage() {
             <div className="flex items-center justify-center p-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
             </div>
-          ) : viewMode === 'calendar' ? (
+          ) : viewMode === "calendar" ? (
             <CalendarView
               meetings={meetings}
               onMeetingClick={setSelectedMeeting}
@@ -153,7 +199,8 @@ export default function MeetingsPage() {
             />
           ) : (
             <div className="p-8 text-center text-muted-foreground">
-              Liste görünümü henüz uygulanmadı. Lütfen takvim görünümünü kullanın.
+              Liste görünümü henüz uygulanmadı. Lütfen takvim görünümünü
+              kullanın.
             </div>
           )}
         </CardContent>
@@ -164,7 +211,9 @@ export default function MeetingsPage() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Yeni Toplantı Oluştur</DialogTitle>
-            <DialogDescription>Yeni bir toplantı oluşturmak için formu doldurun</DialogDescription>
+            <DialogDescription>
+              Yeni bir toplantı oluşturmak için formu doldurun
+            </DialogDescription>
           </DialogHeader>
           <MeetingForm
             onSuccess={() => setShowCreateModal(false)}
@@ -174,21 +223,62 @@ export default function MeetingsPage() {
       </Dialog>
 
       {/* View/Edit Meeting Modal */}
-      <Dialog open={!!selectedMeeting} onOpenChange={() => setSelectedMeeting(null)}>
+      <Dialog
+        open={!!selectedMeeting}
+        onOpenChange={() => setSelectedMeeting(null)}
+      >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Toplantı Detayları</DialogTitle>
-            <DialogDescription>Toplantı bilgilerini görüntüleyin veya düzenleyin</DialogDescription>
+            <DialogDescription>
+              Toplantı bilgilerini görüntüleyin veya düzenleyin
+            </DialogDescription>
           </DialogHeader>
           {selectedMeeting && (
             <MeetingForm
               initialData={selectedMeeting}
+              meetingId={selectedMeeting.$id}
               onSuccess={() => setSelectedMeeting(null)}
               onCancel={() => setSelectedMeeting(null)}
+              onDelete={() => setMeetingToDelete(selectedMeeting.$id || null)}
             />
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={!!meetingToDelete}
+        onOpenChange={(open) => !open && setMeetingToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Toplantıyı silmek istediğinize emin misiniz?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Bu işlem geri alınamaz. Toplantı kalıcı olarak silinecektir.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMeetingMutation.isPending}>
+              İptal
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={(e) => {
+                e.preventDefault();
+                if (meetingToDelete) {
+                  deleteMeetingMutation.mutate(meetingToDelete);
+                }
+              }}
+              disabled={deleteMeetingMutation.isPending}
+            >
+              {deleteMeetingMutation.isPending ? "Siliniyor..." : "Sil"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

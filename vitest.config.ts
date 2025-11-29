@@ -14,7 +14,6 @@ export default defineConfig({
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
-      '**/e2e/**', // Exclude Playwright E2E tests
       '**/.{idea,git,cache,output,temp}/**',
     ],
     coverage: {
@@ -23,12 +22,17 @@ export default defineConfig({
       exclude: [
         'node_modules/',
         'src/__tests__/',
-        'e2e/',
         '**/*.d.ts',
         'next.config.ts',
         'postcss.config.mjs',
         'tailwind.config.js',
       ],
+      thresholds: {
+        lines: 70,
+        functions: 70,
+        branches: 70,
+        statements: 70,
+      },
     },
     reporters: ['default', 'junit'],
     outputFile: {

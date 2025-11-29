@@ -258,6 +258,22 @@ export const scholarshipApplicationsApi = {
       reviewed_by?: string;
       reviewed_at?: string;
       submitted_at?: string;
+      applicant_name?: string;
+      applicant_tc_no?: string;
+      applicant_phone?: string;
+      applicant_email?: string;
+      university?: string;
+      department?: string;
+      grade_level?: string;
+      gpa?: number;
+      monthly_income?: number;
+      family_income?: number;
+      father_occupation?: string;
+      mother_occupation?: string;
+      sibling_count?: number;
+      is_orphan?: boolean;
+      has_disability?: boolean;
+      essay?: string;
     }
   ) => {
     try {

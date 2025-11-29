@@ -1,10 +1,17 @@
-import { NextRequest } from 'next/server';
-import { appwriteTodos, normalizeQueryParams } from '@/lib/appwrite/api';
-import { buildApiRoute } from '@/lib/api/middleware';
-import { successResponse, errorResponse, parseBody } from '@/lib/api/route-helpers';
-import { verifyCsrfToken, requireAuthenticatedUser } from '@/lib/api/auth-utils';
-import logger from '@/lib/logger';
-import { todoSchema } from '@/lib/validations/todo';
+import { NextRequest } from "next/server";
+import { appwriteTodos, normalizeQueryParams } from "@/lib/appwrite/api";
+import { buildApiRoute } from "@/lib/api/middleware";
+import {
+  successResponse,
+  errorResponse,
+  parseBody,
+} from "@/lib/api/route-helpers";
+import {
+  verifyCsrfToken,
+  requireAuthenticatedUser,
+} from "@/lib/api/auth-utils";
+import logger from "@/lib/logger";
+import { todoSchema } from "@/lib/validations/todo";
 
 /**
  * GET /api/todos
@@ -20,8 +27,8 @@ import { todoSchema } from '@/lib/validations/todo';
  * - offset: number - Pagination offset (default: 0)
  */
 export const GET = buildApiRoute({
-  requireModule: 'todos',
-  allowedMethods: ['GET'],
+  requireModule: "todos",
+  allowedMethods: ["GET"],
   rateLimit: { maxRequests: 200, windowMs: 900000 },
 })(async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
@@ -52,35 +59,39 @@ export const GET = buildApiRoute({
  * }
  */
 export const POST = buildApiRoute({
-  requireModule: 'todos',
-  allowedMethods: ['POST'],
+  requireModule: "todos",
+  allowedMethods: ["POST"],
   rateLimit: { maxRequests: 50, windowMs: 900000 },
   supportOfflineSync: true,
 })(async (request: NextRequest) => {
   await verifyCsrfToken(request);
   await requireAuthenticatedUser();
 
-  const { data: body, error: parseError } = await parseBody<Record<string, unknown>>(request);
+  const { data: body, error: parseError } =
+    await parseBody<Record<string, unknown>>(request);
   if (parseError || !body) {
-    return errorResponse(parseError || 'Veri bulunamadı', 400);
+    return errorResponse(parseError || "Veri bulunamadı", 400);
   }
 
   // Validate with Zod schema
   const result = todoSchema.safeParse(body);
   if (!result.success) {
     const errors = result.error.flatten().fieldErrors;
-    logger.warn('Todo validation failed', { errors, userId: body.created_by });
+    logger.warn("Todo validation failed", {
+      errors,
+      userId: body.created_by as string,
+    });
 
-    return errorResponse('Doğrulama hatası', 400, Object.values(errors).flat());
+    return errorResponse("Doğrulama hatası", 400, Object.values(errors).flat());
   }
 
-  const todo = await appwriteTodos.create(result.data);
+  const todo = (await appwriteTodos.create(result.data)) as { $id: string };
 
-  logger.info('Todo created', {
+  logger.info("Todo created", {
     todoId: todo.$id,
-    userId: result.data.created_by,
+    userId: result.data.created_by as string,
     title: result.data.title,
   });
 
-  return successResponse(todo, 'Todo başarıyla oluşturuldu', 201);
+  return successResponse(todo, "Todo başarıyla oluşturuldu", 201);
 });

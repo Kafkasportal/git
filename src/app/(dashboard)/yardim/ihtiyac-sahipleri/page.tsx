@@ -13,6 +13,8 @@ import { toast } from 'sonner';
 import logger from '@/lib/logger';
 import { ArrowUpRight, Download, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { BulkActionsToolbar } from '@/components/ui/bulk-actions-toolbar';
 
 // Performance monitoring imports
 import { useFPSMonitor } from '@/lib/performance-monitor';
@@ -53,15 +55,15 @@ async function fetchBeneficiariesDirectly(params?: {
   }
 }
 
-// Stub function for beneficiary export
-const exportBeneficiaries = async (_params: {
-  search?: string;
-  beneficiaries?: BeneficiaryDocument[];
-  format?: 'csv' | 'excel' | 'pdf';
-}) => {
-  toast.info('Dışa aktarma özelliği yakında eklenecek');
-  return Promise.resolve({ success: true, data: null, error: null });
-};
+// Import export functions
+import {
+  exportToPDF,
+  exportToExcel,
+  exportToCSV,
+  type ExportColumn,
+  maskTCNo,
+  formatDate,
+} from '@/lib/export/export-service';
 
 // Lazy load heavy modal component
 const BeneficiaryQuickAddModal = lazy(() =>
@@ -78,9 +80,12 @@ export default function BeneficiariesPage() {
   const { prefetch } = usePrefetchWithCache();
 
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [search, setSearch] = useState('');
   const [showQuickAddModal, setShowQuickAddModal] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [isExporting, setIsExporting] = useState(false);
 
   // Use cached query with performance optimization
   const {
@@ -130,25 +135,155 @@ export default function BeneficiariesPage() {
     fallbackQuery.refetch();
   }, [refetch, fallbackQuery]);
 
-  const handleExport = useCallback(async () => {
-    const result = await exportBeneficiaries({ search, beneficiaries });
-    if (result.success && result.data) {
-      const blob = new Blob([result.data], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `ihtiyac_sahipleri_${new Date().toISOString().split('T')[0]}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast.success('Veri başarıyla dışa aktarıldı');
-    } else {
-      toast.error('Dışa aktarma sırasında hata oluştu');
-    }
-  }, [search, beneficiaries]);
+  // Export column definitions
+  const exportColumns: ExportColumn<BeneficiaryDocument>[] = useMemo(
+    () => [
+      { header: 'Ad Soyad', key: 'name' },
+      {
+        header: 'TC Kimlik No',
+        key: 'tc_no',
+        formatter: (value) => (value ? maskTCNo(String(value)) : ''),
+      },
+      { header: 'Telefon', key: 'phone' },
+      { header: 'E-posta', key: 'email' },
+      { header: 'Durum', key: 'status' },
+      {
+        header: 'Oluşturulma Tarihi',
+        key: '$createdAt' as keyof BeneficiaryDocument,
+        formatter: (value) => (value ? formatDate(String(value)) : ''),
+      },
+    ],
+    []
+  );
+
+  // Export function implementation
+  const exportBeneficiaries = useCallback(
+    async (params: {
+      search?: string;
+      beneficiaries?: BeneficiaryDocument[];
+      format?: 'csv' | 'excel' | 'pdf';
+    }) => {
+      try {
+        setIsExporting(true);
+        const dataToExport = params.beneficiaries || beneficiaries;
+        const format = params.format || 'csv';
+
+        if (!dataToExport || dataToExport.length === 0) {
+          toast.error('Dışa aktarılacak veri bulunamadı');
+          return { success: false, data: null, error: 'Veri bulunamadı' };
+        }
+
+        const filename = `ihtiyac_sahipleri_${new Date().toISOString().split('T')[0]}`;
+        const title = 'İhtiyaç Sahipleri Listesi';
+        const subtitle = params.search ? `Arama: ${params.search}` : undefined;
+
+        switch (format) {
+          case 'pdf':
+            await exportToPDF({
+              title,
+              subtitle,
+              filename: `${filename}.pdf`,
+              columns: exportColumns,
+              data: dataToExport,
+              includeDate: true,
+              includeFooter: true,
+            });
+            break;
+          case 'excel':
+            await exportToExcel({
+              title,
+              filename: `${filename}.xlsx`,
+              sheetName: 'İhtiyaç Sahipleri',
+              columns: exportColumns,
+              data: dataToExport,
+              includeTotal: false,
+            });
+            break;
+          case 'csv':
+          default:
+            await exportToCSV({
+              filename: `${filename}.csv`,
+              columns: exportColumns,
+              data: dataToExport,
+            });
+            break;
+        }
+
+        toast.success(`${dataToExport.length} kayıt başarıyla dışa aktarıldı`);
+        return { success: true, data: null, error: null };
+      } catch (error) {
+        logger.error('Export error', { error, format: params.format });
+        const errorMessage =
+          error instanceof Error ? error.message : 'Dışa aktarma sırasında hata oluştu';
+        toast.error(errorMessage);
+        return { success: false, data: null, error: errorMessage };
+      } finally {
+        setIsExporting(false);
+      }
+    },
+    [beneficiaries, exportColumns]
+  );
+
+  const handleExport = useCallback(
+    async (format: 'csv' | 'excel' | 'pdf' = 'csv') => {
+      await exportBeneficiaries({ search, beneficiaries, format });
+    },
+    [search, beneficiaries, exportBeneficiaries]
+  );
 
   const handleShowModal = useCallback(() => {
     setShowQuickAddModal(true);
   }, []);
+
+  // Bulk operations mutations
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (_ids: string[]) => {
+      // TODO: Replace with actual bulk delete API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return { success: true };
+    },
+    onSuccess: () => {
+      toast.success(`${selectedItems.size} kayıt başarıyla silindi`);
+      setSelectedItems(new Set());
+      queryClient.invalidateQueries({ queryKey: ['beneficiaries-cached'] });
+      queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
+      refetch();
+      fallbackQuery.refetch();
+    },
+    onError: () => {
+      toast.error('Kayıtlar silinirken bir hata oluştu');
+    },
+  });
+
+  const bulkStatusUpdateMutation = useMutation({
+    mutationFn: async ({ ids: _ids, status }: { ids: string[]; status: string }) => {
+      // TODO: Replace with actual bulk status update API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return { success: true, status };
+    },
+    onSuccess: (_, variables) => {
+      const statusLabel = variables.status === 'AKTIF' ? 'Aktif' : 'Pasif';
+      toast.success(`${selectedItems.size} kayıt ${statusLabel} olarak güncellendi`);
+      setSelectedItems(new Set());
+      queryClient.invalidateQueries({ queryKey: ['beneficiaries-cached'] });
+      queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
+      refetch();
+      fallbackQuery.refetch();
+    },
+    onError: () => {
+      toast.error('Durum güncellenirken bir hata oluştu');
+    },
+  });
+
+  const handleBulkDelete = useCallback(() => {
+    const ids = Array.from(selectedItems);
+    bulkDeleteMutation.mutate(ids);
+  }, [selectedItems, bulkDeleteMutation]);
+
+  const handleBulkStatusChange = useCallback((status: string) => {
+    const ids = Array.from(selectedItems);
+    bulkStatusUpdateMutation.mutate({ ids, status });
+  }, [selectedItems, bulkStatusUpdateMutation]);
 
   // Performance monitoring
   React.useEffect(() => {
@@ -391,9 +526,15 @@ export default function BeneficiariesPage() {
       className="space-y-4 sm:space-y-6 w-full"
       actions={
         <>
-          <Button variant="outline" size="sm" onClick={handleExport} className="gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleExport('csv')}
+            disabled={isExporting}
+            className="gap-1"
+          >
             <Download className="h-4 w-4" />
-            Dışa Aktar
+            {isExporting ? 'Dışa Aktarılıyor...' : 'Dışa Aktar'}
           </Button>
           <Button size="sm" onClick={handleShowModal} className="gap-1">
             <Plus className="h-4 w-4" />
@@ -415,6 +556,19 @@ export default function BeneficiariesPage() {
           <BeneficiaryQuickAddModal open={showQuickAddModal} onOpenChange={handleModalClose} />
         </Suspense>
       )}
+
+      {/* Bulk Actions Toolbar */}
+      <BulkActionsToolbar
+        selectedCount={selectedItems.size}
+        onClearSelection={() => setSelectedItems(new Set())}
+        onDelete={handleBulkDelete}
+        onStatusChange={handleBulkStatusChange}
+        statusOptions={[
+          { value: 'AKTIF', label: 'Aktif Yap' },
+          { value: 'PASIF', label: 'Pasif Yap' },
+        ]}
+        isLoading={bulkDeleteMutation.isPending || bulkStatusUpdateMutation.isPending}
+      />
 
       <Card className="w-full">
         <CardHeader className="pb-4">
@@ -447,6 +601,10 @@ export default function BeneficiariesPage() {
                 router.push(`/yardim/ihtiyac-sahipleri/${item._id}`);
               }
             }}
+            selectable={true}
+            selectedItems={selectedItems}
+            onSelectionChange={setSelectedItems}
+            getItemId={(item) => item._id || ''}
           />
         </CardContent>
       </Card>

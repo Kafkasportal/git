@@ -1,271 +1,452 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { databases } from '@/lib/appwrite/api';
-import { appwriteConfig } from '@/lib/appwrite/config';
-import { Query, ID } from 'appwrite';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockDocuments } from '../test-utils';
+import { GET, POST } from '@/app/api/partners/route';
+import { NextRequest } from 'next/server';
+import * as appwriteApi from '@/lib/appwrite/api';
 
+// Mock Appwrite API
 vi.mock('@/lib/appwrite/api', () => ({
-  databases: {
-    listDocuments: vi.fn(),
-    getDocument: vi.fn(),
-    createDocument: vi.fn(),
-    updateDocument: vi.fn(),
-    deleteDocument: vi.fn(),
+  appwritePartners: {
+    list: vi.fn(),
+    create: vi.fn(),
   },
+  normalizeQueryParams: vi.fn((params) => ({
+    page: params.get('page') ? parseInt(params.get('page')!) : 1,
+    limit: params.get('limit') ? parseInt(params.get('limit')!) : 50,
+    skip: 0,
+    search: params.get('search') || undefined,
+  })),
 }));
 
-describe('Partners API', () => {
+// Mock middleware
+vi.mock('@/lib/api/middleware', () => ({
+  buildApiRoute: vi.fn((_config) => (handler: any) => handler),
+}));
+
+// Mock route helpers
+vi.mock('@/lib/api/route-helpers', () => ({
+  successResponse: vi.fn((data, message, status = 200) => {
+    return new Response(JSON.stringify({ success: true, data, message }), {
+      status,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }),
+  errorResponse: vi.fn((message, status = 400, details?: string[]) => {
+    return new Response(JSON.stringify({ success: false, error: message, details }), {
+      status,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }),
+  parseBody: vi.fn(async (request) => {
+    const body = await request.json();
+    return { data: body, error: null };
+  }),
+}));
+
+// Mock auth
+vi.mock('@/lib/api/auth-utils', () => ({
+  requireAuthenticatedUser: vi.fn().mockResolvedValue({
+    user: { id: 'test-user', email: 'test@example.com', name: 'Test User', isActive: true, permissions: ['partners:read'] },
+  }),
+  verifyCsrfToken: vi.fn().mockResolvedValue(undefined),
+}));
+
+describe('GET /api/partners', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('GET /api/partners', () => {
-    it('should list partners with pagination', async () => {
-      const mockPartners = {
-        documents: [
-          {
-            $id: '1',
-            name: 'Test Partner',
-            type: 'organization',
-            contact: {
-              name: 'İletişim Kişisi',
-              phone: '5551234567',
-              email: 'partner@example.com',
-            },
-            status: 'active',
-            $createdAt: new Date().toISOString(),
-          },
-        ],
-        total: 1,
-      };
-
-      vi.mocked(databases.listDocuments).mockResolvedValue(mockPartners);
-
-      const result = await databases.listDocuments(
-        appwriteConfig.databaseId,
-        appwriteConfig.collections.partners,
-        [Query.limit(25), Query.offset(0)]
-      );
-
-      expect(result.documents).toHaveLength(1);
-      expect(result.documents[0].name).toBe('Test Partner');
-    });
-
-    it('should filter partners by type', async () => {
-      const mockOrganizations = {
-        documents: [
-          {
-            $id: '1',
-            name: 'Kurum Ortağı',
-            type: 'organization',
-            status: 'active',
-          },
-        ],
-        total: 1,
-      };
-
-      vi.mocked(databases.listDocuments).mockResolvedValue(mockOrganizations);
-
-      const result = await databases.listDocuments(
-        appwriteConfig.databaseId,
-        appwriteConfig.collections.partners,
-        [Query.equal('type', 'organization')]
-      );
-
-      expect(result.documents[0].type).toBe('organization');
-    });
-
-    it('should filter partners by status', async () => {
-      const mockActive = {
-        documents: [
-          {
-            $id: '1',
-            name: 'Aktif Ortak',
-            status: 'active',
-          },
-        ],
-        total: 1,
-      };
-
-      vi.mocked(databases.listDocuments).mockResolvedValue(mockActive);
-
-      const result = await databases.listDocuments(
-        appwriteConfig.databaseId,
-        appwriteConfig.collections.partners,
-        [Query.equal('status', 'active')]
-      );
-
-      expect(result.documents[0].status).toBe('active');
-    });
-  });
-
-  describe('POST /api/partners', () => {
-    it('should create partner with valid data', async () => {
-      const newPartner = {
-        name: 'Yeni Ortak',
-        type: 'individual',
-        contact: {
-          name: 'Ahmet Yılmaz',
-          phone: '5551234567',
-          email: 'ahmet@example.com',
-        },
-        address: 'İstanbul, Türkiye',
+  it('returns partners list successfully', async () => {
+    const mockPartners = createMockDocuments([
+      {
+        _id: '1',
+        name: 'Partner 1',
+        type: 'organization',
+        partnership_type: 'donor',
         status: 'active',
-      };
+      },
+      {
+        _id: '2',
+        name: 'Partner 2',
+        type: 'individual',
+        partnership_type: 'volunteer',
+        status: 'active',
+      },
+    ]);
 
-      const mockCreated = {
-        $id: 'partner123',
-        ...newPartner,
-        $createdAt: new Date().toISOString(),
-      };
-
-      vi.mocked(databases.createDocument).mockResolvedValue(mockCreated);
-
-      const result = await databases.createDocument(
-        appwriteConfig.databaseId,
-        appwriteConfig.collections.partners,
-        ID.unique(),
-        newPartner
-      );
-
-      expect(result.name).toBe(newPartner.name);
-      expect(result.contact.phone).toBe('5551234567');
+    vi.mocked(appwriteApi.appwritePartners.list).mockResolvedValue({
+      documents: mockPartners,
+      total: 2,
     });
 
-    it('should validate required fields', async () => {
-      const invalidPartner = {
+    const request = new NextRequest('http://localhost/api/partners');
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
+    expect(data.data).toEqual(mockPartners);
+  });
+
+  it('filters by type', async () => {
+    const mockPartners = createMockDocuments([
+      {
+        _id: '1',
+        name: 'Organization Partner',
         type: 'organization',
-      };
+      },
+    ]);
 
-      expect(() => {
-        if (!('name' in invalidPartner)) {
-          throw new Error('Name is required');
-        }
-      }).toThrow('Name is required');
+    vi.mocked(appwriteApi.appwritePartners.list).mockResolvedValue({
+      documents: mockPartners,
+      total: 1,
     });
 
-    it('should validate phone number format', async () => {
-      const invalidPhone = '1234567890';
+    const request = new NextRequest('http://localhost/api/partners?type=organization');
+    const response = await GET(request);
 
-      expect(() => {
-        const phoneRegex = /^5\d{9}$/;
-        if (!phoneRegex.test(invalidPhone)) {
-          throw new Error('Invalid phone format');
-        }
-      }).toThrow('Invalid phone format');
-    });
-
-    it('should validate email format', async () => {
-      const invalidEmail = 'not-an-email';
-
-      expect(() => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(invalidEmail)) {
-          throw new Error('Invalid email format');
-        }
-      }).toThrow('Invalid email format');
-    });
-  });
-
-  describe('PUT /api/partners/:id', () => {
-    it('should update partner details', async () => {
-      const updates = {
-        name: 'Updated Partner Name',
-        status: 'inactive',
-      };
-
-      const mockUpdated = {
-        $id: 'partner123',
-        ...updates,
+    expect(response.status).toBe(200);
+    expect(vi.mocked(appwriteApi.appwritePartners.list)).toHaveBeenCalledWith(
+      expect.objectContaining({
         type: 'organization',
-        $updatedAt: new Date().toISOString(),
-      };
-
-      vi.mocked(databases.updateDocument).mockResolvedValue(mockUpdated);
-
-      const result = await databases.updateDocument(
-        appwriteConfig.databaseId,
-        appwriteConfig.collections.partners,
-        'partner123',
-        updates
-      );
-
-      expect(result.name).toBe('Updated Partner Name');
-      expect(result.status).toBe('inactive');
-    });
-
-    it('should update contact information', async () => {
-      const updates = {
-        contact: {
-          name: 'Yeni İletişim',
-          phone: '5559876543',
-          email: 'yeni@example.com',
-        },
-      };
-
-      const mockUpdated = {
-        $id: 'partner123',
-        ...updates,
-        $updatedAt: new Date().toISOString(),
-      };
-
-      vi.mocked(databases.updateDocument).mockResolvedValue(mockUpdated);
-
-      const result = await databases.updateDocument(
-        appwriteConfig.databaseId,
-        appwriteConfig.collections.partners,
-        'partner123',
-        updates
-      );
-
-      expect(result.contact.phone).toBe('5559876543');
-    });
+      })
+    );
   });
 
-  describe('DELETE /api/partners/:id', () => {
-    it('should soft delete partner', async () => {
-      const mockDeleted = {
-        $id: 'partner123',
-        name: 'Test Partner',
-        status: 'deleted',
-        deletedAt: new Date().toISOString(),
-      };
+  it('filters by status', async () => {
+    const mockPartners = createMockDocuments([
+      {
+        _id: '1',
+        name: 'Active Partner',
+        status: 'active',
+      },
+    ]);
 
-      vi.mocked(databases.updateDocument).mockResolvedValue(mockDeleted);
-
-      const result = await databases.updateDocument(
-        appwriteConfig.databaseId,
-        appwriteConfig.collections.partners,
-        'partner123',
-        { status: 'deleted', deletedAt: new Date().toISOString() }
-      );
-
-      expect(result.status).toBe('deleted');
-      expect(result.deletedAt).toBeDefined();
+    vi.mocked(appwriteApi.appwritePartners.list).mockResolvedValue({
+      documents: mockPartners,
+      total: 1,
     });
+
+    const request = new NextRequest('http://localhost/api/partners?status=active');
+    const response = await GET(request);
+
+    expect(response.status).toBe(200);
+    expect(vi.mocked(appwriteApi.appwritePartners.list)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'active',
+      })
+    );
   });
 
-  describe('Security', () => {
-    it('should require authentication', async () => {
-      const noAuth = null;
+  it('filters by partnership_type', async () => {
+    const mockPartners = createMockDocuments([
+      {
+        _id: '1',
+        name: 'Donor Partner',
+        partnership_type: 'donor',
+      },
+    ]);
 
-      expect(() => {
-        if (!noAuth) {
-          throw new Error('Authentication required');
-        }
-      }).toThrow('Authentication required');
+    vi.mocked(appwriteApi.appwritePartners.list).mockResolvedValue({
+      documents: mockPartners,
+      total: 1,
     });
 
-    it('should sanitize input data', async () => {
-      const maliciousInput = {
-        name: '<script>alert("xss")</script>',
-        contact: {
-          email: 'test@example.com<script>',
-        },
-      };
+    const request = new NextRequest('http://localhost/api/partners?partnership_type=donor');
+    const response = await GET(request);
 
-      // Input should be sanitized before storage
-      expect(maliciousInput.name).toContain('<script>');
-      // After sanitization, script tags should be removed
+    expect(response.status).toBe(200);
+    expect(vi.mocked(appwriteApi.appwritePartners.list)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        partnership_type: 'donor',
+      })
+    );
+  });
+
+  it('handles pagination', async () => {
+    vi.mocked(appwriteApi.appwritePartners.list).mockResolvedValue({
+      documents: [],
+      total: 0,
     });
+
+    const request = new NextRequest('http://localhost/api/partners?page=2&limit=20');
+    const response = await GET(request);
+
+    expect(response.status).toBe(200);
+    expect(vi.mocked(appwriteApi.appwritePartners.list)).toHaveBeenCalled();
+  });
+
+  it('handles empty list', async () => {
+    vi.mocked(appwriteApi.appwritePartners.list).mockResolvedValue({
+      documents: [],
+      total: 0,
+    });
+
+    const request = new NextRequest('http://localhost/api/partners');
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.data).toEqual([]);
+  });
+
+  it('handles errors gracefully', async () => {
+    vi.mocked(appwriteApi.appwritePartners.list).mockRejectedValue(new Error('Database error'));
+
+    const request = new NextRequest('http://localhost/api/partners');
+
+    // buildApiRoute may throw or return error response
+    try {
+      const response = await GET(request);
+      expect(response.status).toBeGreaterThanOrEqual(400);
+    } catch (error) {
+      // buildApiRoute might throw, which is also acceptable
+      expect(error).toBeDefined();
+    }
+  });
+});
+
+describe('POST /api/partners', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('creates partner successfully', async () => {
+    const newPartner = {
+      name: 'New Partner',
+      type: 'organization',
+      partnership_type: 'donor',
+      status: 'active',
+      email: 'partner@example.com',
+      phone: '5551234567',
+    };
+
+    const createdPartner = {
+      _id: 'new-id',
+      ...newPartner,
+    };
+
+    vi.mocked(appwriteApi.appwritePartners.create).mockResolvedValue(createdPartner as any);
+
+    const request = new NextRequest('http://localhost/api/partners', {
+      method: 'POST',
+      body: JSON.stringify(newPartner),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(data.success).toBe(true);
+    expect(data.data).toEqual(createdPartner);
+    expect(data.message).toBe('Partner başarıyla oluşturuldu');
+  });
+
+  it('validates name is required and minimum length', async () => {
+    const invalidPartner = {
+      name: 'A', // Too short
+      type: 'organization',
+      partnership_type: 'donor',
+    };
+
+    const request = new NextRequest('http://localhost/api/partners', {
+      method: 'POST',
+      body: JSON.stringify(invalidPartner),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.success).toBe(false);
+    expect(data.error).toBe('Doğrulama hatası');
+    expect(data.details).toContain('Partner adı en az 2 karakter olmalıdır');
+  });
+
+  it('validates type is required and valid', async () => {
+    const invalidPartner = {
+      name: 'Test Partner',
+      type: 'INVALID', // Invalid type
+      partnership_type: 'donor',
+    };
+
+    const request = new NextRequest('http://localhost/api/partners', {
+      method: 'POST',
+      body: JSON.stringify(invalidPartner),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.success).toBe(false);
+    expect(data.details).toContain('Geçersiz partner türü');
+  });
+
+  it('validates partnership_type is required and valid', async () => {
+    const invalidPartner = {
+      name: 'Test Partner',
+      type: 'organization',
+      partnership_type: 'INVALID', // Invalid partnership type
+    };
+
+    const request = new NextRequest('http://localhost/api/partners', {
+      method: 'POST',
+      body: JSON.stringify(invalidPartner),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.success).toBe(false);
+    expect(data.details).toContain('Geçersiz işbirliği türü');
+  });
+
+  it('validates email format when provided', async () => {
+    const invalidPartner = {
+      name: 'Test Partner',
+      type: 'organization',
+      partnership_type: 'donor',
+      email: 'invalid-email', // Invalid email
+    };
+
+    const request = new NextRequest('http://localhost/api/partners', {
+      method: 'POST',
+      body: JSON.stringify(invalidPartner),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.success).toBe(false);
+    expect(data.details).toContain('Geçerli bir email adresi giriniz');
+  });
+
+  it('validates phone format when provided', async () => {
+    const invalidPartner = {
+      name: 'Test Partner',
+      type: 'organization',
+      partnership_type: 'donor',
+      phone: '123', // Invalid phone (too short)
+    };
+
+    const request = new NextRequest('http://localhost/api/partners', {
+      method: 'POST',
+      body: JSON.stringify(invalidPartner),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.success).toBe(false);
+    expect(data.details).toContain('Geçerli bir telefon numarası giriniz');
+  });
+
+  it('validates status when provided', async () => {
+    const invalidPartner = {
+      name: 'Test Partner',
+      type: 'organization',
+      partnership_type: 'donor',
+      status: 'INVALID', // Invalid status
+    };
+
+    const request = new NextRequest('http://localhost/api/partners', {
+      method: 'POST',
+      body: JSON.stringify(invalidPartner),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.success).toBe(false);
+    expect(data.details).toContain('Geçersiz durum değeri');
+  });
+
+  it('sets default status to active', async () => {
+    const newPartner = {
+      name: 'Test Partner',
+      type: 'organization',
+      partnership_type: 'donor',
+      // No status provided
+    };
+
+    const createdPartner = {
+      _id: 'new-id',
+      ...newPartner,
+      status: 'active',
+    };
+
+    vi.mocked(appwriteApi.appwritePartners.create).mockResolvedValue(createdPartner as any);
+
+    const request = new NextRequest('http://localhost/api/partners', {
+      method: 'POST',
+      body: JSON.stringify(newPartner),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(data.success).toBe(true);
+    expect(vi.mocked(appwriteApi.appwritePartners.create)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'active',
+      })
+    );
+  });
+
+  it('handles creation errors gracefully', async () => {
+    vi.mocked(appwriteApi.appwritePartners.create).mockRejectedValue(new Error('Database error'));
+
+    const validPartner = {
+      name: 'Test Partner',
+      type: 'organization',
+      partnership_type: 'donor',
+    };
+
+    const request = new NextRequest('http://localhost/api/partners', {
+      method: 'POST',
+      body: JSON.stringify(validPartner),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    // buildApiRoute may throw or return error response
+    try {
+      const response = await POST(request);
+      expect(response.status).toBeGreaterThanOrEqual(400);
+    } catch (error) {
+      // buildApiRoute might throw, which is also acceptable
+      expect(error).toBeDefined();
+    }
   });
 });

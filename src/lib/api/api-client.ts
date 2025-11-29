@@ -696,6 +696,39 @@ export const apiClient = {
       });
     },
   },
+
+  // Monitoring
+  monitoring: {
+    getEnhancedKPIs: async (): Promise<ConvexResponse<any>> => {
+      return apiRequest<any>('/api/monitoring/kpis');
+    },
+    getDashboardStats: async (): Promise<ConvexResponse<any>> => {
+      return apiRequest<any>('/api/monitoring/stats');
+    },
+    getCurrencyRates: async (): Promise<ConvexResponse<any>> => {
+      return apiRequest<any>('/api/monitoring/currency');
+    },
+  },
+
+  // Analytics
+  analytics: {
+    trackEvent: async (data: {
+      event: string;
+      properties?: Record<string, unknown>;
+      userId?: string;
+      sessionId?: string;
+    }): Promise<ConvexResponse<any>> => {
+      return apiRequest<any>('/api/analytics', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+    getStats: async (params?: { limit?: number }): Promise<ConvexResponse<any>> => {
+      const searchParams = new URLSearchParams();
+      if (params?.limit) searchParams.set('limit', params.limit.toString());
+      return apiRequest<any>(`/api/analytics?${searchParams.toString()}`);
+    },
+  },
 };
 
 // Cache Management Utilities

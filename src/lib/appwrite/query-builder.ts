@@ -1,11 +1,11 @@
 /**
  * Appwrite Query Builder
- * 
+ *
  * Fluent API for building Appwrite database queries
  * Provides type-safe and chainable query construction
  */
 
-import { Query } from 'appwrite';
+import { Query } from "appwrite";
 
 export class AppwriteQueryBuilder {
   private queries: string[] = [];
@@ -29,11 +29,11 @@ export class AppwriteQueryBuilder {
   /**
    * Order by field
    */
-  orderBy(field: string, direction: 'asc' | 'desc' = 'asc'): this {
+  orderBy(field: string, direction: "asc" | "desc" = "asc"): this {
     // Remove existing order for this field if any
     this.queries = this.queries.filter((q) => !q.includes(`order("${field}"`));
-    
-    if (direction === 'desc') {
+
+    if (direction === "desc") {
       this.queries.push(Query.orderDesc(field));
     } else {
       this.queries.push(Query.orderAsc(field));
@@ -134,7 +134,7 @@ export class AppwriteQueryBuilder {
 
   /**
    * Filter by array contains any
-   * Note: Appwrite doesn't have containsAny, so we use multiple contains queries
+   * Note: Appwrite doesn't have containsAny, so we use multiple contains queries with OR
    */
   containsAny(field: string, values: (string | number)[]): this {
     if (values.length > 0) {
@@ -203,20 +203,23 @@ export function createQueryBuilder(): AppwriteQueryBuilder {
 /**
  * Helper function for common pagination pattern
  */
-export function paginationQuery(page: number = 1, limit: number = 20): AppwriteQueryBuilder {
-  return new AppwriteQueryBuilder()
-    .limit(limit)
-    .offset((page - 1) * limit);
+export function paginationQuery(
+  page: number = 1,
+  limit: number = 20,
+): AppwriteQueryBuilder {
+  return new AppwriteQueryBuilder().limit(limit).offset((page - 1) * limit);
 }
 
 /**
  * Helper function for common search pattern
  */
-export function searchQuery(searchField: string, searchTerm: string): AppwriteQueryBuilder {
+export function searchQuery(
+  searchField: string,
+  searchTerm: string,
+): AppwriteQueryBuilder {
   const builder = new AppwriteQueryBuilder();
   if (searchTerm.trim()) {
     builder.search(searchField, searchTerm);
   }
   return builder;
 }
-

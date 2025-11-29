@@ -101,6 +101,7 @@ const eslintConfig = defineConfig([
     'coverage/**',
     'dist/**',
     'src/lib/performance-monitor.tsx',
+    'git/**', // Ignore git submodule
   ]),
 ]);
 

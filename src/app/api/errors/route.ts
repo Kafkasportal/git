@@ -42,7 +42,6 @@ const createErrorSchema = z.object({
   tags: z.array(z.string()).optional(),
   metadata: z.any().optional(),
   fingerprint: z.string().optional(),
-  sentry_event_id: z.string().optional(),
 });
 
 /**

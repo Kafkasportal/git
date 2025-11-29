@@ -24,8 +24,8 @@ export const oauthAuth = {
 
     try {
       const account = new Account(client);
-      const successUrl = redirectUrl || `${window.location.origin}/auth/callback`;
-      const failureUrl = `${window.location.origin}/auth/callback?error=oauth_failed`;
+      const successUrl = redirectUrl || `${window.location.origin}/api/auth/oauth/callback`;
+      const failureUrl = `${window.location.origin}/login?error=oauth_failed`;
 
       account.createOAuth2Session(OAuthProvider.Google, successUrl, failureUrl);
     } catch (error) {
@@ -44,8 +44,8 @@ export const oauthAuth = {
 
     try {
       const account = new Account(client);
-      const successUrl = redirectUrl || `${window.location.origin}/auth/callback`;
-      const failureUrl = `${window.location.origin}/auth/callback?error=oauth_failed`;
+      const successUrl = redirectUrl || `${window.location.origin}/api/auth/oauth/callback`;
+      const failureUrl = `${window.location.origin}/login?error=oauth_failed`;
 
       account.createOAuth2Session(OAuthProvider.Github, successUrl, failureUrl);
     } catch (error) {
@@ -64,8 +64,8 @@ export const oauthAuth = {
 
     try {
       const account = new Account(client);
-      const successUrl = redirectUrl || `${window.location.origin}/auth/callback`;
-      const failureUrl = `${window.location.origin}/auth/callback?error=oauth_failed`;
+      const successUrl = redirectUrl || `${window.location.origin}/api/auth/oauth/callback`;
+      const failureUrl = `${window.location.origin}/login?error=oauth_failed`;
 
       account.createOAuth2Session(OAuthProvider.Microsoft, successUrl, failureUrl);
     } catch (error) {
@@ -84,8 +84,8 @@ export const oauthAuth = {
 
     try {
       const account = new Account(client);
-      const successUrl = redirectUrl || `${window.location.origin}/auth/callback`;
-      const failureUrl = `${window.location.origin}/auth/callback?error=oauth_failed`;
+      const successUrl = redirectUrl || `${window.location.origin}/api/auth/oauth/callback`;
+      const failureUrl = `${window.location.origin}/login?error=oauth_failed`;
 
       account.createOAuth2Session(provider, successUrl, failureUrl);
     } catch (error) {

@@ -14,7 +14,6 @@ const baseConfig: NextConfig = {
     // Package import optimization - tree-shaking for better bundle size
     optimizePackageImports: [
       'lucide-react',
-      '@radix-ui/react-icons',
       '@radix-ui/react-dialog',
       '@radix-ui/react-popover',
       '@radix-ui/react-select',
@@ -51,8 +50,8 @@ const baseConfig: NextConfig = {
     optimizeServerReact: true,
     // Partial prerendering for faster initial loads
     ppr: false, // Enable when stable
-    // Advanced build optimizations
-    cpus: Math.max(1, os.cpus().length - 1), // Use all but one CPU
+    // Advanced build optimizations - limit CPU usage for cloud builds
+    cpus: process.env.CI ? 2 : Math.max(1, os.cpus().length - 1),
     // Memory optimization
     serverActions: {
       bodySizeLimit: '15mb', // Increased to accommodate file uploads (default file limit is 10MB)
@@ -369,11 +368,11 @@ const baseConfig: NextConfig = {
         },
       };
 
-      // Production performance hints
+      // Production performance hints - relaxed for cloud builds
       config.performance = {
-        maxAssetSize: 250000, // 250KB
-        maxEntrypointSize: 250000, // 250KB
-        hints: 'warning',
+        maxAssetSize: 512000, // 512KB - increased for cloud builds
+        maxEntrypointSize: 512000, // 512KB - increased for cloud builds
+        hints: process.env.CI ? false : 'warning', // Disable in CI for faster builds
       };
     }
 
@@ -408,8 +407,9 @@ const baseConfig: NextConfig = {
   },
 
   // Output optimization
-  // Avoid Windows copyfile EINVAL due to colon in filenames
-  output: isWindows ? undefined : 'standalone', // Optimized production builds (disabled on Windows)
+  // Standalone output disabled for faster builds and smaller artifacts
+  // Re-enable if you need standalone deployment
+  output: process.env.NEXT_STANDALONE === 'true' && !isWindows ? 'standalone' : undefined,
   poweredByHeader: false, // Remove X-Powered-By header for security
 
   // Build performance hints

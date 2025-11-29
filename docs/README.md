@@ -1,187 +1,160 @@
-# Kafkasder Panel - Teknik Dokumantasyon
+# 📘 Dernek Yönetim Sistemi - Dokümantasyon
 
-Bu klasor projenin tum teknik dokumantasyonunu icerir.
+## 📋 İçindekiler
 
-## Icerik
+1. [Proje Hakkında](#proje-hakkında)
+2. [Hızlı Başlangıç](./getting-started.md)
+3. [Mimari Yapı](./architecture.md)
+4. [API Referansı](./api-reference.md)
+5. [Bileşen Kütüphanesi](./components.md)
+6. [Veritabanı Şeması](./database-schema.md)
+7. [Güvenlik](./security.md)
+8. [Yetkilendirme Sistemi](./authorization.md)
+9. [Form Yönetimi](./forms.md)
+10. [Test Yazımı](./testing.md)
 
-| Dosya                                                        | Aciklama                                       |
-| ------------------------------------------------------------ | ---------------------------------------------- |
-| [PROJECT_ANALYSIS.md](./PROJECT_ANALYSIS.md)                 | Kapsamli proje analizi ve mimari dokumantasyonu |
-| [setup.md](./setup.md)                                       | Yerel ortam kurulum rehberi                    |
-| [mcp-setup.md](./mcp-setup.md)                               | MCP sunuculari kurulum ve kullanim rehberi     |
-| [claude-desktop-mcp-setup.md](./claude-desktop-mcp-setup.md) | Claude Desktop MCP yapilandirmasi              |
-| [cursor-mcp-windows.md](./cursor-mcp-windows.md)             | Windows'ta Cursor IDE MCP yapilandirmasi      |
-| [appwrite-mcp.md](./appwrite-mcp.md)                         | Appwrite MCP kullanim kilavuzu                 |
-| [appwrite-guide.md](./appwrite-guide.md)                     | Appwrite kullanim rehberi ve ornekler          |
-| [github-mcp-server.md](./github-mcp-server.md)               | GitHub MCP sunucusu kullanim kilavuzu          |
-| [docker-mcp-setup.md](./docker-mcp-setup.md)                 | Docker MCP Toolkit kurulum rehberi             |
-| [docker-mcp-registry-contribution.md](./docker-mcp-registry-contribution.md) | Docker MCP Registry'ye katki rehberi |
-| [docker-ci-setup.md](./docker-ci-setup.md)                  | Docker CI/CD GitHub Actions kurulum rehberi    |
-| [playwright-mcp-browser.md](./playwright-mcp-browser.md)    | Browser MCP (Playwright) kullanim rehberi      |
-| [browser-mcp-examples.md](./browser-mcp-examples.md)         | Browser MCP ornekleri                          |
-| [testing.md](./testing.md)                                   | Test altyapisi ve yazim rehberi                |
-| [test-coverage-report.md](./test-coverage-report.md)         | Test coverage analizi ve raporu               |
-| [api-patterns.md](./api-patterns.md)                         | API route standartlari ve middleware kullanimi |
-| [appwrite-schema-reference.md](./appwrite-schema-reference.md) | Appwrite veritabani schema referansi         |
-| [api-routes-reference.md](./api-routes-reference.md)         | API route'lar referans dokumantasyonu        |
-| [component-library-reference.md](./component-library-reference.md) | UI component kutuphanesi referansi           |
-| [ISSUES.md](./ISSUES.md)                                     | Acik issue'lar ve ozellik istekleri            |
-| [TODO.md](./TODO.md)                                         | Yapilmasi gerekenler listesi ve oncelik sirasi |
+---
 
-## Hizli Erisim
+## 🎯 Proje Hakkında
 
-### Proje Yapisi
+**Dernek Yönetim Sistemi**, sivil toplum kuruluşları için geliştirilmiş modern bir yönetim platformudur. Bağış takibi, ihtiyaç sahibi yönetimi, burs programları, finansal operasyonlar ve iletişim süreçlerini tek bir çatı altında toplar.
+
+### 🔧 Teknoloji Yığını
+
+| Kategori | Teknoloji | Sürüm |
+|----------|-----------|-------|
+| **Framework** | Next.js | 16.x |
+| **Dil** | TypeScript | 5.x |
+| **Backend** | Appwrite | 21.x |
+| **State Yönetimi** | Zustand | 5.x |
+| **Veri Çekme** | TanStack React Query | 5.x |
+| **Form Yönetimi** | React Hook Form + Zod | 7.x / 4.x |
+| **UI Bileşenleri** | Radix UI + Tailwind CSS | 4.x |
+| **Animasyonlar** | Framer Motion | 12.x |
+| **Tablo** | TanStack Table | 8.x |
+| **Grafikler** | Recharts | 3.x |
+| **AI Entegrasyonu** | Vercel AI SDK | 5.x |
+| **Test** | Vitest + Testing Library | 4.x |
+
+### 🏗️ Proje Yapısı
 
 ```
-Kafkasder-panel/
-├── src/
-│   ├── app/                 # Next.js App Router sayfalari
-│   │   ├── (dashboard)/     # Dashboard layout grubu
-│   │   ├── api/             # API route'lari (Appwrite proxy)
-│   │   └── login/           # Giris sayfasi
-│   ├── components/          # React componentleri
-│   │   └── ui/              # Radix UI temel componentleri
-│   ├── lib/                 # Utility fonksiyonlariSDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDpers
-│   │   └── validations/     # Zod validation semalari
-│   ├── hooks/               # Custom React hooks
-│   ├── stores/              # Zustand state yonetimi
-│   └── types/               # TypeScript type tanimlari
-├── src/lib/appwrite/        # Appwrite backend
-│   ├── config.ts            # Yapilandirma
-│   └── client.ts            # Client/Server SDK
-├── e2e/                     # Playwright E2E testleri
-└── docs/                    # Teknik dokumantasyon
+src/
+├── app/                    # Next.js App Router
+│   ├── (dashboard)/       # Dashboard sayfaları (korumalı)
+│   ├── api/               # API Route'ları
+│   ├── auth/              # Auth sayfaları
+│   └── login/             # Giriş sayfası
+├── components/            # React Bileşenleri
+│   ├── ui/               # Temel UI bileşenleri
+│   ├── forms/            # Form bileşenleri
+│   └── [feature]/        # Özellik-bazlı bileşenler
+├── hooks/                 # Custom React Hooks
+├── lib/                   # Yardımcı kütüphaneler
+│   ├── api/              # API istemci katmanı
+│   ├── appwrite/         # Appwrite SDK wrapper
+│   ├── validations/      # Zod şemaları
+│   └── security/         # Güvenlik araçları
+├── stores/                # Zustand state store'ları
+├── types/                 # TypeScript tip tanımları
+├── config/                # Uygulama konfigürasyonu
+└── contexts/              # React Context'ler
 ```
 
-### Temel Komutlar
+### 📦 Ana Modüller
+
+| Modül | Açıklama | Rota |
+|-------|----------|------|
+| **Bağış Yönetimi** | Bağış kayıtları, raporlar, kumbara sistemi | `/bagis/*` |
+| **Yardım Programları** | İhtiyaç sahipleri, başvurular, nakit yardım | `/yardim/*` |
+| **Burs Sistemi** | Öğrenci bursları, başvurular, yetim destek | `/burs/*` |
+| **Finansal Yönetim** | Gelir-gider takibi, mali raporlar | `/fon/*` |
+| **İletişim** | SMS, e-posta, toplu mesaj, WhatsApp | `/mesaj/*` |
+| **İş Yönetimi** | Görevler, toplantılar, karar takibi | `/is/*` |
+| **Ortak Yönetimi** | Partner kuruluşlar | `/partner/*` |
+| **Kullanıcı Yönetimi** | Roller, yetkiler, denetim kayıtları | `/kullanici/*` |
+| **Sistem Ayarları** | Tema, marka, güvenlik, parametreler | `/ayarlar/*` |
+
+### 🔐 Güvenlik Özellikleri
+
+- ✅ CSRF koruması (token-based)
+- ✅ Rate limiting (IP ve kullanıcı bazlı)
+- ✅ HttpOnly cookie oturumları
+- ✅ Rol tabanlı erişim kontrolü (RBAC)
+- ✅ Input sanitizasyonu (DOMPurify)
+- ✅ TC Kimlik No algoritma doğrulaması
+- ✅ Dosya yükleme güvenliği
+- ✅ Audit logging (KVKK/GDPR uyumlu)
+
+### 📱 PWA Özellikleri
+
+- ✅ Offline çalışma desteği
+- ✅ Service Worker
+- ✅ App manifest
+- ✅ Ağ durumu göstergesi
+
+---
+
+## 🚀 Hızlı Başlangıç
+
+### Gereksinimler
+
+- Node.js 20.x
+- npm 9.x veya üzeri
+- Appwrite sunucusu (Cloud veya Self-hosted)
+
+### Kurulum
 
 ```bash
-# Development
-npm run dev              # Next.js dev server (localhost:3000)
+# Bağımlılıkları yükle
+npm install
 
-# Kod Kalitesi
-npm run typecheck        # TypeScript tip kontrolu
-npm run lint             # ESLint kontrolu
-npm run lint:fix         # ESLint hatalari duzelt
-npm run format           # Prettier ile formatla
+# Appwrite kurulumu
+npm run appwrite:setup
 
-# Test
-npm run test             # Unit testleri (watch mode)
-npm run test:run         # Testleri bir kez calistir
-npm run test:coverage    # Coverage raporu
-npm run test:e2e         # E2E testleri
-
-# Build & Deploy
-npm run build            # Production build
+# Geliştirme sunucusunu başlat
+npm run dev
 ```
 
-### Teknoloji Yigini
+### Ortam Değişkenleri
 
-| Kategori       | Teknoloji                                 |
-| -------------- | ----------------------------------------- |
-| **Frontend**   | Next.js 16, React 19, TypeScript          |
-| **Backend**    | Appwrite (serverless database)            |
-| **Styling**    | Tailwind CSS 4, Radix UI                  |
-| **State**      | Zustand (client), TanStack Query (server) |
-| **Forms**      | React Hook Form + Zod                     |
-| **Testing**    | Vitest (unit), Playwright (E2E)           |
-| **Deployment** | Appwrite Cloud                     |
+`.env.local` dosyası oluşturun:
 
-### Mimari Prensipler
+```env
+# Appwrite Konfigürasyonu
+NEXT_PUBLIC_APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1
+NEXT_PUBLIC_APPWRITE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_APPWRITE_DATABASE_ID=your-database-id
+APPWRITE_API_KEY=your-api-key
 
-#### 1. Appwrite-First Backend
+# Storage Bucket'ları
+NEXT_PUBLIC_APPWRITE_BUCKET_DOCUMENTS=documents
+NEXT_PUBLIC_APPWRITE_BUCKET_AVATARS=avatars
+NEXT_PUBLIC_APPWRITE_BUCKET_RECEIPTS=receipts
 
-Appwrite birincil backend'dir. Next.js API route'lari sadece proxy gorevindedir:
-
-- Tum veritabani islemleri `src/lib/appwrite/` klasorunde
-- API route'lari rate limiting, CSRF ve auth middleware saglar
-- Real-time updates Appwrite tarafindan yonetilir
-
-#### 2. Type-Safe Her Sey
-
-- TypeScript strict mode aktif
-- Zod ile runtime validation
-- Appwrite schema validators zorunlu
-
-#### 3. Guvenlik Oncelikli
-
-- CSRF korumasi tum mutation endpoint'lerinde
-- Rate limiting endpoint bazinda yapilandirilir
-- Input sanitization (DOMPurify)
-- Audit logging tum kritik islemlerde
-
-## Detayli Rehberler
-
-### Yeni Ozellik Ekleme
-
-1. **Appwrite Collection** - Appwrite Console'da collection olustur
-2. **Config** - `src/lib/appwrite/config.ts`'e collection ID ekle
-3. **API Route** - `src/app/api/[resource]/route.ts` ekle
-4. **Validation** - `src/lib/validations/` altina Zod semasi ekle
-5. **UI** - Component ve sayfa olustur
-
-### Form Olusturma
-
-```typescript
-import { useStandardForm } from '@/hooks/useStandardForm';
-import { beneficiarySchema } from '@/lib/validations/beneficiary';
-
-function MyForm({ onSuccess }) {
-  const form = useStandardForm({
-    defaultValues: { name: '', status: 'active' },
-    schema: beneficiarySchema,
-    mutationFn: (data) => api.create(data),
-    onSuccess,
-  });
-
-  return <form onSubmit={form.handleSubmit}>...</form>;
-}
+# Rate Limiting (Opsiyonel)
+RATE_LIMIT_DEFAULT_MAX=100
+RATE_LIMIT_DEFAULT_WINDOW=900000
+RATE_LIMIT_PREMIUM_MULTIPLIER=2.0
 ```
 
-### API Client Kullanimi
+---
 
-```typescript
-import { beneficiaries } from '@/lib/api/crud-factory';
+## 📖 Detaylı Dokümantasyon
 
-// CRUD islemleri
-const list = await beneficiaries.list({ status: 'active' });
-const item = await beneficiaries.get(id);
-const created = await beneficiaries.create(data);
-await beneficiaries.update(id, updates);
-await beneficiaries.delete(id);
-```
+Daha fazla bilgi için ilgili dokümantasyon sayfalarını inceleyin:
 
-## Onemli Kurallar
+- **[Mimari Yapı](./architecture.md)** - Uygulama mimarisi ve tasarım kararları
+- **[API Referansı](./api-reference.md)** - Tüm API endpoint'leri
+- **[Bileşen Kütüphanesi](./components.md)** - UI bileşenleri kullanım rehberi
+- **[Veritabanı Şeması](./database-schema.md)** - Appwrite collection yapıları
+- **[Güvenlik](./security.md)** - Güvenlik implementasyonları
+- **[Yetkilendirme](./authorization.md)** - Rol ve izin sistemi
+- **[Form Yönetimi](./forms.md)** - Form yapıları ve validasyonlar
+- **[Test Yazımı](./testing.md)** - Test stratejileri ve örnekler
 
-1. **console.log YASAK** - `src/lib/logger.ts` kullan
-2. **Zod validation** - Tum inputlar validate edilmeli
-3. **Prettier/ESLint** - Commit oncesi kontrol edilir
+---
 
-## MCP (Model Context Protocol) Dokümantasyonu
+## 📝 Lisans
 
-### Hızlı Başlangıç
-- [MCP Setup Guide](./mcp-setup.md) - Genel MCP kurulum rehberi
-- [Cursor IDE MCP (Windows)](./cursor-mcp-windows.md) - Windows özel yapılandırma
-- [Claude Desktop MCP](./claude-desktop-mcp-setup.md) - Claude Desktop yapılandırması
-
-### MCP Sunucuları
-- [Appwrite MCP](./appwrite-mcp.md) - Appwrite kullanıcı yönetimi
-- [GitHub MCP](./github-mcp-server.md) - GitHub repository yönetimi
-- [Docker MCP](./docker-mcp-setup.md) - Docker MCP Toolkit
-- [Browser MCP](./playwright-mcp-browser.md) - Web tarayıcı otomasyonu
-
-### Docker & CI/CD
-- [Docker CI/CD Setup](./docker-ci-setup.md) - GitHub Actions Docker build
-- [Docker MCP Registry](./docker-mcp-registry-contribution.md) - Registry'ye katkı
-
-## Daha Fazla Bilgi
-
-- [Appwrite Rehberi](./appwrite-guide.md)
-- [Appwrite Schema Reference](./appwrite-schema-reference.md)
-- [API Routes Reference](./api-routes-reference.md)
-- [Component Library Reference](./component-library-reference.md)
-- [Test Rehberi](./testing.md)
-- [Test Coverage Report](./test-coverage-report.md)
-- [API Patterns](./api-patterns.md)
-- [Contributing](../CONTRIBUTING.md)
-- [Security Policy](../SECURITY.md)
+Bu proje özel lisans altındadır. Detaylar için [LICENSE](../LICENSE) dosyasına bakın.

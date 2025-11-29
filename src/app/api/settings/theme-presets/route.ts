@@ -3,17 +3,25 @@
  * Handles CRUD operations for theme presets
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { appwriteThemePresets } from '@/lib/appwrite/api';
-import logger from '@/lib/logger';
+import { NextRequest, NextResponse } from "next/server";
+import { appwriteThemePresets } from "@/lib/appwrite/api";
+import logger from "@/lib/logger";
 import {
   requireAuthenticatedUser,
   verifyCsrfToken,
   buildErrorResponse,
-} from '@/lib/api/auth-utils';
-import { readOnlyRateLimit, dataModificationRateLimit } from '@/lib/rate-limit';
-import { themePresetSchema, type ThemePresetFormData } from '@/lib/validations/theme';
-import type { ThemePreset } from '@/contexts/settings-context';
+} from "@/lib/api/auth-utils";
+import { readOnlyRateLimit, dataModificationRateLimit } from "@/lib/rate-limit";
+import {
+  themePresetSchema,
+  type ThemePresetFormData,
+} from "@/lib/validations/theme";
+import type {
+  ThemeColors,
+  ThemeTypography,
+  ThemeLayout,
+} from "@/contexts/settings-context";
+import type { ThemePreset } from "@/contexts/settings-context";
 
 /**
  * GET - Get all theme presets
@@ -23,10 +31,13 @@ async function getThemePresetsHandler(_request: NextRequest) {
   try {
     // Require authentication with settings:manage permission
     const { user } = await requireAuthenticatedUser();
-    if (!user.permissions.includes('settings:manage')) {
+    if (!user.permissions.includes("settings:manage")) {
       return NextResponse.json(
-        { success: false, error: 'Bu işlemi gerçekleştirmek için yetkiniz yok' },
-        { status: 403 }
+        {
+          success: false,
+          error: "Bu işlemi gerçekleştirmek için yetkiniz yok",
+        },
+        { status: 403 },
       );
     }
 
@@ -34,23 +45,16 @@ async function getThemePresetsHandler(_request: NextRequest) {
     const presets = await appwriteThemePresets.list();
 
     // Parse and format theme presets
-    const formattedPresets: ThemePreset[] = presets.map((preset: {
-      $id?: string;
-      _id?: string;
-      name: string;
-      description: string;
-      theme_config?: string | Record<string, unknown>;
-      is_default?: boolean;
-      is_custom?: boolean;
-    }) => {
+    const formattedPresets: ThemePreset[] = presets.map((preset: any) => {
       // Parse theme_config JSON string
       let themeConfig: Record<string, unknown> = {};
       try {
-        themeConfig = typeof preset.theme_config === 'string' 
-          ? JSON.parse(preset.theme_config) 
-          : preset.theme_config || {};
+        themeConfig =
+          typeof preset.theme_config === "string"
+            ? JSON.parse(preset.theme_config)
+            : preset.theme_config || {};
       } catch (error) {
-        logger.error('Failed to parse theme_config', { error, preset });
+        logger.error("Failed to parse theme_config", { error, preset });
         themeConfig = {};
       }
 
@@ -58,9 +62,15 @@ async function getThemePresetsHandler(_request: NextRequest) {
         _id: preset.$id || preset._id,
         name: preset.name,
         description: preset.description,
-        colors: themeConfig.colors || {},
-        typography: themeConfig.typography,
-        layout: themeConfig.layout,
+        colors: (themeConfig.colors as ThemeColors) || {
+          primary: "#3b82f6",
+          secondary: "#64748b",
+          accent: "#f59e0b",
+          background: "#ffffff",
+          foreground: "#0f172a",
+        },
+        typography: themeConfig.typography as ThemeTypography,
+        layout: themeConfig.layout as ThemeLayout,
         isDefault: preset.is_default === true,
         isCustom: preset.is_custom === true,
       };
@@ -76,10 +86,10 @@ async function getThemePresetsHandler(_request: NextRequest) {
       return NextResponse.json(authError.body, { status: authError.status });
     }
 
-    logger.error('Theme presets GET error', error);
+    logger.error("Theme presets GET error", error);
     return NextResponse.json(
-      { success: false, error: 'Tema ayarları alınırken hata oluştu' },
-      { status: 500 }
+      { success: false, error: "Tema ayarları alınırken hata oluştu" },
+      { status: 500 },
     );
   }
 }
@@ -95,25 +105,28 @@ async function createThemePresetHandler(request: NextRequest) {
 
     // Require authentication with settings:manage permission
     const { user } = await requireAuthenticatedUser();
-    if (!user.permissions.includes('settings:manage')) {
+    if (!user.permissions.includes("settings:manage")) {
       return NextResponse.json(
-        { success: false, error: 'Bu işlemi gerçekleştirmek için yetkiniz yok' },
-        { status: 403 }
+        {
+          success: false,
+          error: "Bu işlemi gerçekleştirmek için yetkiniz yok",
+        },
+        { status: 403 },
       );
     }
 
     const body = await request.json();
-    
+
     // Validate request body
     const validationResult = themePresetSchema.safeParse(body);
     if (!validationResult.success) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Geçersiz veri',
+          error: "Geçersiz veri",
           details: validationResult.error.issues,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -141,16 +154,16 @@ async function createThemePresetHandler(request: NextRequest) {
     // Map UI fields to database format
     const createData = {
       name: data.name,
-      description: data.description || '',
+      description: data.description || "",
       theme_config: JSON.stringify(themeConfig),
       is_default: data.isDefault || false,
       is_custom: data.isCustom || false,
       created_by: user.id,
       created_at: new Date().toISOString(),
-    };
+    } as const;
 
     // Create theme preset
-    const newPreset = await appwriteThemePresets.create(createData) as {
+    const newPreset = (await appwriteThemePresets.create(createData)) as {
       $id?: string;
       _id?: string;
       name: string;
@@ -163,20 +176,27 @@ async function createThemePresetHandler(request: NextRequest) {
     // Format response
     let themeConfigParsed: Record<string, unknown> = {};
     try {
-      themeConfigParsed = typeof newPreset.theme_config === 'string'
-        ? JSON.parse(newPreset.theme_config)
-        : newPreset.theme_config || {};
+      themeConfigParsed =
+        typeof newPreset.theme_config === "string"
+          ? JSON.parse(newPreset.theme_config)
+          : newPreset.theme_config || {};
     } catch (error) {
-      logger.error('Failed to parse created theme_config', { error });
+      logger.error("Failed to parse created theme_config", { error });
     }
 
     const formattedPreset: ThemePreset = {
-      _id: newPreset.$id || newPreset._id || '',
+      _id: newPreset.$id || newPreset._id || "",
       name: newPreset.name,
       description: newPreset.description,
-      colors: themeConfigParsed.colors || {},
-      typography: themeConfigParsed.typography,
-      layout: themeConfigParsed.layout,
+      colors: (themeConfigParsed.colors as ThemeColors) || {
+        primary: "#3b82f6",
+        secondary: "#64748b",
+        accent: "#f59e0b",
+        background: "#ffffff",
+        foreground: "#0f172a",
+      },
+      typography: themeConfigParsed.typography as ThemeTypography,
+      layout: themeConfigParsed.layout as ThemeLayout,
       isDefault: newPreset.is_default === true,
       isCustom: newPreset.is_custom === true,
     };
@@ -185,9 +205,9 @@ async function createThemePresetHandler(request: NextRequest) {
       {
         success: true,
         data: formattedPreset,
-        message: 'Tema başarıyla oluşturuldu',
+        message: "Tema başarıyla oluşturuldu",
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     const authError = buildErrorResponse(error);
@@ -195,10 +215,10 @@ async function createThemePresetHandler(request: NextRequest) {
       return NextResponse.json(authError.body, { status: authError.status });
     }
 
-    logger.error('Theme preset POST error', error);
+    logger.error("Theme preset POST error", error);
     return NextResponse.json(
-      { success: false, error: 'Tema oluşturulurken hata oluştu' },
-      { status: 500 }
+      { success: false, error: "Tema oluşturulurken hata oluştu" },
+      { status: 500 },
     );
   }
 }
@@ -214,10 +234,13 @@ async function updateThemePresetHandler(request: NextRequest) {
 
     // Require authentication with settings:manage permission
     const { user } = await requireAuthenticatedUser();
-    if (!user.permissions.includes('settings:manage')) {
+    if (!user.permissions.includes("settings:manage")) {
       return NextResponse.json(
-        { success: false, error: 'Bu işlemi gerçekleştirmek için yetkiniz yok' },
-        { status: 403 }
+        {
+          success: false,
+          error: "Bu işlemi gerçekleştirmek için yetkiniz yok",
+        },
+        { status: 403 },
       );
     }
 
@@ -226,8 +249,8 @@ async function updateThemePresetHandler(request: NextRequest) {
 
     if (!id) {
       return NextResponse.json(
-        { success: false, error: 'Tema ID gerekli' },
-        { status: 400 }
+        { success: false, error: "Tema ID gerekli" },
+        { status: 400 },
       );
     }
 
@@ -237,10 +260,10 @@ async function updateThemePresetHandler(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Geçersiz veri',
+          error: "Geçersiz veri",
           details: validationResult.error.issues,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -268,7 +291,7 @@ async function updateThemePresetHandler(request: NextRequest) {
     // Map UI fields to database format
     const dbUpdateData = {
       name: validatedData.name,
-      description: validatedData.description || '',
+      description: validatedData.description || "",
       theme_config: JSON.stringify(themeConfig),
       is_default: validatedData.isDefault || false,
       is_custom: validatedData.isCustom || false,
@@ -279,7 +302,7 @@ async function updateThemePresetHandler(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Tema başarıyla güncellendi',
+      message: "Tema başarıyla güncellendi",
     });
   } catch (error) {
     const authError = buildErrorResponse(error);
@@ -287,10 +310,10 @@ async function updateThemePresetHandler(request: NextRequest) {
       return NextResponse.json(authError.body, { status: authError.status });
     }
 
-    logger.error('Theme preset PUT error', error);
+    logger.error("Theme preset PUT error", error);
     return NextResponse.json(
-      { success: false, error: 'Tema güncellenirken hata oluştu' },
-      { status: 500 }
+      { success: false, error: "Tema güncellenirken hata oluştu" },
+      { status: 500 },
     );
   }
 }
@@ -306,29 +329,34 @@ async function deleteThemePresetHandler(request: NextRequest) {
 
     // Require authentication with settings:manage permission
     const { user } = await requireAuthenticatedUser();
-    if (!user.permissions.includes('settings:manage')) {
+    if (!user.permissions.includes("settings:manage")) {
       return NextResponse.json(
-        { success: false, error: 'Bu işlemi gerçekleştirmek için yetkiniz yok' },
-        { status: 403 }
+        {
+          success: false,
+          error: "Bu işlemi gerçekleştirmek için yetkiniz yok",
+        },
+        { status: 403 },
       );
     }
 
     const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    const id = searchParams.get("id");
 
     if (!id) {
       return NextResponse.json(
-        { success: false, error: 'Tema ID gerekli' },
-        { status: 400 }
+        { success: false, error: "Tema ID gerekli" },
+        { status: 400 },
       );
     }
 
     // Check if the preset is the default
-    const preset = await appwriteThemePresets.get(id) as { is_default?: boolean } | null;
+    const preset = (await appwriteThemePresets.get(id)) as {
+      is_default?: boolean;
+    } | null;
     if (preset?.is_default === true) {
       return NextResponse.json(
-        { success: false, error: 'Varsayılan tema silinemez' },
-        { status: 400 }
+        { success: false, error: "Varsayılan tema silinemez" },
+        { status: 400 },
       );
     }
 
@@ -337,7 +365,7 @@ async function deleteThemePresetHandler(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Tema başarıyla silindi',
+      message: "Tema başarıyla silindi",
     });
   } catch (error) {
     const authError = buildErrorResponse(error);
@@ -345,10 +373,10 @@ async function deleteThemePresetHandler(request: NextRequest) {
       return NextResponse.json(authError.body, { status: authError.status });
     }
 
-    logger.error('Theme preset DELETE error', error);
+    logger.error("Theme preset DELETE error", error);
     return NextResponse.json(
-      { success: false, error: 'Tema silinirken hata oluştu' },
-      { status: 500 }
+      { success: false, error: "Tema silinirken hata oluştu" },
+      { status: 500 },
     );
   }
 }
@@ -358,4 +386,3 @@ export const GET = readOnlyRateLimit(getThemePresetsHandler);
 export const POST = dataModificationRateLimit(createThemePresetHandler);
 export const PUT = dataModificationRateLimit(updateThemePresetHandler);
 export const DELETE = dataModificationRateLimit(deleteThemePresetHandler);
-

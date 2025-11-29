@@ -9,7 +9,9 @@ import { KPICard } from '@/components/ui/kpi-card';
 import { CurrencyWidget } from '@/components/ui/currency-widget';
 import { PageLayout } from '@/components/layouts/PageLayout';
 import { DemoBanner } from '@/components/ui/demo-banner';
-// api removed
+import { useQuery } from '@tanstack/react-query';
+import api from '@/lib/api';
+
 import {
   Users,
   Heart,
@@ -76,48 +78,51 @@ const DynamicCell = dynamic(() => import('recharts').then((mod) => mod.Cell), { 
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuthStore();
 
-  // Mock data for Appwrite migration
-  const enhancedKPIs = {
-    pendingOperations: { total: 0, tasks: 0, applications: 0, trend: 0 },
-    trackedWorkItems: { total: 0, active: 0, trend: 0 },
-    calendarEvents: { total: 0, upcoming: 0, trend: 0 },
-    plannedMeetings: { total: 0, thisWeek: 0 },
-  };
+  // Fetch real data
+  const { data: enhancedKPIs } = useQuery({
+    queryKey: ['monitoring', 'kpis'],
+    queryFn: async () => {
+      const res = await api.monitoring.getEnhancedKPIs();
+      if (!res.data) throw new Error(res.error || 'Failed to fetch KPIs');
+      return res.data;
+    },
+    initialData: {
+      pendingOperations: { total: 0, tasks: 0, applications: 0, trend: 0 },
+      trackedWorkItems: { total: 0, active: 0, trend: 0 },
+      calendarEvents: { total: 0, upcoming: 0, trend: 0 },
+      plannedMeetings: { total: 0, thisWeek: 0 },
+    },
+  });
 
-  const dashboardStats = {
-    beneficiaries: { total: 0, recent: 0 },
-    donations: { total: 0, recent: 0, totalAmount: 0 },
-    users: { active: 0 },
-  };
+  const { data: dashboardStats } = useQuery({
+    queryKey: ['monitoring', 'stats'],
+    queryFn: async () => {
+      const res = await api.monitoring.getDashboardStats();
+      if (!res.data) throw new Error(res.error || 'Failed to fetch stats');
+      return res.data;
+    },
+    initialData: {
+      beneficiaries: { total: 0, recent: 0 },
+      donations: { total: 0, recent: 0, totalAmount: 0 },
+      users: { active: 0 },
+    },
+  });
 
-  const currencyData = {
-    rates: [],
-    lastUpdate: new Date().toISOString(),
-  };
+  const { data: currencyData } = useQuery({
+    queryKey: ['monitoring', 'currency'],
+    queryFn: async () => {
+      const res = await api.monitoring.getCurrencyRates();
+      if (!res.data) throw new Error(res.error || 'Failed to fetch currency');
+      return res.data;
+    },
+    refetchInterval: 300000, // 5 minutes
+    initialData: {
+      rates: [],
+      lastUpdate: new Date().toISOString(),
+    },
+  });
 
-  /*
-  // Fetch enhanced KPIs and currency rates with real-time updates
-  const enhancedKPIs = useQuery(api.monitoring.getEnhancedKPIs);
-  const currencyData = useRealtimeQuery(
-    api.monitoring.getCurrencyRates,
-    {},
-    {
-      notifyOnChange: true,
-      changeMessage: 'Döviz kurları güncellendi',
-      skipInitial: true,
-    }
-  );
-  const dashboardStats = useRealtimeQuery(
-    api.monitoring.getDashboardStats,
-    {},
-    {
-      notifyOnChange: false, // Too frequent, no notification
-      skipInitial: true,
-    }
-  );
-  */
-
-  // ⚠️ DEMO DATA: Aşağıdaki veriler gerçek API'lerden alınmalı (bkz: docs/ISSUES.md - Mock Data)
+  // ⚠️ TODO: Charts are still using static data. Implement aggregation API for charts.
   // Sample chart data - memoized to prevent re-renders (moved before early returns)
   const donationData = useMemo(
     () => [
@@ -598,121 +603,6 @@ export default function DashboardPage() {
                     </div>
                   );
                 })}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Charts Section */}
-        <div className="grid gap-6 lg:grid-cols-2 mb-6">
-          {/* Donation Trend Chart */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-xl font-bold">Bağış Trendi</CardTitle>
-                  <CardDescription className="mt-1">
-                    Son 6 aylık bağış miktarı ve ihtiyaç sahibi sayısı
-                  </CardDescription>
-                </div>
-                <TrendingUp className="h-5 w-5 text-muted-foreground" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Suspense
-                fallback={
-                  <div className="h-64 flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-                  </div>
-                }
-              >
-                <div className="h-64 w-full">
-                  <DynamicResponsiveContainer width="100%" height={256}>
-                    <DynamicAreaChart data={donationData}>
-                      <DynamicCartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                      <DynamicXAxis dataKey="month" className="text-xs" />
-                      <DynamicYAxis className="text-xs" />
-                      <DynamicTooltip
-                        contentStyle={{
-                          backgroundColor: 'hsl(var(--background))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px',
-                        }}
-                      />
-                      <DynamicArea
-                        type="monotone"
-                        dataKey="amount"
-                        stroke="#8884d8"
-                        fill="url(#colorAmount)"
-                        strokeWidth={2}
-                      />
-                      <defs>
-                        <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
-                          <stop offset="95%" stopColor="#8884d8" stopOpacity={0.1} />
-                        </linearGradient>
-                      </defs>
-                    </DynamicAreaChart>
-                  </DynamicResponsiveContainer>
-                </div>
-              </Suspense>
-            </CardContent>
-          </Card>
-
-          {/* Category Distribution */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-xl font-bold">Yardım Kategorileri</CardTitle>
-                  <CardDescription className="mt-1">Yardım türlerine göre dağılım</CardDescription>
-                </div>
-                <BarChart3 className="h-5 w-5 text-muted-foreground" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Suspense
-                fallback={
-                  <div className="h-64 flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-                  </div>
-                }
-              >
-                <div className="h-64 w-full">
-                  <DynamicResponsiveContainer width="100%" height={256}>
-                    <DynamicPieChart>
-                      <DynamicPie
-                        data={categoryData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {categoryData.map((entry, index) => (
-                          <DynamicCell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </DynamicPie>
-                      <DynamicTooltip
-                        contentStyle={{
-                          backgroundColor: 'hsl(var(--background))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px',
-                        }}
-                      />
-                    </DynamicPieChart>
-                  </DynamicResponsiveContainer>
-                </div>
-              </Suspense>
-              <div className="flex flex-wrap gap-2 mt-4">
-                {categoryData.map((item, index) => (
-                  <div key={index} className="flex items-center gap-2 text-xs">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="text-muted-foreground">{item.name}</span>
-                    <span className="font-medium">{item.value}%</span>
-                  </div>
-                ))}
               </div>
             </CardContent>
           </Card>

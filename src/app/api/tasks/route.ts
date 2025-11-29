@@ -76,16 +76,17 @@ async function getTasksHandler(request: NextRequest) {
  * POST /api/tasks
  */
 async function createTaskHandler(request: NextRequest) {
-  const body: unknown = null;
+  let body: Record<string, unknown> | null = null;
   try {
     await verifyCsrfToken(request);
     await requireModuleAccess('workflow');
 
-    const { data: body, error: parseError } = await parseBody(request);
+    const { data: parsedBody, error: parseError } = await parseBody(request);
     if (parseError) {
       return NextResponse.json({ success: false, error: parseError }, { status: 400 });
     }
-    const validation = validateTask(body as Record<string, unknown>);
+    body = parsedBody as Record<string, unknown>;
+    const validation = validateTask(body);
     if (!validation.isValid || !validation.normalizedData) {
       return NextResponse.json(
         { success: false, error: 'Doğrulama hatası', details: validation.errors },
@@ -129,7 +130,7 @@ async function createTaskHandler(request: NextRequest) {
     logger.error('Create task error', _error, {
       endpoint: '/api/tasks',
       method: 'POST',
-      title: (body as Record<string, unknown>).title,
+      title: body?.title || 'unknown',
     });
     return NextResponse.json(
       { success: false, error: 'Oluşturma işlemi başarısız' },

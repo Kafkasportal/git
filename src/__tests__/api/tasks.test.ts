@@ -1,148 +1,339 @@
-/**
- * Tasks API Route Tests
- * Tests for tasks CRUD endpoints
- */
-
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockDocuments } from '../test-utils';
+import { GET, POST } from '@/app/api/tasks/route';
 import { NextRequest } from 'next/server';
+import * as appwriteApi from '@/lib/appwrite/api';
 
+// Mock Appwrite API
 vi.mock('@/lib/appwrite/api', () => ({
   appwriteTasks: {
     list: vi.fn(),
-    get: vi.fn(),
     create: vi.fn(),
-    update: vi.fn(),
-    remove: vi.fn(),
   },
   normalizeQueryParams: vi.fn((params) => ({
-    limit: params.get('limit') ? Number(params.get('limit')) : 20,
-    skip: params.get('skip') ? Number(params.get('skip')) : 0,
-    search: params.get('search') || undefined,
+    page: params.get('page') ? parseInt(params.get('page')!) : 1,
+    limit: params.get('limit') ? parseInt(params.get('limit')!) : 50,
   })),
 }));
 
+// Mock auth
 vi.mock('@/lib/api/auth-utils', () => ({
-  requireAuthenticatedUser: vi.fn().mockResolvedValue({
-    user: {
-      id: 'user-123',
-      email: 'test@example.com',
-      permissions: ['workflow:read', 'workflow:write'],
-    },
-  }),
+  requireModuleAccess: vi.fn().mockResolvedValue(undefined),
   verifyCsrfToken: vi.fn().mockResolvedValue(undefined),
+  buildErrorResponse: vi.fn().mockReturnValue(null),
 }));
 
+// Mock route helpers
+vi.mock('@/lib/api/route-helpers', () => ({
+  parseBody: vi.fn(async (request) => {
+    const body = await request.json();
+    return { data: body, error: null };
+  }),
+}));
+
+// Mock rate limiter
+vi.mock('@/lib/rate-limit', () => ({
+  readOnlyRateLimit: vi.fn((handler) => handler),
+  dataModificationRateLimit: vi.fn((handler) => handler),
+}));
+
+// Mock logger
 vi.mock('@/lib/logger', () => ({
   default: {
-    info: vi.fn(),
     error: vi.fn(),
-    warn: vi.fn(),
   },
 }));
 
-describe('Tasks API Routes', () => {
+describe('GET /api/tasks', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('GET /api/tasks', () => {
-    it('should list tasks with pagination', async () => {
-      const { appwriteTasks } = await import('@/lib/appwrite/api');
-      const mockTasks = [
-        { _id: '1', title: 'Task 1', status: 'pending' },
-        { _id: '2', title: 'Task 2', status: 'in_progress' },
-      ];
-
-      vi.mocked(appwriteTasks.list).mockResolvedValue({
-        documents: mockTasks,
-        total: 2,
-      });
-
-      const { GET } = await import('@/app/api/tasks/route');
-      const request = new NextRequest('http://localhost/api/tasks?limit=20&skip=0');
-      const response = await GET(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.success).toBe(true);
-      expect(data.data).toHaveLength(2);
-      expect(data.data[0].title).toBe('Task 1');
-    });
-
-    it('should filter by assigned_to', async () => {
-      const { appwriteTasks } = await import('@/lib/appwrite/api');
-      const mockTasks = [{ _id: '1', title: 'Task', assigned_to: 'user-123' }];
-
-      vi.mocked(appwriteTasks.list).mockResolvedValue({
-        documents: mockTasks,
-        total: 1,
-      });
-
-      const { GET } = await import('@/app/api/tasks/route');
-      const request = new NextRequest('http://localhost/api/tasks?assigned_to=user-123');
-      const response = await GET(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(data.success).toBe(true);
-      expect(appwriteTasks.list).toHaveBeenCalledWith(
-        expect.objectContaining({ assigned_to: 'user-123' })
-      );
-    });
-  });
-
-  describe('POST /api/tasks', () => {
-    it('should create task with valid data', async () => {
-      const { appwriteTasks } = await import('@/lib/appwrite/api');
-      const mockTask = {
-        _id: 'new-id',
-        title: 'New Task',
+  it('returns tasks list successfully', async () => {
+    const mockTasks = createMockDocuments([
+      {
+        _id: '1',
+        title: 'Test Task 1',
+        description: 'Test Description',
         status: 'pending',
         priority: 'normal',
-        created_by: 'user-123',
-      };
+        assigned_to: 'user1',
+        created_by: 'user1',
+      },
+      {
+        _id: '2',
+        title: 'Test Task 2',
+        description: 'Test Description 2',
+        status: 'in_progress',
+        priority: 'high',
+        assigned_to: 'user2',
+        created_by: 'user1',
+      },
+    ]);
 
-      vi.mocked(appwriteTasks.create).mockResolvedValue(mockTask as any);
-
-      const { POST } = await import('@/app/api/tasks/route');
-      const request = new NextRequest('http://localhost/api/tasks', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-csrf-token': 'test-token' },
-        body: JSON.stringify({
-          title: 'New Task',
-          created_by: 'user-123',
-          priority: 'normal',
-          status: 'pending',
-        }),
-      });
-
-      const response = await POST(request);
-      const data = await response.json();
-
-      expect(response.status).toBe(201);
-      expect(data.success).toBe(true);
-      expect(data.data._id).toBe('new-id');
-      expect(appwriteTasks.create).toHaveBeenCalled();
+    vi.mocked(appwriteApi.appwriteTasks.list).mockResolvedValue({
+      documents: mockTasks,
+      total: 2,
     });
 
-    it('should reject invalid task data', async () => {
-      const { POST } = await import('@/app/api/tasks/route');
-      const request = new NextRequest('http://localhost/api/tasks', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-csrf-token': 'test-token' },
-        body: JSON.stringify({
-          title: 'AB', // Too short
-          priority: 'invalid', // Invalid priority
-        }),
-      });
+    const request = new NextRequest('http://localhost/api/tasks');
+    const response = await GET(request);
+    const data = await response.json();
 
-      const response = await POST(request);
-      const data = await response.json();
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
+    expect(data.data).toEqual(mockTasks);
+    expect(data.total).toBe(2);
+  });
 
-      expect(response.status).toBe(400);
-      expect(data.success).toBe(false);
-      expect(data.error).toContain('Doğrulama');
+  it('filters by assigned_to', async () => {
+    const mockTasks = createMockDocuments([
+      {
+        _id: '1',
+        title: 'Test Task',
+        assigned_to: 'user1',
+      },
+    ]);
+
+    vi.mocked(appwriteApi.appwriteTasks.list).mockResolvedValue({
+      documents: mockTasks,
+      total: 1,
     });
+
+    const request = new NextRequest('http://localhost/api/tasks?assigned_to=user1');
+    const response = await GET(request);
+
+    expect(response.status).toBe(200);
+    expect(vi.mocked(appwriteApi.appwriteTasks.list)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        assigned_to: 'user1',
+      })
+    );
+  });
+
+  it('filters by created_by', async () => {
+    const mockTasks = createMockDocuments([
+      {
+        _id: '1',
+        title: 'Test Task',
+        created_by: 'user1',
+      },
+    ]);
+
+    vi.mocked(appwriteApi.appwriteTasks.list).mockResolvedValue({
+      documents: mockTasks,
+      total: 1,
+    });
+
+    const request = new NextRequest('http://localhost/api/tasks?created_by=user1');
+    const response = await GET(request);
+
+    expect(response.status).toBe(200);
+    expect(vi.mocked(appwriteApi.appwriteTasks.list)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        created_by: 'user1',
+      })
+    );
+  });
+
+  it('handles pagination', async () => {
+    vi.mocked(appwriteApi.appwriteTasks.list).mockResolvedValue({
+      documents: [],
+      total: 0,
+    });
+
+    const request = new NextRequest('http://localhost/api/tasks?page=2&limit=20');
+    const response = await GET(request);
+
+    expect(response.status).toBe(200);
+    expect(vi.mocked(appwriteApi.appwriteTasks.list)).toHaveBeenCalled();
+  });
+
+  it('handles empty list', async () => {
+    vi.mocked(appwriteApi.appwriteTasks.list).mockResolvedValue({
+      documents: [],
+      total: 0,
+    });
+
+    const request = new NextRequest('http://localhost/api/tasks');
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.data).toEqual([]);
+    expect(data.total).toBe(0);
+  });
+
+  it('handles errors gracefully', async () => {
+    vi.mocked(appwriteApi.appwriteTasks.list).mockRejectedValue(new Error('Database error'));
+
+    const request = new NextRequest('http://localhost/api/tasks');
+    const response = await GET(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.success).toBe(false);
+    expect(data.error).toBe('Veri alınamadı');
   });
 });
 
+describe('POST /api/tasks', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('creates task successfully', async () => {
+    const newTask = {
+      title: 'New Test Task',
+      description: 'Test Description',
+      assigned_to: 'user1',
+      created_by: 'user1',
+      priority: 'high',
+      status: 'pending',
+    };
+
+    const createdTask = {
+      _id: 'new-id',
+      ...newTask,
+    };
+
+    vi.mocked(appwriteApi.appwriteTasks.create).mockResolvedValue(createdTask as any);
+
+    const request = new NextRequest('http://localhost/api/tasks', {
+      method: 'POST',
+      body: JSON.stringify(newTask),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(data.success).toBe(true);
+    expect(data.data).toEqual(createdTask);
+    expect(data.message).toBe('Görev başarıyla oluşturuldu');
+  });
+
+  it('validates title is required and minimum length', async () => {
+    const invalidTask = {
+      title: 'AB', // Too short (less than 3 characters)
+      description: 'Test',
+    };
+
+    const request = new NextRequest('http://localhost/api/tasks', {
+      method: 'POST',
+      body: JSON.stringify(invalidTask),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.success).toBe(false);
+    expect(data.error).toBe('Doğrulama hatası');
+    expect(data.details).toContain('Görev başlığı en az 3 karakter olmalıdır');
+  });
+
+  it('validates priority values', async () => {
+    const invalidTask = {
+      title: 'Valid Title',
+      priority: 'INVALID', // Invalid priority
+    };
+
+    const request = new NextRequest('http://localhost/api/tasks', {
+      method: 'POST',
+      body: JSON.stringify(invalidTask),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.success).toBe(false);
+    expect(data.details).toContain('Geçersiz öncelik değeri');
+  });
+
+  it('validates status values', async () => {
+    const invalidTask = {
+      title: 'Valid Title',
+      status: 'INVALID', // Invalid status
+    };
+
+    const request = new NextRequest('http://localhost/api/tasks', {
+      method: 'POST',
+      body: JSON.stringify(invalidTask),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.success).toBe(false);
+    expect(data.details).toContain('Geçersiz durum');
+  });
+
+  it('sets default values for status and priority', async () => {
+    const newTask = {
+      title: 'New Test Task',
+      created_by: 'user1',
+    };
+
+    const createdTask = {
+      _id: 'new-id',
+      ...newTask,
+      status: 'pending',
+      priority: 'normal',
+    };
+
+    vi.mocked(appwriteApi.appwriteTasks.create).mockResolvedValue(createdTask as any);
+
+    const request = new NextRequest('http://localhost/api/tasks', {
+      method: 'POST',
+      body: JSON.stringify(newTask),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(data.success).toBe(true);
+  });
+
+  it('handles creation errors gracefully', async () => {
+    vi.mocked(appwriteApi.appwriteTasks.create).mockRejectedValue(new Error('Database error'));
+
+    const validTask = {
+      title: 'Valid Task',
+      created_by: 'user1',
+    };
+
+    const request = new NextRequest('http://localhost/api/tasks', {
+      method: 'POST',
+      body: JSON.stringify(validTask),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.success).toBe(false);
+    expect(data.error).toBe('Oluşturma işlemi başarısız');
+  });
+});

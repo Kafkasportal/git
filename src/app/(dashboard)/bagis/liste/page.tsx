@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { apiClient as api } from '@/lib/api/api-client';
+import { donations } from '@/lib/api/crud-factory';
 import { VirtualizedDataTable, type DataTableColumn } from '@/components/ui/virtualized-data-table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,10 @@ import {
 } from '@/components/ui/dialog';
 import { Search, Plus, DollarSign, User, Calendar, FileText } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { BulkActionsToolbar } from '@/components/ui/bulk-actions-toolbar';
+import { toast } from 'sonner';
+import type { DonationDocument } from '@/types/database';
 
 const DonationForm = dynamic(
   () => import('@/components/forms/DonationForm').then((mod) => ({ default: mod.DonationForm })),
@@ -30,24 +34,112 @@ const DonationForm = dynamic(
 );
 
 export default function DonationsPage() {
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
   const { data, isLoading } = useQuery({
     queryKey: ['donations', search],
     queryFn: () =>
-      api.donations.getDonations({
+      donations.getAll({
         page: 1,
         limit: 10000, // Load all data for virtual scrolling
         search,
       }),
   });
 
-  const donations = data?.data || [];
+  const donationsList: DonationDocument[] = ((data?.data ?? []) as DonationDocument[]);
 
-  const totalAmount = donations.reduce((sum, d) => sum + d.amount, 0);
+  const totalAmount = donationsList.reduce((sum, d) => sum + d.amount, 0);
 
-  const columns: DataTableColumn<(typeof donations)[0]>[] = [
+  // Bulk operations mutations
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const response = await fetch('/api/donations/bulk-delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ ids }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Bağışlar silinirken bir hata oluştu');
+      }
+
+      const result = await response.json();
+      return result.data;
+    },
+    onSuccess: (data) => {
+      const deleted = data?.deleted || selectedItems.size;
+      const failed = data?.failed || 0;
+      
+      if (failed > 0) {
+        toast.warning(`${deleted} bağış silindi, ${failed} bağış silinemedi`);
+      } else {
+        toast.success(`${deleted} bağış başarıyla silindi`);
+      }
+      
+      setSelectedItems(new Set());
+      queryClient.invalidateQueries({ queryKey: ['donations'] });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Bağışlar silinirken bir hata oluştu');
+    },
+  });
+
+  const bulkStatusUpdateMutation = useMutation({
+    mutationFn: async ({ ids, status }: { ids: string[]; status: string }) => {
+      const response = await fetch('/api/donations/bulk-update-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ ids, status }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Durum güncellenirken bir hata oluştu');
+      }
+
+      const result = await response.json();
+      return result.data;
+    },
+    onSuccess: (data, variables) => {
+      const updated = data?.updated || selectedItems.size;
+      const failed = data?.failed || 0;
+      const statusLabel = variables.status === 'completed' ? 'Tamamlandı' : variables.status === 'cancelled' ? 'İptal Edildi' : 'Beklemede';
+      
+      if (failed > 0) {
+        toast.warning(`${updated} bağış ${statusLabel} olarak güncellendi, ${failed} bağış güncellenemedi`);
+      } else {
+        toast.success(`${updated} bağış ${statusLabel} olarak güncellendi`);
+      }
+      
+      setSelectedItems(new Set());
+      queryClient.invalidateQueries({ queryKey: ['donations'] });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Durum güncellenirken bir hata oluştu');
+    },
+  });
+
+  const handleBulkDelete = () => {
+    const ids = Array.from(selectedItems);
+    bulkDeleteMutation.mutate(ids);
+  };
+
+  const handleBulkStatusChange = (status: string) => {
+    const ids = Array.from(selectedItems);
+    bulkStatusUpdateMutation.mutate({ ids, status });
+  };
+
+  const columns: DataTableColumn<(typeof donationsList)[0]>[] = [
     {
       key: 'donor',
       label: 'Bağışçı',
@@ -102,7 +194,11 @@ export default function DonationsPage() {
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <span className="font-medium">
-            {item._creationTime ? new Date(item._creationTime).toLocaleDateString('tr-TR') : item.$createdAt ? new Date(item.$createdAt).toLocaleDateString('tr-TR') : '-'}
+            {item._creationTime
+              ? new Date(item._creationTime).toLocaleDateString('tr-TR')
+              : item.$createdAt
+                ? new Date(item.$createdAt).toLocaleDateString('tr-TR')
+                : '-'}
           </span>
         </div>
       ),
@@ -176,7 +272,7 @@ export default function DonationsPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data?.total || donations.length}</div>
+            <div className="text-2xl font-bold">{data?.total || donationsList.length}</div>
           </CardContent>
         </Card>
 
@@ -197,11 +293,24 @@ export default function DonationsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {donations.reduce((sum, d) => sum + d.amount, 0).toLocaleString('tr-TR')} ₺
+              {donationsList.reduce((sum, d) => sum + d.amount, 0).toLocaleString('tr-TR')} ₺
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Bulk Actions Toolbar */}
+      <BulkActionsToolbar
+        selectedCount={selectedItems.size}
+        onClearSelection={() => setSelectedItems(new Set())}
+        onDelete={handleBulkDelete}
+        onStatusChange={handleBulkStatusChange}
+        statusOptions={[
+          { value: 'completed', label: 'Tamamlandı Yap' },
+          { value: 'pending', label: 'Beklemede Yap' },
+        ]}
+        isLoading={bulkDeleteMutation.isPending || bulkStatusUpdateMutation.isPending}
+      />
 
       {/* Search */}
       <Card className="w-full">
@@ -225,17 +334,21 @@ export default function DonationsPage() {
       <Card className="w-full">
         <CardHeader className="pb-4">
           <CardTitle>Bağış Listesi</CardTitle>
-          <CardDescription>Toplam {data?.total || donations.length} bağış kaydı</CardDescription>
+          <CardDescription>Toplam {data?.total || donationsList.length} bağış kaydı</CardDescription>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
           <VirtualizedDataTable
-            data={donations}
+            data={donationsList}
             columns={columns}
             isLoading={isLoading}
             emptyMessage="Bağış kaydı bulunamadı"
             emptyDescription="Henüz bağış eklenmemiş"
             rowHeight={70}
             containerHeight={700}
+            selectable={true}
+            selectedItems={selectedItems}
+            onSelectionChange={setSelectedItems}
+            getItemId={(item) => item._id || item.$id || ''}
           />
         </CardContent>
       </Card>

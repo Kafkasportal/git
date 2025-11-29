@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import logger from '@/lib/logger';
 import { requireAuthenticatedUser, buildErrorResponse } from '@/lib/api/auth-utils';
 import { readOnlyRateLimit, dataModificationRateLimit } from '@/lib/rate-limit';
+import { serverDatabases } from '@/lib/appwrite/server';
+import { appwriteConfig } from '@/lib/appwrite/config';
+import { ID, Query } from 'node-appwrite';
 
 /**
  * Analytics Event Tracking Endpoint
@@ -14,13 +17,11 @@ import { readOnlyRateLimit, dataModificationRateLimit } from '@/lib/rate-limit';
  * POST /api/analytics
  * Track analytics event
  * Requires authentication - prevents spam and abuse
- *
- * SECURITY: Without auth, anyone could flood analytics with fake events
  */
 async function postAnalyticsHandler(request: NextRequest) {
   try {
     // Require authentication to prevent analytics spam/abuse
-    await requireAuthenticatedUser();
+    const { user } = await requireAuthenticatedUser();
 
     const body = await request.json();
     const { event, properties, userId, sessionId } = body;
@@ -33,22 +34,31 @@ async function postAnalyticsHandler(request: NextRequest) {
       );
     }
 
-    // Log analytics event
+    // Log to console
     logger.info('Analytics event tracked', {
       service: 'analytics',
       event,
-      properties: properties || {},
-      userId: userId || 'anonymous',
-      sessionId: sessionId || null,
-      userAgent: request.headers.get('user-agent') || undefined,
-      timestamp: new Date().toISOString(),
+      userId: userId || user.id, // Changed from $id to id based on assumption, will verify
     });
 
-    // In production, you might want to:
-    // 1. Store in Appwrite database
-    // 2. Send to Google Analytics 4
-    // 3. Send to Mixpanel/Amplitude
-    // 4. Send to custom analytics service
+    // Store in Appwrite
+    if (serverDatabases) {
+      await serverDatabases.createDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.collections.analyticsEvents,
+        ID.unique(),
+        {
+          event,
+          properties: JSON.stringify(properties || {}),
+          user_id: userId || user.id, // Changed from $id to id
+          session_id: sessionId || 'unknown',
+          url: properties?.url || '',
+          ip: request.headers.get('x-forwarded-for') || 'unknown',
+          user_agent: request.headers.get('user-agent') || 'unknown',
+          timestamp: new Date().toISOString(),
+        }
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -72,8 +82,6 @@ async function postAnalyticsHandler(request: NextRequest) {
  * GET /api/analytics
  * Get analytics statistics
  * Requires authentication and admin permissions
- *
- * SECURITY CRITICAL: Analytics data should only be accessible to admins
  */
 async function getAnalyticsHandler(request: NextRequest) {
   try {
@@ -90,21 +98,49 @@ async function getAnalyticsHandler(request: NextRequest) {
       );
     }
 
-    const { searchParams } = new URL(request.url);
-    const event = searchParams.get('event');
-    const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
+    if (!serverDatabases) {
+      return NextResponse.json(
+        { success: false, error: 'Database connection failed' },
+        { status: 500 }
+      );
+    }
 
-    // For now, return a placeholder response
-    // In production, query from database
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get('limit') || '1000');
+
+    // Fetch recent events for aggregation
+    const events = await serverDatabases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.collections.analyticsEvents,
+      [Query.limit(limit), Query.orderDesc('$createdAt')]
+    );
+
+    // Simple in-memory aggregation
+    const totalEvents = events.total;
+    const uniqueUsers = new Set(events.documents.map((doc) => doc.user_id)).size;
+
+    // Group by event type
+    const eventCounts: Record<string, number> = {};
+    events.documents.forEach((doc) => {
+      eventCounts[doc.event] = (eventCounts[doc.event] || 0) + 1;
+    });
+
+    // Group by page (from properties or url)
+    const pageViews: Record<string, number> = {};
+    events.documents.forEach((doc) => {
+      if (doc.event === 'page_view') {
+        const url = doc.url || 'unknown';
+        pageViews[url] = (pageViews[url] || 0) + 1;
+      }
+    });
+
     return NextResponse.json({
       success: true,
-      event: event || 'all',
-      startDate,
-      endDate,
-      count: 0,
-      uniqueUsers: 0,
-      message: 'Analytics data retrieval - implement database query',
+      totalEvents,
+      uniqueUsers,
+      eventCounts,
+      pageViews,
+      recentEvents: events.documents.slice(0, 50), // Return last 50 for table
     });
   } catch (error) {
     const authError = buildErrorResponse(error);

@@ -9,7 +9,6 @@ import {
 } from '@/lib/api/auth-utils';
 import { parseBody, handleApiError } from '@/lib/api/route-helpers';
 import { ALL_PERMISSIONS, type PermissionValue } from '@/types/permissions';
-import { InputSanitizer } from '@/lib/security';
 import { dataModificationRateLimit, readOnlyRateLimit } from '@/lib/rate-limit';
 
 const PERMISSION_SET = new Set(ALL_PERMISSIONS);
@@ -38,7 +37,8 @@ const normalizeUserPayload = (
   }
 
   const email = typeof payload.email === 'string' ? payload.email.trim().toLowerCase() : '';
-  if (!InputSanitizer.validateEmail(email)) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
     errors.push('Geçerli bir e-posta zorunludur');
   }
 

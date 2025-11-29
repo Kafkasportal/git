@@ -1,19 +1,20 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { Toaster } from 'sonner';
-import { useAuthStore } from '@/stores/authStore';
-import { useState } from 'react';
-import { createOptimizedQueryClient, cacheUtils } from '@/lib/cache-config';
-import { persistentCache } from '@/lib/persistent-cache';
-import { initGlobalErrorHandlers } from '@/lib/global-error-handler';
-import { initErrorTracker } from '@/lib/error-tracker';
-import { SettingsProvider } from '@/contexts/settings-context';
-import { pingAppwrite } from '@/lib/appwrite';
+import { useEffect } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { Toaster } from "sonner";
+import { useAuthStore } from "@/stores/authStore";
+import { useState } from "react";
+import { createOptimizedQueryClient, cacheUtils } from "@/lib/cache-config";
+import { persistentCache } from "@/lib/persistent-cache";
+import { initGlobalErrorHandlers } from "@/lib/global-error-handler";
+import { initErrorTracker } from "@/lib/error-tracker";
+import { SettingsProvider } from "@/contexts/settings-context";
+import { pingAppwrite } from "@/lib/appwrite";
+import logger from "@/lib/logger";
 
-import { SuspenseBoundary } from '@/components/ui/suspense-boundary';
+import { SuspenseBoundary } from "@/components/ui/suspense-boundary";
 
 // TypeScript interfaces for window objects
 interface WindowWithDebug extends Window {
@@ -33,9 +34,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   // Initialize debug utilities (development only)
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       // Expose to window for manual debugging (safe)
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         const windowWithDebug = window as WindowWithDebug;
         windowWithDebug.__AUTH_STORE__ = useAuthStore;
         windowWithDebug.__QUERY_CLIENT__ = queryClient;
@@ -47,7 +48,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   // Initialize error tracking system
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       // Initialize global error handlers
       initGlobalErrorHandlers();
 
@@ -60,10 +61,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   // Ping Appwrite to verify connection on app load
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       pingAppwrite().then((success) => {
         if (!success) {
-          console.warn('⚠️ Appwrite connection could not be verified');
+          logger.warn("⚠️ Appwrite connection could not be verified");
         }
       });
     }
@@ -75,11 +76,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
     const cleanupInterval = setInterval(
       async () => {
         const cleaned = await persistentCache.cleanup();
-        if (cleaned > 0 && process.env.NODE_ENV === 'development') {
+        if (cleaned > 0 && process.env.NODE_ENV === "development") {
           // Cleanup logged by persistent cache
         }
       },
-      5 * 60 * 1000
+      5 * 60 * 1000,
     );
 
     return () => clearInterval(cleanupInterval);

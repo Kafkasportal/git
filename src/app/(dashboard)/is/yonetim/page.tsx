@@ -32,7 +32,7 @@ import {
   workflowNotificationCategoryLabels,
   workflowNotificationStatusColors,
   workflowNotificationStatusLabels,
-} from '@/lib/validations/meetingActionItem';
+} from '@/lib/validations/meeting-action-item';
 import type {
   MeetingActionItemDocument,
   MeetingDecisionDocument,
