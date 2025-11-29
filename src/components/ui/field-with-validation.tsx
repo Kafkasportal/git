@@ -75,7 +75,10 @@ export function FieldWithValidation({
       </Label>
       <div className="relative">
         {children}
-        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+        <div 
+          className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
+          aria-hidden="true"
+        >
           {getValidationIcon()}
         </div>
       </div>
