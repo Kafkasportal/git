@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import { useNotificationStream } from '@/hooks/useNotificationStream';
 import { useNotificationStore } from '@/stores/notificationStore';
 
@@ -19,16 +19,19 @@ vi.mock('@/lib/logger', () => ({
 
 describe('useNotificationStream', () => {
   const mockAddNotification = vi.fn();
+  let eventSourceInstance: any = null;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    eventSourceInstance = null; // Reset instance before each test
+    
     (useNotificationStore as any).mockReturnValue({
       addNotification: mockAddNotification,
     });
 
     // Mock EventSource
     global.EventSource = vi.fn().mockImplementation(() => {
-      return {
+      eventSourceInstance = {
         onopen: null,
         onmessage: null,
         onerror: null,
@@ -36,11 +39,12 @@ describe('useNotificationStream', () => {
         addEventListener: vi.fn(),
         removeEventListener: vi.fn(),
       };
+      return eventSourceInstance;
     }) as any;
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.clearAllTimers();
   });
 
   it('creates EventSource connection when userId is provided', () => {
@@ -57,39 +61,24 @@ describe('useNotificationStream', () => {
     expect(global.EventSource).not.toHaveBeenCalled();
   });
 
-  it('handles connection open event', () => {
-    let eventSourceInstance: any = null;
-    (global.EventSource as any).mockImplementation((_url: string, _options: any) => {
-      eventSourceInstance = {
-        onopen: null,
-        onmessage: null,
-        onerror: null,
-        close: vi.fn(),
-      };
-      return eventSourceInstance;
-    });
-
+  it('handles connection open event', async () => {
     renderHook(() => useNotificationStream('test-user'));
 
-    expect(eventSourceInstance).toBeTruthy();
+    await waitFor(() => {
+      expect(eventSourceInstance).toBeTruthy();
+    });
+
     if (eventSourceInstance.onopen) {
       eventSourceInstance.onopen();
     }
   });
 
-  it('handles notification messages', () => {
-    let eventSourceInstance: any = null;
-    (global.EventSource as any).mockImplementation(() => {
-      eventSourceInstance = {
-        onopen: null,
-        onmessage: null,
-        onerror: null,
-        close: vi.fn(),
-      };
-      return eventSourceInstance;
-    });
-
+  it('handles notification messages', async () => {
     renderHook(() => useNotificationStream('test-user'));
+
+    await waitFor(() => {
+      expect(eventSourceInstance).toBeTruthy();
+    });
 
     const notificationData = {
       type: 'notification',
@@ -110,21 +99,13 @@ describe('useNotificationStream', () => {
     expect(mockAddNotification).toHaveBeenCalledWith(notificationData.data);
   });
 
-  it('handles reconnection on error', () => {
-    let eventSourceInstance: any = null;
-
-    (global.EventSource as any).mockImplementation(() => {
-      eventSourceInstance = {
-        onopen: null,
-        onmessage: null,
-        onerror: null,
-        close: vi.fn(),
-      };
-      return eventSourceInstance;
-    });
-
+  it('handles reconnection on error', async () => {
     vi.useFakeTimers();
     renderHook(() => useNotificationStream('test-user'));
+
+    await waitFor(() => {
+      expect(eventSourceInstance).toBeTruthy();
+    });
 
     if (eventSourceInstance.onerror) {
       eventSourceInstance.onerror(new Error('Connection error'));
@@ -138,19 +119,12 @@ describe('useNotificationStream', () => {
     vi.useRealTimers();
   });
 
-  it('cleans up connection on unmount', () => {
-    let eventSourceInstance: any = null;
-    (global.EventSource as any).mockImplementation(() => {
-      eventSourceInstance = {
-        onopen: null,
-        onmessage: null,
-        onerror: null,
-        close: vi.fn(),
-      };
-      return eventSourceInstance;
-    });
-
+  it('cleans up connection on unmount', async () => {
     const { unmount } = renderHook(() => useNotificationStream('test-user'));
+
+    await waitFor(() => {
+      expect(eventSourceInstance).toBeTruthy();
+    });
 
     unmount();
 

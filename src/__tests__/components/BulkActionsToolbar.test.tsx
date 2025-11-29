@@ -80,7 +80,8 @@ describe('BulkActionsToolbar', () => {
       />
     );
 
-    expect(screen.getByText(/durum/i)).toBeInTheDocument();
+    expect(screen.getByText(/beklemede/i)).toBeInTheDocument();
+    expect(screen.getByText(/tamamlandı/i)).toBeInTheDocument();
   });
 
   it('shows loading state', () => {
