@@ -26,10 +26,10 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient as api } from "@/lib/api/api-client";
 import { toast } from "sonner";
-import { Loader2, CheckCircle2, AlertCircle, XCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
 import { requiredPhoneSchema } from "@/lib/validations/shared-validators";
 import { sanitizePhone } from "@/lib/sanitization";
+import { FieldWithValidation, type FieldValidationState } from "@/components/ui/field-with-validation";
 
 // Validation schema
 const beneficiarySchema = z.object({
@@ -55,69 +55,11 @@ interface BeneficiaryFormProps {
   onCancel?: () => void;
 }
 
-// Field validation component
-interface FieldWithValidationProps {
-  label: string;
-  error?: string;
-  validation?: "valid" | "invalid" | "pending";
-  required?: boolean;
-  children: React.ReactNode;
-  errorId?: string;
-}
-
-function FieldWithValidation({
-  label,
-  error,
-  validation,
-  required,
-  children,
-  errorId,
-}: FieldWithValidationProps) {
-  const getValidationIcon = () => {
-    switch (validation) {
-      case "valid":
-        return <CheckCircle2 className="h-4 w-4 text-green-600" />;
-      case "invalid":
-        return <XCircle className="h-4 w-4 text-red-600" />;
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="space-y-2">
-      <Label
-        className={cn(
-          required && "after:content-['*'] after:text-red-500 after:ml-1",
-        )}
-      >
-        {label}
-      </Label>
-      <div className="relative">
-        {children}
-        <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-          {getValidationIcon()}
-        </div>
-      </div>
-      {error && (
-        <p
-          id={errorId}
-          className="text-sm text-red-600 flex items-center gap-1"
-          role="alert"
-        >
-          <AlertCircle className="h-4 w-4" />
-          {error}
-        </p>
-      )}
-    </div>
-  );
-}
-
 export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fieldValidation, setFieldValidation] = useState<
-    Record<string, "valid" | "invalid" | "pending">
+    Record<string, FieldValidationState>
   >({});
 
   const {
