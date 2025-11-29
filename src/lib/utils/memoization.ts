@@ -36,14 +36,21 @@ class LRUCache<K, V> {
       this.cache.delete(key);
     } else if (this.cache.size >= this.maxSize) {
       // Remove least recently used (first item)
-      const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+      const firstIter = this.cache.keys().next();
+      const firstKey = firstIter.value;
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey);
+      }
     }
     this.cache.set(key, value);
   }
 
   has(key: K): boolean {
     return this.cache.has(key);
+  }
+
+  delete(key: K): boolean {
+    return this.cache.delete(key);
   }
 
   clear(): void {
@@ -139,7 +146,7 @@ export function memoizeAsync<T extends (...args: any[]) => Promise<any>>(
       (result) => result,
       (error) => {
         // Remove from cache on error to allow retry
-        cache.cache.delete(key);
+        cache.delete(key);
         throw error;
       }
     );
