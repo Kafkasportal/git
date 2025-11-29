@@ -29,7 +29,7 @@
     "setup:quick": "tsx scripts/quick-setup.ts && npm run dev",
     "appwrite:setup": "tsx scripts/setup-appwrite-via-api.ts",
     "validate:deploy": "node -e \"fetch(process.env.DEPLOY_URL + '/api/health').then(r => r.json()).then(console.log)\"",
-    "prepare": "husky || true",
+    "prepare": "node -e \"const fs=require('fs'); if (!fs.existsSync('.git')) process.exit(0); require('husky')()\" || true",
     "lint:fix": "eslint --fix --max-warnings 0 .",
     "lint:check": "eslint --max-warnings 0 .",
     "sg": "tsx cli/sg.ts"
