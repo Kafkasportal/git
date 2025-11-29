@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createMockDocuments, createMockDocument } from '../test-utils';
+import { createMockDocuments } from '../test-utils';
 import { GET, POST } from '@/app/api/finance/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
@@ -102,14 +102,14 @@ describe('GET /api/finance', () => {
 
   it('filters by record_type', async () => {
     vi.mocked(appwriteApi.appwriteFinanceRecords.list).mockResolvedValue({
-      documents: [
-        createMockDocument({
+      documents: createMockDocuments([
+        {
           _id: '1',
           record_type: 'income',
           amount: 1000,
           category: 'Bağış',
-        }),
-      ],
+        },
+      ]),
       total: 1,
     });
 
