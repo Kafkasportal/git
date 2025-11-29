@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/api-client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,8 @@ import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useNotificationStore } from '@/stores/notificationStore';
+import { useNotificationStream } from '@/hooks/useNotificationStream';
 
 interface NotificationCenterProps {
   userId: string;
@@ -24,25 +26,35 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
 
   const queryClient = useQueryClient();
 
-  // Fetch notifications
-  const { data: notificationsResponse } = useQuery({
-    queryKey: ['workflow-notifications', userId],
-    queryFn: async () => {
-      const response = await apiClient.workflowNotifications.getNotifications({
-        filters: { recipient: userId },
-        limit: 50,
-      });
-      return response;
-    },
-    refetchInterval: 30000, // Poll every 30 seconds for updates
-  });
+  // Use Zustand store for notifications
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, setNotifications } =
+    useNotificationStore();
 
-  const allNotifications = notificationsResponse?.data || [];
+  // Initialize notifications from API on mount
+  useEffect(() => {
+    if (!userId) return;
 
-  // Calculate unread count
-  const unreadCount = allNotifications.filter(
-    (notification) => notification.status !== 'okundu'
-  ).length;
+    const fetchInitialNotifications = async () => {
+      try {
+        const response = await apiClient.workflowNotifications.getNotifications({
+          filters: { recipient: userId },
+          limit: 50,
+        });
+        if (response.data) {
+          setNotifications(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch initial notifications', error);
+      }
+    };
+
+    fetchInitialNotifications();
+  }, [userId, setNotifications]);
+
+  // Use SSE stream for real-time updates
+  useNotificationStream(userId);
+
+  const allNotifications = notifications;
 
   // Mutations
   const markAsReadMutation = useMutation({
@@ -50,7 +62,8 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
       const response = await apiClient.workflowNotifications.markNotificationRead(id);
       return response;
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
+      markAsRead(id);
       queryClient.invalidateQueries({ queryKey: ['workflow-notifications', userId] });
       toast.success('Bildirim okundu olarak işaretlendi');
     },
@@ -74,6 +87,7 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
       );
     },
     onSuccess: () => {
+      markAllAsRead();
       queryClient.invalidateQueries({ queryKey: ['workflow-notifications', userId] });
       toast.success('Tüm bildirimler okundu olarak işaretlendi');
     },
@@ -87,7 +101,8 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
       const response = await apiClient.workflowNotifications.deleteNotification(id);
       return response;
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
+      deleteNotification(id);
       queryClient.invalidateQueries({ queryKey: ['workflow-notifications', userId] });
       toast.success('Bildirim silindi');
     },

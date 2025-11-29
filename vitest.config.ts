@@ -27,6 +27,12 @@ export default defineConfig({
         'postcss.config.mjs',
         'tailwind.config.js',
       ],
+      thresholds: {
+        lines: 70,
+        functions: 70,
+        branches: 70,
+        statements: 70,
+      },
     },
     reporters: ['default', 'junit'],
     outputFile: {

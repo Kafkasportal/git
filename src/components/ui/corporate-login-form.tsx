@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Eye, EyeOff, Mail, Lock, Shield, Building2, AlertCircle, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Shield, Building2, AlertCircle, ArrowRight, User, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -35,6 +35,7 @@ export function CorporateLoginForm({
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [adminInfo, setAdminInfo] = useState<{ email: string; name: string; role: string } | null>(null);
 
   const initRef = useRef(false);
   const emailInputRef = useRef<HTMLInputElement>(null);
@@ -44,18 +45,42 @@ export function CorporateLoginForm({
 
   // Development mode - auto-fill credentials for easy testing
   const isDevelopment = process.env.NODE_ENV === 'development';
+  // Admin test credentials - always available for easy login
+  const adminEmail = 'admin@kafkasder.com';
+  const adminPassword = process.env.NEXT_PUBLIC_ADMIN_TEST_PASSWORD || 'Admin123!';
   const devEmail = 'mcp-login@example.com';
   const devPassword = 'SecurePass123!';
+
+  // Fetch admin info on mount
+  useEffect(() => {
+    if (isDevelopment && !adminInfo) {
+      fetch('/api/auth/admin-info')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.data) {
+            setAdminInfo(data.data);
+          }
+        })
+        .catch(() => {
+          // Fallback to default if API fails
+          setAdminInfo({
+            email: adminEmail,
+            name: 'Admin Kullanıcı',
+            role: 'SUPER_ADMIN',
+          });
+        });
+    }
+  }, [isDevelopment, adminInfo]);
 
   // Handle hydration
   useEffect(() => {
     if (!initRef.current) {
       initRef.current = true;
 
-      // Development mode: auto-fill test credentials
+      // Development mode: auto-fill admin credentials for easy testing
       if (isDevelopment) {
-        setEmail(devEmail);
-        setPassword(devPassword);
+        setEmail(adminEmail);
+        setPassword(adminPassword);
         setMounted(true);
         return;
       }
@@ -173,6 +198,30 @@ export function CorporateLoginForm({
 
       // Focus on the email field if there's an error
       emailInputRef.current?.focus();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Quick admin login handler
+  const handleQuickAdminLogin = async () => {
+    setEmail(adminEmail);
+    setPassword(adminPassword);
+    setEmailError('');
+    setPasswordError('');
+    
+    setIsLoading(true);
+    try {
+      await login(adminEmail, adminPassword);
+      toast.success('Admin olarak giriş yaptınız', {
+        description: 'Sisteme hoş geldiniz!',
+      });
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : typeof err === 'string' ? err : 'Giriş başarısız';
+      toast.error('Giriş hatası', {
+        description: errorMessage,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -446,11 +495,63 @@ export function CorporateLoginForm({
               </motion.div>
             </form>
 
+            {/* Admin Test Login Info - Always Visible */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.85 }}
+              className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl backdrop-blur-sm"
+            >
+                  <div className="flex items-start gap-3">
+                <div className="p-2 bg-blue-500/20 rounded-lg">
+                  <User className="h-4 w-4 text-blue-400" />
+                </div>
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold text-blue-300 uppercase tracking-wider">
+                      Admin Test Giriş
+                    </p>
+                    <Button
+                      type="button"
+                      onClick={handleQuickAdminLogin}
+                      disabled={isLoading}
+                      size="sm"
+                      className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-500 text-white border-0"
+                    >
+                      <Zap className="h-3 w-3 mr-1" />
+                      Hızlı Giriş
+                    </Button>
+                  </div>
+                  <div className="space-y-1 text-xs text-slate-300 font-mono">
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-3 w-3 text-slate-400" />
+                      <span className="text-slate-200">{adminInfo?.email || adminEmail}</span>
+                    </div>
+                    {adminInfo?.name && (
+                      <div className="flex items-center gap-2 text-slate-400">
+                        <User className="h-3 w-3" />
+                        <span className="text-slate-300">{adminInfo.name}</span>
+                        <span className="text-slate-500">({adminInfo.role})</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <Lock className="h-3 w-3 text-slate-400" />
+                      <span className="text-slate-200">••••••••</span>
+                      <span className="text-slate-400 text-[10px]">(Test şifresi)</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-2">
+                    💡 Test için admin bilgileri otomatik doldurulur. "Hızlı Giriş" butonuna tıklayarak tek tıkla giriş yapabilirsiniz.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
             {/* Footer */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
+              transition={{ delay: 0.9 }}
               className="mt-8 pt-6 border-t border-white/10 text-center"
             >
               <div className="flex items-center justify-center gap-2 text-slate-500 text-sm font-body">

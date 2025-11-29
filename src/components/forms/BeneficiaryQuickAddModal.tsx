@@ -64,18 +64,19 @@ export function BeneficiaryQuickAddModal({ open, onOpenChange }: BeneficiaryQuic
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingFileNumber, setIsGeneratingFileNumber] = useState(false);
 
-  const form = useForm({
+  const form = useForm<QuickAddBeneficiaryFormData>({
     resolver: zodResolver(quickAddBeneficiarySchema),
+    mode: 'onChange',
     defaultValues: {
-      category: undefined,
+      category: undefined as any,
       firstName: '',
       lastName: '',
       nationality: '',
       birthDate: undefined,
       identityNumber: '',
       mernisCheck: false,
-      fundRegion: undefined,
-      fileConnection: undefined,
+      fundRegion: undefined as any,
+      fileConnection: undefined as any,
       fileNumber: '',
     },
   });
@@ -166,9 +167,9 @@ export function BeneficiaryQuickAddModal({ open, onOpenChange }: BeneficiaryQuic
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
+          <DialogTitle className="flex items-center justify-between text-slate-900 dark:text-slate-100">
             <span>İhtiyaç Sahibi Ekle</span>
             <Button variant="ghost" size="sm" onClick={handleClose} disabled={isLoading}>
               <X className="h-4 w-4" />
@@ -176,15 +177,19 @@ export function BeneficiaryQuickAddModal({ open, onOpenChange }: BeneficiaryQuic
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 text-slate-900 dark:text-slate-100">
           {/* Kategori */}
           <div className="space-y-2">
             <Label htmlFor="category">Kategori *</Label>
             <Select
-              value={form.watch('category')}
-              onValueChange={(value) => setValue('category', value as BeneficiaryCategory)}
+              value={form.watch('category') || ''}
+              onValueChange={(value) => {
+                if (value) {
+                  setValue('category', value as BeneficiaryCategory, { shouldValidate: true });
+                }
+              }}
             >
-              <SelectTrigger>
+              <SelectTrigger id="category" className={form.formState.errors.category ? 'border-red-500' : ''}>
                 <SelectValue placeholder="Kategori seçiniz" />
               </SelectTrigger>
               <SelectContent>
@@ -196,7 +201,7 @@ export function BeneficiaryQuickAddModal({ open, onOpenChange }: BeneficiaryQuic
               </SelectContent>
             </Select>
             {form.formState.errors.category && (
-              <p className="text-sm text-red-500">{form.formState.errors.category.message}</p>
+              <p className="text-sm text-red-500 mt-1">{form.formState.errors.category.message}</p>
             )}
           </div>
 
@@ -290,10 +295,14 @@ export function BeneficiaryQuickAddModal({ open, onOpenChange }: BeneficiaryQuic
           <div className="space-y-2">
             <Label htmlFor="fundRegion">Fon Bölgesi *</Label>
             <Select
-              value={form.watch('fundRegion')}
-              onValueChange={(value) => setValue('fundRegion', value as FundRegion)}
+              value={form.watch('fundRegion') || ''}
+              onValueChange={(value) => {
+                if (value) {
+                  setValue('fundRegion', value as FundRegion, { shouldValidate: true });
+                }
+              }}
             >
-              <SelectTrigger>
+              <SelectTrigger id="fundRegion" className={form.formState.errors.fundRegion ? 'border-red-500' : ''}>
                 <SelectValue placeholder="Fon bölgesi seçiniz" />
               </SelectTrigger>
               <SelectContent>
@@ -305,7 +314,7 @@ export function BeneficiaryQuickAddModal({ open, onOpenChange }: BeneficiaryQuic
               </SelectContent>
             </Select>
             {form.formState.errors.fundRegion && (
-              <p className="text-sm text-red-500">{form.formState.errors.fundRegion.message}</p>
+              <p className="text-sm text-red-500 mt-1">{form.formState.errors.fundRegion.message}</p>
             )}
           </div>
 
@@ -313,10 +322,14 @@ export function BeneficiaryQuickAddModal({ open, onOpenChange }: BeneficiaryQuic
           <div className="space-y-2">
             <Label htmlFor="fileConnection">Dosya Bağlantısı *</Label>
             <Select
-              value={form.watch('fileConnection')}
-              onValueChange={(value) => setValue('fileConnection', value as FileConnection)}
+              value={form.watch('fileConnection') || ''}
+              onValueChange={(value) => {
+                if (value) {
+                  setValue('fileConnection', value as FileConnection, { shouldValidate: true });
+                }
+              }}
             >
-              <SelectTrigger>
+              <SelectTrigger id="fileConnection" className={form.formState.errors.fileConnection ? 'border-red-500' : ''}>
                 <SelectValue placeholder="Dosya bağlantısı seçiniz" />
               </SelectTrigger>
               <SelectContent>
@@ -328,7 +341,7 @@ export function BeneficiaryQuickAddModal({ open, onOpenChange }: BeneficiaryQuic
               </SelectContent>
             </Select>
             {form.formState.errors.fileConnection && (
-              <p className="text-sm text-red-500">{form.formState.errors.fileConnection.message}</p>
+              <p className="text-sm text-red-500 mt-1">{form.formState.errors.fileConnection.message}</p>
             )}
           </div>
 

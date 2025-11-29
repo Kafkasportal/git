@@ -19,6 +19,7 @@ import dynamic from 'next/dynamic';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { BulkActionsToolbar } from '@/components/ui/bulk-actions-toolbar';
 import { toast } from 'sonner';
+import type { DonationDocument } from '@/types/database';
 
 const DonationForm = dynamic(
   () => import('@/components/forms/DonationForm').then((mod) => ({ default: mod.DonationForm })),
@@ -48,41 +49,83 @@ export default function DonationsPage() {
       }),
   });
 
-  const donations = data?.data || [];
+  const donationsList: DonationDocument[] = ((data?.data ?? []) as DonationDocument[]);
 
-  const totalAmount = donations.reduce((sum, d) => sum + d.amount, 0);
+  const totalAmount = donationsList.reduce((sum, d) => sum + d.amount, 0);
 
   // Bulk operations mutations
   const bulkDeleteMutation = useMutation({
-    mutationFn: async (_ids: string[]) => {
-      // TODO: Replace with actual bulk delete API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return { success: true };
+    mutationFn: async (ids: string[]) => {
+      const response = await fetch('/api/donations/bulk-delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ ids }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Bağışlar silinirken bir hata oluştu');
+      }
+
+      const result = await response.json();
+      return result.data;
     },
-    onSuccess: () => {
-      toast.success(`${selectedItems.size} bağış başarıyla silindi`);
+    onSuccess: (data) => {
+      const deleted = data?.deleted || selectedItems.size;
+      const failed = data?.failed || 0;
+      
+      if (failed > 0) {
+        toast.warning(`${deleted} bağış silindi, ${failed} bağış silinemedi`);
+      } else {
+        toast.success(`${deleted} bağış başarıyla silindi`);
+      }
+      
       setSelectedItems(new Set());
       queryClient.invalidateQueries({ queryKey: ['donations'] });
     },
-    onError: () => {
-      toast.error('Bağışlar silinirken bir hata oluştu');
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Bağışlar silinirken bir hata oluştu');
     },
   });
 
   const bulkStatusUpdateMutation = useMutation({
-    mutationFn: async ({ ids: _ids, status }: { ids: string[]; status: string }) => {
-      // TODO: Replace with actual bulk status update API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return { success: true, status };
+    mutationFn: async ({ ids, status }: { ids: string[]; status: string }) => {
+      const response = await fetch('/api/donations/bulk-update-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ ids, status }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Durum güncellenirken bir hata oluştu');
+      }
+
+      const result = await response.json();
+      return result.data;
     },
-    onSuccess: (_, variables) => {
-      const statusLabel = variables.status === 'completed' ? 'Tamamlandı' : 'Beklemede';
-      toast.success(`${selectedItems.size} bağış ${statusLabel} olarak güncellendi`);
+    onSuccess: (data, variables) => {
+      const updated = data?.updated || selectedItems.size;
+      const failed = data?.failed || 0;
+      const statusLabel = variables.status === 'completed' ? 'Tamamlandı' : variables.status === 'cancelled' ? 'İptal Edildi' : 'Beklemede';
+      
+      if (failed > 0) {
+        toast.warning(`${updated} bağış ${statusLabel} olarak güncellendi, ${failed} bağış güncellenemedi`);
+      } else {
+        toast.success(`${updated} bağış ${statusLabel} olarak güncellendi`);
+      }
+      
       setSelectedItems(new Set());
       queryClient.invalidateQueries({ queryKey: ['donations'] });
     },
-    onError: () => {
-      toast.error('Durum güncellenirken bir hata oluştu');
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Durum güncellenirken bir hata oluştu');
     },
   });
 
@@ -96,7 +139,7 @@ export default function DonationsPage() {
     bulkStatusUpdateMutation.mutate({ ids, status });
   };
 
-  const columns: DataTableColumn<(typeof donations)[0]>[] = [
+  const columns: DataTableColumn<(typeof donationsList)[0]>[] = [
     {
       key: 'donor',
       label: 'Bağışçı',
@@ -229,7 +272,7 @@ export default function DonationsPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data?.total || donations.length}</div>
+            <div className="text-2xl font-bold">{data?.total || donationsList.length}</div>
           </CardContent>
         </Card>
 
@@ -250,7 +293,7 @@ export default function DonationsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {donations.reduce((sum, d) => sum + d.amount, 0).toLocaleString('tr-TR')} ₺
+              {donationsList.reduce((sum, d) => sum + d.amount, 0).toLocaleString('tr-TR')} ₺
             </div>
           </CardContent>
         </Card>
@@ -291,11 +334,11 @@ export default function DonationsPage() {
       <Card className="w-full">
         <CardHeader className="pb-4">
           <CardTitle>Bağış Listesi</CardTitle>
-          <CardDescription>Toplam {data?.total || donations.length} bağış kaydı</CardDescription>
+          <CardDescription>Toplam {data?.total || donationsList.length} bağış kaydı</CardDescription>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
           <VirtualizedDataTable
-            data={donations}
+            data={donationsList}
             columns={columns}
             isLoading={isLoading}
             emptyMessage="Bağış kaydı bulunamadı"
