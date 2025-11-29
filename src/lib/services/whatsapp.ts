@@ -84,6 +84,43 @@ export async function initializeWhatsApp(): Promise<void> {
   try {
     logger.info('Initializing WhatsApp client...', { service: 'whatsapp' });
 
+    // Detect Chromium executable path (system or bundled)
+    let executablePath: string | undefined;
+
+    // Check if Puppeteer downloaded Chromium was skipped
+    if (process.env.PUPPETEER_SKIP_DOWNLOAD === 'true') {
+      // Try to find system Chrome/Chromium
+      const possiblePaths = [
+        '/usr/bin/chromium-browser',
+        '/usr/bin/chromium',
+        '/usr/bin/google-chrome',
+        '/usr/bin/google-chrome-stable',
+        '/snap/bin/chromium',
+      ];
+
+      for (const chromePath of possiblePaths) {
+        try {
+          const fs = require('fs');
+          if (fs.existsSync(chromePath)) {
+            executablePath = chromePath;
+            logger.info('Found system Chrome/Chromium', {
+              service: 'whatsapp',
+              path: executablePath
+            });
+            break;
+          }
+        } catch (error) {
+          // Continue checking other paths
+        }
+      }
+
+      if (!executablePath) {
+        throw new Error(
+          'Chrome/Chromium not found. Please install Chrome/Chromium or set PUPPETEER_SKIP_DOWNLOAD=false to download bundled Chromium.'
+        );
+      }
+    }
+
     // Create client with session persistence
     whatsappClient = new Client({
       authStrategy: new LocalAuth({
@@ -91,6 +128,7 @@ export async function initializeWhatsApp(): Promise<void> {
       }),
       puppeteer: {
         headless: true,
+        executablePath, // Use system Chrome if found
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
