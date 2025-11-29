@@ -539,7 +539,7 @@ export function CorporateLoginForm({
                     </div>
                   </div>
                   <p className="text-[10px] text-slate-400 mt-2">
-                    💡 Test için admin bilgileri otomatik doldurulur. "Hızlı Giriş" butonuna tıklayarak tek tıkla giriş yapabilirsiniz.
+                    💡 Test için admin bilgileri otomatik doldurulur. &quot;Hızlı Giriş&quot; butonuna tıklayarak tek tıkla giriş yapabilirsiniz.
                   </p>
                 </div>
               </div>

@@ -40,7 +40,7 @@ vi.mock('@/lib/api/route-helpers', () => ({
 // Mock auth
 vi.mock('@/lib/api/auth-utils', () => ({
   requireAuthenticatedUser: vi.fn().mockResolvedValue({
-    user: { id: 'test-user', permissions: ['todos:read'] },
+    user: { id: 'test-user', email: 'test@example.com', name: 'Test User', isActive: true, permissions: ['todos:read'] },
   }),
   verifyCsrfToken: vi.fn().mockResolvedValue(undefined),
 }));

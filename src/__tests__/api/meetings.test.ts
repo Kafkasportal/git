@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockDocuments } from '../test-utils';
 import { GET, POST } from '@/app/api/meetings/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
@@ -56,7 +57,7 @@ describe('GET /api/meetings', () => {
   });
 
   it('returns meetings list successfully', async () => {
-    const mockMeetings = [
+    const mockMeetings = createMockDocuments([
       {
         _id: '1',
         title: 'Test Meeting 1',
@@ -73,7 +74,7 @@ describe('GET /api/meetings', () => {
         status: 'completed',
         meeting_type: 'board',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteMeetings.list).mockResolvedValue({
       documents: mockMeetings,
@@ -90,13 +91,13 @@ describe('GET /api/meetings', () => {
   });
 
   it('filters by organizer', async () => {
-    const mockMeetings = [
+    const mockMeetings = createMockDocuments([
       {
         _id: '1',
         title: 'Test Meeting',
         organizer: 'user1',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteMeetings.list).mockResolvedValue({
       documents: mockMeetings,

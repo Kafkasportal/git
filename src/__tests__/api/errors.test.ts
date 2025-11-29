@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockDocuments } from '../test-utils';
 import { GET, POST } from '@/app/api/errors/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
@@ -51,7 +52,7 @@ describe('GET /api/errors', () => {
   });
 
   it('returns error list successfully', async () => {
-    const mockErrors = [
+    const mockErrors = createMockDocuments([
       {
         _id: '1',
         error_code: 'ERR001',
@@ -68,7 +69,7 @@ describe('GET /api/errors', () => {
         severity: 'medium',
         status: 'assigned',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteErrors.list).mockResolvedValue({
       documents: mockErrors,
@@ -84,13 +85,13 @@ describe('GET /api/errors', () => {
   });
 
   it('filters by status', async () => {
-    const mockErrors = [
+    const mockErrors = createMockDocuments([
       {
         _id: '1',
         status: 'new',
         error_code: 'ERR001',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteErrors.list).mockResolvedValue({
       documents: mockErrors,
@@ -111,13 +112,13 @@ describe('GET /api/errors', () => {
   });
 
   it('filters by severity', async () => {
-    const mockErrors = [
+    const mockErrors = createMockDocuments([
       {
         _id: '1',
         severity: 'critical',
         error_code: 'ERR001',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteErrors.list).mockResolvedValue({
       documents: mockErrors,
@@ -138,13 +139,13 @@ describe('GET /api/errors', () => {
   });
 
   it('filters by category', async () => {
-    const mockErrors = [
+    const mockErrors = createMockDocuments([
       {
         _id: '1',
         category: 'security',
         error_code: 'ERR001',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteErrors.list).mockResolvedValue({
       documents: mockErrors,

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockDocuments } from '../test-utils';
 import { GET, POST } from '@/app/api/donations/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
@@ -91,7 +92,7 @@ describe('GET /api/donations', () => {
   });
 
   it('returns donations list successfully', async () => {
-    const mockDonations = [
+    const mockDonations = createMockDocuments([
       {
         _id: '1',
         donor_name: 'Test Donor',
@@ -114,7 +115,7 @@ describe('GET /api/donations', () => {
         receipt_number: 'REC-002',
         status: 'completed',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteDonations.list).mockResolvedValue({
       documents: mockDonations,
@@ -131,13 +132,13 @@ describe('GET /api/donations', () => {
   });
 
   it('filters by donor_email', async () => {
-    const mockDonations = [
+    const mockDonations = createMockDocuments([
       {
         _id: '1',
         donor_name: 'Test Donor',
         donor_email: 'test@example.com',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteDonations.list).mockResolvedValue({
       documents: mockDonations,

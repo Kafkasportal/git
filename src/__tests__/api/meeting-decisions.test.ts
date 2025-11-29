@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockDocuments } from '../test-utils';
 import { GET, POST } from '@/app/api/meeting-decisions/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
@@ -20,7 +21,7 @@ vi.mock('@/lib/appwrite/api', () => ({
 // Mock auth
 vi.mock('@/lib/api/auth-utils', () => ({
   requireModuleAccess: vi.fn().mockResolvedValue({
-    user: { id: 'test-user', permissions: ['workflow:read'] },
+    user: { id: 'test-user', email: 'test@example.com', name: 'Test User', isActive: true, permissions: ['workflow:read'] },
   }),
   verifyCsrfToken: vi.fn().mockResolvedValue(undefined),
   buildErrorResponse: vi.fn().mockReturnValue(null),
@@ -39,7 +40,7 @@ describe('GET /api/meeting-decisions', () => {
   });
 
   it('returns decisions list successfully', async () => {
-    const mockDecisions = [
+    const mockDecisions = createMockDocuments([
       {
         _id: '1',
         meeting_id: 'meeting-1',
@@ -52,7 +53,7 @@ describe('GET /api/meeting-decisions', () => {
         title: 'Decision 2',
         status: 'devam',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteMeetingDecisions.list).mockResolvedValue({
       documents: mockDecisions,
@@ -69,13 +70,13 @@ describe('GET /api/meeting-decisions', () => {
   });
 
   it('filters by meeting_id', async () => {
-    const mockDecisions = [
+    const mockDecisions = createMockDocuments([
       {
         _id: '1',
         meeting_id: 'meeting-1',
         title: 'Decision',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteMeetingDecisions.list).mockResolvedValue({
       documents: mockDecisions,
@@ -94,13 +95,13 @@ describe('GET /api/meeting-decisions', () => {
   });
 
   it('filters by owner', async () => {
-    const mockDecisions = [
+    const mockDecisions = createMockDocuments([
       {
         _id: '1',
         owner: 'user1',
         title: 'Decision',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteMeetingDecisions.list).mockResolvedValue({
       documents: mockDecisions,
@@ -119,13 +120,13 @@ describe('GET /api/meeting-decisions', () => {
   });
 
   it('filters by status', async () => {
-    const mockDecisions = [
+    const mockDecisions = createMockDocuments([
       {
         _id: '1',
         status: 'kapatildi',
         title: 'Closed Decision',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteMeetingDecisions.list).mockResolvedValue({
       documents: mockDecisions,

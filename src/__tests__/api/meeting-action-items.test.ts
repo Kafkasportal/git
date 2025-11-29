@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockDocuments } from '../test-utils';
 import { GET, POST } from '@/app/api/meeting-action-items/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
@@ -20,7 +21,7 @@ vi.mock('@/lib/appwrite/api', () => ({
 // Mock auth
 vi.mock('@/lib/api/auth-utils', () => ({
   requireModuleAccess: vi.fn().mockResolvedValue({
-    user: { id: 'test-user', permissions: ['workflow:read'] },
+    user: { id: 'test-user', email: 'test@example.com', name: 'Test User', isActive: true, permissions: ['workflow:read'] },
   }),
   verifyCsrfToken: vi.fn().mockResolvedValue(undefined),
   buildErrorResponse: vi.fn().mockReturnValue(null),
@@ -39,7 +40,7 @@ describe('GET /api/meeting-action-items', () => {
   });
 
   it('returns action items list successfully', async () => {
-    const mockActionItems = [
+    const mockActionItems = createMockDocuments([
       {
         _id: '1',
         meeting_id: 'meeting-1',
@@ -54,7 +55,7 @@ describe('GET /api/meeting-action-items', () => {
         assigned_to: 'user2',
         status: 'devam',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteMeetingActionItems.list).mockResolvedValue({
       documents: mockActionItems,
@@ -71,13 +72,13 @@ describe('GET /api/meeting-action-items', () => {
   });
 
   it('filters by meeting_id', async () => {
-    const mockActionItems = [
+    const mockActionItems = createMockDocuments([
       {
         _id: '1',
         meeting_id: 'meeting-1',
         title: 'Action Item',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteMeetingActionItems.list).mockResolvedValue({
       documents: mockActionItems,
@@ -98,13 +99,13 @@ describe('GET /api/meeting-action-items', () => {
   });
 
   it('filters by assigned_to', async () => {
-    const mockActionItems = [
+    const mockActionItems = createMockDocuments([
       {
         _id: '1',
         assigned_to: 'user1',
         title: 'Action Item',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteMeetingActionItems.list).mockResolvedValue({
       documents: mockActionItems,
@@ -123,13 +124,13 @@ describe('GET /api/meeting-action-items', () => {
   });
 
   it('filters by status', async () => {
-    const mockActionItems = [
+    const mockActionItems = createMockDocuments([
       {
         _id: '1',
         status: 'hazir',
         title: 'Completed Action Item',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteMeetingActionItems.list).mockResolvedValue({
       documents: mockActionItems,

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockDocuments } from '../test-utils';
 import { GET, POST } from '@/app/api/partners/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
@@ -45,7 +46,7 @@ vi.mock('@/lib/api/route-helpers', () => ({
 // Mock auth
 vi.mock('@/lib/api/auth-utils', () => ({
   requireAuthenticatedUser: vi.fn().mockResolvedValue({
-    user: { id: 'test-user', permissions: ['partners:read'] },
+    user: { id: 'test-user', email: 'test@example.com', name: 'Test User', isActive: true, permissions: ['partners:read'] },
   }),
   verifyCsrfToken: vi.fn().mockResolvedValue(undefined),
 }));
@@ -56,7 +57,7 @@ describe('GET /api/partners', () => {
   });
 
   it('returns partners list successfully', async () => {
-    const mockPartners = [
+    const mockPartners = createMockDocuments([
       {
         _id: '1',
         name: 'Partner 1',
@@ -71,7 +72,7 @@ describe('GET /api/partners', () => {
         partnership_type: 'volunteer',
         status: 'active',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwritePartners.list).mockResolvedValue({
       documents: mockPartners,
@@ -88,13 +89,13 @@ describe('GET /api/partners', () => {
   });
 
   it('filters by type', async () => {
-    const mockPartners = [
+    const mockPartners = createMockDocuments([
       {
         _id: '1',
         name: 'Organization Partner',
         type: 'organization',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwritePartners.list).mockResolvedValue({
       documents: mockPartners,
@@ -113,13 +114,13 @@ describe('GET /api/partners', () => {
   });
 
   it('filters by status', async () => {
-    const mockPartners = [
+    const mockPartners = createMockDocuments([
       {
         _id: '1',
         name: 'Active Partner',
         status: 'active',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwritePartners.list).mockResolvedValue({
       documents: mockPartners,
@@ -138,13 +139,13 @@ describe('GET /api/partners', () => {
   });
 
   it('filters by partnership_type', async () => {
-    const mockPartners = [
+    const mockPartners = createMockDocuments([
       {
         _id: '1',
         name: 'Donor Partner',
         partnership_type: 'donor',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwritePartners.list).mockResolvedValue({
       documents: mockPartners,

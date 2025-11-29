@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockDocuments } from '../test-utils';
 import { GET } from '@/app/api/communication-logs/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
@@ -48,7 +49,7 @@ describe('GET /api/communication-logs', () => {
   });
 
   it('returns communication logs successfully', async () => {
-    const mockLogs = [
+    const mockLogs = createMockDocuments([
       {
         _id: '1',
         type: 'email',
@@ -63,7 +64,7 @@ describe('GET /api/communication-logs', () => {
         recipient: '905551234567',
         message: 'Test SMS',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteCommunicationLogs.list).mockResolvedValue({
       documents: mockLogs,
@@ -79,13 +80,13 @@ describe('GET /api/communication-logs', () => {
   });
 
   it('filters by type', async () => {
-    const mockLogs = [
+    const mockLogs = createMockDocuments([
       {
         _id: '1',
         type: 'email',
         status: 'sent',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteCommunicationLogs.list).mockResolvedValue({
       documents: mockLogs,
@@ -106,13 +107,13 @@ describe('GET /api/communication-logs', () => {
   });
 
   it('filters by status', async () => {
-    const mockLogs = [
+    const mockLogs = createMockDocuments([
       {
         _id: '1',
         type: 'sms',
         status: 'failed',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteCommunicationLogs.list).mockResolvedValue({
       documents: mockLogs,
@@ -133,12 +134,12 @@ describe('GET /api/communication-logs', () => {
   });
 
   it('handles limit parameter', async () => {
-    const mockLogs = [
+    const mockLogs = createMockDocuments([
       {
         _id: '1',
         type: 'email',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteCommunicationLogs.list).mockResolvedValue({
       documents: mockLogs,

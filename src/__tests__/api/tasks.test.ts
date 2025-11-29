@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createMockDocuments } from '../test-utils';
 import { GET, POST } from '@/app/api/tasks/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
@@ -49,7 +50,7 @@ describe('GET /api/tasks', () => {
   });
 
   it('returns tasks list successfully', async () => {
-    const mockTasks = [
+    const mockTasks = createMockDocuments([
       {
         _id: '1',
         title: 'Test Task 1',
@@ -68,7 +69,7 @@ describe('GET /api/tasks', () => {
         assigned_to: 'user2',
         created_by: 'user1',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteTasks.list).mockResolvedValue({
       documents: mockTasks,
@@ -86,13 +87,13 @@ describe('GET /api/tasks', () => {
   });
 
   it('filters by assigned_to', async () => {
-    const mockTasks = [
+    const mockTasks = createMockDocuments([
       {
         _id: '1',
         title: 'Test Task',
         assigned_to: 'user1',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteTasks.list).mockResolvedValue({
       documents: mockTasks,
@@ -111,13 +112,13 @@ describe('GET /api/tasks', () => {
   });
 
   it('filters by created_by', async () => {
-    const mockTasks = [
+    const mockTasks = createMockDocuments([
       {
         _id: '1',
         title: 'Test Task',
         created_by: 'user1',
       },
-    ];
+    ]);
 
     vi.mocked(appwriteApi.appwriteTasks.list).mockResolvedValue({
       documents: mockTasks,
