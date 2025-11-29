@@ -16,7 +16,8 @@ describe("useCountUp", () => {
   });
 
   it("should start at start value and end at end value", async () => {
-    // Use real timers for this test since it uses requestAnimationFrame
+    // Use real timers for this test since useCountUp uses requestAnimationFrame 
+    // which doesn't work well with fake timers - it needs actual animation frames
     vi.useRealTimers();
     
     const { result } = renderHook(() =>

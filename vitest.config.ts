@@ -5,6 +5,7 @@ import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  // Override PostCSS config for tests to prevent TailwindCSS v4/lightningcss native binding issues
   css: {
     postcss: {},
   },
