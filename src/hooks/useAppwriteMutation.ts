@@ -97,7 +97,7 @@ export function useAppwriteMutation<
       return mutationFn(variables);
     },
     ...options,
-    onSuccess: (data, variables) => {
+    onSuccess: (data, variables, context) => {
       // Only invalidate queries and show toasts if mutation was actually executed (not queued)
       if (!isOffline || !enableOfflineQueue) {
         // Invalidate queries
@@ -116,7 +116,7 @@ export function useAppwriteMutation<
         onSuccess?.(data, variables, context);
       }
     },
-    onError: (error, variables) => {
+    onError: (error, variables, context) => {
       // Show error toast
       if (showErrorToast) {
         const message =
