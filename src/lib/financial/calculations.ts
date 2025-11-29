@@ -86,14 +86,21 @@ export function matchesDateFilter(
   customStartDate: string,
   customEndDate: string
 ): boolean {
+  const recordDateObj = new Date(recordDate);
+  const now = new Date();
+
   if (dateFilter === 'today') {
-    const today = new Date().toISOString().split('T')[0];
-    return recordDate.startsWith(today);
+    return (
+      recordDateObj.getDate() === now.getDate() &&
+      recordDateObj.getMonth() === now.getMonth() &&
+      recordDateObj.getFullYear() === now.getFullYear()
+    );
   }
 
   if (dateFilter === 'thisMonth') {
-    const thisMonth = new Date().toISOString().slice(0, 7);
-    return recordDate.startsWith(thisMonth);
+    return (
+      recordDateObj.getMonth() === now.getMonth() && recordDateObj.getFullYear() === now.getFullYear()
+    );
   }
 
   if (dateFilter === 'custom' && customStartDate && customEndDate) {
@@ -104,7 +111,6 @@ export function matchesDateFilter(
       return false;
     }
 
-    const recordDateObj = new Date(recordDate);
     const startDateObj = new Date(`${customStartDate}T00:00:00`);
     const endDateObj = new Date(`${customEndDate}T23:59:59`);
 

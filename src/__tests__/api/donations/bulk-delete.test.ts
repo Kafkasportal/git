@@ -12,7 +12,14 @@ vi.mock('@/lib/appwrite/api', () => ({
 
 // Mock route helpers
 vi.mock('@/lib/api/route-helpers', () => ({
-  parseBody: vi.fn(),
+  parseBody: vi.fn(async (req) => {
+    try {
+      const data = await req.json();
+      return { data, error: null };
+    } catch {
+      return { data: null, error: 'Invalid JSON' };
+    }
+  }),
   successResponse: vi.fn((data, message, status) => {
     return new Response(JSON.stringify({ success: true, data, message }), {
       status: status || 200,
@@ -33,6 +40,7 @@ vi.mock('@/lib/api/auth-utils', () => ({
     user: { id: 'test-user', role: 'ADMIN' },
     session: { userId: 'test-user' },
   }),
+  requireModuleAccess: vi.fn().mockResolvedValue(true),
   verifyCsrfToken: vi.fn().mockResolvedValue(undefined),
 }));
 
