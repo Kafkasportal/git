@@ -1,0 +1,628 @@
+/**
+ * Premium Animation System
+ * Ultra-smooth 120 FPS-like transitions
+ */
+
+/* ============================================
+   GPU ACCELERATION & PERFORMANCE
+   ============================================ */
+
+/* Force GPU acceleration for smooth animations */
+.gpu-accelerate {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: transform, opacity;
+}
+
+/* Containment for better performance */
+.contain-strict {
+  contain: strict;
+}
+
+.contain-layout {
+  contain: layout style paint;
+}
+
+/* ============================================
+   PREMIUM EASING FUNCTIONS
+   ============================================ */
+
+:root {
+  /* Ultra-smooth easings */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.4, 0.64, 1);
+  
+  /* Duration presets */
+  --duration-instant: 100ms;
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  --duration-slower: 600ms;
+}
+
+/* ============================================
+   PAGE TRANSITIONS
+   ============================================ */
+
+/* Fade in with subtle slide */
+@keyframes page-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* Fade out */
+@keyframes page-exit {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.99);
+  }
+}
+
+.page-enter {
+  animation: page-enter var(--duration-normal) var(--ease-out-expo) forwards;
+}
+
+.page-exit {
+  animation: page-exit var(--duration-fast) var(--ease-out-quart) forwards;
+}
+
+/* Smooth page wrapper */
+.page-transition-wrapper {
+  animation: page-enter var(--duration-normal) var(--ease-out-expo);
+  will-change: opacity, transform;
+}
+
+/* ============================================
+   CARD & CONTAINER ANIMATIONS
+   ============================================ */
+
+/* Premium card hover */
+.card-premium {
+  transition: 
+    transform var(--duration-normal) var(--ease-out-expo),
+    box-shadow var(--duration-normal) var(--ease-out-quart),
+    border-color var(--duration-fast) ease;
+  will-change: transform, box-shadow;
+}
+
+.card-premium:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 
+    0 20px 40px -12px rgba(0, 0, 0, 0.15),
+    0 8px 16px -8px rgba(0, 0, 0, 0.1);
+}
+
+.card-premium:active {
+  transform: translateY(-2px) scale(1.005);
+  transition-duration: var(--duration-instant);
+}
+
+/* Subtle lift effect */
+.hover-lift {
+  transition: transform var(--duration-normal) var(--ease-out-expo);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+/* Scale on hover */
+.hover-scale {
+  transition: transform var(--duration-fast) var(--ease-out-quart);
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+.hover-scale:active {
+  transform: scale(0.98);
+}
+
+/* ============================================
+   BUTTON ANIMATIONS
+   ============================================ */
+
+.btn-premium {
+  position: relative;
+  overflow: hidden;
+  transition: 
+    transform var(--duration-fast) var(--ease-out-expo),
+    box-shadow var(--duration-normal) var(--ease-out-quart),
+    background-color var(--duration-fast) ease;
+  will-change: transform;
+}
+
+.btn-premium::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0) 50%
+  );
+  opacity: 0;
+  transition: opacity var(--duration-fast) ease;
+}
+
+.btn-premium:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-premium:hover::before {
+  opacity: 1;
+}
+
+.btn-premium:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: var(--duration-instant);
+}
+
+/* Ripple effect */
+@keyframes ripple-effect {
+  0% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-ripple::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.btn-ripple:active::after {
+  animation: ripple-effect var(--duration-slow) var(--ease-out-expo);
+}
+
+/* ============================================
+   LIST & STAGGER ANIMATIONS
+   ============================================ */
+
+@keyframes stagger-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-list > * {
+  opacity: 0;
+  animation: stagger-fade-in var(--duration-normal) var(--ease-out-expo) forwards;
+}
+
+.stagger-list > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-list > *:nth-child(2) { animation-delay: 50ms; }
+.stagger-list > *:nth-child(3) { animation-delay: 100ms; }
+.stagger-list > *:nth-child(4) { animation-delay: 150ms; }
+.stagger-list > *:nth-child(5) { animation-delay: 200ms; }
+.stagger-list > *:nth-child(6) { animation-delay: 250ms; }
+.stagger-list > *:nth-child(7) { animation-delay: 300ms; }
+.stagger-list > *:nth-child(8) { animation-delay: 350ms; }
+.stagger-list > *:nth-child(9) { animation-delay: 400ms; }
+.stagger-list > *:nth-child(10) { animation-delay: 450ms; }
+
+/* Fast stagger for tables */
+.stagger-fast > * {
+  animation-duration: var(--duration-fast);
+}
+
+.stagger-fast > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-fast > *:nth-child(2) { animation-delay: 25ms; }
+.stagger-fast > *:nth-child(3) { animation-delay: 50ms; }
+.stagger-fast > *:nth-child(4) { animation-delay: 75ms; }
+.stagger-fast > *:nth-child(5) { animation-delay: 100ms; }
+
+/* ============================================
+   MODAL & DIALOG ANIMATIONS
+   ============================================ */
+
+@keyframes modal-enter {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modal-exit {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+}
+
+@keyframes backdrop-enter {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+  }
+}
+
+.modal-enter {
+  animation: modal-enter var(--duration-normal) var(--ease-out-expo) forwards;
+}
+
+.modal-exit {
+  animation: modal-exit var(--duration-fast) var(--ease-out-quart) forwards;
+}
+
+.backdrop-blur-animate {
+  animation: backdrop-enter var(--duration-normal) var(--ease-out-quart) forwards;
+}
+
+/* ============================================
+   DROPDOWN & MENU ANIMATIONS
+   ============================================ */
+
+@keyframes dropdown-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dropdown-exit {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+.dropdown-enter {
+  animation: dropdown-enter var(--duration-fast) var(--ease-out-expo) forwards;
+  transform-origin: top center;
+}
+
+.dropdown-exit {
+  animation: dropdown-exit var(--duration-instant) var(--ease-out-quart) forwards;
+}
+
+/* ============================================
+   TOAST & NOTIFICATION ANIMATIONS
+   ============================================ */
+
+@keyframes toast-enter {
+  0% {
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes toast-exit {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+  }
+}
+
+.toast-enter {
+  animation: toast-enter var(--duration-normal) var(--ease-spring) forwards;
+}
+
+.toast-exit {
+  animation: toast-exit var(--duration-fast) var(--ease-out-quart) forwards;
+}
+
+/* ============================================
+   SKELETON LOADING
+   ============================================ */
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-premium {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--muted) / 0.5) 50%,
+    hsl(var(--muted)) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s var(--ease-in-out-quint) infinite;
+}
+
+/* ============================================
+   PROGRESS & LOADING
+   ============================================ */
+
+@keyframes spin-smooth {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spin-smooth {
+  animation: spin-smooth 1s linear infinite;
+}
+
+@keyframes pulse-smooth {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.98);
+  }
+}
+
+.pulse-smooth {
+  animation: pulse-smooth 2s var(--ease-in-out-quint) infinite;
+}
+
+/* Progress bar animation */
+@keyframes progress-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+.progress-bar-animate {
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar-animate::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: progress-indeterminate 1.5s var(--ease-out-quint) infinite;
+}
+
+/* ============================================
+   SIDEBAR & NAVIGATION
+   ============================================ */
+
+@keyframes slide-in-left {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-out-left {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+}
+
+.slide-in-left {
+  animation: slide-in-left var(--duration-normal) var(--ease-out-expo) forwards;
+}
+
+.slide-out-left {
+  animation: slide-out-left var(--duration-fast) var(--ease-out-quart) forwards;
+}
+
+/* Nav item hover */
+.nav-item-premium {
+  position: relative;
+  transition: 
+    color var(--duration-fast) ease,
+    background-color var(--duration-fast) ease;
+}
+
+.nav-item-premium::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 0;
+  background: hsl(var(--primary));
+  border-radius: 0 2px 2px 0;
+  transform: translateY(-50%);
+  transition: height var(--duration-fast) var(--ease-out-expo);
+}
+
+.nav-item-premium:hover::before,
+.nav-item-premium.active::before {
+  height: 60%;
+}
+
+/* ============================================
+   CHART & DATA VIZ ANIMATIONS
+   ============================================ */
+
+@keyframes chart-grow {
+  0% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.chart-bar-animate {
+  transform-origin: bottom;
+  animation: chart-grow var(--duration-slow) var(--ease-out-expo) forwards;
+}
+
+@keyframes chart-draw {
+  0% {
+    stroke-dashoffset: 1000;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.chart-line-animate {
+  stroke-dasharray: 1000;
+  animation: chart-draw 1.5s var(--ease-out-expo) forwards;
+}
+
+/* ============================================
+   TOOLTIP ANIMATIONS
+   ============================================ */
+
+@keyframes tooltip-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.tooltip-animate {
+  animation: tooltip-enter var(--duration-fast) var(--ease-out-expo) forwards;
+}
+
+/* ============================================
+   FOCUS & ACCESSIBILITY
+   ============================================ */
+
+@keyframes focus-ring-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 4px hsl(var(--primary) / 0.3);
+  }
+}
+
+.focus-ring-animate:focus-visible {
+  animation: focus-ring-pulse 2s var(--ease-in-out-quint) infinite;
+}
+
+/* ============================================
+   SCROLL ANIMATIONS (Intersection Observer)
+   ============================================ */
+
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: 
+    opacity var(--duration-slow) var(--ease-out-expo),
+    transform var(--duration-slow) var(--ease-out-expo);
+}
+
+.animate-on-scroll.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================
+   REDUCED MOTION SUPPORT
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .page-transition-wrapper,
+  .stagger-list > *,
+  .animate-on-scroll {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
