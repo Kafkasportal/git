@@ -23,6 +23,8 @@ const clientEnvSchema = z.object({
 
 // Server-side (private) environment variables schema
 const serverEnvSchema = clientEnvSchema.extend({
+  // NOTE: NODE_ENV is typically set by the hosting platform (Vercel, Netlify, etc.)
+  // Don't override it in project settings to avoid conflicts with global variables
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .optional()
@@ -53,6 +55,10 @@ const serverEnvSchema = clientEnvSchema.extend({
   APPWRITE_API_KEY: z
     .string()
     .min(1, "Appwrite API key is required")
+    .optional(),
+  APPWRITE_SITE_ID: z
+    .string()
+    .min(1, "Appwrite site ID is required")
     .optional(),
 
   // Optional email configuration
@@ -161,6 +167,7 @@ export function validateServerEnv(): ServerEnv {
       NEXT_PUBLIC_APPWRITE_DATABASE_ID:
         process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
       APPWRITE_API_KEY: process.env.APPWRITE_API_KEY,
+      APPWRITE_SITE_ID: process.env.APPWRITE_SITE_ID,
 
       // Optional services
       SMTP_HOST: process.env.SMTP_HOST,

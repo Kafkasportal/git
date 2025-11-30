@@ -20,6 +20,9 @@ export const appwriteConfig = {
   // Appwrite API Key (server-side only)
   apiKey: process.env.APPWRITE_API_KEY || "",
 
+  // Appwrite Site ID (for deployment)
+  siteId: process.env.APPWRITE_SITE_ID || "",
+
   // Storage Bucket IDs
   buckets: {
     documents: process.env.NEXT_PUBLIC_APPWRITE_BUCKET_DOCUMENTS || "documents",
