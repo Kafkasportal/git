@@ -293,7 +293,7 @@ export function PageSkeleton({ className }: { className?: string }) {
   );
 }
 
-export default {
+const LoadingStates = {
   TableSkeleton,
   CardSkeleton,
   ChartSkeleton,
@@ -303,4 +303,6 @@ export default {
   ProfileSkeleton,
   PageSkeleton,
 };
+
+export default LoadingStates;
 

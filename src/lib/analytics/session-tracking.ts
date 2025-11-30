@@ -317,7 +317,7 @@ export function formatDuration(seconds: number): string {
     : `${hours} saat`;
 }
 
-export default {
+const SessionTracking = {
   trackPageView,
   trackEvent,
   setSessionUserId,
@@ -326,4 +326,6 @@ export default {
   initSessionTracking,
   formatDuration,
 };
+
+export default SessionTracking;
 

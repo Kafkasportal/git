@@ -297,7 +297,7 @@ const shimmerStyles = `
 
 export { shimmerStyles };
 
-export default {
+const SkeletonVariants = {
   Skeleton,
   TextSkeleton,
   AvatarSkeleton,
@@ -310,4 +310,6 @@ export default {
   SidebarSkeleton,
   WidgetSkeleton,
 };
+
+export default SkeletonVariants;
 
