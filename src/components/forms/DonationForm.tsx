@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Controller } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -125,6 +125,7 @@ export function DonationForm({ onSuccess, onCancel }: DonationFormProps) {
     onSuccess: (_data) => {
       setReceiptFile(null);
       setAmountDisplay('');
+      setFieldValidation({});
       onSuccess?.();
     },
     resetOnSuccess: true,
@@ -133,6 +134,23 @@ export function DonationForm({ onSuccess, onCancel }: DonationFormProps) {
   // Watch form values for controlled inputs
   const currency = form.watch('currency');
   const paymentMethod = form.watch('payment_method');
+  const donorName = form.watch('donor_name');
+  const donorEmail = form.watch('donor_email');
+  const donationType = form.watch('donation_type');
+  const donationPurpose = form.watch('donation_purpose');
+  const receiptNumber = form.watch('receipt_number');
+  const formAmount = form.watch('amount');
+
+  // Sync amountDisplay with form amount when form is reset (only when formAmount changes externally)
+  useEffect(() => {
+    if (formAmount === 0 || formAmount === undefined) {
+      // Only clear if user hasn't typed anything
+      if (amountDisplay && !amountDisplay.match(/[\d,.]/)) {
+        setAmountDisplay('');
+      }
+    }
+    // Don't auto-format if user is typing - let onChange handle it
+  }, [formAmount]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Card className="w-full max-w-2xl mx-auto relative">
@@ -166,13 +184,19 @@ export function DonationForm({ onSuccess, onCancel }: DonationFormProps) {
               >
                 <Input
                   id="donor_name"
-                  {...form.register('donor_name')}
+                  value={donorName || ''}
                   placeholder="Ahmet Yılmaz"
                   onChange={(e) => {
-                    form.register('donor_name').onChange(e);
-                    if (e.target.value.length > 0) {
-                      void validateField('donor_name', e.target.value);
+                    const value = e.target.value;
+                    form.setValue('donor_name', value, { shouldValidate: true });
+                    if (value.length > 0) {
+                      void validateField('donor_name', value);
+                    } else {
+                      setFieldValidation((prev) => ({ ...prev, donor_name: undefined }));
                     }
+                  }}
+                  onBlur={() => {
+                    form.trigger('donor_name');
                   }}
                   aria-describedby={
                     form.formState.errors.donor_name ? 'donor_name-error' : undefined
@@ -227,12 +251,20 @@ export function DonationForm({ onSuccess, onCancel }: DonationFormProps) {
               <Input
                 id="donor_email"
                 type="email"
-                {...form.register('donor_email')}
+                value={donorEmail || ''}
                 placeholder="ahmet@example.com"
                 onChange={(e) => {
-                  form.register('donor_email').onChange(e);
-                  if (e.target.value.length > 0) {
-                    void validateField('donor_email', e.target.value);
+                  const value = e.target.value;
+                  form.setValue('donor_email', value, { shouldValidate: true });
+                  if (value.length > 0) {
+                    void validateField('donor_email', value);
+                  } else {
+                    setFieldValidation((prev) => ({ ...prev, donor_email: undefined }));
+                  }
+                }}
+                onBlur={() => {
+                  if (donorEmail) {
+                    form.trigger('donor_email');
                   }
                 }}
                 aria-describedby={
@@ -258,13 +290,13 @@ export function DonationForm({ onSuccess, onCancel }: DonationFormProps) {
               >
                 <Input
                   id="amount"
-                  value={amountDisplay}
+                  value={amountDisplay || ''}
                   placeholder="1.000,00"
                   onChange={(e) => {
                     // Format currency input for Turkish locale
-                    let value = e.target.value.replace(/[^\d,]/g, '');
+                    let value = e.target.value.replace(/[^\d,.]/g, '');
 
-                    // Allow only one comma
+                    // Allow only one comma for decimals
                     const parts = value.split(',');
                     if (parts.length > 2) {
                       value = `${parts[0]},${parts.slice(1).join('')}`;
@@ -273,6 +305,13 @@ export function DonationForm({ onSuccess, onCancel }: DonationFormProps) {
                     // Limit decimal places to 2
                     if (parts[1] && parts[1].length > 2) {
                       value = `${parts[0]},${parts[1].substring(0, 2)}`;
+                    }
+
+                    // Format with thousand separators (dots) before comma
+                    const beforeComma = parts[0];
+                    if (beforeComma) {
+                      const formatted = beforeComma.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                      value = parts[1] ? `${formatted},${parts[1]}` : formatted;
                     }
 
                     setAmountDisplay(value);
@@ -284,8 +323,16 @@ export function DonationForm({ onSuccess, onCancel }: DonationFormProps) {
                     if (!isNaN(numValue) && numValue > 0) {
                       form.setValue('amount', numValue, { shouldValidate: true });
                       void validateField('amount', numValue);
+                    } else if (value === '' || value === ',') {
+                      form.setValue('amount', 0, { shouldValidate: false });
+                      setFieldValidation((prev) => ({ ...prev, amount: undefined }));
                     } else {
                       form.setValue('amount', 0, { shouldValidate: false });
+                    }
+                  }}
+                  onBlur={() => {
+                    if (formAmount > 0) {
+                      form.trigger('amount');
                     }
                   }}
                   aria-describedby={form.formState.errors.amount ? 'amount-error' : undefined}
@@ -331,13 +378,19 @@ export function DonationForm({ onSuccess, onCancel }: DonationFormProps) {
               >
                 <Input
                   id="receipt_number"
-                  {...form.register('receipt_number')}
+                  value={receiptNumber || ''}
                   placeholder="MB2024001"
                   onChange={(e) => {
-                    form.register('receipt_number').onChange(e);
-                    if (e.target.value.length > 0) {
-                      void validateField('receipt_number', e.target.value);
+                    const value = e.target.value;
+                    form.setValue('receipt_number', value, { shouldValidate: true });
+                    if (value.length > 0) {
+                      void validateField('receipt_number', value);
+                    } else {
+                      setFieldValidation((prev) => ({ ...prev, receipt_number: undefined }));
                     }
+                  }}
+                  onBlur={() => {
+                    form.trigger('receipt_number');
                   }}
                   aria-describedby={
                     form.formState.errors.receipt_number ? 'receipt_number-error' : undefined
@@ -358,13 +411,19 @@ export function DonationForm({ onSuccess, onCancel }: DonationFormProps) {
               >
                 <Input
                   id="donation_type"
-                  {...form.register('donation_type')}
+                  value={donationType || ''}
                   placeholder="Nakdi, Ayni, Gıda..."
                   onChange={(e) => {
-                    form.register('donation_type').onChange(e);
-                    if (e.target.value.length > 0) {
-                      void validateField('donation_type', e.target.value);
+                    const value = e.target.value;
+                    form.setValue('donation_type', value, { shouldValidate: true });
+                    if (value.length > 0) {
+                      void validateField('donation_type', value);
+                    } else {
+                      setFieldValidation((prev) => ({ ...prev, donation_type: undefined }));
                     }
+                  }}
+                  onBlur={() => {
+                    form.trigger('donation_type');
                   }}
                   aria-describedby={
                     form.formState.errors.donation_type ? 'donation_type-error' : undefined
@@ -417,13 +476,19 @@ export function DonationForm({ onSuccess, onCancel }: DonationFormProps) {
             >
               <Input
                 id="donation_purpose"
-                {...form.register('donation_purpose')}
+                value={donationPurpose || ''}
                 placeholder="Ramazan paketi, Eğitim yardımı, Sağlık desteği..."
                 onChange={(e) => {
-                  form.register('donation_purpose').onChange(e);
-                  if (e.target.value.length > 0) {
-                    void validateField('donation_purpose', e.target.value);
+                  const value = e.target.value;
+                  form.setValue('donation_purpose', value, { shouldValidate: true });
+                  if (value.length > 0) {
+                    void validateField('donation_purpose', value);
+                  } else {
+                    setFieldValidation((prev) => ({ ...prev, donation_purpose: undefined }));
                   }
+                }}
+                onBlur={() => {
+                  form.trigger('donation_purpose');
                 }}
                 aria-describedby={
                   form.formState.errors.donation_purpose ? 'donation_purpose-error' : undefined
