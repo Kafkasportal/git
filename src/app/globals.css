@@ -614,85 +614,9 @@
     contain: layout style paint;
   }
 
-  /* Gradient Animation Keyframes */
-  @keyframes gradient-shift {
-    0%,
-    100% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-  }
+  /* Gradient Animation - see keyframes at bottom of file */
 
-  @keyframes gradient-rotate {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-
-  /* Loading Animation Keyframes */
-  @keyframes bounce-dot {
-    0%,
-    80%,
-    100% {
-      transform: scale(0.8);
-      opacity: 0.5;
-    }
-    40% {
-      transform: scale(1.2);
-      opacity: 1;
-    }
-  }
-
-  @keyframes ripple {
-    0% {
-      transform: scale(0.8);
-      opacity: 1;
-    }
-    100% {
-      transform: scale(2.5);
-      opacity: 0;
-    }
-  }
-
-  @keyframes pulse-ring {
-    0% {
-      transform: scale(0.95);
-      opacity: 0.7;
-    }
-    50% {
-      transform: scale(1.05);
-      opacity: 0.3;
-    }
-    100% {
-      transform: scale(0.95);
-      opacity: 0.7;
-    }
-  }
-
-  @keyframes shimmer {
-    0% {
-      transform: translateX(-100%);
-    }
-    100% {
-      transform: translateX(100%);
-    }
-  }
-
-  /* Floating Animation Keyframes */
-  @keyframes float {
-    0%,
-    100% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
-  }
+  /* Floating Animation - see keyframes at bottom of file */
 
   /* Gradient Background Utilities */
   .bg-gradient-subtle {
@@ -759,17 +683,6 @@
   /* Smooth Page Transitions */
   .page-transition {
     animation: fadeInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
   }
 
   /* Enhanced Button Interactions */
@@ -869,15 +782,6 @@
     animation: fadeIn 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
   /* Toast/Notification Animations */
   .toast-enter {
     animation: slideInRight 300ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -885,28 +789,6 @@
 
   .toast-exit {
     animation: slideOutRight 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  @keyframes slideInRight {
-    from {
-      opacity: 0;
-      transform: translateX(100%);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
-  @keyframes slideOutRight {
-    from {
-      opacity: 1;
-      transform: translateX(0);
-    }
-    to {
-      opacity: 0;
-      transform: translateX(100%);
-    }
   }
 
   /* Stagger Animation for Lists */
@@ -999,5 +881,134 @@
     transform: translateZ(0);
     backface-visibility: hidden;
     perspective: 1000px;
+  }
+}
+
+/* ============================================
+   KEYFRAMES - Outside of @layer for CSS optimizer compatibility
+   ============================================ */
+
+/* Gradient Animation Keyframes */
+@keyframes gradient-shift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes gradient-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Loading Animation Keyframes */
+@keyframes bounce-dot {
+  0%,
+  80%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Floating Animation Keyframes */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Page Transition Keyframes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Modal/Dialog Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Toast/Notification Keyframes */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
   }
 }
