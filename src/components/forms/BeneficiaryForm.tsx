@@ -67,6 +67,7 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
     handleSubmit,
     setValue,
     watch,
+    trigger,
     formState: { errors },
   } = useForm<BeneficiaryFormData>({
     resolver: zodResolver(beneficiarySchema) as any,
@@ -76,6 +77,15 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
       status: "active",
     },
   });
+
+  // Watch form values for controlled inputs
+  const name = watch('name');
+  const tcNo = watch('tc_no');
+  const phone = watch('phone');
+  const address = watch('address');
+  const city = watch('city');
+  const district = watch('district');
+  const neighborhood = watch('neighborhood');
 
   const createBeneficiaryMutation = useMutation({
     mutationFn: async (data: BeneficiaryFormData) => {
@@ -199,9 +209,16 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
               >
                 <Input
                   id="name"
-                  {...register("name")}
+                  value={name || ''}
                   placeholder="Ahmet Yılmaz"
-                  onChange={handleNameChange}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setValue('name', value, { shouldValidate: true });
+                    handleNameChange(e);
+                  }}
+                  onBlur={() => {
+                    trigger('name');
+                  }}
                   aria-describedby={errors.name ? "name-error" : undefined}
                   aria-invalid={!!errors.name}
                   disabled={isSubmitting}
@@ -217,10 +234,17 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
               >
                 <Input
                   id="tc_no"
-                  {...register("tc_no")}
+                  value={tcNo || ''}
                   placeholder="12345678901"
                   maxLength={11}
-                  onChange={handleTCChange}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 11);
+                    setValue('tc_no', value, { shouldValidate: true });
+                    handleTCChange(e);
+                  }}
+                  onBlur={() => {
+                    trigger('tc_no');
+                  }}
                   aria-describedby={errors.tc_no ? "tc_no-error" : undefined}
                   aria-invalid={!!errors.tc_no}
                   disabled={isSubmitting}
@@ -237,9 +261,16 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
             >
               <Input
                 id="phone"
-                {...register("phone")}
+                value={phone || ''}
                 placeholder="5551234567"
-                onChange={handlePhoneChange}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                  setValue('phone', value, { shouldValidate: true });
+                  handlePhoneChange(e);
+                }}
+                onBlur={() => {
+                  trigger('phone');
+                }}
                 maxLength={10}
                 aria-describedby={errors.phone ? "phone-error" : undefined}
                 aria-invalid={!!errors.phone}
@@ -256,9 +287,15 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
               <Label htmlFor="address">Adres *</Label>
               <Textarea
                 id="address"
-                {...register("address")}
+                value={address || ''}
                 placeholder="Mahalle, Cadde, Sokak, No"
                 rows={3}
+                onChange={(e) => {
+                  setValue('address', e.target.value, { shouldValidate: true });
+                }}
+                onBlur={() => {
+                  trigger('address');
+                }}
               />
               {errors.address && (
                 <p className="text-sm text-red-600">{errors.address.message}</p>
@@ -268,7 +305,17 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="city">Şehir *</Label>
-                <Input id="city" {...register("city")} placeholder="İstanbul" />
+                <Input
+                  id="city"
+                  value={city || ''}
+                  placeholder="İstanbul"
+                  onChange={(e) => {
+                    setValue('city', e.target.value, { shouldValidate: true });
+                  }}
+                  onBlur={() => {
+                    trigger('city');
+                  }}
+                />
                 {errors.city && (
                   <p className="text-sm text-red-600">{errors.city.message}</p>
                 )}
@@ -278,8 +325,14 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
                 <Label htmlFor="district">İlçe *</Label>
                 <Input
                   id="district"
-                  {...register("district")}
+                  value={district || ''}
                   placeholder="Kadıköy"
+                  onChange={(e) => {
+                    setValue('district', e.target.value, { shouldValidate: true });
+                  }}
+                  onBlur={() => {
+                    trigger('district');
+                  }}
                 />
                 {errors.district && (
                   <p className="text-sm text-red-600">
@@ -292,8 +345,14 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
                 <Label htmlFor="neighborhood">Mahalle *</Label>
                 <Input
                   id="neighborhood"
-                  {...register("neighborhood")}
+                  value={neighborhood || ''}
                   placeholder="Caferağa"
+                  onChange={(e) => {
+                    setValue('neighborhood', e.target.value, { shouldValidate: true });
+                  }}
+                  onBlur={() => {
+                    trigger('neighborhood');
+                  }}
                 />
                 {errors.neighborhood && (
                   <p className="text-sm text-red-600">

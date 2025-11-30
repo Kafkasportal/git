@@ -84,6 +84,11 @@ export function BeneficiaryQuickAddModal({ open, onOpenChange }: BeneficiaryQuic
   const { watch, setValue, reset } = form;
   const watchedCategory = watch('category');
   const watchedFundRegion = watch('fundRegion');
+  const firstName = watch('firstName');
+  const lastName = watch('lastName');
+  const nationality = watch('nationality');
+  const identityNumber = watch('identityNumber');
+  const fileNumber = watch('fileNumber');
 
   // Dosya numarası otomatik oluşturma
   const handleGenerateFileNumber = async () => {
@@ -211,8 +216,14 @@ export function BeneficiaryQuickAddModal({ open, onOpenChange }: BeneficiaryQuic
               <Label htmlFor="firstName">Ad *</Label>
               <Input
                 id="firstName"
-                {...form.register('firstName')}
+                value={firstName || ''}
                 placeholder="Ad"
+                onChange={(e) => {
+                  setValue('firstName', e.target.value, { shouldValidate: true });
+                }}
+                onBlur={() => {
+                  form.trigger('firstName');
+                }}
                 disabled={isLoading}
               />
               {form.formState.errors.firstName && (
@@ -223,8 +234,14 @@ export function BeneficiaryQuickAddModal({ open, onOpenChange }: BeneficiaryQuic
               <Label htmlFor="lastName">Soyad *</Label>
               <Input
                 id="lastName"
-                {...form.register('lastName')}
+                value={lastName || ''}
                 placeholder="Soyad"
+                onChange={(e) => {
+                  setValue('lastName', e.target.value, { shouldValidate: true });
+                }}
+                onBlur={() => {
+                  form.trigger('lastName');
+                }}
                 disabled={isLoading}
               />
               {form.formState.errors.lastName && (
@@ -238,8 +255,14 @@ export function BeneficiaryQuickAddModal({ open, onOpenChange }: BeneficiaryQuic
             <Label htmlFor="nationality">Uyruk *</Label>
             <Input
               id="nationality"
-              {...form.register('nationality')}
+              value={nationality || ''}
               placeholder="Uyruk"
+              onChange={(e) => {
+                setValue('nationality', e.target.value, { shouldValidate: true });
+              }}
+              onBlur={() => {
+                form.trigger('nationality');
+              }}
               disabled={isLoading}
             />
             {form.formState.errors.nationality && (
@@ -266,9 +289,18 @@ export function BeneficiaryQuickAddModal({ open, onOpenChange }: BeneficiaryQuic
             <Label htmlFor="identityNumber">Kimlik No</Label>
             <Input
               id="identityNumber"
-              {...form.register('identityNumber')}
+              value={identityNumber || ''}
               placeholder="TC Kimlik No"
               maxLength={11}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, '').slice(0, 11);
+                setValue('identityNumber', value, { shouldValidate: true });
+              }}
+              onBlur={() => {
+                if (identityNumber) {
+                  form.trigger('identityNumber');
+                }
+              }}
               disabled={isLoading}
             />
             {form.formState.errors.identityNumber && (
@@ -365,8 +397,15 @@ export function BeneficiaryQuickAddModal({ open, onOpenChange }: BeneficiaryQuic
             </div>
             <Input
               id="fileNumber"
-              {...form.register('fileNumber')}
+              value={fileNumber || ''}
               placeholder="Dosya numarası"
+              onChange={(e) => {
+                const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                setValue('fileNumber', value, { shouldValidate: true });
+              }}
+              onBlur={() => {
+                form.trigger('fileNumber');
+              }}
               disabled={isLoading}
             />
             {form.formState.errors.fileNumber && (
