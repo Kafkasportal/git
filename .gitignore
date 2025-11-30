@@ -2,6 +2,7 @@
 
 # Dependencies
 /node_modules
+/docs/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -27,6 +28,8 @@ next-env.d.ts
 # Production
 /build
 /dist
+/docs/dist
+/docs-dist
 
 # TypeScript
 *.tsbuildinfo
@@ -63,6 +66,7 @@ dev-debug.log
 !.cursor/README.md
 .cursor/mcp_settings.json
 .cursor/mcp.json
+
 
 # Quick setup script with real credentials (NEVER commit!)
 # scripts/quick-setup.ts  # Uncomment after initial setup
@@ -136,6 +140,11 @@ weweb-custom/
 # Sensitive files
 KEYS-AND-CREDENTIALS.md
 gha-creds-*.json
+
+# Appwrite configuration (contains sensitive credentials)
+appwrite.config.json
+!appwrite.config.json.example
+appwrite.json
 
 # Local IDE settings (contains secrets)
 .vscode/settings.local.json
