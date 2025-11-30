@@ -432,10 +432,7 @@ const baseConfig: NextConfig = {
   },
 
   // Development optimizations
-  ...(process.env.NODE_ENV === 'development' && {
-    // Faster refresh in development
-    fastRefresh: true,
-  }),
+  // Fast Refresh is enabled by default in Next.js 16
 
   // Static optimization - ISR configuration
   // Enable ISR for better performance on dynamic pages
