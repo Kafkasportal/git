@@ -55,6 +55,7 @@ export function TaskForm({ onSuccess, onCancel, initialData, taskId }: TaskFormP
     handleSubmit,
     setValue,
     watch,
+    trigger,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(taskSchema),
@@ -208,9 +209,15 @@ export function TaskForm({ onSuccess, onCancel, initialData, taskId }: TaskFormP
             <Label htmlFor="title">Başlık *</Label>
             <Input
               id="title"
-              {...register('title')}
+              value={watch('title') || ''}
               placeholder="Görev başlığını girin"
               autoFocus
+              onChange={(e) => {
+                setValue('title', e.target.value, { shouldValidate: true });
+              }}
+              onBlur={() => {
+                trigger('title');
+              }}
             />
             {errors.title && <p className="text-sm text-red-600">{errors.title.message}</p>}
           </div>
@@ -220,9 +227,15 @@ export function TaskForm({ onSuccess, onCancel, initialData, taskId }: TaskFormP
             <Label htmlFor="description">Açıklama</Label>
             <Textarea
               id="description"
-              {...register('description')}
+              value={watch('description') || ''}
               placeholder="Görev detaylarını açıklayın"
               rows={4}
+              onChange={(e) => {
+                setValue('description', e.target.value, { shouldValidate: true });
+              }}
+              onBlur={() => {
+                trigger('description');
+              }}
             />
             {errors.description && (
               <p className="text-sm text-red-600">{errors.description.message}</p>
