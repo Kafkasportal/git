@@ -3,7 +3,7 @@
  * Generate and validate CSRF tokens for state-changing operations
  */
 
-import { randomBytes } from 'crypto';
+import { randomBytes } from 'node:crypto';
 
 const CSRF_TOKEN_LENGTH = 32;
 const CSRF_TOKEN_HEADER = 'x-csrf-token';
