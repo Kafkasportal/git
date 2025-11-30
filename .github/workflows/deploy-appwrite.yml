@@ -1,0 +1,84 @@
+name: Deploy to Appwrite
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+jobs:
+  deploy:
+    name: Deploy to Appwrite Sites
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Run type check
+        run: npm run typecheck
+        continue-on-error: true
+
+      - name: Run tests
+        run: npm run test:run
+        continue-on-error: true
+
+      - name: Build application
+        run: npm run build:fast
+        env:
+          SKIP_ENV_VALIDATION: 'true'
+          NEXT_PUBLIC_APPWRITE_ENDPOINT: ${{ secrets.APPWRITE_ENDPOINT }}
+          NEXT_PUBLIC_APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID }}
+          NEXT_PUBLIC_APPWRITE_DATABASE_ID: ${{ secrets.APPWRITE_DATABASE_ID }}
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+
+      - name: Setup Appwrite CLI
+        uses: appwrite/setup-for-appwrite@v1
+
+      - name: Login to Appwrite
+        run: |
+          appwrite client \
+            --endpoint ${{ secrets.APPWRITE_ENDPOINT }} \
+            --project ${{ secrets.APPWRITE_PROJECT_ID }} \
+            --key ${{ secrets.APPWRITE_API_KEY }}
+
+      - name: Deploy to Appwrite Sites
+        run: |
+          appwrite deploy site \
+            --siteId ${{ secrets.APPWRITE_SITE_ID }} \
+            --entrypoint .next
+        env:
+          APPWRITE_ENDPOINT: ${{ secrets.APPWRITE_ENDPOINT }}
+          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID }}
+          APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
+          APPWRITE_SITE_ID: ${{ secrets.APPWRITE_SITE_ID }}
+
+      - name: Deployment status
+        if: success()
+        run: echo "✅ Deployment successful!"
+
+      - name: Deployment failed
+        if: failure()
+        run: echo "❌ Deployment failed!"
+

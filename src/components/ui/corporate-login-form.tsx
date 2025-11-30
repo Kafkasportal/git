@@ -83,25 +83,27 @@ export function CorporateLoginForm({
         return;
       }
 
-      // Load remember me data
-      const rememberData = localStorage.getItem('rememberMe');
-      if (rememberData) {
-        try {
-          const parsed = JSON.parse(rememberData);
-          if (parsed.expires > Date.now()) {
-            setEmail(parsed.email);
-            setRememberMe(true);
-          } else {
+      // Load remember me data (only on client-side)
+      if (typeof window !== 'undefined') {
+        const rememberData = localStorage.getItem('rememberMe');
+        if (rememberData) {
+          try {
+            const parsed = JSON.parse(rememberData);
+            if (parsed.expires > Date.now()) {
+              setEmail(parsed.email);
+              setRememberMe(true);
+            } else {
+              localStorage.removeItem('rememberMe');
+            }
+          } catch {
             localStorage.removeItem('rememberMe');
           }
-        } catch {
-          localStorage.removeItem('rememberMe');
         }
       }
 
       setMounted(true);
     }
-  }, [isDevelopment]);
+  }, [isDevelopment, adminEmail, adminPassword]);
 
   useEffect(() => {
     if (mounted && initRef.current) {
@@ -171,16 +173,18 @@ export function CorporateLoginForm({
     try {
       await login(email, password);
 
-      // Remember me functionality
-      if (rememberMe) {
-        const rememberData = {
-          email,
-          timestamp: Date.now(),
-          expires: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
-        };
-        localStorage.setItem('rememberMe', JSON.stringify(rememberData));
-      } else {
-        localStorage.removeItem('rememberMe');
+      // Remember me functionality (only on client-side)
+      if (typeof window !== 'undefined') {
+        if (rememberMe) {
+          const rememberData = {
+            email,
+            timestamp: Date.now(),
+            expires: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
+          };
+          localStorage.setItem('rememberMe', JSON.stringify(rememberData));
+        } else {
+          localStorage.removeItem('rememberMe');
+        }
       }
 
       toast.success('Başarıyla giriş yaptınız', {

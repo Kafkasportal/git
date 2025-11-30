@@ -1,31 +1,5 @@
 import logger from '@/lib/logger';
 
-// Input sanitization utilities
-// @deprecated Use functions from '@/lib/sanitization' instead
-// This class is kept for backward compatibility only
-export class InputSanitizer {
-  static async sanitizeHtml(input: string): Promise<string> {
-    const { sanitizeHtmlAsync } = await import('@/lib/sanitization');
-    return sanitizeHtmlAsync(input);
-  }
-
-  // Synchronous version for backward compatibility
-  static sanitizeHtmlSync(input: string): string {
-    // Note: This is a synchronous wrapper that uses dynamic import internally
-    // For true synchronous behavior, consider using the sanitization module directly
-    let result = input;
-    import('@/lib/sanitization').then(({ sanitizeHtml }) => {
-      result = sanitizeHtml(input);
-    });
-    return result;
-  }
-
-  static sanitizeText(input: string): string {
-    // Basic text sanitization - removes HTML tags
-    return input.replace(/<[^>]*>/g, '').trim();
-  }
-}
-
 // Rate limiting utilities
 export interface RateLimitConfig {
   maxRequests: number;

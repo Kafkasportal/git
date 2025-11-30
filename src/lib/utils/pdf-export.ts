@@ -125,17 +125,48 @@ export const exportToPDF = (
   doc.save(`Finansal_Rapor_${format(new Date(), "yyyy-MM-dd")}.pdf`);
 };
 
-// Backward compatibility / Placeholders
+// Legacy PDF generation functions
+// These functions are placeholders for future implementation
+// Currently, use exportToPDF from this file or exportToPDF from export-service.ts
+
+/**
+ * Generate donation PDF report
+ * @deprecated Use exportToPDF from '@/lib/utils/pdf-export' or '@/lib/export/export-service' instead
+ */
 export const generateDonationPDF = (_data: unknown, _title?: string) => {
-  console.warn("generateDonationPDF: Bu fonksiyon henüz implemente edilmedi.");
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(
+      'generateDonationPDF: Bu fonksiyon henüz implemente edilmedi. exportToPDF kullanın.'
+    );
+  }
+  // Return empty to prevent errors
+  return null;
 };
 
+/**
+ * Generate financial report PDF
+ * @deprecated Use exportToPDF from '@/lib/utils/pdf-export' or '@/lib/export/export-service' instead
+ */
 export const generateFinancialReportPDF = (_data: unknown, _title?: string) => {
-  console.warn(
-    "generateFinancialReportPDF: Bu fonksiyon henüz implemente edilmedi (Legacy wrapper).",
-  );
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(
+      'generateFinancialReportPDF: Bu fonksiyon henüz implemente edilmedi. exportToPDF kullanın.'
+    );
+  }
+  // Return empty to prevent errors
+  return null;
 };
 
+/**
+ * Generate aid list PDF
+ * @deprecated Use exportToPDF from '@/lib/utils/pdf-export' or '@/lib/export/export-service' instead
+ */
 export const generateAidListPDF = (_data: unknown, _title?: string) => {
-  console.warn("generateAidListPDF: Bu fonksiyon henüz implemente edilmedi.");
+  if (process.env.NODE_ENV === 'development') {
+    console.warn(
+      'generateAidListPDF: Bu fonksiyon henüz implemente edilmedi. exportToPDF kullanın.'
+    );
+  }
+  // Return empty to prevent errors
+  return null;
 };

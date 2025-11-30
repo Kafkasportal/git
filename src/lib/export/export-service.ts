@@ -294,19 +294,9 @@ export { formatCurrency } from '@/lib/utils/format';
 
 /**
  * Format date for Turkish locale
+ * @deprecated Use formatDate from @/lib/utils/format instead
  */
-export function formatDate(date: string | Date): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return format(dateObj, 'dd/MM/yyyy');
-}
-
-/**
- * Format datetime for Turkish locale
- */
-export function formatDateTime(date: string | Date): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return format(dateObj, 'dd/MM/yyyy HH:mm');
-}
+export { formatDate, formatDateShort } from '@/lib/utils/format';
 
 /**
  * Mask TC Kimlik No (show only last 4 digits)

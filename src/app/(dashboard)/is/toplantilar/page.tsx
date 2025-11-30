@@ -30,7 +30,6 @@ import dynamic from "next/dynamic";
 import { toast } from "sonner";
 import { DemoBanner } from "@/components/ui/demo-banner";
 import { MeetingsHeader } from "./_components/MeetingsHeader";
-import { useAuthStore } from "@/stores/authStore";
 import { meetings as meetingsApi } from "@/lib/api/api-client";
 import type { MeetingDocument } from "@/types/database";
 import { Calendar, CheckCircle, XCircle } from "lucide-react";
@@ -55,7 +54,6 @@ const CalendarView = dynamic(
 // });
 
 export default function MeetingsPage() {
-  const { user: _user } = useAuthStore();
   const queryClient = useQueryClient();
 
   // View state
@@ -66,9 +64,10 @@ export default function MeetingsPage() {
   const [meetingToDelete, setMeetingToDelete] = useState<string | null>(null);
 
   // Filter state (unused for now since list view is not implemented)
-  const [_search, _setSearch] = useState("");
-  const [_statusFilter, _setStatusFilter] = useState("all");
-  const [_meetingTypeFilter, _setMeetingTypeFilter] = useState("all");
+  // These will be used when list view is implemented
+  // const [search, setSearch] = useState("");
+  // const [statusFilter, setStatusFilter] = useState("all");
+  // const [meetingTypeFilter, setMeetingTypeFilter] = useState("all");
 
   // Fetch meetings
   const { data: meetingsData, isLoading } = useQuery({
