@@ -170,11 +170,14 @@ Sorunlar için [Issues](https://github.com/your-repo/issues) sayfasını kullan�
 ## 📖 Dokümantasyon
 
 - [README.md](README.md) - Genel bilgiler ve kurulum
-- [API.md](API.md) - REST API dokümantasyonu (87 endpoints)
-- [ARCHITECTURE.md](ARCHITECTURE.md) - Mimari dokümantasyonu
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Katkıda bulunma rehberi
-- [DEPLOYMENT.md](DEPLOYMENT.md) - Deployment rehberi
-- [CHANGELOG.md](CHANGELOG.md) - Değişiklik geçmişi
+- [docs/API.md](docs/API.md) - REST API dokümantasyonu (87 endpoints)
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - Mimari dokümantasyonu
+- [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) - Katkıda bulunma rehberi
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - Deployment rehberi
+- [docs/CHANGELOG.md](docs/CHANGELOG.md) - Değişiklik geçmişi
+- [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md) - Güvenlik denetimi
+- [docs/DEVELOPMENT_ROADMAP.md](docs/DEVELOPMENT_ROADMAP.md) - Geliştirme yol haritası
+- [docs/ENV_SETUP.md](docs/ENV_SETUP.md) - Environment değişkenleri kurulumu
 
 ## 🎯 Roadmap
 
