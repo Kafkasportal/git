@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Controller } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -140,17 +140,8 @@ export function DonationForm({ onSuccess, onCancel }: DonationFormProps) {
   const donationPurpose = form.watch('donation_purpose');
   const receiptNumber = form.watch('receipt_number');
   const formAmount = form.watch('amount');
-
-  // Sync amountDisplay with form amount when form is reset (only when formAmount changes externally)
-  useEffect(() => {
-    if (formAmount === 0 || formAmount === undefined) {
-      // Only clear if user hasn't typed anything
-      if (amountDisplay && !amountDisplay.match(/[\d,.]/)) {
-        setAmountDisplay('');
-      }
-    }
-    // Don't auto-format if user is typing - let onChange handle it
-  }, [formAmount]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Note: formAmount is used for onBlur validation
+  // Amount display is controlled via onChange handlers
 
   return (
     <Card className="w-full max-w-2xl mx-auto relative">

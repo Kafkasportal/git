@@ -10,8 +10,8 @@ import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
 import dynamic from 'next/dynamic';
 const AnalyticsTrackerComponent = dynamic(() => import('@/components/ui/analytics-tracker').then(mod => ({ default: mod.AnalyticsTrackerComponent })), { ssr: false });
 const KeyboardShortcuts = dynamic(() => import('@/components/ui/keyboard-shortcuts').then(mod => ({ default: mod.KeyboardShortcuts })), { ssr: false });
-const AdvancedSearchModal = dynamic(() => import('@/components/ui/advanced-search-modal').then(mod => ({ default: mod.AdvancedSearchModal })), { ssr: false });
-import { useAdvancedSearch } from '@/components/ui/advanced-search-modal';
+const CommandPalette = dynamic(() => import('@/components/ui/command-palette').then(mod => ({ default: mod.CommandPalette })), { ssr: false });
+import { useCommandPalette } from '@/components/ui/command-palette';
 import {
   LogOut,
   Menu,
@@ -44,7 +44,7 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const queryClient = useQueryClient();
   const { isAuthenticated, isInitialized, user, logout, initializeAuth } = useAuthStore();
-  const { isOpen: isSearchOpen, onClose: closeSearch } = useAdvancedSearch();
+  const { open: isSearchOpen, setOpen: setSearchOpen } = useCommandPalette();
   const deviceInfo = useDeviceDetection();
 
   // Keyboard shortcuts
@@ -384,16 +384,18 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          {/* Search Bar */}
+          {/* Search Bar - Opens Command Palette */}
           <div className="hidden lg:flex flex-1 max-w-md mx-4">
-            <div className="relative w-full">
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="relative w-full h-9 pl-9 pr-3 text-sm bg-slate-100/80 border border-slate-200/60 rounded-lg text-slate-400 text-left hover:bg-slate-100 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
+            >
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Ara..."
-                className="w-full h-9 pl-9 pr-3 text-sm bg-slate-100/80 border border-slate-200/60 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-white transition-all duration-200"
-              />
-            </div>
+              <span>Ara...</span>
+              <kbd className="absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-xs font-medium text-slate-400 bg-white border border-slate-200 rounded">
+                ⌘K
+              </kbd>
+            </button>
           </div>
 
           <div className="flex items-center gap-2">
@@ -522,8 +524,8 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
           </div>
         </main>
 
-        {/* Advanced Search Modal */}
-        <AdvancedSearchModal isOpen={isSearchOpen} onClose={closeSearch} />
+        {/* Command Palette */}
+        <CommandPalette open={isSearchOpen} onOpenChange={setSearchOpen} />
 
         {/* Analytics & Performance Monitoring */}
         <AnalyticsTrackerComponent

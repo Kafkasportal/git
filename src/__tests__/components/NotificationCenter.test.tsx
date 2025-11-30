@@ -47,11 +47,16 @@ vi.mock('@tanstack/react-query', async () => {
 describe('NotificationCenter', () => {
   const mockNotifications = [
     {
+      id: '1',
       $id: '1',
       title: 'Test Notification',
+      message: 'Test body',
       body: 'Test body',
-      status: 'beklemede',
+      read: false,
+      status: 'unread' as const,
+      type: 'meeting' as const,
       category: 'meeting',
+      createdAt: new Date().toISOString(),
       created_at: new Date().toISOString(),
     },
   ];
@@ -60,7 +65,7 @@ describe('NotificationCenter', () => {
     vi.clearAllMocks();
     (useNotificationStore as any).mockReturnValue({
       notifications: mockNotifications,
-      unreadCount: 1,
+      unreadCount: vi.fn(() => 1), // unreadCount is a function in the store
       markAsRead: vi.fn(),
       markAllAsRead: vi.fn(),
       deleteNotification: vi.fn(),

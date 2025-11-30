@@ -46,8 +46,10 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
   const queryClient = useQueryClient();
 
   // Use Zustand store for notifications
-  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, setNotifications } =
-    useNotificationStore();
+  const store = useNotificationStore();
+  const { notifications, markAsRead, markAllAsRead, deleteNotification, setNotifications } = store;
+  // unreadCount is a function in the store, call it to get the value
+  const unreadCountValue = store.unreadCount();
 
   // Initialize notifications from API on mount
   useEffect(() => {
@@ -60,7 +62,24 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
           limit: 50,
         });
         if (response.data) {
-          setNotifications(response.data);
+          // Convert API response to Notification format
+          const convertedNotifications = response.data.map((n) => ({
+            id: n.$id || n._id || String(Date.now()),
+            type: (n.category || 'info') as 'info' | 'success' | 'warning' | 'error' | 'task' | 'meeting' | 'donation' | 'beneficiary' | 'message',
+            title: n.title || '',
+            message: n.body || '',
+            read: n.status === 'okundu',
+            createdAt: n.$createdAt || n.created_at || new Date().toISOString(),
+            // Backward compatibility
+            body: n.body,
+            status: (n.status === 'okundu' ? 'read' : 'unread') as 'read' | 'unread',
+            category: n.category,
+            $id: n.$id,
+            _id: n._id,
+            $createdAt: n.$createdAt,
+            created_at: n.created_at,
+          }));
+          setNotifications(convertedNotifications);
         }
       } catch (error) {
         console.error('Failed to fetch initial notifications', error);
@@ -95,7 +114,7 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
     mutationFn: async () => {
       // Mark all unread notifications as read
       const unreadNotifications = allNotifications.filter(
-        (n) => n.status !== 'okundu'
+        (n) => !n.read
       );
       await Promise.all(
         unreadNotifications.map((n) => {
@@ -134,7 +153,7 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
   const filteredNotifications = useMemo(() => {
     if (!allNotifications) return [];
     if (activeTab === 'unread') {
-      return allNotifications.filter((notification) => notification.status !== 'okundu');
+      return allNotifications.filter((notification) => !notification.read);
     }
     return allNotifications;
   }, [allNotifications, activeTab]);
@@ -160,12 +179,12 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
-          {unreadCount && unreadCount > 0 ? (
+          {unreadCountValue > 0 ? (
             <Badge
               variant="destructive"
               className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
             >
-              {unreadCount > 99 ? '99+' : unreadCount}
+              {unreadCountValue > 99 ? '99+' : unreadCountValue}
             </Badge>
           ) : null}
         </Button>
@@ -174,7 +193,7 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="font-semibold text-lg">Bildirimler</h3>
           <div className="flex items-center gap-2">
-            {unreadCount && unreadCount > 0 ? (
+            {unreadCountValue > 0 ? (
               <Button variant="ghost" size="sm" onClick={handleMarkAllAsRead} className="text-xs">
                 <CheckCheck className="h-4 w-4 mr-1" />
                 Tümünü Okundu İşaretle
@@ -192,9 +211,9 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
             <TabsTrigger value="all">Tümü</TabsTrigger>
             <TabsTrigger value="unread">
               Okunmamış
-              {unreadCount && unreadCount > 0 ? (
+              {unreadCountValue > 0 ? (
                 <Badge variant="secondary" className="ml-2">
-                  {unreadCount}
+                  {unreadCountValue}
                 </Badge>
               ) : null}
             </TabsTrigger>
@@ -211,12 +230,12 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
                         key={notificationId}
                         className={cn(
                           'p-4 hover:bg-muted/50 transition-colors',
-                          notification.status !== 'okundu' && 'bg-blue-50/50'
+                          !notification.read && 'bg-blue-50/50'
                         )}
                       >
                         <div className="flex items-start gap-3">
                           <div className="flex-shrink-0 mt-1">
-                            <span className="text-2xl">{getCategoryIcon(notification.category)}</span>
+                            <span className="text-2xl">{getCategoryIcon(notification.category || '')}</span>
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
@@ -230,7 +249,7 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
                                 <div className="flex items-center gap-2 mt-2">
                                   <Badge
                                     variant="secondary"
-                                    className={cn('text-xs', getCategoryColor(notification.category))}
+                                    className={cn('text-xs', getCategoryColor(notification.category || ''))}
                                   >
                                     {notification.category}
                                   </Badge>
@@ -248,7 +267,7 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
                                 </div>
                               </div>
                               <div className="flex items-center gap-1 flex-shrink-0">
-                                {notification.status !== 'okundu' && (
+                                {!notification.read && (
                                   <Button
                                     variant="ghost"
                                     size="icon"

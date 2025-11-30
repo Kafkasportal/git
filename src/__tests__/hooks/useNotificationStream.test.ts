@@ -109,7 +109,19 @@ describe('useNotificationStream', () => {
       }
     });
 
-    expect(mockAddNotification).toHaveBeenCalledWith(notificationData.data);
+    // The hook converts WorkflowNotificationDocument to Notification format
+    expect(mockAddNotification).toHaveBeenCalledWith({
+      type: 'info', // Uses 'info' as default when category is undefined
+      title: 'Test',
+      message: 'Test body',
+      body: notificationData.data.body,
+      status: 'unread', // Converted from 'beklemede'
+      category: undefined,
+      $id: '1', // From the test data
+      _id: undefined,
+      $createdAt: undefined,
+      created_at: undefined,
+    });
   });
 
   it('handles reconnection on error', async () => {

@@ -59,7 +59,20 @@ export function useNotificationStream(userId: string | undefined) {
 
               case 'notification':
                 if (data.data) {
-                  addNotification(data.data);
+                  // Convert WorkflowNotificationDocument to Notification format
+                  const notif = data.data;
+                  addNotification({
+                    type: (notif.category || 'info') as 'info' | 'success' | 'warning' | 'error' | 'task' | 'meeting' | 'donation' | 'beneficiary' | 'message',
+                    title: notif.title || '',
+                    message: notif.body || '',
+                    body: notif.body,
+                    status: notif.status === 'okundu' ? 'read' : 'unread',
+                    category: notif.category,
+                    $id: notif.$id,
+                    _id: notif._id,
+                    $createdAt: notif.$createdAt,
+                    created_at: notif.created_at,
+                  });
                 }
                 break;
 

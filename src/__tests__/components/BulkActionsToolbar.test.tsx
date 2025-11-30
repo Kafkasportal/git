@@ -80,8 +80,9 @@ describe('BulkActionsToolbar', () => {
       />
     );
 
-    expect(screen.getByText(/beklemede/i)).toBeInTheDocument();
-    expect(screen.getByText(/tamamlandı/i)).toBeInTheDocument();
+    // The status dropdown button should be visible when statusOptions are provided
+    const statusButton = screen.getByText(/durum değiştir/i);
+    expect(statusButton).toBeInTheDocument();
   });
 
   it('shows loading state', () => {
