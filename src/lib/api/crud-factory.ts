@@ -10,7 +10,7 @@ import type {
   UpdateDocumentData,
 } from '@/types/database';
 import { getCache } from '@/lib/api-cache';
-import { fetchWithCsrf } from '@/lib/csrf';
+import { fetchWithCsrf } from '@/lib/csrf-client';
 
 // Cache TTL configuration per entity type - Optimized for better performance
 const CACHE_TTL = {

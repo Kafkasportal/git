@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import logger from '@/lib/logger';
-import { fetchWithCsrf } from '@/lib/csrf';
+import { fetchWithCsrf } from '@/lib/csrf-client';
 import { Palette, Sun, Moon, Monitor, Check, RefreshCw, Sparkles, Trash2 } from 'lucide-react';
 
 export default function ThemeSettingsPage() {

@@ -28,7 +28,7 @@ import type {
   PartnerDocument,
 } from '@/types/database';
 import type { PermissionValue } from '@/types/permissions';
-import { fetchWithCsrf } from '@/lib/csrf';
+import { fetchWithCsrf } from '@/lib/csrf-client';
 
 // Import the new CRUD factory
 import {

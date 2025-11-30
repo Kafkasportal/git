@@ -11,6 +11,7 @@ import dynamic from 'next/dynamic';
 const AnalyticsTrackerComponent = dynamic(() => import('@/components/ui/analytics-tracker').then(mod => ({ default: mod.AnalyticsTrackerComponent })), { ssr: false });
 const KeyboardShortcuts = dynamic(() => import('@/components/ui/keyboard-shortcuts').then(mod => ({ default: mod.KeyboardShortcuts })), { ssr: false });
 const CommandPalette = dynamic(() => import('@/components/ui/command-palette').then(mod => ({ default: mod.CommandPalette })), { ssr: false });
+const OfflineSyncIndicator = dynamic(() => import('@/components/pwa/offline-sync-indicator').then(mod => ({ default: mod.OfflineSyncIndicator })), { ssr: false });
 import { useCommandPalette } from '@/components/ui/command-palette';
 import {
   LogOut,
@@ -542,6 +543,9 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
           onMetrics={handlePerformanceMetrics}
           routeName={pathname}
         />
+
+        {/* Offline Sync Indicator */}
+        <OfflineSyncIndicator />
       </div>
     </div>
   );

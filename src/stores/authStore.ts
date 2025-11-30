@@ -1,7 +1,7 @@
 'use client';
 
 import logger from '@/lib/logger';
-import { getCsrfTokenFromCookie } from '@/lib/csrf';
+import { getCsrfTokenFromCookie } from '@/lib/csrf-client';
 
 /**
  * Authentication Store (Zustand)
