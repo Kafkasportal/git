@@ -9,6 +9,8 @@ import { persistentCache } from "@/lib/persistent-cache";
 import { initGlobalErrorHandlers } from "@/lib/global-error-handler";
 import { initErrorTracker } from "@/lib/error-tracker";
 import { SettingsProvider } from "@/contexts/settings-context";
+import { KeyboardNavigationProvider } from "@/contexts/keyboard-navigation-context";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 import { pingAppwrite } from "@/lib/appwrite";
 import logger from "@/lib/logger";
 
@@ -130,7 +132,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
           // Resumed state
         }}
       >
-        <SettingsProvider>{children}</SettingsProvider>
+        <ThemeProvider defaultTheme="system" storageKey="theme" enableSystem>
+          <KeyboardNavigationProvider>
+            <SettingsProvider>{children}</SettingsProvider>
+          </KeyboardNavigationProvider>
+        </ThemeProvider>
       </SuspenseBoundary>
       <Toaster position="top-right" richColors />
       <ReactQueryDevtoolsWrapper />

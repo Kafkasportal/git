@@ -461,6 +461,11 @@ const baseConfig: NextConfig = {
   // Enable with: npm run dev -- --turbo
   // Or: next dev --turbo
   // Turbopack provides faster builds and HMR in development
+  turbopack: {
+    // Set root directory to prevent workspace root detection issues
+    // This silences the "multiple lockfiles detected" warning
+    root: __dirname,
+  },
 };
 
 const nextConfig: NextConfig = bundleAnalyzer(baseConfig);

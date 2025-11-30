@@ -138,7 +138,7 @@ export function KeyboardShortcuts({
           )}
         </div>
 
-        <div className="flex justify-end gap-2 pt-4 border-t border-slate-200">
+        <div className="flex justify-end gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
           <Button variant="outline" size="sm" onClick={() => setShowDialog(false)}>
             Kapat
           </Button>
@@ -156,17 +156,86 @@ interface ShortcutItemProps {
 function ShortcutItem({ shortcut, description }: ShortcutItemProps) {
   return (
     <div className="flex items-center justify-between py-2">
-      <p className="text-sm text-slate-700">{description}</p>
+      <p className="text-sm text-slate-700 dark:text-slate-300">{description}</p>
       <kbd
         className={cn(
-          'px-2 py-1 text-xs font-semibold text-slate-700',
-          'bg-slate-100 border border-slate-300 rounded-md',
-          'shadow-sm'
+          'px-2 py-1 text-xs font-semibold',
+          'text-slate-700 dark:text-slate-200',
+          'bg-slate-100 dark:bg-slate-800',
+          'border border-slate-300 dark:border-slate-600',
+          'rounded-md shadow-sm'
         )}
       >
         {shortcut}
       </kbd>
     </div>
+  );
+}
+
+/**
+ * Keyboard shortcuts help modal - Enhanced version
+ */
+export function KeyboardShortcutsHelp({
+  shortcuts,
+  open,
+  onOpenChange,
+}: {
+  shortcuts: Map<string, { key: string; ctrl?: boolean; alt?: boolean; shift?: boolean; description: string; category?: string }>;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  // Group shortcuts by category
+  const groupedShortcuts = Array.from(shortcuts.entries()).reduce((acc, [, shortcut]) => {
+    const category = shortcut.category || 'Diğer';
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(shortcut);
+    return acc;
+  }, {} as Record<string, typeof shortcuts extends Map<string, infer V> ? V[] : never>);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Command className="h-5 w-5" />
+            Klavye Kısayolları
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {Object.entries(groupedShortcuts).map(([category, categoryShortcuts]) => (
+            <div key={category}>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">
+                {category}
+              </h3>
+              <div className="space-y-2">
+                {categoryShortcuts.map((shortcut, index) => {
+                  const keys: string[] = [];
+                  if (shortcut.ctrl) keys.push('Ctrl');
+                  if (shortcut.alt) keys.push('Alt');
+                  if (shortcut.shift) keys.push('Shift');
+                  keys.push(shortcut.key.length === 1 ? shortcut.key.toUpperCase() : shortcut.key);
+
+                  return (
+                    <ShortcutItem
+                      key={`${category}-${index}`}
+                      shortcut={keys.join(' + ')}
+                      description={shortcut.description}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex justify-end gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
+            Kapat
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

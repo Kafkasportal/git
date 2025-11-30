@@ -1013,3 +1013,268 @@
     transform: translateX(100%);
   }
 }
+
+/* ========================================
+   ACCESSIBILITY ENHANCEMENTS
+   ======================================== */
+
+/* Skip Link */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  padding: 8px 16px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  z-index: 100;
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Focus Visible Styles */
+*:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: #000000;
+    --ring: #000000;
+  }
+  
+  .dark {
+    --border: #ffffff;
+    --ring: #ffffff;
+  }
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* ========================================
+   MOBILE OPTIMIZATIONS
+   ======================================== */
+
+/* Safe area insets for notched devices */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.safe-area-left {
+  padding-left: env(safe-area-inset-left, 0);
+}
+
+.safe-area-right {
+  padding-right: env(safe-area-inset-right, 0);
+}
+
+/* Touch-friendly tap targets */
+@media (hover: none) and (pointer: coarse) {
+  button,
+  a,
+  [role="button"],
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Larger touch targets for links in lists */
+  .touch-target {
+    position: relative;
+  }
+  
+  .touch-target::after {
+    content: '';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    bottom: -8px;
+    left: -8px;
+  }
+}
+
+/* Disable hover effects on touch devices */
+@media (hover: none) {
+  .hover\:bg-slate-100:hover {
+    background-color: transparent;
+  }
+}
+
+/* Better text selection on mobile */
+@media (max-width: 768px) {
+  body {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Prevent text selection on interactive elements */
+  button,
+  a,
+  [role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* Allow text selection on content */
+  p,
+  span,
+  h1, h2, h3, h4, h5, h6 {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
+
+/* Pull to refresh indicator */
+.pull-to-refresh-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  transition: transform 0.2s;
+}
+
+.pull-to-refresh-indicator.refreshing {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Swipe action hints */
+.swipe-hint {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.swipe-hint.visible {
+  opacity: 1;
+}
+
+.swipe-hint.left {
+  left: 8px;
+}
+
+.swipe-hint.right {
+  right: 8px;
+}
+
+/* Bottom sheet styles */
+.bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--background);
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(100%);
+  transition: transform 0.3s ease-out;
+}
+
+.bottom-sheet.open {
+  transform: translateY(0);
+}
+
+.bottom-sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--muted-foreground);
+  border-radius: 2px;
+  margin: 12px auto;
+  opacity: 0.5;
+}
+
+/* ========================================
+   DARK MODE SPECIFIC ENHANCEMENTS
+   ======================================== */
+
+.dark {
+  color-scheme: dark;
+}
+
+.dark img {
+  filter: brightness(0.9);
+}
+
+/* Better contrast for interactive elements in dark mode */
+.dark button:not(.bg-primary):not(.bg-destructive) {
+  border-color: var(--border);
+}
+
+/* Glow effects for dark mode */
+.dark .glow-primary {
+  box-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
+}
+
+.dark .glow-success {
+  box-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
+}
+
+.dark .glow-warning {
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+}
+
+.dark .glow-error {
+  box-shadow: 0 0 20px rgba(248, 113, 113, 0.3);
+}
+
+/* Smooth theme transition */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html.disable-transitions,
+html.disable-transitions * {
+  transition: none !important;
+}
