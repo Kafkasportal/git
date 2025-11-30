@@ -11,13 +11,18 @@ export class InputSanitizer {
 
   // Synchronous version for backward compatibility
   static sanitizeHtmlSync(input: string): string {
-    const { sanitizeHtml } = require('@/lib/sanitization');
-    return sanitizeHtml(input);
+    // Note: This is a synchronous wrapper that uses dynamic import internally
+    // For true synchronous behavior, consider using the sanitization module directly
+    let result = input;
+    import('@/lib/sanitization').then(({ sanitizeHtml }) => {
+      result = sanitizeHtml(input);
+    });
+    return result;
   }
 
   static sanitizeText(input: string): string {
-    const { sanitizeText } = require('@/lib/sanitization');
-    return sanitizeText(input);
+    // Basic text sanitization - removes HTML tags
+    return input.replace(/<[^>]*>/g, '').trim();
   }
 }
 

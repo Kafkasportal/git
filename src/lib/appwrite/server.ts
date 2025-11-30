@@ -6,7 +6,7 @@
  */
 
 import { Client, Databases, Storage, Users, Account } from 'node-appwrite';
-import { appwriteConfig, isAppwriteConfigured, isBuildTime } from './config';
+import { appwriteConfig, isServerConfigured, isBuildTime } from './config';
 import logger from '@/lib/logger';
 
 // Create server client with API key
@@ -15,11 +15,12 @@ const createServerClient = () => {
     return null;
   }
 
-  if (!isAppwriteConfigured() || !appwriteConfig.apiKey) {
+  if (!isServerConfigured()) {
     if (process.env.NODE_ENV === 'development') {
       logger.warn('Appwrite server client not configured', {
         endpoint: appwriteConfig.endpoint,
         projectId: appwriteConfig.projectId ? '[set]' : '[missing]',
+        databaseId: appwriteConfig.databaseId ? '[set]' : '[missing]',
         apiKey: appwriteConfig.apiKey ? '[set]' : '[missing]',
       });
     }

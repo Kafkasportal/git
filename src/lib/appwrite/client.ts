@@ -6,7 +6,7 @@
  */
 
 import { Client, Account, Databases, Storage, Avatars, Functions } from 'appwrite';
-import { appwriteConfig, isAppwriteConfigured, isBuildTime } from './config';
+import { appwriteConfig, isClientConfigured, isBuildTime } from './config';
 import logger from '@/lib/logger';
 
 // Create client only when properly configured
@@ -15,7 +15,7 @@ const createAppwriteClient = () => {
     return null;
   }
 
-  if (!isAppwriteConfigured()) {
+  if (!isClientConfigured()) {
     if (process.env.NODE_ENV === 'development') {
       logger.warn('Appwrite client not configured', {
         endpoint: appwriteConfig.endpoint,
@@ -140,6 +140,12 @@ if (process.env.NODE_ENV === 'development' && !isBuildTime) {
   if (isAppwriteReady()) {
     logger.info('Appwrite client initialized successfully', {
       endpoint: appwriteConfig.endpoint,
+    });
+  } else if (!isClientConfigured()) {
+    logger.warn('Appwrite client not configured - check environment variables', {
+      endpoint: appwriteConfig.endpoint || '[missing]',
+      projectId: appwriteConfig.projectId ? '[set]' : '[missing]',
+      databaseId: appwriteConfig.databaseId ? '[set]' : '[missing]',
     });
   }
 }

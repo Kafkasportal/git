@@ -19,7 +19,7 @@ describe('BulkActionsToolbar', () => {
       />
     );
 
-    expect(screen.getByText(/5 seçili/i)).toBeInTheDocument();
+    expect(screen.getByText(/5 öğe seçildi/i)).toBeInTheDocument();
   });
 
   it('calls onClearSelection when clear button is clicked', () => {

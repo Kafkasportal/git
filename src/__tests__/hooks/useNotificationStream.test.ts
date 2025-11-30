@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useNotificationStream } from '@/hooks/useNotificationStream';
 import { useNotificationStore } from '@/stores/notificationStore';
 
@@ -17,34 +17,38 @@ vi.mock('@/lib/logger', () => ({
   },
 }));
 
+// Track EventSource instances at module level
+const eventSourceInstances: any[] = [];
+const mockClose = vi.fn();
+
 describe('useNotificationStream', () => {
   const mockAddNotification = vi.fn();
-  let eventSourceInstance: any = null;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    eventSourceInstance = null; // Reset instance before each test
+    eventSourceInstances.length = 0; // Clear array
+    mockClose.mockClear();
     
     (useNotificationStore as any).mockReturnValue({
       addNotification: mockAddNotification,
     });
 
-    // Mock EventSource
-    global.EventSource = vi.fn().mockImplementation(() => {
-      eventSourceInstance = {
-        onopen: null,
-        onmessage: null,
-        onerror: null,
-        close: vi.fn(),
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-      };
-      return eventSourceInstance;
-    }) as any;
+    // Mock EventSource at global level
+    (global as any).EventSource = vi.fn().mockImplementation(function(this: any) {
+      this.onopen = null;
+      this.onmessage = null;
+      this.onerror = null;
+      this.close = mockClose;
+      this.addEventListener = vi.fn();
+      this.removeEventListener = vi.fn();
+      eventSourceInstances.push(this);
+      return this;
+    });
   });
 
   afterEach(() => {
     vi.clearAllTimers();
+    vi.useRealTimers();
   });
 
   it('creates EventSource connection when userId is provided', () => {
@@ -53,32 +57,38 @@ describe('useNotificationStream', () => {
     expect(global.EventSource).toHaveBeenCalledWith('/api/notifications/stream', {
       withCredentials: true,
     });
+    expect(eventSourceInstances.length).toBe(1);
   });
 
   it('does not create connection when userId is undefined', () => {
     renderHook(() => useNotificationStream(undefined));
 
     expect(global.EventSource).not.toHaveBeenCalled();
+    expect(eventSourceInstances.length).toBe(0);
   });
 
-  it('handles connection open event', async () => {
+  it('handles connection open event', () => {
     renderHook(() => useNotificationStream('test-user'));
 
-    await waitFor(() => {
-      expect(eventSourceInstance).toBeTruthy();
+    expect(eventSourceInstances.length).toBe(1);
+    const instance = eventSourceInstances[0];
+
+    // Trigger onopen
+    act(() => {
+      if (instance.onopen) {
+        instance.onopen();
+      }
     });
 
-    if (eventSourceInstance.onopen) {
-      eventSourceInstance.onopen();
-    }
+    // Should not throw any errors
+    expect(instance.onopen).toBeDefined();
   });
 
-  it('handles notification messages', async () => {
+  it('handles notification messages', () => {
     renderHook(() => useNotificationStream('test-user'));
 
-    await waitFor(() => {
-      expect(eventSourceInstance).toBeTruthy();
-    });
+    expect(eventSourceInstances.length).toBe(1);
+    const instance = eventSourceInstances[0];
 
     const notificationData = {
       type: 'notification',
@@ -90,45 +100,50 @@ describe('useNotificationStream', () => {
       },
     };
 
-    if (eventSourceInstance.onmessage) {
-      eventSourceInstance.onmessage({
-        data: JSON.stringify(notificationData),
-      });
-    }
+    // Trigger onmessage
+    act(() => {
+      if (instance.onmessage) {
+        instance.onmessage({
+          data: JSON.stringify(notificationData),
+        });
+      }
+    });
 
     expect(mockAddNotification).toHaveBeenCalledWith(notificationData.data);
   });
 
   it('handles reconnection on error', async () => {
     vi.useFakeTimers();
+    
     renderHook(() => useNotificationStream('test-user'));
 
-    await waitFor(() => {
-      expect(eventSourceInstance).toBeTruthy();
+    expect(eventSourceInstances.length).toBe(1);
+    const instance = eventSourceInstances[0];
+
+    // Trigger error - this should schedule a reconnection
+    act(() => {
+      if (instance.onerror) {
+        instance.onerror(new Error('Connection error'));
+      }
     });
 
-    if (eventSourceInstance.onerror) {
-      eventSourceInstance.onerror(new Error('Connection error'));
-    }
+    // Advance timer for reconnection (baseReconnectDelay = 1000ms * 2^0 = 1000ms)
+    await act(async () => {
+      vi.advanceTimersByTime(1100);
+    });
 
-    vi.advanceTimersByTime(1000);
-
-    // Should attempt reconnection
-    expect(global.EventSource).toHaveBeenCalledTimes(2);
-
-    vi.useRealTimers();
+    // Should have created a second EventSource instance
+    expect(eventSourceInstances.length).toBe(2);
   });
 
-  it('cleans up connection on unmount', async () => {
+  it('cleans up connection on unmount', () => {
     const { unmount } = renderHook(() => useNotificationStream('test-user'));
 
-    await waitFor(() => {
-      expect(eventSourceInstance).toBeTruthy();
-    });
+    expect(eventSourceInstances.length).toBe(1);
 
     unmount();
 
-    expect(eventSourceInstance.close).toHaveBeenCalled();
+    expect(mockClose).toHaveBeenCalled();
   });
 });
 

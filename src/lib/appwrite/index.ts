@@ -5,7 +5,13 @@
  */
 
 // Configuration
-export { appwriteConfig, isAppwriteConfigured, isBuildTime } from './config';
+export { 
+  appwriteConfig, 
+  isAppwriteConfigured, 
+  isClientConfigured,
+  isServerConfigured,
+  isBuildTime 
+} from './config';
 export type { CollectionName, BucketName } from './config';
 
 // Client-side

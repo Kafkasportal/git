@@ -118,8 +118,20 @@ export const getBucketId = (name: BucketName): string => {
   return appwriteConfig.buckets[name];
 };
 
-// Validation helper
-export const isAppwriteConfigured = (): boolean => {
+// Validation helpers
+// Client-side configuration (doesn't require API key)
+export const isClientConfigured = (): boolean => {
+  return Boolean(
+    appwriteConfig.endpoint &&
+      appwriteConfig.projectId &&
+      appwriteConfig.databaseId &&
+      appwriteConfig.projectId !== "" &&
+      appwriteConfig.databaseId !== "",
+  );
+};
+
+// Server-side configuration (requires API key)
+export const isServerConfigured = (): boolean => {
   return Boolean(
     appwriteConfig.endpoint &&
       appwriteConfig.projectId &&
@@ -129,6 +141,15 @@ export const isAppwriteConfigured = (): boolean => {
       appwriteConfig.databaseId !== "" &&
       appwriteConfig.apiKey !== "",
   );
+};
+
+// General validation (defaults to server configuration)
+// For backward compatibility
+export const isAppwriteConfigured = (requireApiKey: boolean = true): boolean => {
+  if (requireApiKey) {
+    return isServerConfigured();
+  }
+  return isClientConfigured();
 };
 
 // Build-time detection

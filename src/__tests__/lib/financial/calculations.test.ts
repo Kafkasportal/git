@@ -114,62 +114,40 @@ describe('matchesDateFilter', () => {
   });
 
   it('should correctly match "today" filter using local time components', () => {
-    // Set "now" to a specific date
-    const mockDate = new Date('2023-10-25T12:00:00.000Z');
+    // Set "now" to a specific date (using local time to avoid timezone issues)
+    const mockDate = new Date(2023, 9, 25, 12, 0, 0); // October 25, 2023 12:00 local time
     vi.useFakeTimers();
     vi.setSystemTime(mockDate);
 
-    // Create dates using the same local date components as mockDate
-    const localYear = mockDate.getFullYear();
-    const localMonth = String(mockDate.getMonth() + 1).padStart(2, '0');
-    const localDay = String(mockDate.getDate()).padStart(2, '0');
+    // Record from same day (local time)
+    const todayRecord = new Date(2023, 9, 25, 10, 0, 0).toISOString();
+    expect(matchesDateFilter(todayRecord, 'today', '', '')).toBe(true);
 
-    // Record from same day - using local date components
-    expect(matchesDateFilter(`${localYear}-${localMonth}-${localDay}T10:00:00.000Z`, 'today', '', '')).toBe(true);
+    // Record from previous day (local time)
+    const yesterdayRecord = new Date(2023, 9, 24, 23, 59, 59).toISOString();
+    expect(matchesDateFilter(yesterdayRecord, 'today', '', '')).toBe(false);
 
-    // Record from previous day
-    const yesterday = new Date(mockDate);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const prevYear = yesterday.getFullYear();
-    const prevMonth = String(yesterday.getMonth() + 1).padStart(2, '0');
-    const prevDay = String(yesterday.getDate()).padStart(2, '0');
-    expect(matchesDateFilter(`${prevYear}-${prevMonth}-${prevDay}T23:59:59.000Z`, 'today', '', '')).toBe(false);
-
-    // Record from next day
-    const tomorrow = new Date(mockDate);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const nextYear = tomorrow.getFullYear();
-    const nextMonth = String(tomorrow.getMonth() + 1).padStart(2, '0');
-    const nextDay = String(tomorrow.getDate()).padStart(2, '0');
-    expect(matchesDateFilter(`${nextYear}-${nextMonth}-${nextDay}T00:00:01.000Z`, 'today', '', '')).toBe(false);
+    // Record from next day (local time)
+    const tomorrowRecord = new Date(2023, 9, 26, 0, 0, 1).toISOString();
+    expect(matchesDateFilter(tomorrowRecord, 'today', '', '')).toBe(false);
   });
 
   it('should correctly match "thisMonth" filter using local time components', () => {
-    // Set "now" to a specific date
-    const mockDate = new Date('2023-10-25T12:00:00.000Z');
+    // Set "now" to a specific date (using local time to avoid timezone issues)
+    const mockDate = new Date(2023, 9, 25, 12, 0, 0); // October 25, 2023 12:00 local time
     vi.useFakeTimers();
     vi.setSystemTime(mockDate);
 
-    // Create dates using local date components
-    const localYear = mockDate.getFullYear();
-    const localMonth = mockDate.getMonth() + 1;
+    // Record from same month (October 2023)
+    const sameMonthRecord = new Date(2023, 9, 1, 10, 0, 0).toISOString();
+    expect(matchesDateFilter(sameMonthRecord, 'thisMonth', '', '')).toBe(true);
 
-    // Record from same month
-    expect(matchesDateFilter(`${localYear}-${String(localMonth).padStart(2, '0')}-01T10:00:00.000Z`, 'thisMonth', '', '')).toBe(true);
+    // Record from previous month (September 2023)
+    const prevMonthRecord = new Date(2023, 8, 30, 23, 59, 59).toISOString();
+    expect(matchesDateFilter(prevMonthRecord, 'thisMonth', '', '')).toBe(false);
 
-    // Record from previous month
-    const prevMonthDate = new Date(mockDate);
-    prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
-    const prevYear = prevMonthDate.getFullYear();
-    const prevMonth = prevMonthDate.getMonth() + 1;
-    const prevDay = new Date(prevYear, prevMonth, 0).getDate(); // last day of prev month
-    expect(matchesDateFilter(`${prevYear}-${String(prevMonth).padStart(2, '0')}-${String(prevDay).padStart(2, '0')}T23:59:59.000Z`, 'thisMonth', '', '')).toBe(false);
-
-    // Record from next month
-    const nextMonthDate = new Date(mockDate);
-    nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
-    const nextYear = nextMonthDate.getFullYear();
-    const nextMonth = nextMonthDate.getMonth() + 1;
-    expect(matchesDateFilter(`${nextYear}-${String(nextMonth).padStart(2, '0')}-01T00:00:01.000Z`, 'thisMonth', '', '')).toBe(false);
+    // Record from next month (November 2023)
+    const nextMonthRecord = new Date(2023, 10, 1, 0, 0, 1).toISOString();
+    expect(matchesDateFilter(nextMonthRecord, 'thisMonth', '', '')).toBe(false);
   });
 });
