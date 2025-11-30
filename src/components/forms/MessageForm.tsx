@@ -75,10 +75,10 @@ export function MessageForm({
   const previousMessageTypeRef = useRef<string | null>(null);
 
   const {
-    register,
     handleSubmit,
     setValue,
     watch,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(messageSchema),
@@ -482,9 +482,15 @@ export function MessageForm({
               <Label htmlFor="subject">Konu *</Label>
               <Input
                 id="subject"
-                {...register('subject')}
+                value={subject || ''}
                 placeholder="Mesaj konusu"
                 className="h-9"
+                onChange={(e) => {
+                  setValue('subject', e.target.value, { shouldValidate: true });
+                }}
+                onBlur={() => {
+                  trigger('subject');
+                }}
               />
               {errors.subject && <p className="text-sm text-red-600">{errors.subject.message}</p>}
             </div>
@@ -495,10 +501,16 @@ export function MessageForm({
             <Label htmlFor="content">İçerik *</Label>
             <Textarea
               id="content"
-              {...register('content')}
+              value={content || ''}
               placeholder={getContentPlaceholder()}
               rows={getContentRows()}
               maxLength={getContentMaxLength()}
+              onChange={(e) => {
+                setValue('content', e.target.value, { shouldValidate: true });
+              }}
+              onBlur={() => {
+                trigger('content');
+              }}
             />
             {errors.content && <p className="text-sm text-red-600">{errors.content.message}</p>}
 
