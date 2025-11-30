@@ -25,22 +25,8 @@
     "clean:all": "rm -rf .next node_modules package-lock.json .tsbuildinfo && npm install",
     "clean:cache": "rm -rf .next/cache .tsbuildinfo",
     "clean:temp": "node -e \"const fs=require('fs');const path=require('path');const files=fs.readdirSync('.').filter(f=>/^(lint-|.*-output\\.txt|.*-current\\.txt|test-|typecheck-)/.test(f)&&f.endsWith('.txt'));files.forEach(f=>{try{fs.unlinkSync(f);}catch(e){}});\"",
-    "health:check": "curl http://localhost:3000/api/health?detailed=true",
-    "test:backend": "tsx scripts/test-backend.ts",
-    "test:appwrite-auth": "tsx scripts/test-appwrite-auth.ts",
-    "setup": "tsx scripts/quick-setup.ts",
-    "setup:quick": "tsx scripts/quick-setup.ts && npm run dev",
-    "appwrite:setup": "tsx scripts/setup-appwrite-via-api.ts",
-    "validate:deploy": "node -e \"fetch(process.env.DEPLOY_URL + '/api/health').then(r => r.json()).then(console.log)\"",
-    "prepare": "node -e \"const fs=require('fs'); if (!fs.existsSync('.git') || process.env.CI) process.exit(0); try { require('husky/install'); } catch(e) { process.exit(0); }\" || true",
     "lint:fix": "eslint --fix --max-warnings 0 .",
-    "lint:check": "eslint --max-warnings 0 .",
-    "sg": "tsx cli/sg.ts"
-  },
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
-      "eslint --fix"
-    ]
+    "lint:check": "eslint --max-warnings 0 ."
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.44",
@@ -139,10 +125,8 @@
     "dotenv": "^17.2.3",
     "eslint": "^9",
     "eslint-config-next": "16.0.3",
-    "husky": "^9.1.7",
     "jsdom": "^27.0.1",
     "lightningcss": "^1.30.2",
-    "lint-staged": "^16.2.6",
     "msw": "^2.11.6",
     "tailwindcss": "^4",
     "tsx": "^4.20.6",
