@@ -1,0 +1,247 @@
+/**
+ * Appwrite API Base Utilities
+ * Common functions for database operations
+ */
+
+import { ID, Query } from "appwrite";
+import { serverClient } from "../server";
+import { appwriteConfig, type CollectionName } from "../config";
+import logger from "@/lib/logger";
+import { Databases } from "node-appwrite";
+
+// ============================================================================
+// Types
+// ============================================================================
+
+export interface AppwriteQueryParams {
+  limit?: number;
+  skip?: number;
+  page?: number;
+  search?: string;
+  status?: string;
+  city?: string;
+  [key: string]: unknown;
+}
+
+export type AuthContext = {
+  auth?: {
+    userId: string;
+    role: string;
+  };
+};
+
+// ============================================================================
+// Query Utilities
+// ============================================================================
+
+/**
+ * Convert Next.js query params to Appwrite queries
+ */
+export function normalizeQueryParams(
+  searchParams: URLSearchParams,
+): AppwriteQueryParams {
+  const params: AppwriteQueryParams = {};
+
+  const limitParam = searchParams.get("limit");
+  const skipParam = searchParams.get("skip");
+  const pageParam = searchParams.get("page");
+  const search = searchParams.get("search");
+  const status = searchParams.get("status");
+  const city = searchParams.get("city");
+
+  if (limitParam) {
+    const parsedLimit = parseInt(limitParam, 10);
+    if (!Number.isNaN(parsedLimit) && parsedLimit > 0) {
+      params.limit = Math.min(parsedLimit, 100);
+    }
+  }
+
+  if (skipParam) {
+    const parsedSkip = parseInt(skipParam, 10);
+    if (!Number.isNaN(parsedSkip) && parsedSkip >= 0) {
+      params.skip = parsedSkip;
+    }
+  }
+
+  if (pageParam && params.skip === undefined) {
+    const parsedPage = parseInt(pageParam, 10);
+    if (!Number.isNaN(parsedPage) && parsedPage > 0) {
+      const limit = params.limit ?? 20;
+      params.skip = (parsedPage - 1) * limit;
+    }
+  }
+
+  if (search) params.search = search;
+  if (status) params.status = status;
+  if (city) params.city = city;
+
+  return params;
+}
+
+/**
+ * Build Appwrite queries from params
+ */
+export function buildQueries(params?: AppwriteQueryParams): string[] {
+  const queries: string[] = [];
+
+  if (!params) return queries;
+
+  if (params.limit) {
+    queries.push(Query.limit(params.limit));
+  }
+
+  if (params.skip) {
+    queries.push(Query.offset(params.skip));
+  }
+
+  if (params.search) {
+    queries.push(Query.search("name", params.search));
+  }
+
+  if (params.status) {
+    queries.push(Query.equal("status", params.status));
+  }
+
+  if (params.city) {
+    queries.push(Query.equal("city", params.city));
+  }
+
+  return queries;
+}
+
+// ============================================================================
+// Database Access
+// ============================================================================
+
+/**
+ * Get databases instance
+ */
+export function getDatabases(): Databases {
+  if (!serverClient) {
+    throw new Error("Appwrite server client not initialized");
+  }
+  return new Databases(serverClient);
+}
+
+// ============================================================================
+// Generic CRUD Operations
+// ============================================================================
+
+/**
+ * Generic list operation
+ */
+export async function listDocuments<T>(
+  collectionName: CollectionName,
+  params?: AppwriteQueryParams,
+): Promise<{ documents: T[]; total: number }> {
+  const databases = getDatabases();
+  const collectionId = appwriteConfig.collections[collectionName];
+  const queries = buildQueries(params);
+
+  try {
+    const response = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      collectionId,
+      queries,
+    );
+
+    return {
+      documents: response.documents as T[],
+      total: response.total,
+    };
+  } catch (error) {
+    logger.error(`Failed to list ${collectionName}`, { error });
+    throw error;
+  }
+}
+
+/**
+ * Generic get operation
+ */
+export async function getDocument<T>(
+  collectionName: CollectionName,
+  id: string,
+): Promise<T | null> {
+  const databases = getDatabases();
+  const collectionId = appwriteConfig.collections[collectionName];
+
+  try {
+    const document = await databases.getDocument(
+      appwriteConfig.databaseId,
+      collectionId,
+      id,
+    );
+    return document as T;
+  } catch (error) {
+    logger.error(`Failed to get ${collectionName}`, { error, id });
+    return null;
+  }
+}
+
+/**
+ * Generic create operation
+ */
+export async function createDocument<T>(
+  collectionName: CollectionName,
+  data: Record<string, unknown>,
+): Promise<T> {
+  const databases = getDatabases();
+  const collectionId = appwriteConfig.collections[collectionName];
+
+  try {
+    const document = await databases.createDocument(
+      appwriteConfig.databaseId,
+      collectionId,
+      ID.unique(),
+      data,
+    );
+    return document as T;
+  } catch (error) {
+    logger.error(`Failed to create ${collectionName}`, { error });
+    throw error;
+  }
+}
+
+/**
+ * Generic update operation
+ */
+export async function updateDocument<T>(
+  collectionName: CollectionName,
+  id: string,
+  data: Record<string, unknown>,
+): Promise<T> {
+  const databases = getDatabases();
+  const collectionId = appwriteConfig.collections[collectionName];
+
+  try {
+    const document = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      collectionId,
+      id,
+      data,
+    );
+    return document as T;
+  } catch (error) {
+    logger.error(`Failed to update ${collectionName}`, { error, id });
+    throw error;
+  }
+}
+
+/**
+ * Generic delete operation
+ */
+export async function deleteDocument(
+  collectionName: CollectionName,
+  id: string,
+): Promise<void> {
+  const databases = getDatabases();
+  const collectionId = appwriteConfig.collections[collectionName];
+
+  try {
+    await databases.deleteDocument(appwriteConfig.databaseId, collectionId, id);
+  } catch (error) {
+    logger.error(`Failed to delete ${collectionName}`, { error, id });
+    throw error;
+  }
+}
+
