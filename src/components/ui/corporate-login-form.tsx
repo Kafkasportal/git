@@ -45,9 +45,14 @@ export function CorporateLoginForm({
 
   // Development mode - auto-fill credentials for easy testing
   const isDevelopment = process.env.NODE_ENV === 'development';
-  // Admin test credentials - always available for easy login
+  // Admin test credentials - ONLY in development mode
+  // SECURITY: Never use NEXT_PUBLIC_ prefix for passwords!
+  // In production, this feature is disabled
   const adminEmail = 'admin@kafkasder.com';
-  const adminPassword = process.env.NEXT_PUBLIC_ADMIN_TEST_PASSWORD || 'Admin123!';
+  // Only use test password in development - production should use real authentication
+  const adminPassword = isDevelopment 
+    ? (process.env.NEXT_PUBLIC_ADMIN_TEST_PASSWORD || 'Admin123!')
+    : null;
 
   // Fetch admin info on mount
   useEffect(() => {
@@ -76,7 +81,7 @@ export function CorporateLoginForm({
       initRef.current = true;
 
       // Development mode: auto-fill admin credentials for easy testing
-      if (isDevelopment) {
+      if (isDevelopment && adminPassword) {
         setEmail(adminEmail);
         setPassword(adminPassword);
         setMounted(true);
@@ -205,16 +210,20 @@ export function CorporateLoginForm({
     }
   };
 
-  // Quick admin login handler
+  // Quick admin login handler - ONLY in development
   const handleQuickAdminLogin = async () => {
+    if (!isDevelopment || !adminPassword) {
+      toast.error('Bu özellik sadece development modunda kullanılabilir');
+      return;
+    }
     setEmail(adminEmail);
-    setPassword(adminPassword);
+    setPassword(adminPassword); // adminPassword is guaranteed to be string here due to check above
     setEmailError('');
     setPasswordError('');
     
     setIsLoading(true);
     try {
-      await login(adminEmail, adminPassword);
+      await login(adminEmail, adminPassword); // adminPassword is guaranteed to be string here
       toast.success('Admin olarak giriş yaptınız', {
         description: 'Sisteme hoş geldiniz!',
       });
@@ -498,26 +507,27 @@ export function CorporateLoginForm({
             </form>
 
             {/* Admin Test Login Info - Always Visible */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.85 }}
-              className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl backdrop-blur-sm"
-            >
-                  <div className="flex items-start gap-3">
-                <div className="p-2 bg-blue-500/20 rounded-lg">
-                  <User className="h-4 w-4 text-blue-400" />
-                </div>
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold text-blue-300 uppercase tracking-wider">
-                      Admin Test Giriş
-                    </p>
-                    <Button
-                      type="button"
-                      onClick={handleQuickAdminLogin}
-                      disabled={isLoading}
-                      size="sm"
+            {isDevelopment && adminPassword && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.85 }}
+                className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl backdrop-blur-sm"
+              >
+                    <div className="flex items-start gap-3">
+                  <div className="p-2 bg-blue-500/20 rounded-lg">
+                    <User className="h-4 w-4 text-blue-400" />
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold text-blue-300 uppercase tracking-wider">
+                        Admin Test Giriş (Development Only)
+                      </p>
+                      <Button
+                        type="button"
+                        onClick={handleQuickAdminLogin}
+                        disabled={isLoading}
+                        size="sm"
                       className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-500 text-white border-0"
                     >
                       <Zap className="h-3 w-3 mr-1" />
@@ -548,6 +558,7 @@ export function CorporateLoginForm({
                 </div>
               </div>
             </motion.div>
+            )}
 
             {/* Footer */}
             <motion.div
