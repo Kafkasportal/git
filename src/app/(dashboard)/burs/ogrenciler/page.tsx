@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { scholarshipApplicationsApi, scholarshipsApi } from '@/lib/api';
+import { scholarshipApplicationsApi, scholarshipsApi } from '@/lib/api/client';
 import { StudentForm } from '@/components/forms/StudentForm';
 import type { StudentFormValues } from '@/lib/validations/student';
 import {

@@ -25,7 +25,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { useQuery } from '@tanstack/react-query';
-import { scholarshipsApi } from '@/lib/api';
+import { scholarshipsApi } from '@/lib/api/client';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 

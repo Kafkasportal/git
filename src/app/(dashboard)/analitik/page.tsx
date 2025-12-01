@@ -24,7 +24,7 @@ import {
 } from 'recharts';
 
 import { useQuery } from '@tanstack/react-query';
-import { analyticsApi } from '@/lib/api';
+import { analyticsApi } from '@/lib/api/client';
 
 const mockCoreWebVitals = [
   { metric: 'LCP', value: 2.1, threshold: 2.5, status: 'good' },

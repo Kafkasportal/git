@@ -11,7 +11,7 @@ import { CurrencyWidget } from '@/components/ui/currency-widget';
 import { PageLayout } from '@/components/layouts/PageLayout';
 import { DemoBanner } from '@/components/ui/demo-banner';
 import { useQuery } from '@tanstack/react-query';
-import { monitoringApi } from '@/lib/api';
+import { monitoringApi } from '@/lib/api/client';
 
 import {
   Users,

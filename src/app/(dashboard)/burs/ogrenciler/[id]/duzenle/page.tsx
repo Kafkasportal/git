@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { scholarshipApplicationsApi } from '@/lib/api';
+import { scholarshipApplicationsApi } from '@/lib/api/client';
 import { PageLayout } from '@/components/layouts/PageLayout';
 import { StudentForm } from '@/components/forms/StudentForm';
 import { Loader2, ArrowLeft } from 'lucide-react';
