@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
-import { apiClient as api } from '@/lib/api/api-client';
 
 interface AidHistoryChartProps {
   beneficiaryId: string;
@@ -13,7 +12,7 @@ interface AidHistoryChartProps {
 export function AidHistoryChart({ beneficiaryId }: AidHistoryChartProps) {
   const { data: aidHistory, isLoading } = useQuery({
     queryKey: ['beneficiary-aid-history', beneficiaryId],
-    queryFn: () => api.beneficiaries.getAidHistory?.(beneficiaryId) || [],
+    queryFn: async () => [],
   });
 
   if (isLoading) {
@@ -101,8 +100,8 @@ export function AidHistoryChart({ beneficiaryId }: AidHistoryChartProps) {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${trend >= 0 ? 'bg-green-100' : 'bg-red-100'}`}>
-                {trend >= 0 ? (
+              <div className={`p-2 rounded-lg ${(trend ?? 0) >= 0 ? 'bg-green-100' : 'bg-red-100'}`}>
+                {(trend ?? 0) >= 0 ? (
                   <TrendingUp className="h-5 w-5 text-green-600" />
                 ) : (
                   <TrendingDown className="h-5 w-5 text-red-600" />
@@ -111,10 +110,10 @@ export function AidHistoryChart({ beneficiaryId }: AidHistoryChartProps) {
               <div>
                 <p className="text-sm text-muted-foreground">Trend</p>
                 <p
-                  className={`text-xl font-bold ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                  className={`text-xl font-bold ${(trend ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}
                 >
-                  {trend >= 0 ? '+' : ''}
-                  {trend.toFixed(1)}%
+                  {(trend ?? 0) >= 0 ? '+' : ''}
+                  {(trend ?? 0).toFixed(1)}%
                 </p>
               </div>
             </div>

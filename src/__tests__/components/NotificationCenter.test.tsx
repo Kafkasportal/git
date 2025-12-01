@@ -14,14 +14,17 @@ vi.mock('@/hooks/useNotificationStream', () => ({
 }));
 
 // Mock API client
-vi.mock('@/lib/api/api-client', () => ({
-  apiClient: {
-    workflowNotifications: {
-      getNotifications: vi.fn(),
-      markNotificationRead: vi.fn(),
-      deleteNotification: vi.fn(),
-    },
+vi.mock('@/lib/api/crud-factory', () => ({
+  workflowNotifications: {
+    getAll: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
   },
+}));
+
+// Mock CSRF client
+vi.mock('@/lib/csrf-client', () => ({
+  fetchWithCsrf: vi.fn(),
 }));
 
 // Mock query client

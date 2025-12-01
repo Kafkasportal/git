@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import logger from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -124,7 +125,7 @@ export function ExportButtons({
             throw new Error(`Desteklenmeyen format: ${format}`);
         }
       } catch (error) {
-        console.error('Export error:', error);
+        logger.error('Export error', { error });
         toast.error(`Dışa aktarma hatası: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
       } finally {
         setIsLoading(false);
@@ -395,7 +396,7 @@ export function SimpleExportButton({
       }
       toast.success(`${format.toUpperCase()} dosyası indirildi`);
     } catch (error) {
-      console.error('Export error:', error);
+      logger.error('Export error', { error });
       toast.error('Dışa aktarma hatası');
     } finally {
       setIsLoading(false);

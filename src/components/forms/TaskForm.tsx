@@ -16,7 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { DatePicker } from '@/components/ui/date-picker';
 import { useQueryClient } from '@tanstack/react-query';
-import { apiClient as api } from '@/lib/api/api-client';
+import { tasks as tasksApi } from '@/lib/api/crud-factory';
 import { useAuthStore } from '@/stores/authStore';
 import { Loader2, X, AlertCircle, User } from 'lucide-react';
 import {
@@ -77,11 +77,11 @@ export function TaskForm({ onSuccess, onCancel, initialData, taskId }: TaskFormP
   // Fetch users for assignment - disabled for now
   // const { data: usersResponse } = useQuery({
   //   queryKey: ['users'],
-  //   queryFn: () => api.users.getUsers({ limit: 100 }),
+  //   queryFn: () => users.getAll({ limit: 100 }),
   //   enabled: true,
   // });
 
-  const users: UserDocument[] = []; // Empty for now
+  const _userList: UserDocument[] = []; // Empty for now
 
   // Create task mutation
   const createTaskMutation = useFormMutation<TaskDocument, TaskFormData>({
@@ -89,7 +89,7 @@ export function TaskForm({ onSuccess, onCancel, initialData, taskId }: TaskFormP
     successMessage: 'Görev başarıyla oluşturuldu',
     errorMessage: 'Görev oluşturulurken hata oluştu',
     mutationFn: async (data: TaskFormData) => {
-      const response = await api.tasks.createTask(data);
+      const response = await tasksApi.create(data);
       if (response.error) {
         throw new Error(response.error);
       }
@@ -110,7 +110,7 @@ export function TaskForm({ onSuccess, onCancel, initialData, taskId }: TaskFormP
     successMessage: 'Görev başarıyla güncellendi',
     errorMessage: 'Görev güncellenirken hata oluştu',
     mutationFn: async (data: TaskFormData) => {
-      const response = await api.tasks.updateTask(taskId!, data);
+      const response = await tasksApi.update(taskId!, data);
       if (response.error) {
         throw new Error(response.error);
       }
@@ -260,14 +260,14 @@ export function TaskForm({ onSuccess, onCancel, initialData, taskId }: TaskFormP
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="unassigned">Atanmadı</SelectItem>
-                {users.map((user: UserDocument) => {
-                  const userId = user._id || user.$id;
+                {_userList.map((u: UserDocument) => {
+                  const userId = u._id || u.$id;
                   if (!userId) return null;
                   return (
                     <SelectItem key={userId} value={userId}>
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4" />
-                        {user.name}
+                        {u.name}
                       </div>
                     </SelectItem>
                   );

@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserForm, type UserFormValues } from '@/components/forms/user-form';
-import { apiClient as api } from '@/lib/api/api-client';
+import { users } from '@/lib/api/crud-factory';
 import { useAuthStore } from '@/stores/authStore';
 import type { PermissionValue } from '@/types/permissions';
 
@@ -32,7 +32,7 @@ export default function EditUserPage({ params }: PageProps) {
   const { data, isLoading } = useQuery({
     queryKey: ['user', id],
     queryFn: async () => {
-      const response = await api.users.getUser(id);
+      const response = await users.getById(id);
       if (response.error) {
         throw new Error(response.error);
       }
@@ -58,7 +58,7 @@ export default function EditUserPage({ params }: PageProps) {
         payload.password = values.password.trim();
       }
 
-      const response = await api.users.updateUser(id, payload);
+      const response = await users.update(id, payload);
       if (response.error) {
         throw new Error(response.error);
       }

@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { AdvancedBeneficiaryForm } from '@/components/forms/AdvancedBeneficiaryForm';
-import { apiClient as api } from '@/lib/api/api-client';
+import { beneficiaries } from '@/lib/api/crud-factory';
 import type { BeneficiaryDocument } from '@/types/database';
 import type { BeneficiaryFormData } from '@/lib/validations/beneficiary';
 
@@ -25,7 +25,7 @@ export default function BeneficiaryDetailPage({ params }: { params: Promise<{ id
   } = useQuery({
     queryKey: ['beneficiary', id],
     queryFn: async () => {
-      const result = await api.beneficiaries.getBeneficiary(id);
+      const result = await beneficiaries.getById(id);
       if (result.error) throw new Error(result.error);
       return result.data as BeneficiaryDocument;
     },
@@ -34,7 +34,7 @@ export default function BeneficiaryDetailPage({ params }: { params: Promise<{ id
   // Update mutation
   const updateMutation = useMutation({
     mutationFn: async (data: BeneficiaryFormData) => {
-      const result = await api.beneficiaries.updateBeneficiary(id, data);
+      const result = await beneficiaries.update(id, data);
       if (result.error) throw new Error(result.error);
       return result.data;
     },
@@ -51,7 +51,7 @@ export default function BeneficiaryDetailPage({ params }: { params: Promise<{ id
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      const result = await api.beneficiaries.deleteBeneficiary(id);
+      const result = await beneficiaries.delete(id);
       if (result.error) throw new Error(result.error);
       return result.data;
     },

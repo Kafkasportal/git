@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useQuery } from '@tanstack/react-query';
-import { apiClient as api } from '@/lib/api/api-client';
+import { beneficiaries as beneficiariesApi, donations as donationsApi, users as usersApi } from '@/lib/api/crud-factory';
 import { toast } from 'sonner';
 import {
   Search,
@@ -62,7 +62,7 @@ export function RecipientSelector({
   const { data: beneficiariesResponse, isLoading: isLoadingBeneficiaries } = useQuery({
     queryKey: ['beneficiaries', searchQuery],
     queryFn: () =>
-      api.beneficiaries.getBeneficiaries({
+      beneficiariesApi.getAll({
         search: searchQuery,
         limit: 100,
       }),
@@ -72,7 +72,7 @@ export function RecipientSelector({
   const { data: donationsResponse, isLoading: isLoadingDonations } = useQuery({
     queryKey: ['donations', searchQuery],
     queryFn: () =>
-      api.donations.getDonations({
+      donationsApi.getAll({
         search: searchQuery,
         limit: 100,
       }),
@@ -82,20 +82,20 @@ export function RecipientSelector({
   const { data: usersResponse, isLoading: isLoadingUsers } = useQuery({
     queryKey: ['users', searchQuery],
     queryFn: () =>
-      api.users.getUsers({
+      usersApi.getAll({
         limit: 100,
       }),
   });
 
-  const beneficiaries = beneficiariesResponse?.data || [];
-  const donations = donationsResponse?.data || [];
-  const users = usersResponse?.data || [];
+  const beneficiaryList = (beneficiariesResponse?.data || []) as BeneficiaryDocument[];
+  const donationList = (donationsResponse?.data || []) as DonationDocument[];
+  const userList = (usersResponse?.data || []) as UserDocument[];
 
   // Process recipients based on message type
   const getRecipients = (): RecipientItem[] => {
     switch (recipientSource) {
       case 'beneficiaries':
-        return beneficiaries
+        return beneficiaryList
           .filter((beneficiary: BeneficiaryDocument) => {
             if (messageType === 'sms' && !beneficiary.phone) return false;
             if (messageType === 'email' && !beneficiary.email) return false;
@@ -112,7 +112,7 @@ export function RecipientSelector({
       case 'donors':
         // Extract unique donors from donations
         const uniqueDonors = new Map();
-        donations.forEach((donation: DonationDocument) => {
+        donationList.forEach((donation: DonationDocument) => {
           if (donation.donor_name && donation.donor_phone) {
             const key = donation.donor_phone;
             if (!uniqueDonors.has(key)) {
@@ -133,7 +133,7 @@ export function RecipientSelector({
         });
 
       case 'users':
-        return users
+        return userList
           .filter((_user: UserDocument) => {
             if (messageType === 'internal') return true;
             return false; // Users are only for internal messages

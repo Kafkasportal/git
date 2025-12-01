@@ -108,8 +108,9 @@ export function useCountUp({
     }
   }, [enabled, end]);
 
-  // Format the count
-  const formattedCount = decimals > 0 ? count.toFixed(decimals) : Math.round(count);
+  // Format the count - guard against undefined/NaN values
+  const safeCount = count ?? 0;
+  const formattedCount = decimals > 0 ? safeCount.toFixed(decimals) : Math.round(safeCount);
 
   return {
     count: formattedCount,

@@ -11,10 +11,13 @@ import Link from 'next/link';
 import type { BeneficiaryDocument } from '@/types/database';
 import { toast } from 'sonner';
 import logger from '@/lib/logger';
-import { ArrowUpRight, Download, Plus } from 'lucide-react';
+import { ArrowUpRight, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { BulkActionsToolbar } from '@/components/ui/bulk-actions-toolbar';
+import { ExportMenu } from '@/components/ui/export-menu';
+import { useFilters } from '@/hooks/useFilters';
+import { FilterPanel, FilterField } from '@/components/ui/filter-panel';
 
 // Performance monitoring imports
 import { useFPSMonitor } from '@/lib/performance-monitor';
@@ -57,14 +60,14 @@ async function fetchBeneficiariesDirectly(params?: {
 }
 
 // Import export functions
-import {
-  exportToPDF,
-  exportToExcel,
-  exportToCSV,
-  type ExportColumn,
-  maskTCNo,
-  formatDate,
-} from '@/lib/export/export-service';
+// import {
+//   exportToPDF,
+//   exportToExcel,
+//   exportToCSV,
+//   type ExportColumn,
+//   maskTCNo,
+//   formatDate,
+// } from '@/lib/export/export-service';
 
 // Lazy load heavy modal component
 const BeneficiaryQuickAddModal = lazy(() =>
@@ -83,12 +86,24 @@ export default function BeneficiariesPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const [search, setSearch] = useState('');
+  const { filters, resetFilters, handleFiltersChange } = useFilters({
+    syncWithUrl: true,
+    presetsKey: 'beneficiaries-filters',
+  });
+
   // Debounce search to reduce API calls (300ms delay)
-  const debouncedSearch = useDebouncedValue(search, 300);
+  const debouncedSearch = useDebouncedValue(filters.search as string, 300);
   const [showQuickAddModal, setShowQuickAddModal] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [isExporting, setIsExporting] = useState(false);
+
+  const filterFields: FilterField[] = [
+    {
+      key: 'search',
+      label: 'Arama',
+      type: 'text',
+      placeholder: 'İsim, TC No veya Telefon ile ara...',
+    },
+  ];
 
   // Use cached query with performance optimization
   // Reduced limit for better performance - use pagination instead of loading all data
@@ -144,102 +159,6 @@ export default function BeneficiariesPage() {
     refetch();
     fallbackQuery.refetch();
   }, [refetch, fallbackQuery]);
-
-  // Export column definitions
-  const exportColumns: ExportColumn<BeneficiaryDocument>[] = useMemo(
-    () => [
-      { header: 'Ad Soyad', key: 'name' },
-      {
-        header: 'TC Kimlik No',
-        key: 'tc_no',
-        formatter: (value) => (value ? maskTCNo(String(value)) : ''),
-      },
-      { header: 'Telefon', key: 'phone' },
-      { header: 'E-posta', key: 'email' },
-      { header: 'Durum', key: 'status' },
-      {
-        header: 'Oluşturulma Tarihi',
-        key: '$createdAt' as keyof BeneficiaryDocument,
-        formatter: (value) => (value ? formatDate(String(value)) : ''),
-      },
-    ],
-    []
-  );
-
-  // Export function implementation
-  const exportBeneficiaries = useCallback(
-    async (params: {
-      search?: string;
-      beneficiaries?: BeneficiaryDocument[];
-      format?: 'csv' | 'excel' | 'pdf';
-    }) => {
-      try {
-        setIsExporting(true);
-        const dataToExport = params.beneficiaries || beneficiaries;
-        const format = params.format || 'csv';
-
-        if (!dataToExport || dataToExport.length === 0) {
-          toast.error('Dışa aktarılacak veri bulunamadı');
-          return { success: false, data: null, error: 'Veri bulunamadı' };
-        }
-
-        const filename = `ihtiyac_sahipleri_${new Date().toISOString().split('T')[0]}`;
-        const title = 'İhtiyaç Sahipleri Listesi';
-        const subtitle = params.search ? `Arama: ${params.search}` : undefined;
-
-        switch (format) {
-          case 'pdf':
-            await exportToPDF({
-              title,
-              subtitle,
-              filename: `${filename}.pdf`,
-              columns: exportColumns,
-              data: dataToExport,
-              includeDate: true,
-              includeFooter: true,
-            });
-            break;
-          case 'excel':
-            await exportToExcel({
-              title,
-              filename: `${filename}.xlsx`,
-              sheetName: 'İhtiyaç Sahipleri',
-              columns: exportColumns,
-              data: dataToExport,
-              includeTotal: false,
-            });
-            break;
-          case 'csv':
-          default:
-            await exportToCSV({
-              filename: `${filename}.csv`,
-              columns: exportColumns,
-              data: dataToExport,
-            });
-            break;
-        }
-
-        toast.success(`${dataToExport.length} kayıt başarıyla dışa aktarıldı`);
-        return { success: true, data: null, error: null };
-      } catch (error) {
-        logger.error('Export error', { error, format: params.format });
-        const errorMessage =
-          error instanceof Error ? error.message : 'Dışa aktarma sırasında hata oluştu';
-        toast.error(errorMessage);
-        return { success: false, data: null, error: errorMessage };
-      } finally {
-        setIsExporting(false);
-      }
-    },
-    [beneficiaries, exportColumns]
-  );
-
-  const handleExport = useCallback(
-    async (format: 'csv' | 'excel' | 'pdf' = 'csv') => {
-      await exportBeneficiaries({ search, beneficiaries, format });
-    },
-    [search, beneficiaries, exportBeneficiaries]
-  );
 
   const handleShowModal = useCallback(() => {
     setShowQuickAddModal(true);
@@ -558,16 +477,11 @@ export default function BeneficiariesPage() {
       className="space-y-4 sm:space-y-6 w-full"
       actions={
         <>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleExport('csv')}
-            disabled={isExporting}
-            className="gap-1"
-          >
-            <Download className="h-4 w-4" />
-            {isExporting ? 'Dışa Aktarılıyor...' : 'Dışa Aktar'}
-          </Button>
+          <ExportMenu
+            data={beneficiaries}
+            filename="ihtiyac-sahipleri"
+            title="İhtiyaç Sahipleri Listesi"
+          />
           <Button size="sm" onClick={handleShowModal} className="gap-1">
             <Plus className="h-4 w-4" />
             Yeni Ekle
@@ -604,8 +518,17 @@ export default function BeneficiariesPage() {
 
       <Card className="w-full">
         <CardHeader className="pb-4">
-          <CardTitle>İhtiyaç Sahipleri Listesi</CardTitle>
-          <CardDescription>Toplam {beneficiaries.length} kayıt</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>İhtiyaç Sahipleri Listesi</CardTitle>
+              <CardDescription>Toplam {beneficiaries.length} kayıt</CardDescription>
+            </div>
+            <FilterPanel
+              fields={filterFields}
+              onFiltersChange={handleFiltersChange}
+              onReset={resetFilters}
+            />
+          </div>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
           <VirtualizedDataTable<BeneficiaryDocument & { rowIndex: number }>
@@ -615,12 +538,7 @@ export default function BeneficiariesPage() {
             error={(error || fallbackQuery.error) as Error}
             emptyMessage="İhtiyaç sahibi bulunamadı"
             emptyDescription="Henüz kayıt eklenmemiş"
-            searchable={true}
-            searchValue={search}
-            onSearchChange={(value) => {
-              setSearch(value);
-            }}
-            searchPlaceholder="İsim/TC/Telefon ara..."
+            searchable={false}
             refetch={() => {
               refetch();
               fallbackQuery.refetch();

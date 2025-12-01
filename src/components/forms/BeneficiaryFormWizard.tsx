@@ -27,7 +27,7 @@ import { HealthInfoStep } from './beneficiary-steps/HealthInfoStep';
 
 // Import validation and types
 import { beneficiarySchema, type BeneficiaryFormData } from '@/lib/validations/beneficiary';
-import { apiClient as api } from '@/lib/api/api-client';
+import { beneficiaries } from '@/lib/api/crud-factory';
 import { formatErrorMessage } from '@/lib/errors/AppError';
 import type { CreateDocumentData, BeneficiaryDocument } from '@/types/database';
 
@@ -133,7 +133,7 @@ export function BeneficiaryFormWizard({
         approval_status: 'pending',
       };
 
-      return api.beneficiaries.createBeneficiary(beneficiaryData);
+      return beneficiaries.create(beneficiaryData);
     },
     onSuccess: () => {
       toast.success('İhtiyaç sahibi başarıyla eklendi');
@@ -224,7 +224,7 @@ export function BeneficiaryFormWizard({
         contact_preference: data.contactPreference,
       };
 
-      return api.beneficiaries.updateBeneficiary(beneficiaryId, updateData);
+      return beneficiaries.update(beneficiaryId, updateData);
     },
     onSuccess: () => {
       toast.success('İhtiyaç sahibi başarıyla güncellendi');

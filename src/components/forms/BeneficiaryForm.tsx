@@ -24,7 +24,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiClient as api } from "@/lib/api/api-client";
+import { beneficiaries } from "@/lib/api/crud-factory";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { requiredPhoneSchema } from "@/lib/validations/shared-validators";
@@ -96,7 +96,7 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
         archived: "SILINDI",
       } as const;
 
-      return api.beneficiaries.createBeneficiary({
+      return beneficiaries.create({
         ...data,
         status: statusMap[data.status] || "AKTIF",
       });

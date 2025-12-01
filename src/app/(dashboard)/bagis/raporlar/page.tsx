@@ -46,7 +46,7 @@ import {
   FileDown,
 } from 'lucide-react';
 import { generateDonationPDF } from '@/lib/utils/pdf-export';
-import { apiClient as api } from '@/lib/api/api-client';
+import { donations as donationsApi } from '@/lib/api/crud-factory';
 
 interface DonationReport {
   _id: string;
@@ -82,7 +82,7 @@ export default function DonationReportsPage() {
   // Fetch all donations for reporting
   const { data: donationsData, isLoading } = useQuery({
     queryKey: ['donations-report'],
-    queryFn: () => api.donations.getDonations({ limit: 1000 }),
+    queryFn: () => donationsApi.getAll({ limit: 1000 }),
   });
 
   const donations: DonationReport[] = useMemo(() => {

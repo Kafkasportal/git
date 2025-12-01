@@ -1,13 +1,10 @@
 'use client';
 
-import { useMemo } from 'react';
-
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { donations } from '@/lib/api/crud-factory';
 import { VirtualizedDataTable, type DataTableColumn } from '@/components/ui/virtualized-data-table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -16,10 +13,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Search, Plus, DollarSign, User, Calendar, FileText } from 'lucide-react';
+import { Plus, DollarSign, User, Calendar, FileText } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { BulkActionsToolbar } from '@/components/ui/bulk-actions-toolbar';
+import { ExportMenu } from '@/components/ui/export-menu';
+import { useFilters } from '@/hooks/useFilters';
+import { FilterPanel, FilterField } from '@/components/ui/filter-panel';
 import { toast } from 'sonner';
 import type { DonationDocument } from '@/types/database';
 
@@ -37,19 +37,32 @@ const DonationForm = dynamic(
 
 export default function DonationsPage() {
   const queryClient = useQueryClient();
-  const [search, setSearch] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
+  const { filters, resetFilters, handleFiltersChange } = useFilters({
+    syncWithUrl: true,
+    presetsKey: 'donations-filters',
+  });
+
   const { data, isLoading } = useQuery({
-    queryKey: ['donations', search],
+    queryKey: ['donations', filters],
     queryFn: () =>
       donations.getAll({
         page: 1,
         limit: 50, // Optimized for better performance - use pagination
-        search,
+        search: filters.search as string,
       }),
   });
+
+  const filterFields: FilterField[] = [
+    {
+      key: 'search',
+      label: 'Arama',
+      type: 'text',
+      placeholder: 'Bağışçı adı veya açıklama ile ara...',
+    },
+  ];
 
   // Memoize donations list and total amount to prevent unnecessary recalculations
   const donationsList = useMemo(() => {
@@ -249,26 +262,29 @@ export default function DonationsPage() {
           <p className="text-muted-foreground mt-2">Bağış kayıtlarını görüntüleyin ve yönetin</p>
         </div>
 
-        <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
-          <DialogTrigger asChild>
-            <Button className="gap-2 sm:w-auto w-full">
-              <Plus className="h-4 w-4" />
-              Yeni Bağış
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogTitle>Yeni Bağış Ekle</DialogTitle>
-            <DialogDescription>Bağış bilgilerini girerek yeni kayıt oluşturun</DialogDescription>
-            <DonationForm
-              onSuccess={() => {
-                setShowCreateForm(false);
-              }}
-              onCancel={() => {
-                setShowCreateForm(false);
-              }}
-            />
-          </DialogContent>
-        </Dialog>
+        <div className="flex items-center gap-2">
+          <ExportMenu data={donationsList} filename="bagislar" title="Bağış Listesi" />
+          <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
+            <DialogTrigger asChild>
+              <Button className="gap-2 sm:w-auto w-full">
+                <Plus className="h-4 w-4" />
+                Yeni Bağış
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogTitle>Yeni Bağış Ekle</DialogTitle>
+              <DialogDescription>Bağış bilgilerini girerek yeni kayıt oluşturun</DialogDescription>
+              <DonationForm
+                onSuccess={() => {
+                  setShowCreateForm(false);
+                }}
+                onCancel={() => {
+                  setShowCreateForm(false);
+                }}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Stats */}
@@ -320,22 +336,11 @@ export default function DonationsPage() {
       />
 
       {/* Search */}
-      <Card className="w-full">
-        <CardHeader className="pb-4">
-          <CardTitle>Arama</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Bağışçı adı veya fiş numarası ile ara..."
-              className="pl-10"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <FilterPanel
+        fields={filterFields}
+        onFiltersChange={handleFiltersChange}
+        onReset={resetFilters}
+      />
 
       {/* List */}
       <Card className="w-full">

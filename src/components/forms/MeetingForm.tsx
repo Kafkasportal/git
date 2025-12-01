@@ -28,7 +28,7 @@ import {
 import { DatePicker } from "@/components/ui/date-picker";
 import { Badge } from "@/components/ui/badge";
 
-import { apiClient as api } from "@/lib/api/api-client";
+import { meetings as meetingsApi } from "@/lib/api/crud-factory";
 import { useAuthStore } from "@/stores/authStore";
 import { useFormMutation } from "@/hooks/useFormMutation";
 import { toast } from "sonner";
@@ -78,10 +78,10 @@ export function MeetingForm({
   // Fetch users for participant selection - disabled for now
   // const { data: usersResponse, isLoading: isLoadingUsers } = useQuery({
   //   queryKey: ['users'],
-  //   queryFn: () => api.users.getUsers({ limit: 100 }),
+  //   queryFn: () => users.getAll({ limit: 100 }),
   // });
 
-  const users: Array<{ _id: string; name: string }> = []; // Empty for now
+  const _userList: Array<{ _id: string; name: string }> = []; // Empty for now
 
   // Form setup
   const {
@@ -141,9 +141,9 @@ export function MeetingForm({
     errorMessage: `Toplantı ${isEditMode ? "güncellenirken" : "oluşturulurken"} hata oluştu`,
     mutationFn: async (data: MeetingFormData | MeetingEditFormData) => {
       if (isEditMode && meetingId) {
-        return await api.meetings.updateMeeting(meetingId, data);
+        return await meetingsApi.update(meetingId, data);
       } else {
-        return await api.meetings.createMeeting(data);
+        return await meetingsApi.create(data);
       }
     },
     onSuccess: () => {
@@ -162,7 +162,7 @@ export function MeetingForm({
     errorMessage: "Toplantı başlatılırken hata oluştu",
     mutationFn: async () => {
       if (!meetingId) return {} as unknown;
-      return await api.meetings.updateMeetingStatus(meetingId, "ongoing");
+      return await meetingsApi.update(meetingId, { status: "ongoing" });
     },
     onSuccess,
   });
@@ -191,7 +191,7 @@ export function MeetingForm({
   };
 
   const getUserName = (userId: string) => {
-    const userObj = users.find((u) => u._id === userId);
+    const userObj = _userList.find((u: { _id: string; name: string }) => u._id === userId);
     return userObj?.name || userId;
   };
 
@@ -360,7 +360,7 @@ export function MeetingForm({
                     Yükleniyor...
                   </SelectItem>
                 ) : (
-                  users.map((u) => (
+                  _userList.map((u: { _id: string; name: string }) => (
                     <SelectItem key={u._id} value={u._id}>
                       {u.name} {selectedParticipants.includes(u._id) && "✓"}
                     </SelectItem>

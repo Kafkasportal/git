@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api/api-client';
+import logger from '@/lib/logger';
+import { workflowNotifications } from '@/lib/api/crud-factory';
+import { fetchWithCsrf } from '@/lib/csrf-client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -57,7 +59,7 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
 
     const fetchInitialNotifications = async () => {
       try {
-        const response = await apiClient.workflowNotifications.getNotifications({
+        const response = await workflowNotifications.getAll({
           filters: { recipient: userId },
           limit: 50,
         });
@@ -82,7 +84,7 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
           setNotifications(convertedNotifications);
         }
       } catch (error) {
-        console.error('Failed to fetch initial notifications', error);
+        logger.error('Failed to fetch initial notifications', { error });
       }
     };
 
@@ -97,7 +99,11 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
   // Mutations
   const markAsReadMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiClient.workflowNotifications.markNotificationRead(id);
+      const response = await fetchWithCsrf(`/api/workflow-notifications/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'okundu' }),
+      });
       return response;
     },
     onSuccess: (_data, id) => {
@@ -120,7 +126,11 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
         unreadNotifications.map((n) => {
           const notificationId = n.$id || n._id;
           if (!notificationId) return Promise.resolve();
-          return apiClient.workflowNotifications.markNotificationRead(notificationId);
+          return fetchWithCsrf(`/api/workflow-notifications/${notificationId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'okundu' }),
+          });
         })
       );
     },
@@ -136,7 +146,7 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
 
   const deleteNotificationMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiClient.workflowNotifications.deleteNotification(id);
+      const response = await workflowNotifications.delete(id);
       return response;
     },
     onSuccess: (_data, id) => {

@@ -17,7 +17,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiClient as api } from '@/lib/api/api-client';
+import { users as usersApi, messages as messagesApi } from '@/lib/api/crud-factory';
+import { fetchWithCsrf } from '@/lib/csrf-client';
 import { useAuthStore } from '@/stores/authStore';
 import {
   Loader2,
@@ -118,9 +119,9 @@ export function MessageForm({
   // Fetch users for recipient selection (used for internal messaging)
   const { data: usersResponse, isLoading: isLoadingUsers } = useQuery({
     queryKey: ['users'],
-    queryFn: () => api.users.getUsers({ limit: 200 }),
+    queryFn: () => usersApi.getAll({ limit: 200 }),
   });
-  const users: UserDocument[] = usersResponse?.data || [];
+  const userList: UserDocument[] = (usersResponse?.data || []) as UserDocument[];
 
   useEffect(() => {
     if (initialData) {
@@ -141,7 +142,7 @@ export function MessageForm({
     successMessage: 'Mesaj başarıyla oluşturuldu.',
     errorMessage: 'Mesaj oluşturulurken hata oluştu',
     mutationFn: async (data: MessageFormData) => {
-      const response = await api.messages.createMessage(data);
+      const response = await messagesApi.create(data);
       if (response.error) {
         throw new Error(response.error);
       }
@@ -161,7 +162,7 @@ export function MessageForm({
     successMessage: 'Mesaj başarıyla güncellendi.',
     errorMessage: 'Mesaj güncellenirken hata oluştu',
     mutationFn: (data: { id: string; data: MessageFormData }) =>
-      api.messages.updateMessage(data.id, data.data),
+      messagesApi.update(data.id, data.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
       onSuccess?.();
@@ -172,7 +173,14 @@ export function MessageForm({
     queryKey: ['messages'],
     successMessage: 'Mesaj başarıyla gönderildi.',
     errorMessage: 'Mesaj gönderilirken hata oluştu',
-    mutationFn: (id: string) => api.messages.sendMessage(id),
+    mutationFn: async (id: string) => {
+      const response = await fetchWithCsrf(`/api/messages/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'send' }),
+      });
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
       onSuccess?.();
@@ -197,7 +205,7 @@ export function MessageForm({
         return;
       }
 
-      const matchedUser = users.find((u) => {
+      const matchedUser = userList.find((u) => {
         const email = u.email?.toLowerCase();
         const name = u.name?.toLowerCase();
         const normalized = rawInput.toLowerCase();
@@ -232,7 +240,7 @@ export function MessageForm({
     setSelectedRecipients(updatedRecipients);
     setValue('recipients', updatedRecipients);
     setRecipientInput('');
-  }, [messageType, recipientInput, selectedRecipients, users, isLoadingUsers, setValue]);
+  }, [messageType, recipientInput, selectedRecipients, userList, isLoadingUsers, setValue]);
 
   const handleRemoveRecipient = useCallback((recipientToRemove: string) => {
     const updatedRecipients = selectedRecipients.filter(
@@ -332,7 +340,7 @@ export function MessageForm({
 
   const getRecipientLabel = useCallback((recipient: string) => {
     if (messageType === 'internal') {
-      const matchedUser = users.find((u) => u._id === recipient);
+      const matchedUser = userList.find((u) => u._id === recipient);
       if (matchedUser) {
         if (matchedUser.name && matchedUser.email) {
           return `${matchedUser.name} (${matchedUser.email})`;
@@ -347,7 +355,7 @@ export function MessageForm({
     }
 
     return recipient;
-  }, [messageType, users]);
+  }, [messageType, userList]);
 
   const getContentPlaceholder = useCallback(() => {
     switch (messageType) {
@@ -457,7 +465,7 @@ export function MessageForm({
             {messageType === 'internal' &&
               selectedRecipients.length === 0 &&
               !isLoadingUsers &&
-              users.length === 0 && (
+              userList.length === 0 && (
                 <p className="text-sm text-gray-500">
                   Kayıtlı kullanıcı bulunamadı. Kurum içi mesaj göndermek için önce kullanıcı
                   ekleyin.

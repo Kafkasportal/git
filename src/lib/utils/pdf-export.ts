@@ -3,6 +3,7 @@ import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { formatCurrency } from "@/lib/utils/format";
+import logger from "@/lib/logger";
 import type { FinanceRecord } from "@/lib/financial/calculations";
 
 // jsPDF-autotable için tip genişletmesi
@@ -135,7 +136,7 @@ export const exportToPDF = (
  */
 export const generateDonationPDF = (_data: unknown, _title?: string) => {
   if (process.env.NODE_ENV === 'development') {
-    console.warn(
+    logger.warn(
       'generateDonationPDF: Bu fonksiyon henüz implemente edilmedi. exportToPDF kullanın.'
     );
   }
@@ -149,7 +150,7 @@ export const generateDonationPDF = (_data: unknown, _title?: string) => {
  */
 export const generateFinancialReportPDF = (_data: unknown, _title?: string) => {
   if (process.env.NODE_ENV === 'development') {
-    console.warn(
+    logger.warn(
       'generateFinancialReportPDF: Bu fonksiyon henüz implemente edilmedi. exportToPDF kullanın.'
     );
   }
@@ -163,7 +164,7 @@ export const generateFinancialReportPDF = (_data: unknown, _title?: string) => {
  */
 export const generateAidListPDF = (_data: unknown, _title?: string) => {
   if (process.env.NODE_ENV === 'development') {
-    console.warn(
+    logger.warn(
       'generateAidListPDF: Bu fonksiyon henüz implemente edilmedi. exportToPDF kullanın.'
     );
   }

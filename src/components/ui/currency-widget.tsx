@@ -74,26 +74,26 @@ export function CurrencyWidget({ rates, lastUpdate, isLoading }: CurrencyWidgetP
                 <div className="text-right">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground">Alış:</span>
-                    <span className="text-sm font-medium">₺{rate.buy.toFixed(4)}</span>
+                    <span className="text-sm font-medium">₺{(rate.buy ?? 0).toFixed(4)}</span>
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-xs text-muted-foreground">Satış:</span>
-                    <span className="text-sm font-medium">₺{rate.sell.toFixed(4)}</span>
+                    <span className="text-sm font-medium">₺{(rate.sell ?? 0).toFixed(4)}</span>
                   </div>
                 </div>
-                {rate.change !== undefined && (
+                {rate.change != null && (
                   <div
                     className={cn(
                       'flex items-center gap-1',
-                      rate.change >= 0 ? 'text-green-600' : 'text-red-600'
+                      (rate.change ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'
                     )}
                   >
-                    {rate.change >= 0 ? (
+                    {(rate.change ?? 0) >= 0 ? (
                       <TrendingUp className="h-4 w-4" />
                     ) : (
                       <TrendingDown className="h-4 w-4" />
                     )}
-                    <span className="text-xs font-medium">{Math.abs(rate.change).toFixed(2)}%</span>
+                    <span className="text-xs font-medium">{Math.abs(rate.change ?? 0).toFixed(2)}%</span>
                   </div>
                 )}
               </div>

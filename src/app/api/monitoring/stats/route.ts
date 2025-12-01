@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { serverDatabases, serverUsers } from '@/lib/appwrite/server';
 import { appwriteConfig } from '@/lib/appwrite/config';
 import { Query } from 'node-appwrite';
+import logger from '@/lib/logger';
 
 export async function GET() {
   try {
@@ -74,7 +75,7 @@ export async function GET() {
       data: stats,
     });
   } catch (error) {
-    console.error('Stats fetch error:', error);
+    logger.error('Stats fetch error:', error);
     return NextResponse.json({ success: false, error: 'Failed to fetch stats' }, { status: 500 });
   }
 }

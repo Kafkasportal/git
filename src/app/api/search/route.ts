@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerDatabases } from '@/lib/appwrite/server';
 import { appwriteConfig, isServerConfigured } from '@/lib/appwrite/config';
 import { Query } from 'node-appwrite';
+import logger from '@/lib/logger';
 
 // Generic document type for Appwrite documents
 interface AppwriteDocument {
@@ -82,7 +83,7 @@ export async function GET(request: NextRequest) {
               }
             });
           } catch (error) {
-            console.error('Beneficiary search error:', error);
+            logger.error('Beneficiary search error:', error);
           }
         })()
       );
@@ -121,7 +122,7 @@ export async function GET(request: NextRequest) {
               }
             });
           } catch (error) {
-            console.error('Donation search error:', error);
+            logger.error('Donation search error:', error);
           }
         })()
       );
@@ -160,7 +161,7 @@ export async function GET(request: NextRequest) {
               }
             });
           } catch (error) {
-            console.error('Task search error:', error);
+            logger.error('Task search error:', error);
           }
         })()
       );
@@ -199,7 +200,7 @@ export async function GET(request: NextRequest) {
               }
             });
           } catch (error) {
-            console.error('Meeting search error:', error);
+            logger.error('Meeting search error:', error);
           }
         })()
       );
@@ -238,7 +239,7 @@ export async function GET(request: NextRequest) {
               }
             });
           } catch (error) {
-            console.error('User search error:', error);
+            logger.error('User search error:', error);
           }
         })()
       );
@@ -267,7 +268,7 @@ export async function GET(request: NextRequest) {
       query,
     });
   } catch (error) {
-    console.error('Search API error:', error);
+    logger.error('Search API error:', error);
     return NextResponse.json(
       { error: 'Search failed', results: [] },
       { status: 500 }

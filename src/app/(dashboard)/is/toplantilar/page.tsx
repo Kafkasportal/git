@@ -30,7 +30,10 @@ import dynamic from "next/dynamic";
 import { toast } from "sonner";
 import { DemoBanner } from "@/components/ui/demo-banner";
 import { MeetingsHeader } from "./_components/MeetingsHeader";
-import { meetings as meetingsApi } from "@/lib/api/api-client";
+import { ExportMenu } from "@/components/ui/export-menu";
+import { useFilters } from '@/hooks/useFilters';
+import { FilterPanel, FilterField } from '@/components/ui/filter-panel';
+import { meetings as meetingsApi } from "@/lib/api/crud-factory";
 import type { MeetingDocument } from "@/types/database";
 import { Calendar, CheckCircle, XCircle } from "lucide-react";
 import { MeetingForm } from "@/components/forms/MeetingForm";
@@ -63,20 +66,55 @@ export default function MeetingsPage() {
     useState<MeetingDocument | null>(null);
   const [meetingToDelete, setMeetingToDelete] = useState<string | null>(null);
 
-  // Filter state (unused for now since list view is not implemented)
-  // These will be used when list view is implemented
-  // const [search, setSearch] = useState("");
-  // const [statusFilter, setStatusFilter] = useState("all");
-  // const [meetingTypeFilter, setMeetingTypeFilter] = useState("all");
+  const { filters, resetFilters, handleFiltersChange } = useFilters({
+    syncWithUrl: true,
+    presetsKey: 'meetings-filters',
+  });
 
   // Fetch meetings
   const { data: meetingsData, isLoading } = useQuery({
-    queryKey: ["meetings"],
-    queryFn: () => meetingsApi.getAll(),
+    queryKey: ["meetings", filters],
+    queryFn: () => meetingsApi.getAll({
+      filters: {
+        ...(filters.status && typeof filters.status === 'string' && { status: filters.status }),
+        ...(filters.type && typeof filters.type === 'string' && { type: filters.type }),
+      } as Record<string, string | number | boolean | undefined>,
+      search: filters.search as string,
+    }),
   });
 
   const meetings: MeetingDocument[] =
     (meetingsData?.data as MeetingDocument[]) || [];
+
+  const filterFields: FilterField[] = [
+    {
+      key: 'search',
+      label: 'Arama',
+      type: 'text',
+      placeholder: 'Toplantı başlığı ile ara...',
+    },
+    {
+      key: 'status',
+      label: 'Durum',
+      type: 'select',
+      options: [
+        { label: 'Planlandı', value: 'scheduled' },
+        { label: 'Tamamlandı', value: 'completed' },
+        { label: 'İptal Edildi', value: 'cancelled' },
+      ],
+    },
+    {
+      key: 'type',
+      label: 'Tür',
+      type: 'select',
+      options: [
+        { label: 'Yönetim Kurulu', value: 'board' },
+        { label: 'Genel Kurul', value: 'general' },
+        { label: 'Komite', value: 'committee' },
+        { label: 'Diğer', value: 'other' },
+      ],
+    },
+  ];
 
   // Calculate statistics
   const totalMeetings = meetings.length;
@@ -114,6 +152,18 @@ export default function MeetingsPage() {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         onCreateMeeting={() => setShowCreateModal(true)}
+      >
+        <ExportMenu
+          data={meetings}
+          filename="toplantilar"
+          title="Toplantı Listesi"
+        />
+      </MeetingsHeader>
+
+      <FilterPanel
+        fields={filterFields}
+        onFiltersChange={handleFiltersChange}
+        onReset={resetFilters}
       />
 
       {/* Statistics Cards */}

@@ -238,10 +238,16 @@ export function useFilters(options: UseFiltersOptions = {}) {
     
     // Actions
     setFilter,
+    setFilters, // Direct setState for bulk updates
     setMultipleFilters,
     removeFilter,
     resetFilters,
     toggleArrayFilter,
+    
+    // FilterPanel compatible handler
+    handleFiltersChange: (newFilters: Record<string, unknown>) => {
+      setFilters(newFilters as FilterValue);
+    },
     
     // Presets
     savePreset,

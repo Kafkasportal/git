@@ -98,12 +98,12 @@ Format aynı, sadece import değişecek.
 
 ## 📝 Migration Checklist
 
-- [ ] Component dosyalarını migrate et (8 dosya)
-- [ ] Page dosyalarını migrate et (15 dosya)
-- [ ] Library dosyalarını migrate et (5 dosya)
-- [ ] Test dosyalarını güncelle
-- [ ] `api-client.ts` dosyasını kaldır
-- [ ] Import'ları temizle
+- [x] Component dosyalarını migrate et (8 dosya)
+- [x] Page dosyalarını migrate et (15 dosya)
+- [x] Library dosyalarını migrate et (5 dosya)
+- [x] Test dosyalarını güncelle
+- [x] `api-client.ts` dosyasını kaldır
+- [x] Import'ları temizle
 
 ## ⚠️ Dikkat Edilmesi Gerekenler
 

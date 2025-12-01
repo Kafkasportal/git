@@ -24,7 +24,7 @@ import {
 } from 'recharts';
 
 import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
+import { analyticsApi } from '@/lib/api';
 
 const mockCoreWebVitals = [
   { metric: 'LCP', value: 2.1, threshold: 2.5, status: 'good' },
@@ -40,7 +40,7 @@ function AnalyticsPageContent() {
   const { data: analyticsData, isLoading } = useQuery({
     queryKey: ['analytics', 'stats'],
     queryFn: async () => {
-      const res = await api.analytics.getStats({ limit: 1000 });
+      const res = await analyticsApi.getStats({ limit: 1000 });
       if (!res.data) throw new Error(res.error || 'Failed to fetch analytics');
       return res.data;
     },

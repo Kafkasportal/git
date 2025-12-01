@@ -16,7 +16,8 @@ import {
   Users,
 } from 'lucide-react';
 
-import { apiClient as api } from '@/lib/api/api-client';
+import { meetings as meetingsApi, meetingDecisions, meetingActionItems, workflowNotifications } from '@/lib/api/crud-factory';
+import { fetchWithCsrf } from '@/lib/csrf-client';
 import { useAuthStore } from '@/stores/authStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -67,13 +68,13 @@ export default function WorkManagementPage() {
 
   const { data: meetingsResponse, isLoading: isLoadingMeetings } = useQuery({
     queryKey: ['workflow-meetings'],
-    queryFn: () => api.meetings.getMeetings({ limit: 5 }),
+    queryFn: () => meetingsApi.getAll({ limit: 5 }),
   });
-  const meetings = meetingsResponse?.data ?? [];
+  const meetingsList = (meetingsResponse?.data ?? []) as MeetingDocument[];
 
   const { data: decisionsResponse, isLoading: isLoadingDecisions } = useQuery({
     queryKey: ['workflow-decisions'],
-    queryFn: () => api.meetingDecisions.getDecisions({ limit: 10 }),
+    queryFn: () => meetingDecisions.getAll({ limit: 10 }),
   });
   const decisions = (decisionsResponse?.data ?? []) as MeetingDecisionDocument[];
 
@@ -85,7 +86,7 @@ export default function WorkManagementPage() {
     queryKey: ['workflow-action-items', user?.id],
     queryFn: () =>
       user?.id
-        ? api.meetingActionItems.getActionItems({
+        ? meetingActionItems.getAll({
             limit: 50,
             filters: { assigned_to: user.id },
           })
@@ -98,7 +99,7 @@ export default function WorkManagementPage() {
 
   const { data: allActionItemsResponse, isLoading: isLoadingAllActions } = useQuery({
     queryKey: ['workflow-action-items-all'],
-    queryFn: () => api.meetingActionItems.getActionItems({ limit: 200 }),
+    queryFn: () => meetingActionItems.getAll({ limit: 200 }),
     enabled: isAdmin,
   });
 
@@ -107,7 +108,7 @@ export default function WorkManagementPage() {
   const { data: notificationsResponse, isLoading: isLoadingNotifications } = useQuery({
     queryKey: ['workflow-notifications'],
     queryFn: () =>
-      api.workflowNotifications.getNotifications({
+      workflowNotifications.getAll({
         limit: 20,
         filters: isAdmin ? {} : { recipient: user?.id },
       }),
@@ -133,7 +134,7 @@ export default function WorkManagementPage() {
   }, [allActionItems, isAdmin, myActionItems]);
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       id,
       status,
       note,
@@ -141,12 +142,18 @@ export default function WorkManagementPage() {
       id: string;
       status: MeetingActionItemDocument['status'];
       note?: string;
-    }) =>
-      api.meetingActionItems.updateActionItemStatus(id, {
-        status,
-        changed_by: user?.id ?? '',
-        note,
-      }),
+    }) => {
+      const response = await fetchWithCsrf(`/api/meeting-action-items/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status,
+          changed_by: user?.id ?? '',
+          note,
+        }),
+      });
+      return response.json();
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['workflow-action-items', user?.id] });
       void queryClient.invalidateQueries({ queryKey: ['workflow-action-items-all'] });
@@ -154,7 +161,7 @@ export default function WorkManagementPage() {
     },
   });
 
-  const upcomingMeetings = meetings.slice(0, 3);
+  const upcomingMeetings = meetingsList.slice(0, 3);
   const recentDecisions = decisions.slice(0, 6);
   const pendingNotifications = notifications.filter((item) => item.status !== 'okundu');
 
@@ -212,7 +219,7 @@ export default function WorkManagementPage() {
                 {upcomingMeetings.length === 0 ? (
                   <p className="text-sm text-muted-foreground">Planlanmış toplantı bulunmuyor.</p>
                 ) : (
-                  upcomingMeetings.map((meeting) => (
+                  upcomingMeetings.map((meeting: MeetingDocument) => (
                     <div
                       key={meeting._id}
                       className="rounded-lg border p-4 transition hover:border-primary/40 hover:shadow-sm"

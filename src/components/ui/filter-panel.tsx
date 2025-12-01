@@ -40,7 +40,7 @@ export interface FilterPreset {
 
 interface FilterPanelProps {
   fields: FilterField[];
-  onFiltersChange: (filters: Record<string, string | string[] | DateRange | unknown>) => void;
+  onFiltersChange: (filters: Record<string, unknown>) => void;
   onReset: () => void;
   isOpen?: boolean;
   onToggle?: (open: boolean) => void;

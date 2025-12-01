@@ -1,20 +1,20 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Plus, DownloadCloud } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 interface MeetingsHeaderProps {
   viewMode: 'calendar' | 'list';
   onViewModeChange: (mode: 'calendar' | 'list') => void;
   onCreateMeeting: () => void;
-  onExport?: () => void;
+  children?: React.ReactNode;
 }
 
 export function MeetingsHeader({
   viewMode,
   onViewModeChange,
   onCreateMeeting,
-  onExport,
+  children,
 }: MeetingsHeaderProps) {
   return (
     <div className="flex items-center justify-between">
@@ -24,6 +24,7 @@ export function MeetingsHeader({
       </div>
 
       <div className="flex items-center gap-2">
+        {children}
         <div className="flex gap-1 border rounded-lg p-1">
           <Button
             size="sm"
@@ -40,13 +41,6 @@ export function MeetingsHeader({
             Liste
           </Button>
         </div>
-
-        {onExport && (
-          <Button variant="outline" onClick={onExport} className="gap-2">
-            <DownloadCloud className="h-4 w-4" />
-            İndir
-          </Button>
-        )}
 
         <Button onClick={onCreateMeeting} className="gap-2">
           <Plus className="h-4 w-4" />

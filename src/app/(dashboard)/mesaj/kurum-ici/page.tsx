@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient as api } from '@/lib/api/api-client';
+import { messages as messagesApi, users as usersApi } from '@/lib/api/crud-factory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'sonner';
 import {
-  Search,
   Plus,
   MessageSquare,
   Send,
@@ -23,6 +22,7 @@ import {
   Calendar,
   User,
   Mail,
+  Search,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
@@ -69,7 +69,7 @@ export default function InternalMessagingPage() {
         message_type: 'internal', // Add message_type parameter
       };
 
-      const response = await api.messages.getMessages({
+      const response = await messagesApi.getAll({
         page,
         limit: fetchLimit,
         search: search.trim() || undefined,
@@ -90,16 +90,16 @@ export default function InternalMessagingPage() {
   // Fetch users for sender names
   const { data: usersResponse } = useQuery({
     queryKey: ['users'],
-    queryFn: () => api.users.getUsers({ limit: 100 }),
+    queryFn: () => usersApi.getAll({ limit: 100 }),
   });
 
-  const messages: MessageDocument[] = (data?.data as MessageDocument[]) || [];
+  const messageList: MessageDocument[] = (data?.data as MessageDocument[]) || [];
   const total = data?.total || 0;
   const totalPages = Math.ceil(total / limit);
-  const users = usersResponse?.data || [];
+  const userList = (usersResponse?.data || []) as UserDocument[];
 
   // Memoize messages IDs to prevent infinite loop
-  const messagesIds = useMemo(() => messages.map((m) => m._id || m.$id || '').join(','), [messages]);
+  const messagesIds = useMemo(() => messageList.map((m) => m._id || m.$id || '').join(','), [messageList]);
   const prevMessagesIdsRef = useRef<string>('');
 
   // Calculate stats
@@ -110,7 +110,7 @@ export default function InternalMessagingPage() {
   // Mutations
   const deleteMessageMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await api.messages.deleteMessage(id);
+      const response = await messagesApi.delete(id);
       if (response?.error) {
         throw new Error(response.error);
       }
@@ -171,8 +171,8 @@ export default function InternalMessagingPage() {
   };
 
   const getUserName = (userId: string) => {
-    const user = users.find((u: UserDocument) => u._id === userId);
-    return user?.name || 'Bilinmeyen Kullanıcı';
+    const foundUser = userList.find((u: UserDocument) => u._id === userId);
+    return foundUser?.name || 'Bilinmeyen Kullanıcı';
   };
 
   const clearFilters = () => {
@@ -341,7 +341,7 @@ export default function InternalMessagingPage() {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
                   Mesajlar yükleniyor...
                 </div>
-              ) : messages.length === 0 ? (
+              ) : messageList.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <MessageSquare className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                   <p>Gelen kutunuz boş</p>
@@ -363,7 +363,7 @@ export default function InternalMessagingPage() {
 
                   {/* Messages List */}
                   <div className="space-y-2">
-                    {messages.map((message) => (
+                    {messageList.map((message) => (
                       <Card
                         key={message._id || message.$id || ''}
                         className={`cursor-pointer transition-colors hover:bg-blue-50 ${
@@ -467,14 +467,14 @@ export default function InternalMessagingPage() {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
                   Mesajlar yükleniyor...
                 </div>
-              ) : messages.length === 0 ? (
+              ) : messageList.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <Send className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                   <p>Henüz mesaj göndermediniz</p>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {messages.map((message) => (
+                  {messageList.map((message) => (
                     <Card
                       key={message._id}
                       className="cursor-pointer transition-colors hover:bg-blue-50"
@@ -522,14 +522,14 @@ export default function InternalMessagingPage() {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
                   Mesajlar yükleniyor...
                 </div>
-              ) : messages.length === 0 ? (
+              ) : messageList.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                   <p>Taslak mesaj bulunmuyor</p>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {messages.map((message) => (
+                  {messageList.map((message) => (
                     <Card
                       key={message._id}
                       className="cursor-pointer transition-colors hover:bg-blue-50"

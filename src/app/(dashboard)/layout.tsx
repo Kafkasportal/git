@@ -331,7 +331,7 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
 
   const newLocal = 'bg-linear-to-br from-blue-600 to-blue-700 text-white';
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-50/50">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-50/50 dark:from-stone-900 dark:via-stone-900 dark:to-stone-950">
       {/* Skip to main content link for keyboard navigation */}
       <a
         href="#main-content"

@@ -302,10 +302,12 @@ export const ComparisonStatCard = forwardRef<HTMLDivElement, ComparisonStatCardP
     { title, value, unit, previousValue, label, icon, variant, loading, onClick, className },
     ref
   ) => {
-    const isPositive = Number(value) >= Number(previousValue);
-    const difference = Math.abs(Number(value) - Number(previousValue));
+    const safeValue = Number(value) || 0;
+    const safePreviousValue = Number(previousValue) || 0;
+    const isPositive = safeValue >= safePreviousValue;
+    const difference = Math.abs(safeValue - safePreviousValue);
     const percentChange =
-      previousValue !== 0 ? ((difference / Number(previousValue)) * 100).toFixed(1) : '0';
+      safePreviousValue !== 0 ? ((difference / safePreviousValue) * 100).toFixed(1) : '0';
 
     return (
       <StatCard

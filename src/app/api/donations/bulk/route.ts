@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerDatabases } from '@/lib/appwrite/server';
 import { appwriteConfig, isServerConfigured } from '@/lib/appwrite/config';
+import logger from '@/lib/logger';
 
 interface BulkOperationResult {
   success: number;
@@ -72,7 +73,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Bulk delete error:', error);
+    logger.error('Bulk delete error:', error);
     return NextResponse.json(
       { error: 'Toplu silme işlemi başarısız' },
       { status: 500 }
@@ -155,7 +156,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Bulk update error:', error);
+    logger.error('Bulk update error:', error);
     return NextResponse.json(
       { error: 'Toplu güncelleme işlemi başarısız' },
       { status: 500 }

@@ -2,12 +2,62 @@
 @import '../styles/theme-variables.css';
 @import '../styles/animations.css';
 
+/* ========================================
+   TAILWIND V4 THEME CONFIGURATION
+   Maps CSS variables to Tailwind utilities
+   ======================================== */
+@theme {
+  /* Colors - These create utilities like bg-background, text-foreground, etc. */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Chart colors */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Sidebar colors */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Border radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
 :root {
   --radius: 0.5rem;
 
   /* ========================================
-     PREMIUM CORPORATE COLOR PALETTE
-     Modern, professional gray-based design
+     SOFT & EASY ON THE EYES COLOR PALETTE
+     Modern, gentle design that reduces eye strain
      ======================================== */
 
   /* Font Variables - Using Next.js Font Optimization */
@@ -19,66 +69,66 @@
   /* Ring Offset Background */
   --ring-offset-background: var(--background);
 
-  /* Base Colors - Premium Slate Palette */
-  --background: #ffffff; /* Pure white - clean corporate background */
-  --foreground: #0f172a; /* Deep slate for excellent readability */
+  /* Base Colors - Warm off-white for reduced eye strain */
+  --background: #fafaf9; /* Warm off-white - easier on eyes than pure white */
+  --foreground: #1c1917; /* stone-900 - warm dark for readability */
 
-  /* Cards - Clean white with subtle elevation */
-  --card: #ffffff; /* Pure white - premium feel */
-  --card-foreground: #0f172a; /* slate-900 */
+  /* Cards - Soft cream with subtle warmth */
+  --card: #ffffff;
+  --card-foreground: #1c1917; /* stone-900 */
 
   /* Popover/Dropdown */
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
+  --popover-foreground: #1c1917;
 
-  /* Primary - Corporate Deep Blue */
-  --primary: #1e40af; /* deep corporate blue - professional */
+  /* Primary - Soft Indigo - calming and professional */
+  --primary: #4f46e5; /* indigo-600 - balanced, not too bright */
   --primary-foreground: #ffffff;
 
-  /* Secondary - Lighter slate for backgrounds */
-  --secondary: #f1f5f9; /* slate-100 */
-  --secondary-foreground: #334155; /* slate-700 */
+  /* Secondary - Warm stone for backgrounds */
+  --secondary: #f5f5f4; /* stone-100 */
+  --secondary-foreground: #44403c; /* stone-700 */
 
-  /* Muted - Subtle backgrounds */
-  --muted: #f1f5f9; /* slate-100 */
-  --muted-foreground: #64748b; /* slate-500 */
+  /* Muted - Gentle backgrounds */
+  --muted: #f5f5f4; /* stone-100 */
+  --muted-foreground: #78716c; /* stone-500 - good contrast, not too dark */
 
-  /* Accent - Highlight color */
-  --accent: #e2e8f0; /* slate-200 */
-  --accent-foreground: #1e293b; /* slate-800 */
+  /* Accent - Soft lavender highlight */
+  --accent: #e9e5ff; /* soft lavender */
+  --accent-foreground: #3730a3; /* indigo-800 */
 
-  /* Destructive - Professional red */
+  /* Destructive - Softer red */
   --destructive: #dc2626; /* red-600 */
   --destructive-foreground: #ffffff;
 
-  /* Borders - Subtle but visible */
-  --border: #e2e8f0; /* slate-200 */
-  --input: #cbd5e1; /* slate-300 */
-  --ring: #94a3b8; /* slate-400 */
+  /* Borders - Warm and subtle */
+  --border: #e7e5e4; /* stone-200 */
+  --input: #d6d3d1; /* stone-300 */
+  --ring: #a8a29e; /* stone-400 */
 
-  /* Chart Colors - Professional palette */
-  --chart-1: #3b82f6; /* blue-500 */
+  /* Chart Colors - Balanced, vibrant but not harsh */
+  --chart-1: #6366f1; /* indigo-500 */
   --chart-2: #10b981; /* emerald-500 */
   --chart-3: #f59e0b; /* amber-500 */
   --chart-4: #8b5cf6; /* violet-500 */
   --chart-5: #ec4899; /* pink-500 */
 
-  /* Sidebar Colors - Premium Dark Sidebar */
-  --sidebar: #1e293b; /* slate-800 - professional dark sidebar */
-  --sidebar-foreground: #f1f5f9; /* slate-100 - light text */
-  --sidebar-primary: #3b82f6; /* blue-500 - accent color */
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #334155; /* slate-700 - hover state */
-  --sidebar-accent-foreground: #f8fafc; /* slate-50 */
-  --sidebar-border: #334155; /* slate-700 - subtle borders */
-  --sidebar-ring: #475569; /* slate-600 */
+  /* Sidebar Colors - Warm Dark Sidebar */
+  --sidebar: #292524; /* stone-800 - warm dark sidebar */
+  --sidebar-foreground: #fafaf9; /* stone-50 - warm light text */
+  --sidebar-primary: #818cf8; /* indigo-400 - soft accent */
+  --sidebar-primary-foreground: #1e1b4b;
+  --sidebar-accent: #44403c; /* stone-700 - hover state */
+  --sidebar-accent-foreground: #fafaf9; /* stone-50 */
+  --sidebar-border: #44403c; /* stone-700 */
+  --sidebar-ring: #57534e; /* stone-600 */
 
-  /* Brand Colors - Corporate Professional Palette */
-  --brand-primary: #1e40af; /* deep corporate blue */
-  --brand-primary-light: #3b82f6; /* lighter corporate blue */
-  --brand-primary-dark: #1e3a8a; /* darker corporate blue */
-  --brand-secondary: #059669; /* corporate green */
-  --brand-accent: #d97706; /* corporate amber */
+  /* Brand Colors - Soft Indigo Palette */
+  --brand-primary: #4f46e5; /* indigo-600 */
+  --brand-primary-light: #818cf8; /* indigo-400 */
+  --brand-primary-dark: #3730a3; /* indigo-800 */
+  --brand-secondary: #059669; /* emerald-600 */
+  --brand-accent: #d97706; /* amber-600 */
 
   /* Semantic Colors - Success */
   --success: oklch(0.6 0.17 145);
@@ -107,67 +157,68 @@
 
 .dark {
   /* ========================================
-     DARK MODE - PREMIUM CORPORATE
+     DARK MODE - SOFT & RELAXING
+     Easy on the eyes, reduces strain
      ======================================== */
 
-  /* Base Colors */
-  --background: #0f172a; /* slate-900 - deep professional dark */
-  --foreground: #f1f5f9; /* slate-100 - soft white text */
+  /* Base Colors - Warm dark, not pure black */
+  --background: #1c1917; /* stone-900 - warm dark, easier on eyes */
+  --foreground: #fafaf9; /* stone-50 - bright but warm white */
 
-  /* Cards - Slightly lighter than background */
-  --card: #1e293b; /* slate-800 */
-  --card-foreground: #f1f5f9; /* slate-100 */
+  /* Cards - Subtle elevation with warmth */
+  --card: #292524; /* stone-800 */
+  --card-foreground: #fafaf9; /* stone-50 */
 
   /* Popover/Dropdown */
-  --popover: #1e293b; /* slate-800 */
-  --popover-foreground: #f1f5f9; /* slate-100 */
+  --popover: #292524; /* stone-800 */
+  --popover-foreground: #fafaf9; /* stone-50 */
 
-  /* Primary - Brighter in dark mode */
-  --primary: #60a5fa; /* blue-400 - more vibrant */
-  --primary-foreground: #0f172a; /* slate-900 */
+  /* Primary - Soft indigo, not too bright */
+  --primary: #a5b4fc; /* indigo-300 - gentle on dark bg */
+  --primary-foreground: #1e1b4b; /* indigo-950 */
 
   /* Secondary */
-  --secondary: #334155; /* slate-700 */
-  --secondary-foreground: #f1f5f9; /* slate-100 */
+  --secondary: #44403c; /* stone-700 */
+  --secondary-foreground: #e7e5e4; /* stone-200 */
 
   /* Muted */
-  --muted: #334155; /* slate-700 */
-  --muted-foreground: #94a3b8; /* slate-400 */
+  --muted: #44403c; /* stone-700 */
+  --muted-foreground: #a8a29e; /* stone-400 - good contrast */
 
   /* Accent */
-  --accent: #334155; /* slate-700 */
-  --accent-foreground: #f1f5f9; /* slate-100 */
+  --accent: #3f3f46; /* zinc-700 - subtle accent */
+  --accent-foreground: #e7e5e4; /* stone-200 */
 
   /* Destructive */
-  --destructive: #ef4444; /* red-500 - brighter in dark */
-  --destructive-foreground: #ffffff;
+  --destructive: #f87171; /* red-400 - softer red */
+  --destructive-foreground: #1c1917;
 
-  /* Borders */
-  --border: #334155; /* slate-700 - subtle but visible */
-  --input: #475569; /* slate-600 */
-  --ring: #64748b; /* slate-500 */
+  /* Borders - Warm and visible */
+  --border: #44403c; /* stone-700 */
+  --input: #57534e; /* stone-600 */
+  --ring: #78716c; /* stone-500 */
 
-  /* Chart Colors - Vibrant for dark mode */
-  --chart-1: #60a5fa; /* blue-400 */
-  --chart-2: #34d399; /* emerald-400 */
-  --chart-3: #fbbf24; /* amber-400 */
-  --chart-4: #a78bfa; /* violet-400 */
-  --chart-5: #f472b6; /* pink-400 */
+  /* Chart Colors - Soft pastels for dark mode */
+  --chart-1: #a5b4fc; /* indigo-300 */
+  --chart-2: #6ee7b7; /* emerald-300 */
+  --chart-3: #fcd34d; /* amber-300 */
+  --chart-4: #c4b5fd; /* violet-300 */
+  --chart-5: #f9a8d4; /* pink-300 */
 
-  /* Sidebar Colors - Even darker */
-  --sidebar: #0f172a; /* slate-900 - deepest dark */
-  --sidebar-foreground: #cbd5e1; /* slate-300 */
-  --sidebar-primary: #60a5fa; /* blue-400 */
-  --sidebar-primary-foreground: #0f172a; /* slate-900 */
-  --sidebar-accent: #1e293b; /* slate-800 - hover */
-  --sidebar-accent-foreground: #f1f5f9; /* slate-100 */
-  --sidebar-border: #334155; /* slate-700 */
-  --sidebar-ring: #475569; /* slate-600 */
+  /* Sidebar Colors - Warm dark */
+  --sidebar: #1c1917; /* stone-900 */
+  --sidebar-foreground: #d6d3d1; /* stone-300 */
+  --sidebar-primary: #a5b4fc; /* indigo-300 */
+  --sidebar-primary-foreground: #1e1b4b;
+  --sidebar-accent: #292524; /* stone-800 - hover */
+  --sidebar-accent-foreground: #e7e5e4; /* stone-200 */
+  --sidebar-border: #44403c; /* stone-700 */
+  --sidebar-ring: #57534e; /* stone-600 */
 
-  /* Brand Colors - Dark Mode Adjustments */
-  --brand-primary: #60a5fa; /* blue-400 - brighter */
-  --brand-primary-light: #93c5fd; /* blue-300 */
-  --brand-primary-dark: #3b82f6; /* blue-500 */
+  /* Brand Colors - Dark Mode Soft */
+  --brand-primary: #a5b4fc; /* indigo-300 */
+  --brand-primary-light: #c7d2fe; /* indigo-200 */
+  --brand-primary-dark: #818cf8; /* indigo-400 */
   --brand-secondary: #34d399; /* emerald-400 */
   --brand-accent: #fbbf24; /* amber-400 */
 
@@ -217,6 +268,136 @@
   *::before,
   *::after {
     box-sizing: border-box;
+  }
+
+  /* ========================================
+     TAILWIND V4 COLOR UTILITIES
+     Custom classes to replace missing tw utilities
+     ======================================== */
+  
+  /* Background Colors */
+  .bg-background {
+    background-color: var(--background);
+  }
+  
+  .bg-foreground {
+    background-color: var(--foreground);
+  }
+  
+  .bg-card {
+    background-color: var(--card);
+  }
+  
+  .bg-popover {
+    background-color: var(--popover);
+  }
+  
+  .bg-primary {
+    background-color: var(--primary);
+  }
+  
+  .bg-secondary {
+    background-color: var(--secondary);
+  }
+  
+  .bg-muted {
+    background-color: var(--muted);
+  }
+  
+  .bg-accent {
+    background-color: var(--accent);
+  }
+  
+  .bg-destructive {
+    background-color: var(--destructive);
+  }
+
+  /* Text Colors */
+  .text-foreground {
+    color: var(--foreground);
+  }
+  
+  .text-card-foreground {
+    color: var(--card-foreground);
+  }
+  
+  .text-popover-foreground {
+    color: var(--popover-foreground);
+  }
+  
+  .text-primary {
+    color: var(--primary);
+  }
+  
+  .text-primary-foreground {
+    color: var(--primary-foreground);
+  }
+  
+  .text-secondary-foreground {
+    color: var(--secondary-foreground);
+  }
+  
+  .text-muted-foreground {
+    color: var(--muted-foreground);
+  }
+  
+  .text-accent-foreground {
+    color: var(--accent-foreground);
+  }
+  
+  .text-destructive {
+    color: var(--destructive);
+  }
+  
+  .text-destructive-foreground {
+    color: var(--destructive-foreground);
+  }
+
+  /* Border Colors */
+  .border-border {
+    border-color: var(--border);
+  }
+  
+  .border-input {
+    border-color: var(--input);
+  }
+  
+  .border-primary {
+    border-color: var(--primary);
+  }
+  
+  .border-destructive {
+    border-color: var(--destructive);
+  }
+
+  /* Ring Colors */
+  .ring-ring {
+    --tw-ring-color: var(--ring);
+  }
+  
+  .ring-primary {
+    --tw-ring-color: var(--primary);
+  }
+
+  /* Sidebar Colors */
+  .bg-sidebar {
+    background-color: var(--sidebar);
+  }
+  
+  .text-sidebar-foreground {
+    color: var(--sidebar-foreground);
+  }
+  
+  .bg-sidebar-accent {
+    background-color: var(--sidebar-accent);
+  }
+  
+  .text-sidebar-accent-foreground {
+    color: var(--sidebar-accent-foreground);
+  }
+  
+  .border-sidebar-border {
+    border-color: var(--sidebar-border);
   }
 
   /* Font Smoothing */

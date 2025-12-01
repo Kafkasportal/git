@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { apiClient as api } from '@/lib/api/api-client';
+import { aidApplications } from '@/lib/api/crud-factory';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -86,7 +86,7 @@ export default function AidApplicationsPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['aid-applications', page, search, stageFilter, statusFilter],
     queryFn: () =>
-      api.aidApplications.getAidApplications({
+      aidApplications.getAll({
         page,
         limit,
         search,

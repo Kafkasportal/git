@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerDatabases } from '@/lib/appwrite/server';
 import { appwriteConfig, isServerConfigured } from '@/lib/appwrite/config';
 import { Query } from 'node-appwrite';
+import logger from '@/lib/logger';
 import type { Activity, ActivityType } from '@/lib/activity/types';
 
 // Document type for activity logs
@@ -151,7 +152,7 @@ export async function GET(request: NextRequest) {
       });
     }
   } catch (error) {
-    console.error('Activity API error:', error);
+    logger.error('Activity API error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch activities', activities: [] },
       { status: 500 }

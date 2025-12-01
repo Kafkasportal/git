@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient as api } from '@/lib/api/api-client';
+import { beneficiaries } from '@/lib/api/crud-factory';
 import type { CreateDocumentData } from '@/types/database';
 import type { BeneficiaryDocument } from '@/types/database';
 import { toast } from 'sonner';
@@ -162,7 +162,7 @@ export function AdvancedBeneficiaryForm({
         approval_status: 'pending',
       };
 
-      return api.beneficiaries.createBeneficiary(beneficiaryData);
+      return beneficiaries.create(beneficiaryData);
     },
     onSuccess: () => {
       toast.success('İhtiyaç sahibi başarıyla eklendi');
@@ -182,7 +182,7 @@ export function AdvancedBeneficiaryForm({
   const internalUpdateMutation = useMutation({
     mutationFn: (data: AdvancedBeneficiaryFormData) => {
       if (!beneficiaryId) throw new Error('Beneficiary ID bulunamadı');
-      return api.beneficiaries.updateBeneficiary(beneficiaryId, data);
+      return beneficiaries.update(beneficiaryId, data);
     },
     onSuccess: () => {
       toast.success('İhtiyaç sahibi başarıyla güncellendi');

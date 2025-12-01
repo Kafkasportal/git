@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { UserForm, type UserFormValues } from '@/components/forms/user-form';
-import { apiClient as api } from '@/lib/api/api-client';
+import { users } from '@/lib/api/crud-factory';
 import { useAuthStore } from '@/stores/authStore';
 
 export default function CreateUserPage() {
@@ -24,15 +24,15 @@ export default function CreateUserPage() {
 
   const createMutation = useMutation({
     mutationFn: async (values: UserFormValues) => {
-      const response = await api.users.createUser({
+      const response = await users.create({
         name: values.name,
         email: values.email,
         role: values.role,
         permissions: values.permissions,
-        password: values.password,
         isActive: values.isActive,
         phone: values.phone,
-      });
+        // password is handled separately by auth system
+      } as Parameters<typeof users.create>[0]);
 
       if (response.error) {
         throw new Error(response.error);

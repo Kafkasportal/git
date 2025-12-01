@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
+import logger from '@/lib/logger';
 import { Command } from 'cmdk';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import {
@@ -130,7 +131,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           setResults(data.results || []);
         }
       } catch (error) {
-        console.error('Search error:', error);
+        logger.error('Search error', { error });
         setResults([]);
       } finally {
         setIsLoading(false);

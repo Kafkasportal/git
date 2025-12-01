@@ -11,7 +11,7 @@ import { CurrencyWidget } from '@/components/ui/currency-widget';
 import { PageLayout } from '@/components/layouts/PageLayout';
 import { DemoBanner } from '@/components/ui/demo-banner';
 import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
+import { monitoringApi } from '@/lib/api';
 
 import {
   Users,
@@ -36,38 +36,30 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Suspense } from 'react';
 
-// Lazy load Recharts components - optimized for better code splitting
-// Using individual dynamic imports for better tree shaking
-const DynamicAreaChart = dynamic(() => import('recharts').then((mod) => mod.AreaChart), {
-  ssr: false,
-  loading: () => (
-    <div className="h-64 flex items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-    </div>
-  ),
-});
-
-const DynamicArea = dynamic(() => import('recharts').then((mod) => mod.Area), { ssr: false });
-const DynamicXAxis = dynamic(() => import('recharts').then((mod) => mod.XAxis), { ssr: false });
-const DynamicYAxis = dynamic(() => import('recharts').then((mod) => mod.YAxis), { ssr: false });
-const DynamicCartesianGrid = dynamic(() => import('recharts').then((mod) => mod.CartesianGrid), {
-  ssr: false,
-});
-const DynamicTooltip = dynamic(() => import('recharts').then((mod) => mod.Tooltip), { ssr: false });
-const DynamicResponsiveContainer = dynamic(
-  () => import('recharts').then((mod) => mod.ResponsiveContainer),
-  { ssr: false }
+// Lazy load chart components for better code splitting
+const DonationTrendChart = dynamic(
+  () => import('@/components/charts/DashboardCharts').then((mod) => mod.DonationTrendChart),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-64 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    ),
+  }
 );
-const DynamicPieChart = dynamic(() => import('recharts').then((mod) => mod.PieChart), {
-  ssr: false,
-  loading: () => (
-    <div className="h-64 flex items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-    </div>
-  ),
-});
-const DynamicPie = dynamic(() => import('recharts').then((mod) => mod.Pie), { ssr: false });
-const DynamicCell = dynamic(() => import('recharts').then((mod) => mod.Cell), { ssr: false });
+
+const CategoryChart = dynamic(
+  () => import('@/components/charts/DashboardCharts').then((mod) => mod.CategoryChart),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-64 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    ),
+  }
+);
 
 function DashboardPageComponent() {
   const { user, isAuthenticated, isLoading } = useAuthStore();
@@ -76,7 +68,7 @@ function DashboardPageComponent() {
   const { data: enhancedKPIs } = useQuery({
     queryKey: ['monitoring', 'kpis'],
     queryFn: async () => {
-      const res = await api.monitoring.getEnhancedKPIs();
+      const res = await monitoringApi.getEnhancedKPIs();
       if (!res.data) throw new Error(res.error || 'Failed to fetch KPIs');
       return res.data;
     },
@@ -91,7 +83,7 @@ function DashboardPageComponent() {
   const { data: dashboardStats } = useQuery({
     queryKey: ['monitoring', 'stats'],
     queryFn: async () => {
-      const res = await api.monitoring.getDashboardStats();
+      const res = await monitoringApi.getDashboardStats();
       if (!res.data) throw new Error(res.error || 'Failed to fetch stats');
       return res.data;
     },
@@ -105,7 +97,7 @@ function DashboardPageComponent() {
   const { data: currencyData } = useQuery({
     queryKey: ['monitoring', 'currency'],
     queryFn: async () => {
-      const res = await api.monitoring.getCurrencyRates();
+      const res = await monitoringApi.getCurrencyRates();
       if (!res.data) throw new Error(res.error || 'Failed to fetch currency');
       return res.data;
     },
@@ -464,33 +456,7 @@ function DashboardPageComponent() {
                 }
               >
                 <div className="h-64 w-full">
-                  <DynamicResponsiveContainer width="100%" height={256}>
-                    <DynamicAreaChart data={donationData}>
-                      <DynamicCartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                      <DynamicXAxis dataKey="month" className="text-xs" />
-                      <DynamicYAxis className="text-xs" />
-                      <DynamicTooltip
-                        contentStyle={{
-                          backgroundColor: 'hsl(var(--background))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px',
-                        }}
-                      />
-                      <DynamicArea
-                        type="monotone"
-                        dataKey="amount"
-                        stroke="#8884d8"
-                        fill="url(#colorAmount)"
-                        strokeWidth={2}
-                      />
-                      <defs>
-                        <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
-                          <stop offset="95%" stopColor="#8884d8" stopOpacity={0.1} />
-                        </linearGradient>
-                      </defs>
-                    </DynamicAreaChart>
-                  </DynamicResponsiveContainer>
+                  <DonationTrendChart data={donationData} />
                 </div>
               </Suspense>
             </CardContent>
@@ -516,30 +482,7 @@ function DashboardPageComponent() {
                 }
               >
                 <div className="h-64 w-full">
-                  <DynamicResponsiveContainer width="100%" height={256}>
-                    <DynamicPieChart>
-                      <DynamicPie
-                        data={categoryData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {categoryData.map((entry: { name: string; color: string; value: number }, index: number) => (
-                          <DynamicCell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </DynamicPie>
-                      <DynamicTooltip
-                        contentStyle={{
-                          backgroundColor: 'hsl(var(--background))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px',
-                        }}
-                      />
-                    </DynamicPieChart>
-                  </DynamicResponsiveContainer>
+                  <CategoryChart data={categoryData} />
                 </div>
               </Suspense>
               <div className="flex flex-wrap gap-2 mt-4">

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { serverDatabases } from '@/lib/appwrite/server';
 import { appwriteConfig } from '@/lib/appwrite/config';
 import { Query } from 'node-appwrite';
+import logger from '@/lib/logger';
 
 export async function GET() {
   try {
@@ -70,7 +71,7 @@ export async function GET() {
       data: kpis,
     });
   } catch (error) {
-    console.error('KPI fetch error:', error);
+    logger.error('KPI fetch error:', error);
     return NextResponse.json({ success: false, error: 'Failed to fetch KPIs' }, { status: 500 });
   }
 }

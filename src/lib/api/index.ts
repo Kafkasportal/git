@@ -5,8 +5,8 @@
  * Components can import from '@/lib/api' instead of '@/lib/api/api-client'
  */
 
-import { apiClient, legacyApiClient } from './api-client';
 import { appwriteParameters } from '@/lib/appwrite/api';
+import { aidApplications } from './crud-factory';
 import type {
   AidApplicationDocument,
   CreateDocumentData,
@@ -15,11 +15,6 @@ import type {
   QueryParams,
 } from '@/types/database';
 
-// Export as default for backward compatibility
-const api = apiClient;
-
-export default api;
-export { apiClient as api, legacyApiClient }; // legacyApiClient for backward compatibility
 export type { ConvexResponse, QueryParams, CreateDocumentData, UpdateDocumentData };
 
 // Parameters API - Migrated to Appwrite
@@ -130,13 +125,13 @@ export const parametersApi = {
 
 // Re-export aidApplications API
 export const aidApplicationsApi = {
-  getAidApplication: (id: string) => api.aidApplications.getAidApplication(id),
+  getAidApplication: (id: string) => aidApplications.getById(id),
   updateStage: (id: string, stage: AidApplicationDocument['stage']) =>
-    api.aidApplications.updateStage(id, stage),
+    aidApplications.update(id, { stage }),
   getAidApplications: (params?: Record<string, unknown>) =>
-    api.aidApplications.getAidApplications(params),
+    aidApplications.getAll(params as QueryParams),
   createAidApplication: (data: CreateDocumentData<AidApplicationDocument>) =>
-    api.aidApplications.createAidApplication(data),
+    aidApplications.create(data),
 };
 
 // Export scholarship APIs
@@ -145,3 +140,124 @@ export {
   scholarshipApplicationsApi,
   scholarshipPaymentsApi,
 } from './scholarships';
+
+export { monitoringApi } from './monitoring';
+export { analyticsApi } from './analytics';
+
+// Export query configuration
+export {
+  queryKeys,
+  getQueryOptions,
+  getInvalidationKeys,
+  QUERY_STALE_TIMES,
+  QUERY_GC_TIMES,
+  defaultQueryOptions,
+} from './query-config';
+export type { QueryKeys, QueryKeyEntity } from './query-config';
+
+// Export middleware
+export {
+  buildApiRoute,
+  withAuth,
+  withModuleAccess,
+  withErrorHandler,
+  withLogging,
+  withRateLimit,
+  withValidation,
+  withCors,
+  withMethodCheck,
+  withOfflineSync,
+  compose,
+} from './middleware';
+export type { MiddlewareOptions, RateLimitOptions, ValidatorOptions, RouteHandler, RouteContext } from './middleware';
+
+// Export advanced middleware
+export {
+  withCache,
+  withSecurityHeaders,
+  withTiming,
+  withCompression,
+  withRequestId,
+  withETag,
+  withRetry,
+  withBodyLimit,
+  withIpFilter,
+  withIdempotency,
+  withAdvancedMiddleware,
+  clearCache,
+} from './advanced-middleware';
+export type {
+  CacheOptions,
+  SecurityHeadersOptions,
+  TimingOptions,
+  CompressionOptions,
+  RetryOptions,
+  BodyLimitOptions,
+  IpFilterOptions,
+  IdempotencyOptions,
+  AdvancedMiddlewareOptions,
+} from './advanced-middleware';
+
+// Export response types
+export {
+  isApiSuccess,
+  isApiError,
+  isPaginatedResponse,
+  createSuccessResponse,
+  createErrorResponse,
+  createPaginatedResponse,
+  calculatePagination,
+  getDefaultPaginationParams,
+  errorCodeToStatus,
+} from './response-types';
+export type {
+  ApiResponse,
+  ApiSuccessResponse,
+  ApiErrorResponse,
+  ErrorDetails,
+  ErrorCode,
+  ValidationError,
+  ResponseMeta,
+  PaginationMeta,
+  CursorPaginationMeta,
+  SortMeta,
+  FilterMeta,
+  PaginatedResponse,
+  CursorPaginatedResponse,
+  ListResponse,
+  CreateResponse,
+  UpdateResponse,
+  DeleteResponse,
+  BulkOperationResponse,
+  BulkOperationResult,
+  BeneficiaryListResponse,
+  Beneficiary,
+  DonationListResponse,
+  Donation,
+  TaskListResponse,
+  Task,
+  MeetingListResponse,
+  Meeting,
+  UserListResponse,
+  UserInfo,
+  DashboardStatsResponse,
+  DashboardStats,
+  ActivityItem,
+  AnalyticsResponse,
+  AnalyticsData,
+  AnalyticsMetric,
+  ChartData,
+  ComparisonData,
+  FileUploadResponse,
+  UploadedFile,
+  BulkUploadResponse,
+  ExportResponse,
+  ExportResult,
+  SearchResponse,
+  SearchResult,
+  FacetResult,
+  RealtimeEvent,
+  SubscriptionResponse,
+  HealthCheckResponse,
+  HealthStatus,
+} from './response-types';

@@ -48,7 +48,7 @@ import {
   User,
   Star,
 } from "lucide-react";
-import { apiClient as api } from "@/lib/api/api-client";
+import { partners as partnersApi } from "@/lib/api/crud-factory";
 
 interface Partner {
   _id: string;
@@ -103,22 +103,22 @@ export default function PartnersPage() {
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["partners", searchTerm, typeFilter, statusFilter],
-    queryFn: () =>
-      api.partners.getPartners({
+    queryFn: async (): Promise<{ data: Partner[] }> =>
+      partnersApi.getAll({
         search: searchTerm || undefined,
         filters: {
           type: typeFilter === "all" ? undefined : typeFilter,
           status: statusFilter === "all" ? undefined : statusFilter,
         },
-      }),
+      }) as Promise<{ data: Partner[] }>,
   });
 
   // Derive partners from data instead of using state
-  const partners = useMemo(() => {
+  const partnerList = useMemo((): Partner[] => {
     return (data?.data as Partner[]) || [];
   }, [data]);
 
-  const filteredPartners = partners.filter((partner: Partner) => {
+  const filteredPartners = partnerList.filter((partner: Partner) => {
     const matchesSearch =
       partner.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       partner.contact_person
@@ -139,7 +139,7 @@ export default function PartnersPage() {
     }
 
     try {
-      await api.partners.createPartner(formData);
+      await partnersApi.create(formData);
       setFormData({
         name: "",
         type: "organization",
@@ -186,7 +186,7 @@ export default function PartnersPage() {
     }
 
     try {
-      await api.partners.updatePartner(editingPartner._id, formData);
+      await partnersApi.update(editingPartner._id, formData);
       setIsEditModalOpen(false);
       setEditingPartner(null);
       toast.success("Partner başarıyla güncellendi");
@@ -202,7 +202,7 @@ export default function PartnersPage() {
     }
 
     try {
-      await api.partners.deletePartner(partnerId);
+      await partnersApi.delete(partnerId);
       toast.success("Partner başarıyla silindi");
       refetch();
     } catch (_error) {
@@ -217,7 +217,7 @@ export default function PartnersPage() {
     const newStatus = currentStatus === "active" ? "inactive" : "active";
 
     try {
-      await api.partners.updatePartner(partnerId, { status: newStatus });
+      await partnersApi.update(partnerId, { status: newStatus });
       toast.success("Partner durumu güncellendi");
       refetch();
     } catch {

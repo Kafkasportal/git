@@ -1,6 +1,7 @@
 'use client';
 
 import { useForm } from 'react-hook-form';
+import logger from '@/lib/logger';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { studentFormSchema, type StudentFormValues } from '@/lib/validations/student';
 import { Button } from '@/components/ui/button';
@@ -73,7 +74,7 @@ export function StudentForm({ initialData, onSubmit, isLoading }: StudentFormPro
       await onSubmit(data);
       form.reset();
     } catch (error) {
-      console.error('Form submission error:', error);
+      logger.error('Form submission error', { error });
       toast.error('Bir hata oluştu. Lütfen tekrar deneyin.');
     }
   };

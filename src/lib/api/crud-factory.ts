@@ -11,17 +11,20 @@ import type {
 } from '@/types/database';
 import { getCache } from '@/lib/api-cache';
 import { fetchWithCsrf } from '@/lib/csrf-client';
+import { QUERY_STALE_TIMES } from '@/lib/api/query-config';
 
-// Cache TTL configuration per entity type - Optimized for better performance
+// Cache TTL configuration - uses centralized query-config
+// Deprecated: Bu değerler artık query-config.ts'den geliyor
+// Geriye uyumluluk için korunuyor
 const CACHE_TTL = {
-  beneficiaries: 15 * 60 * 1000, // 15 minutes (increased from 5)
-  donations: 10 * 60 * 1000, // 10 minutes (increased from 3)
-  tasks: 2 * 60 * 1000, // 2 minutes
-  todos: 2 * 60 * 1000, // 2 minutes
-  users: 20 * 60 * 1000, // 20 minutes (increased from 4)
-  meetings: 10 * 60 * 1000, // 10 minutes (increased from 3)
-  messages: 1 * 60 * 1000, // 1 minute (real-time)
-  default: 2 * 60 * 1000, // 2 minutes
+  beneficiaries: QUERY_STALE_TIMES.beneficiaries,
+  donations: QUERY_STALE_TIMES.donations,
+  tasks: QUERY_STALE_TIMES.tasks,
+  todos: QUERY_STALE_TIMES.todos,
+  users: QUERY_STALE_TIMES.users,
+  meetings: QUERY_STALE_TIMES.meetings,
+  messages: QUERY_STALE_TIMES.messages,
+  default: QUERY_STALE_TIMES.dashboard,
 } as const;
 
 /**
@@ -185,10 +188,13 @@ import type {
   TodoDocument,
   UserDocument,
   MeetingDocument,
+  MeetingDecisionDocument,
+  MeetingActionItemDocument,
   MessageDocument,
   AidApplicationDocument,
   PartnerDocument,
   ScholarshipDocument,
+  WorkflowNotificationDocument,
 } from '@/types/database';
 
 export const beneficiaries = createCrudOperations<BeneficiaryDocument>('beneficiaries', 'beneficiaries');
@@ -201,6 +207,9 @@ export const messages = createCrudOperations<MessageDocument>('messages', 'messa
 export const aidApplications = createCrudOperations<AidApplicationDocument>('aid-applications', 'default');
 export const partners = createCrudOperations<PartnerDocument>('partners', 'default');
 export const scholarships = createCrudOperations<ScholarshipDocument>('scholarships', 'default');
+export const workflowNotifications = createCrudOperations<WorkflowNotificationDocument>('workflow-notifications', 'default');
+export const meetingDecisions = createCrudOperations<MeetingDecisionDocument>('meeting-decisions', 'default');
+export const meetingActionItems = createCrudOperations<MeetingActionItemDocument>('meeting-action-items', 'default');
 
 /**
  * Export factory function for custom entities

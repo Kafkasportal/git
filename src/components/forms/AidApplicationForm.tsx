@@ -19,9 +19,10 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient as api } from '@/lib/api/api-client';
+import { beneficiaries as beneficiariesApi, aidApplications } from '@/lib/api/crud-factory';
 import { toast } from 'sonner';
 import { Loader2, FileText, DollarSign, Package, Utensils, Stethoscope } from 'lucide-react';
+import type { BeneficiaryDocument } from '@/types/database';
 
 // Validation schema
 const aidApplicationSchema = z.object({
@@ -55,10 +56,11 @@ export function AidApplicationForm({ onSuccess, onCancel }: AidApplicationFormPr
   // Beneficiaries listesini çek (dropdown için)
   const { data: beneficiariesData } = useQuery({
     queryKey: ['beneficiaries', 1, ''],
-    queryFn: () => api.beneficiaries.getBeneficiaries({ page: 1, limit: 100 }),
+    queryFn: async (): Promise<{ data: BeneficiaryDocument[] }> => 
+      beneficiariesApi.getAll({ page: 1, limit: 100 }) as Promise<{ data: BeneficiaryDocument[] }>,
   });
 
-  const beneficiaries = beneficiariesData?.data || [];
+  const beneficiaryList = (beneficiariesData?.data || []) as BeneficiaryDocument[];
 
   const {
     register,
@@ -81,7 +83,7 @@ export function AidApplicationForm({ onSuccess, onCancel }: AidApplicationFormPr
 
   const createApplicationMutation = useMutation({
     mutationFn: (data: AidApplicationFormData) =>
-      api.aidApplications.createAidApplication({
+      aidApplications.create({
         ...data,
         application_date: new Date().toISOString(),
         stage: 'draft',
@@ -173,7 +175,7 @@ export function AidApplicationForm({ onSuccess, onCancel }: AidApplicationFormPr
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Seçiniz</SelectItem>
-                    {beneficiaries.map((ben) => (
+                    {beneficiaryList.map((ben: BeneficiaryDocument) => (
                       <SelectItem key={ben._id || ben.$id || ''} value={ben._id || ben.$id || ''}>
                         {ben.name} - {ben.city}
                       </SelectItem>

@@ -23,16 +23,16 @@ Tüm sayfalarda kullanılabilir arama ve export özellikleri eklemek.
 
 #### 1.1 Global Search (Cmd+K) - ⏱️ 3 gün
 **Dosyalar:**
-- `src/components/ui/command-palette.tsx` (yeni)
-- `src/components/layouts/PageLayout.tsx` (güncelleme)
-- `src/hooks/useGlobalSearch.ts` (yeni)
+- `src/components/ui/command-palette.tsx` (yeni) - ✅ Tamamlandı
+- `src/components/layouts/PageLayout.tsx` (güncelleme) - ✅ Tamamlandı
+- `src/hooks/useGlobalSearch.ts` (yeni) - ✅ Tamamlandı
 
 **Özellikler:**
-- [ ] Command palette komponenti
-- [ ] Keyboard shortcut (Cmd/Ctrl + K)
-- [ ] Tüm modüllerde arama
-- [ ] Son aramalar
-- [ ] Hızlı navigasyon
+- [x] Command palette komponenti
+- [x] Keyboard shortcut (Cmd/Ctrl + K)
+- [x] Tüm modüllerde arama
+- [x] Son aramalar
+- [x] Hızlı navigasyon
 
 **Teknik Detaylar:**
 ```typescript
@@ -47,29 +47,29 @@ interface SearchResult {
 
 #### 1.2 Export Menu Komponenti - ⏱️ 2 gün
 **Dosyalar:**
-- `src/components/ui/export-menu.tsx` (yeni)
-- `src/lib/export/export-service.ts` (güncelleme)
+- `src/components/ui/export-menu.tsx` (yeni) - ✅ Oluşturuldu
+- `src/lib/export/export-service.ts` (güncelleme) - ✅ `src/lib/data-export.ts` kullanıldı
 
 **Özellikler:**
-- [ ] CSV export
-- [ ] Excel export
-- [ ] PDF export
-- [ ] Filtrelenmiş veri export
+- [x] CSV export
+- [x] Excel export (CSV olarak)
+- [x] PDF export
+- [x] Filtrelenmiş veri export (Sayfadaki veriyi kullanır)
 - [ ] Loading state
 
 #### 1.3 Advanced Filters Komponenti - ⏱️ 3 gün
 **Dosyalar:**
-- `src/components/ui/filter-panel.tsx` (yeni)
-- `src/components/ui/date-range-picker.tsx` (yeni)
-- `src/hooks/useFilters.ts` (yeni)
+- `src/components/ui/filter-panel.tsx` (yeni) - ✅ Mevcut dosya kullanıldı
+- `src/components/ui/date-range-picker.tsx` (yeni) - ✅ Mevcut dosya kullanıldı
+- `src/hooks/useFilters.ts` (yeni) - ✅ Mevcut dosya kullanıldı
 
 **Özellikler:**
-- [ ] Multi-select filter
-- [ ] Date range picker
-- [ ] Status filter
-- [ ] Category filter
-- [ ] Saved filter presets
-- [ ] Clear all filters
+- [x] Multi-select filter
+- [x] Date range picker
+- [x] Status filter
+- [x] Category filter
+- [x] Saved filter presets
+- [x] Clear all filters
 
 **Teknik Detaylar:**
 ```typescript

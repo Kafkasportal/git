@@ -1,18 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient as api } from '@/lib/api/api-client';
+import { tasks as tasksApi, users as usersApi } from "@/lib/api/crud-factory";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -22,7 +14,6 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import {
-  Search,
   Plus,
   LayoutGrid,
   List,
@@ -38,6 +29,9 @@ import {
   XCircle as _XCircle,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { useFilters } from '@/hooks/useFilters';
+import { FilterPanel } from '@/components/ui/filter-panel';
+import type { FilterField } from '@/components/ui/filter-panel';
 
 const TaskForm = dynamic(
   () => import('@/components/forms/TaskForm').then((mod) => ({ default: mod.TaskForm })),
@@ -50,6 +44,7 @@ const TaskForm = dynamic(
     ssr: false,
   }
 );
+import { ExportMenu } from '@/components/ui/export-menu';
 import { KanbanBoard } from '@/components/tasks/KanbanBoard';
 import { toast } from 'sonner';
 import {
@@ -63,64 +58,95 @@ import {
 import type { TaskDocument, UserDocument } from '@/types/database';
 
 type ViewMode = 'kanban' | 'list';
-type StatusFilter = 'all' | 'pending' | 'in_progress' | 'completed' | 'cancelled';
-type PriorityFilter = 'all' | 'low' | 'normal' | 'high' | 'urgent';
 
 export default function TasksPage() {
   const queryClient = useQueryClient();
 
   // State management
   const [viewMode, setViewMode] = useState<ViewMode>('kanban');
-  const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all');
-  const [assignedFilter, setAssignedFilter] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<TaskDocument | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
 
+  const { filters, resetFilters, handleFiltersChange } = useFilters({
+    syncWithUrl: true,
+    presetsKey: 'tasks-filters',
+  });
+
   const limit = 20;
 
   // Data fetching
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['tasks', page, search, statusFilter, priorityFilter, assignedFilter],
+  const { data: tasksData, isLoading, error } = useQuery({
+    queryKey: ['tasks', page, filters],
     queryFn: () =>
-      api.tasks.getTasks({
+      tasksApi.getAll({
         page,
         limit,
-        search,
-        filters: {
-          ...(statusFilter !== 'all' && { status: statusFilter }),
-          ...(priorityFilter !== 'all' && { priority: priorityFilter }),
-          ...(assignedFilter !== 'all' && { assigned_to: assignedFilter }),
-        },
+        search: filters.search as string,
       }),
   });
 
   // Fetch users for assigned filter
   const { data: usersResponse } = useQuery({
     queryKey: ['users'],
-    queryFn: () => api.users.getUsers({ limit: 100 }),
+    queryFn: () => usersApi.getAll({ limit: 100 }),
   });
 
-  const tasks = data?.data || [];
-  const total = data?.total || 0;
+  const tasksList = (tasksData?.data || []) as TaskDocument[];
+  const total = tasksData?.total || 0;
   const totalPages = Math.ceil(total / limit);
-  const users = usersResponse?.data || [];
+  const usersList = (usersResponse?.data || []) as UserDocument[];
+
+  const filterFields: FilterField[] = useMemo(() => [
+    {
+      key: 'search',
+      label: 'Arama',
+      type: 'text' as const,
+      placeholder: 'Görev ara...',
+    },
+    {
+      key: 'status',
+      label: 'Durum',
+      type: 'select' as const,
+      options: [
+        { label: 'Bekliyor', value: 'pending' },
+        { label: 'Devam Ediyor', value: 'in_progress' },
+        { label: 'Tamamlandı', value: 'completed' },
+        { label: 'İptal Edildi', value: 'cancelled' },
+      ],
+    },
+    {
+      key: 'priority',
+      label: 'Öncelik',
+      type: 'select' as const,
+      options: [
+        { label: 'Düşük', value: 'low' },
+        { label: 'Normal', value: 'normal' },
+        { label: 'Yüksek', value: 'high' },
+        { label: 'Acil', value: 'urgent' },
+      ],
+    },
+    {
+      key: 'assigned_to',
+      label: 'Atanan Kişi',
+      type: 'select' as const,
+      options: usersList.map((u) => ({ label: u.name, value: u.$id || u._id || '' })),
+    },
+  ], [usersList]);
 
   // Calculate stats
   const stats = {
-    total: tasks.length,
-    pending: tasks.filter((t) => t.status === 'pending').length,
-    inProgress: tasks.filter((t) => t.status === 'in_progress').length,
-    completed: tasks.filter((t) => t.status === 'completed').length,
+    total: tasksList.length,
+    pending: tasksList.filter((t) => t.status === 'pending').length,
+    inProgress: tasksList.filter((t) => t.status === 'in_progress').length,
+    completed: tasksList.filter((t) => t.status === 'completed').length,
   };
 
   // Task move mutation (for kanban drag-drop)
   const moveTaskMutation = useMutation({
     mutationFn: ({ taskId, newStatus }: { taskId: string; newStatus: TaskDocument['status'] }) =>
-      api.tasks.updateTaskStatus(taskId, newStatus),
+      tasksApi.update(taskId, { status: newStatus }),
     onSuccess: () => {
       toast.success('Görev durumu güncellendi');
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
@@ -134,7 +160,7 @@ export default function TasksPage() {
 
   // Delete task mutation
   const deleteTaskMutation = useMutation({
-    mutationFn: (taskId: string) => api.tasks.deleteTask(taskId),
+    mutationFn: (taskId: string) => tasksApi.delete(taskId),
     onSuccess: () => {
       toast.success('Görev silindi');
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
@@ -162,17 +188,11 @@ export default function TasksPage() {
     }
   };
 
-  const clearFilters = () => {
-    setSearch('');
-    setStatusFilter('all');
-    setPriorityFilter('all');
-    setAssignedFilter('all');
-    setPage(1);
-  };
+
 
   const getUserName = (userId: string) => {
-    const user = users.find((u: UserDocument) => u._id === userId);
-    return user?.name || 'Bilinmeyen Kullanıcı';
+    const foundUser = usersList.find((u: UserDocument) => u._id === userId);
+    return foundUser?.name || 'Bilinmeyen Kullanıcı';
   };
 
   if (error) {
@@ -201,6 +221,8 @@ export default function TasksPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <ExportMenu data={tasksList} filename="gorevler" title="Görev Listesi" />
+
           {/* View Mode Toggle */}
           <div className="flex border rounded-lg">
             <Button
@@ -293,94 +315,11 @@ export default function TasksPage() {
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filtreler</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Görev başlığı ile ara"
-                className="pl-10"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-              />
-            </div>
-
-            {/* Status Filter */}
-            <Select
-              value={statusFilter}
-              onValueChange={(value) => {
-                setStatusFilter(value as StatusFilter);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Durum" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tümü</SelectItem>
-                <SelectItem value="pending">Beklemede</SelectItem>
-                <SelectItem value="in_progress">Devam Ediyor</SelectItem>
-                <SelectItem value="completed">Tamamlandı</SelectItem>
-                <SelectItem value="cancelled">İptal Edildi</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Priority Filter */}
-            <Select
-              value={priorityFilter}
-              onValueChange={(value) => {
-                setPriorityFilter(value as PriorityFilter);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Öncelik" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tümü</SelectItem>
-                <SelectItem value="low">Düşük</SelectItem>
-                <SelectItem value="normal">Normal</SelectItem>
-                <SelectItem value="high">Yüksek</SelectItem>
-                <SelectItem value="urgent">Acil</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Assigned Filter */}
-            <Select value={assignedFilter} onValueChange={setAssignedFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Atanan" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tümü</SelectItem>
-                <SelectItem value="unassigned">Atanmamış</SelectItem>
-                {users && users.length > 0 ? (
-                  users.map((user: UserDocument) => (
-                    <SelectItem key={user._id || user.$id || ''} value={user._id || user.$id || ''}>
-                      {user.name || 'İsimsiz Kullanıcı'}
-                    </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="no-users" disabled>
-                    Kullanıcı bulunamadı
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex gap-2 mt-4">
-            <Button onClick={clearFilters} variant="outline" size="sm">
-              Temizle
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <FilterPanel
+        fields={filterFields}
+        onFiltersChange={handleFiltersChange}
+        onReset={resetFilters}
+      />
 
       {/* Content */}
       {isLoading ? (
@@ -392,17 +331,17 @@ export default function TasksPage() {
             </div>
           </CardContent>
         </Card>
-      ) : tasks.length === 0 ? (
+      ) : tasksList.length === 0 ? (
         <Card>
           <CardContent className="p-12">
             <div className="text-center text-muted-foreground">
               <CheckSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
               <p className="text-lg font-medium">Görev bulunamadı</p>
               <p className="text-sm mt-2">
-                {search ||
-                statusFilter !== 'all' ||
-                priorityFilter !== 'all' ||
-                assignedFilter !== 'all'
+                {filters.search ||
+                filters.status ||
+                filters.priority ||
+                filters.assigned_to
                   ? 'Arama kriterlerinize uygun görev bulunamadı'
                   : 'Henüz görev eklenmemiş'}
               </p>
@@ -417,7 +356,7 @@ export default function TasksPage() {
             <CardDescription>Görevleri sürükleyip bırakarak durumlarını değiştirin</CardDescription>
           </CardHeader>
           <CardContent>
-            <KanbanBoard tasks={tasks} onTaskMove={handleTaskMove} onTaskClick={handleTaskClick} />
+            <KanbanBoard tasks={tasksList} onTaskMove={handleTaskMove} onTaskClick={handleTaskClick} />
           </CardContent>
         </Card>
       ) : (
@@ -429,7 +368,7 @@ export default function TasksPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {tasks.map((task) => {
+              {tasksList.map((task) => {
                 const isOverdue = task.due_date ? isTaskOverdue(task.due_date) : false;
                 const isDueSoon = task.due_date ? isTaskDueSoon(task.due_date) : false;
 

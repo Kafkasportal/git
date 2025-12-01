@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import logger from '@/lib/logger';
 
 export async function GET() {
   try {
@@ -32,7 +33,7 @@ export async function GET() {
 
     throw new Error('Failed to fetch from external API');
   } catch (error) {
-    console.error('Currency fetch error, using fallback:', error);
+    logger.error('Currency fetch error, using fallback:', error);
 
     // Fallback mock data
     const fallbackRates = [
