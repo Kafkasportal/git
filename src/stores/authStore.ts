@@ -403,6 +403,22 @@ export const useAuthStore = create<AuthStore>()(
             set((state) => {
               state.user = user;
             });
+            // Update Sentry user context when auth user changes
+            if (user) {
+              try {
+                const { setSentryUser } = require("@/lib/sentry");
+                setSentryUser(user.$id || user.id, user.email, user.name);
+              } catch (e) {
+                // Sentry not available yet, that's ok
+              }
+            } else {
+              try {
+                const { clearSentryUser } = require("@/lib/sentry");
+                clearSentryUser();
+              } catch (e) {
+                // Sentry not available, that's ok
+              }
+            }
           },
 
           setSession: (session: Session | null) => {
