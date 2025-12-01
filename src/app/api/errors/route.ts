@@ -1,6 +1,6 @@
 /**
  * Error Tracking API Routes
- * POST /api/errors - Create or update error record (requires auth to prevent spam)
+ * POST /api/errors - Create or update error record (rate-limited, no auth required for client-side error tracking)
  * GET /api/errors - List errors with filters (requires auth and admin permission)
  */
 
@@ -47,14 +47,15 @@ const createErrorSchema = z.object({
 /**
  * POST /api/errors
  * Create a new error record
- * Requires authentication - prevents error tracking spam/abuse
+ * Authentication is optional - rate limiting prevents spam/abuse
  *
- * SECURITY: Without auth, anyone could flood error logs with fake errors
+ * SECURITY: Rate limiting prevents flooding, no auth required for client-side error reporting
  */
 async function postErrorHandler(request: NextRequest) {
   try {
-    // Require authentication to prevent error log spam
-    await requireAuthenticatedUser();
+    // Authentication is optional for error reporting
+    // Client-side error tracking doesn't have auth tokens
+    // Rate limiting (applied at export) prevents spam
 
     const body = await request.json();
 
@@ -260,6 +261,7 @@ async function getErrorsHandler(request: NextRequest) {
 }
 
 // Export handlers with rate limiting
-// POST uses aggressive rate limiting to prevent error log spam
+// POST uses aggressive rate limiting to prevent error log spam (no auth required for client-side error tracking)
+// GET requires authentication and admin permissions to view error logs
 export const POST = dataModificationRateLimit(postErrorHandler);
 export const GET = readOnlyRateLimit(getErrorsHandler);
