@@ -22,6 +22,7 @@ const publicRoutes = [
   "/api/csrf", // CSRF token endpoint is public
   "/api/auth/login", // Login endpoint is public (but requires CSRF token)
   "/api/auth/logout", // Logout endpoint is public
+  "/api/errors", // Error tracking endpoint is public (protected by rate limiting)
 ];
 
 // Routes that are exempt from CSRF validation
