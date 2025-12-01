@@ -232,6 +232,7 @@ export async function captureError(options: CaptureErrorOptions): Promise<void> 
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(errorData),
       });
 
@@ -299,6 +300,7 @@ export async function retryPendingErrors(): Promise<void> {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify(pendingErrors[i]),
         });
 
