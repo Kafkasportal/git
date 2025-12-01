@@ -8,7 +8,7 @@ import { createOptimizedQueryClient, cacheUtils } from "@/lib/cache-config";
 import { persistentCache } from "@/lib/persistent-cache";
 import { initGlobalErrorHandlers } from "@/lib/global-error-handler";
 import { initErrorTracker } from "@/lib/error-tracker";
-import { initializeSentry, setSentryUser, clearSentryUser } from "@/lib/sentry";
+import { initializeSentry } from "@/lib/sentry";
 import { SettingsProvider } from "@/contexts/settings-context";
 import { KeyboardNavigationProvider } from "@/contexts/keyboard-navigation-context";
 import { ThemeProvider } from "@/components/ui/theme-provider";

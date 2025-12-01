@@ -407,7 +407,7 @@ export const useAuthStore = create<AuthStore>()(
             if (user) {
               try {
                 const { setSentryUser } = require("@/lib/sentry");
-                setSentryUser(user.$id || user.id, user.email, user.name);
+                setSentryUser(user.id, user.email, user.name);
               } catch (e) {
                 // Sentry not available yet, that's ok
               }

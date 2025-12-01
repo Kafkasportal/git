@@ -4,7 +4,6 @@
  */
 
 import * as Sentry from "@sentry/react";
-import { BrowserTracing } from "@sentry/tracing";
 
 /**
  * Initialize Sentry for error monitoring
@@ -16,14 +15,14 @@ export function initializeSentry() {
   const sentryEnabled = process.env.NEXT_PUBLIC_SENTRY_ENABLED === "true";
 
   if (isDev && !sentryEnabled) {
-    console.log("Sentry disabled in development mode");
+    // Skip initialization silently in dev mode
     return;
   }
 
   const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
 
   if (!dsn) {
-    console.warn("NEXT_PUBLIC_SENTRY_DSN not configured");
+    // No DSN configured - skip silently
     return;
   }
 
@@ -32,17 +31,13 @@ export function initializeSentry() {
     environment: process.env.NODE_ENV,
     enabled: !isDev || sentryEnabled,
 
+    // Enable Sentry Structured Logs
+    _experiments: {
+      enableLogs: true,
+    },
+
     // Performance Monitoring
     integrations: [
-      new BrowserTracing({
-        // Set sampling rate for performance monitoring
-        tracingOrigins: [
-          "localhost",
-          /^\//,
-          // Add your server URLs here
-          process.env.NEXT_PUBLIC_API_URL || "",
-        ],
-      }),
       Sentry.replayIntegration({
         // Capture 10% of replay sessions
         maskAllText: true,
@@ -59,6 +54,10 @@ export function initializeSentry() {
         nameLabel: "Adınız",
         emailLabel: "E-postanız",
         showBranding: false,
+      }),
+      // Send console logs to Sentry
+      Sentry.consoleLoggingIntegration({ 
+        levels: ["warn", "error"] 
       }),
     ],
 
@@ -151,6 +150,43 @@ export function captureMessage(message: string, level: Sentry.SeverityLevel = "i
 }
 
 /**
+ * Sentry Logger - Structured Logs API
+ * Use these for logging that gets sent to Sentry
+ */
+export const sentryLogger = {
+  trace: (message: string, attrs?: Record<string, unknown>) => {
+    if (Sentry.logger) {
+      Sentry.logger.trace(message, attrs);
+    }
+  },
+  debug: (message: string, attrs?: Record<string, unknown>) => {
+    if (Sentry.logger) {
+      Sentry.logger.debug(message, attrs);
+    }
+  },
+  info: (message: string, attrs?: Record<string, unknown>) => {
+    if (Sentry.logger) {
+      Sentry.logger.info(message, attrs);
+    }
+  },
+  warn: (message: string, attrs?: Record<string, unknown>) => {
+    if (Sentry.logger) {
+      Sentry.logger.warn(message, attrs);
+    }
+  },
+  error: (message: string, attrs?: Record<string, unknown>) => {
+    if (Sentry.logger) {
+      Sentry.logger.error(message, attrs);
+    }
+  },
+  fatal: (message: string, attrs?: Record<string, unknown>) => {
+    if (Sentry.logger) {
+      Sentry.logger.fatal(message, attrs);
+    }
+  },
+};
+
+/**
  * Add breadcrumb for debugging
  */
 export function addBreadcrumb(
@@ -165,3 +201,69 @@ export function addBreadcrumb(
     timestamp: Date.now() / 1000,
   });
 }
+
+/**
+ * Tracing - Create a span for performance monitoring
+ * Use for meaningful actions like button clicks, API calls, function calls
+ */
+export function startSpan<T>(
+  options: {
+    name: string;
+    op: string;
+    attributes?: Record<string, string | number | boolean>;
+  },
+  callback: (span: Sentry.Span) => T
+): T {
+  return Sentry.startSpan(
+    {
+      name: options.name,
+      op: options.op,
+    },
+    (span) => {
+      if (options.attributes && span) {
+        Object.entries(options.attributes).forEach(([key, value]) => {
+          span.setAttribute(key, value);
+        });
+      }
+      return callback(span);
+    }
+  );
+}
+
+/**
+ * Async Tracing - Create a span for async operations
+ * Use for API calls, database queries, etc.
+ */
+export async function startAsyncSpan<T>(
+  options: {
+    name: string;
+    op: string;
+    attributes?: Record<string, string | number | boolean>;
+  },
+  callback: (span: Sentry.Span) => Promise<T>
+): Promise<T> {
+  return Sentry.startSpan(
+    {
+      name: options.name,
+      op: options.op,
+    },
+    async (span) => {
+      if (options.attributes && span) {
+        Object.entries(options.attributes).forEach(([key, value]) => {
+          span.setAttribute(key, value);
+        });
+      }
+      return callback(span);
+    }
+  );
+}
+
+/**
+ * Re-export Sentry for direct access when needed
+ */
+export { Sentry };
+
+/**
+ * Export logger directly from Sentry
+ */
+export const { logger } = Sentry;
