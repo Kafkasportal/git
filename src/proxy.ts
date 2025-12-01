@@ -25,6 +25,13 @@ const publicRoutes = [
   "/api/errors", // Error tracking endpoint is public (protected by rate limiting)
 ];
 
+// Routes that are exempt from CSRF validation
+// These are endpoints that need to accept unauthenticated requests without CSRF tokens
+const csrfExemptRoutes = [
+  "/api/csrf", // CSRF token endpoint itself doesn't need CSRF validation
+  "/api/errors", // Error tracking endpoint for client-side error reporting
+];
+
 // Auth routes that should redirect to dashboard if already authenticated
 
 // API routes that require authentication (protected endpoints)
@@ -197,9 +204,12 @@ export async function proxy(request: NextRequest) {
       method === "PATCH" ||
       method === "DELETE"
     ) {
-      // Skip CSRF validation for /api/errors (client-side error reporting endpoint)
-      // This endpoint is designed to accept unauthenticated requests and is protected by rate limiting
-      if (!pathname.startsWith("/api/errors")) {
+      // Skip CSRF validation for exempt routes
+      const isCsrfExempt = csrfExemptRoutes.some((route) =>
+        pathname.startsWith(route),
+      );
+      
+      if (!isCsrfExempt) {
         const headerName = getCsrfTokenHeader();
         const headerToken = request.headers.get(headerName) || "";
         const cookieToken = request.cookies.get("csrf-token")?.value || "";
