@@ -326,17 +326,23 @@ describe('POST /api/errors', () => {
     expect(data.error).toBe('Validation failed');
   });
 
-  it('requires authentication', async () => {
-    const authError = { status: 401, body: { success: false, error: 'Unauthorized', code: 'UNAUTHORIZED' } };
-    vi.mocked(authUtils.buildErrorResponse).mockReturnValue(authError);
-    vi.mocked(authUtils.requireAuthenticatedUser).mockRejectedValue(new Error('Unauthorized'));
-
+  it('allows unauthenticated error reporting', async () => {
+    // POST /api/errors should work without authentication for client-side error tracking
     const validError = {
       error_code: 'ERR001',
       title: 'Test Error',
+      description: 'Client-side error',
       category: 'runtime',
       severity: 'high',
     };
+
+    const createdError = {
+      $id: 'new-id',
+      id: 'new-id',
+      ...validError,
+    };
+
+    vi.mocked(appwriteApi.appwriteErrors.create).mockResolvedValue(createdError as any);
 
     const request = new NextRequest('http://localhost/api/errors', {
       method: 'POST',
@@ -349,8 +355,9 @@ describe('POST /api/errors', () => {
     const response = await POST(request);
     const data = await response.json();
 
-    expect(response.status).toBe(401);
-    expect(data.success).toBe(false);
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
+    expect(data.data.errorId).toBe('new-id');
   });
 
   it('handles creation errors gracefully', async () => {
