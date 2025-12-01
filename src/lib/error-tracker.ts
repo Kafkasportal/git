@@ -5,6 +5,7 @@
 
 import logger from './logger';
 import { captureError as sentryCaptureError } from './sentry';
+import { fetchWithCsrf } from './csrf-client';
 
 // Check if Sentry is enabled
 const isSentryEnabled = () => {
@@ -253,7 +254,7 @@ export async function captureError(options: CaptureErrorOptions): Promise<void> 
   // Fallback: Send to backend API when Sentry is not enabled
   if (autoReport) {
     try {
-      const response = await fetch('/api/errors', {
+      const response = await fetchWithCsrf('/api/errors', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -321,7 +322,7 @@ export async function retryPendingErrors(): Promise<void> {
 
     for (let i = 0; i < pendingErrors.length; i++) {
       try {
-        const response = await fetch('/api/errors', {
+        const response = await fetchWithCsrf('/api/errors', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
