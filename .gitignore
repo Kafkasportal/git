@@ -146,5 +146,9 @@ appwrite.config.json
 !appwrite.config.json.example
 appwrite.json
 
+# MCP configuration (contains sensitive credentials)
+.mcp.json
+!.mcp.json.example
+
 # Local IDE settings (contains secrets)
 .vscode/settings.local.json

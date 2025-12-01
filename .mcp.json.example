@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "appwrite": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-appwrite",
+        "--all"
+      ],
+      "env": {
+        "APPWRITE_ENDPOINT": "https://fra.cloud.appwrite.io/v1",
+        "APPWRITE_PROJECT_ID": "YOUR_PROJECT_ID_HERE",
+        "APPWRITE_API_KEY": "YOUR_API_KEY_HERE",
+        "APPWRITE_DATABASE_ID": "YOUR_DATABASE_ID_HERE"
+      },
+      "disabled": false
+    }
+  }
+}
