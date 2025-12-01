@@ -4,6 +4,15 @@
  */
 
 import logger from './logger';
+import { captureError as sentryCaptureError } from './sentry';
+
+// Check if Sentry is enabled
+const isSentryEnabled = () => {
+  return !!(
+    process.env.NEXT_PUBLIC_SENTRY_DSN &&
+    (process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_SENTRY_ENABLED === 'true')
+  );
+};
 
 export type ErrorCategory =
   | 'runtime'
@@ -224,7 +233,24 @@ export async function captureError(options: CaptureErrorOptions): Promise<void> 
     component: context.component,
   });
 
-  // Send to backend API
+  // Send to Sentry if enabled (preferred)
+  if (isSentryEnabled()) {
+    try {
+      sentryCaptureError(error instanceof Error ? error : new Error(title), {
+        error_code: errorCode,
+        category,
+        severity,
+        component: context.component,
+        function_name: context.function_name,
+        tags,
+      });
+    } catch (sentryError) {
+      logger.warn('Failed to send error to Sentry', { error: sentryError });
+    }
+    return; // Don't send to /api/errors when Sentry is active
+  }
+
+  // Fallback: Send to backend API when Sentry is not enabled
   if (autoReport) {
     try {
       const response = await fetch('/api/errors', {
