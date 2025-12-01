@@ -196,18 +196,22 @@ export async function proxy(request: NextRequest) {
       method === "PATCH" ||
       method === "DELETE"
     ) {
-      const headerName = getCsrfTokenHeader();
-      const headerToken = request.headers.get(headerName) || "";
-      const cookieToken = request.cookies.get("csrf-token")?.value || "";
-      if (!validateCsrfToken(headerToken, cookieToken)) {
-        return new NextResponse(
-          JSON.stringify({
-            success: false,
-            error: "CSRF doğrulaması başarısız",
-            code: "INVALID_CSRF",
-          }),
-          { status: 403, headers: { "Content-Type": "application/json" } },
-        );
+      // Skip CSRF validation for /api/errors (client-side error reporting endpoint)
+      // This endpoint is designed to accept unauthenticated requests and is protected by rate limiting
+      if (!pathname.startsWith("/api/errors")) {
+        const headerName = getCsrfTokenHeader();
+        const headerToken = request.headers.get(headerName) || "";
+        const cookieToken = request.cookies.get("csrf-token")?.value || "";
+        if (!validateCsrfToken(headerToken, cookieToken)) {
+          return new NextResponse(
+            JSON.stringify({
+              success: false,
+              error: "CSRF doğrulaması başarısız",
+              code: "INVALID_CSRF",
+            }),
+            { status: 403, headers: { "Content-Type": "application/json" } },
+          );
+        }
       }
     }
   }
