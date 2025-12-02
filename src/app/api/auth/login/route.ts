@@ -176,7 +176,7 @@ export const POST = authRateLimit(async (request: NextRequest) => {
       Date.now() + (rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000)
     );
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-    const signedSession = serializeSessionCookie({
+    const signedSession = await serializeSessionCookie({
       sessionId,
       userId,
       expire: expireTime.toISOString(),

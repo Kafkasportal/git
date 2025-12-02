@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
     // Session cookie (HttpOnly, signed)
-    const signedSession = serializeSessionCookie({
+    const signedSession = await serializeSessionCookie({
       sessionId,
       userId: user,
       expire: expireTime.toISOString(),

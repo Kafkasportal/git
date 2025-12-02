@@ -1,3 +1,6 @@
+// Edge Runtime declaration for Cloudflare Pages compatibility
+export const runtime = 'experimental-edge';
+
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import logger from "@/lib/logger";
@@ -11,7 +14,7 @@ import {
   SPECIAL_PERMISSIONS,
   type PermissionValue,
 } from "@/types/permissions";
-import { getCsrfTokenHeader, validateCsrfToken } from "@/lib/csrf";
+import { getCsrfTokenHeader, validateCsrfToken } from "@/lib/csrf-client";
 
 // Public routes that don't require authentication
 const publicRoutes = [
@@ -182,9 +185,12 @@ function hasRequiredPermission(
 }
 
 /**
- * Main proxy function (Next.js 16 middleware replacement)
+ * Main proxy function (Next.js 16 Edge Runtime proxy)
  */
-export async function proxy(request: NextRequest) {
+/**
+ * Main middleware function (Next.js Edge Runtime middleware for Cloudflare)
+ */
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow public routes
@@ -243,7 +249,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Get user session
-  const session = getAuthSessionFromRequest(request);
+  const session = await getAuthSessionFromRequest(request);
 
   // If no session, redirect to login (for pages) or return 401 (for API)
   if (!session) {

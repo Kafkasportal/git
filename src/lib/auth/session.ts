@@ -1,6 +1,5 @@
 import { cookies } from 'next/headers';
 import type { NextRequest } from 'next/server';
-import { createHmac, timingSafeEqual } from 'node:crypto';
 import { appwriteUsers } from '@/lib/appwrite/api';
 import { MODULE_PERMISSIONS, SPECIAL_PERMISSIONS, type PermissionValue } from '@/types/permissions';
 import { getEffectivePermissions } from '@/lib/auth/permissions';
@@ -29,17 +28,36 @@ const getSessionSecret = (): string | null => {
   return secret;
 };
 
-const signPayload = (payload: string, secret: string): string => {
-  return createHmac('sha256', secret).update(payload).digest('hex');
+/**
+ * Sign payload using Web Crypto API (Edge Runtime compatible)
+ */
+const signPayload = async (payload: string, secret: string): Promise<string> => {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
+  return Array.from(new Uint8Array(signature))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
 };
 
+/**
+ * Constant-time string comparison (Edge Runtime compatible)
+ */
 const safeEqual = (a: string, b: string): boolean => {
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) {
+  if (a.length !== b.length) {
     return false;
   }
-  return timingSafeEqual(bufA, bufB);
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
 };
 
 /**
@@ -61,13 +79,19 @@ const parseLegacySession = (cookieValue?: string): AuthSession | null => {
 /**
  * Serialize & sign session using HMAC (base64url.payload + signature).
  */
-export const serializeSessionCookie = (session: AuthSession): string => {
+export const serializeSessionCookie = async (session: AuthSession): Promise<string> => {
   const secret = getSessionSecret();
   if (!secret) {
     throw new Error('SESSION_SECRET is missing or too short');
   }
-  const payload = Buffer.from(JSON.stringify(session)).toString('base64url');
-  const signature = signPayload(payload, secret);
+  const encoder = new TextEncoder();
+  const jsonData = JSON.stringify(session);
+  const encoded = encoder.encode(jsonData);
+  const payload = btoa(String.fromCharCode(...encoded))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+  const signature = await signPayload(payload, secret);
   return `${payload}.${signature}`;
 };
 
@@ -75,7 +99,7 @@ export const serializeSessionCookie = (session: AuthSession): string => {
  * Parse serialized session cookie safely with signature verification.
  * Falls back to legacy JSON sessions for existing cookies.
  */
-export function parseAuthSession(cookieValue?: string): AuthSession | null {
+export async function parseAuthSession(cookieValue?: string): Promise<AuthSession | null> {
   if (!cookieValue) {
     return null;
   }
@@ -86,11 +110,15 @@ export function parseAuthSession(cookieValue?: string): AuthSession | null {
 
   if (payload && signature && secret) {
     try {
-      const expectedSig = signPayload(payload, secret);
+      const expectedSig = await signPayload(payload, secret);
       if (!safeEqual(signature, expectedSig)) {
         return null;
       }
-      const parsed = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as AuthSession;
+      // Base64url decode
+      const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+      const padding = '='.repeat((4 - (base64.length % 4)) % 4);
+      const decoded = atob(base64 + padding);
+      const parsed = JSON.parse(decoded) as AuthSession;
       if (!parsed?.sessionId || !parsed?.userId) {
         return null;
       }
@@ -119,7 +147,7 @@ export function isSessionExpired(session: AuthSession | null): boolean {
 /**
  * Extract auth-session cookie from a NextRequest.
  */
-export function getAuthSessionFromRequest(request: NextRequest): AuthSession | null {
+export async function getAuthSessionFromRequest(request: NextRequest): Promise<AuthSession | null> {
   const cookieValue = request.cookies.get('auth-session')?.value;
   return parseAuthSession(cookieValue);
 }
@@ -131,7 +159,7 @@ export function getAuthSessionFromRequest(request: NextRequest): AuthSession | n
 export async function getAuthSessionFromCookies(): Promise<AuthSession | null> {
   const cookieStore = await cookies();
   const cookieValue = cookieStore.get('auth-session')?.value;
-  return parseAuthSession(cookieValue);
+  return await parseAuthSession(cookieValue);
 }
 
 /**
@@ -244,7 +272,7 @@ export async function getRequestAuthContext(request: NextRequest): Promise<{
   session: AuthSession | null;
   user: SessionUser | null;
 }> {
-  const session = getAuthSessionFromRequest(request);
+  const session = await getAuthSessionFromRequest(request);
   const user = await getUserFromSession(session);
   return { session, user };
 }

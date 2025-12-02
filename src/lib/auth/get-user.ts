@@ -26,7 +26,7 @@ export async function getCurrentUserId(request?: NextRequest): Promise<string | 
       return null;
     }
 
-    const sessionData = parseAuthSession(sessionCookie);
+    const sessionData = await parseAuthSession(sessionCookie);
     if (!sessionData?.userId) {
       return null;
     }

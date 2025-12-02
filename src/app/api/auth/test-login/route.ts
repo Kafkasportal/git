@@ -61,7 +61,7 @@ export async function GET() {
     const csrfToken = generateCsrfToken();
 
     // Set session cookie
-    const signedSession = serializeSessionCookie(sessionData);
+    const signedSession = await serializeSessionCookie(sessionData);
 
     // Create response with redirect
     const response = NextResponse.redirect(

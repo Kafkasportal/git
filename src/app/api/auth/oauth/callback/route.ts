@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
     const expireTime = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days for OAuth
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
-    const signedSession = serializeSessionCookie({
+    const signedSession = await serializeSessionCookie({
       sessionId,
       userId,
       expire: expireTime.toISOString(),

@@ -11,7 +11,7 @@ export async function GET(_request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('auth-session');
-    const parsedSession = parseAuthSession(sessionCookie?.value);
+    const parsedSession = await parseAuthSession(sessionCookie?.value);
 
     if (!parsedSession) {
       return NextResponse.json(
