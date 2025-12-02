@@ -37,20 +37,7 @@ GitHub repository'nizde aşağıdaki secrets'ları ekleyin:
 
 ## 🚀 Deployment Workflow'ları
 
-### 1. Otomatik Deployment (`deploy-appwrite.yml`)
-
-**Tetiklenme:**
-- `main` branch'e push yapıldığında otomatik çalışır
-- Manuel olarak da tetiklenebilir
-
-**Özellikler:**
-- Lint kontrolü
-- Type check
-- Test çalıştırma
-- Build
-- Appwrite Sites'a deploy
-
-### 2. Manuel Deployment (`deploy-appwrite-manual.yml`)
+### Manuel Deployment (`deploy-appwrite-manual.yml`)
 
 **Tetiklenme:**
 - Sadece manuel olarak tetiklenir
@@ -87,12 +74,12 @@ Veya Appwrite Console'dan:
 
 ### 3. Workflow Test Etme
 
-```bash
-# Test için bir commit yapın
-git add .
-git commit -m "test: add deployment workflow"
-git push origin main
-```
+Manuel deployment workflow'unu test etmek için:
+1. GitHub Actions sekmesine gidin
+2. "Deploy to Appwrite (Manual)" workflow'unu seçin
+3. "Run workflow" butonuna tıklayın
+4. İstediğiniz environment'ı seçin (production/staging)
+5. Gerekirse "Skip tests" seçeneğini işaretleyin
 
 ## 🔧 Workflow Yapılandırması
 
