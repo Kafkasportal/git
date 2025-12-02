@@ -149,7 +149,7 @@ describe('MyComponent', () => {
 ## 📚 Dokümantasyon
 
 - README.md: Genel bilgiler
-- CONTRIBUTING.md: Bu dosya (geliştirme notları)
+- Geliştirme Notları: Bu dosya (geliştirme süreci)
 - Code comments: Kod içi açıklamalar
 
 ## 📝 Notlar
