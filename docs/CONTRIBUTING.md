@@ -1,19 +1,13 @@
-# Katkıda Bulunma Rehberi
+# Geliştirme Notları
 
-Bu projeye katkıda bulunmak istediğiniz için teşekkürler! Bu dokümantasyon, katkı sürecini kolaylaştırmak için hazırlanmıştır.
+Bu proje özel kullanım içindir ve tek kişi tarafından geliştirilmektedir.
 
 ## 🚀 Başlangıç
 
-1. Projeyi fork edin
-2. Repository'yi klonlayın:
-   ```bash
-   git clone https://github.com/your-username/git-2.git
-   cd git-2
-   ```
-3. Branch oluşturun:
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
+Repository'yi güncellemek için:
+```bash
+git pull origin main
+```
 
 ## 📝 Geliştirme Süreci
 
@@ -62,7 +56,7 @@ npm run lint:fix
 npm run typecheck
 ```
 
-## 📋 Pull Request Süreci
+## 📋 Değişiklik Süreci
 
 1. **Branch oluşturun**: `feature/feature-name` veya `fix/bug-name`
 2. **Değişikliklerinizi yapın**
@@ -71,7 +65,7 @@ npm run typecheck
 5. **TypeScript kontrolü**: `npm run typecheck`
 6. **Commit edin**: Anlamlı commit mesajları kullanın
 7. **Push edin**: `git push origin feature/feature-name`
-8. **Pull Request açın**
+8. **Main branch'e merge edin**
 
 ### Commit Mesajları
 
@@ -152,41 +146,13 @@ describe('MyComponent', () => {
 - [ ] Breaking changes varsa dokümante edildi mi?
 - [ ] Performance etkisi değerlendirildi mi?
 
-## 🐛 Bug Report
-
-Bug bulduysanız:
-
-1. Issue açın
-2. Aşağıdaki bilgileri ekleyin:
-   - Açıklama
-   - Adımlar (reproduce)
-   - Beklenen davranış
-   - Gerçek davranış
-   - Environment (OS, browser, Node version)
-   - Screenshots (varsa)
-
-## 💡 Feature Request
-
-Yeni özellik önerisi için:
-
-1. Issue açın
-2. Özelliği detaylı açıklayın
-3. Kullanım senaryosunu belirtin
-4. Alternatif çözümleri değerlendirin
-
 ## 📚 Dokümantasyon
 
 - README.md: Genel bilgiler
-- CONTRIBUTING.md: Bu dosya
+- Geliştirme Notları: Bu dosya (geliştirme süreci)
 - Code comments: Kod içi açıklamalar
 
-## ❓ Sorular
+## 📝 Notlar
 
-Sorularınız için:
-- Issue açın
-- Discussion başlatın
-
-## 🙏 Teşekkürler
-
-Katkılarınız için teşekkürler! 🎉
+Bu proje özel kullanım içindir. Dış katkılar kabul edilmemektedir.
 

@@ -140,21 +140,9 @@ src/
 - Installable
 - Push notifications
 
-## 🤝 Katkıda Bulunma
-
-1. Fork edin
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Commit edin (`git commit -m 'Add amazing feature'`)
-4. Push edin (`git push origin feature/amazing-feature`)
-5. Pull Request açın
-
 ## 📄 Lisans
 
-Bu proje [LICENSE](LICENSE) dosyasındaki lisans altında lisanslanmıştır.
-
-## 🆘 Destek
-
-Sorunlar için [Issues](https://github.com/your-repo/issues) sayfasını kullanın.
+Bu proje özel kullanım içindir. Tüm hakları saklıdır.
 
 ## 📚 Teknolojiler
 
