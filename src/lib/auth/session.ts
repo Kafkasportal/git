@@ -77,6 +77,34 @@ const parseLegacySession = (cookieValue?: string): AuthSession | null => {
 };
 
 /**
+ * Encode string to base64url (Edge Runtime compatible)
+ */
+const encodeBase64Url = (data: string): string => {
+  const encoder = new TextEncoder();
+  const encoded = encoder.encode(data);
+  // Convert Uint8Array to string using chunked approach to avoid stack overflow
+  let binaryString = '';
+  const chunkSize = 8192;
+  for (let i = 0; i < encoded.length; i += chunkSize) {
+    const chunk = encoded.slice(i, i + chunkSize);
+    binaryString += String.fromCharCode(...chunk);
+  }
+  return btoa(binaryString)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+};
+
+/**
+ * Decode base64url to string (Edge Runtime compatible)
+ */
+const decodeBase64Url = (payload: string): string => {
+  const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+  const padding = '='.repeat((4 - (base64.length % 4)) % 4);
+  return atob(base64 + padding);
+};
+
+/**
  * Serialize & sign session using HMAC (base64url.payload + signature).
  */
 export const serializeSessionCookie = async (session: AuthSession): Promise<string> => {
@@ -84,13 +112,8 @@ export const serializeSessionCookie = async (session: AuthSession): Promise<stri
   if (!secret) {
     throw new Error('SESSION_SECRET is missing or too short');
   }
-  const encoder = new TextEncoder();
   const jsonData = JSON.stringify(session);
-  const encoded = encoder.encode(jsonData);
-  const payload = btoa(String.fromCharCode(...encoded))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
+  const payload = encodeBase64Url(jsonData);
   const signature = await signPayload(payload, secret);
   return `${payload}.${signature}`;
 };
@@ -115,9 +138,7 @@ export async function parseAuthSession(cookieValue?: string): Promise<AuthSessio
         return null;
       }
       // Base64url decode
-      const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
-      const padding = '='.repeat((4 - (base64.length % 4)) % 4);
-      const decoded = atob(base64 + padding);
+      const decoded = decodeBase64Url(payload);
       const parsed = JSON.parse(decoded) as AuthSession;
       if (!parsed?.sessionId || !parsed?.userId) {
         return null;

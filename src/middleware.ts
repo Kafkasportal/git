@@ -185,9 +185,6 @@ function hasRequiredPermission(
 }
 
 /**
- * Main proxy function (Next.js 16 Edge Runtime proxy)
- */
-/**
  * Main middleware function (Next.js Edge Runtime middleware for Cloudflare)
  */
 export async function middleware(request: NextRequest) {
