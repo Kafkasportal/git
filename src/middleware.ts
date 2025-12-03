@@ -1,7 +1,6 @@
 // Edge Runtime declaration for Cloudflare Pages compatibility
-// Note: Use 'edge' for production Cloudflare deployments
-// Next.js 16 local builds may show warnings but Edge runtime is required for Cloudflare
-export const runtime = 'edge';
+// Using 'experimental-edge' for compatibility with both Next.js 16 and Cloudflare Pages
+export const runtime = 'experimental-edge';
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
