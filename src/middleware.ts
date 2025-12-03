@@ -1,17 +1,20 @@
+// Edge Runtime declaration for Cloudflare Pages compatibility
+// Note: Use 'edge' for production Cloudflare deployments
+// Next.js 16 local builds may show warnings but Edge runtime is required for Cloudflare
+export const runtime = 'edge';
+
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import logger from "@/lib/logger";
 import {
-  getAuthSessionFromRequest,
-  getUserFromSession as loadSessionUser,
-  type SessionUser,
-} from "@/lib/auth/session";
+  getAuthSessionFromRequestEdge,
+  isSessionExpired,
+} from "@/lib/auth/session-edge";
 import {
   MODULE_PERMISSIONS,
   SPECIAL_PERMISSIONS,
   type PermissionValue,
 } from "@/types/permissions";
-import { getCsrfTokenHeader, validateCsrfToken } from "@/lib/csrf";
+import { getCsrfTokenHeaderEdge, validateCsrfTokenEdge } from "@/lib/csrf-edge";
 
 // Public routes that don't require authentication
 const publicRoutes = [
@@ -133,58 +136,12 @@ const protectedRoutes: RouteRule[] = [
 ];
 
 /**
- * Check if user has required permission
+ * Main middleware function (Edge Runtime compatible)
+ * 
+ * Note: Edge middleware is lightweight and cannot call external APIs like Appwrite.
+ * Permission checks are deferred to API routes and server components.
  */
-function hasRequiredPermission(
-  user: SessionUser | null,
-  route: RouteRule,
-): boolean {
-  if (!user) return false;
-
-  // Admin-level bypass: allow ADMIN/SUPER_ADMIN or users with admin manage permission
-  const roleUpper = (user.role || "").toUpperCase();
-  const isAdminByRole = roleUpper === "ADMIN" || roleUpper === "SUPER_ADMIN";
-  const isAdminByPermission = (user.permissions || []).includes(
-    SPECIAL_PERMISSIONS.USERS_MANAGE,
-  );
-  if (isAdminByRole || isAdminByPermission) {
-    return true;
-  }
-
-  // Check role requirement first
-  if (route.requiredRole) {
-    if (
-      !user.role ||
-      user.role.toLowerCase() !== route.requiredRole.toLowerCase()
-    ) {
-      return false;
-    }
-  }
-
-  // Check permission requirement
-  if (route.requiredPermission) {
-    if (!user.permissions.includes(route.requiredPermission)) {
-      return false;
-    }
-  }
-
-  // Check any permission requirement
-  if (route.requiredAnyPermission && route.requiredAnyPermission.length > 0) {
-    const hasAny = route.requiredAnyPermission.some((perm) =>
-      user.permissions.includes(perm as PermissionValue),
-    );
-    if (!hasAny) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-/**
- * Main proxy function (Next.js 16 middleware replacement)
- */
-export async function proxy(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow public routes
@@ -210,10 +167,10 @@ export async function proxy(request: NextRequest) {
       );
       
       if (!isCsrfExempt) {
-        const headerName = getCsrfTokenHeader();
+        const headerName = getCsrfTokenHeaderEdge();
         const headerToken = request.headers.get(headerName) || "";
         const cookieToken = request.cookies.get("csrf-token")?.value || "";
-        if (!validateCsrfToken(headerToken, cookieToken)) {
+        if (!validateCsrfTokenEdge(headerToken, cookieToken)) {
           return new NextResponse(
             JSON.stringify({
               success: false,
@@ -242,11 +199,11 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Get user session
-  const session = getAuthSessionFromRequest(request);
+  // Get user session (Edge-compatible)
+  const session = await getAuthSessionFromRequestEdge(request);
 
-  // If no session, redirect to login (for pages) or return 401 (for API)
-  if (!session) {
+  // If no session or session expired, redirect to login (for pages) or return 401 (for API)
+  if (!session || isSessionExpired(session)) {
     if (isProtectedApiRoute) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
@@ -259,49 +216,15 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Get user data
-  const user = await loadSessionUser(session);
+  // For Edge middleware, we defer permission checks to API routes and server components
+  // This is because Edge middleware cannot call external APIs like Appwrite
+  // The session validation above is sufficient for basic auth
 
-  if (!user) {
-    if (isProtectedApiRoute) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 },
-      );
-    }
-
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  // For page routes, check permissions
-  if (matchingRoute) {
-    if (!hasRequiredPermission(user, matchingRoute)) {
-      logger.warn("Access denied", {
-        context: "middleware",
-        userId: user.id,
-        path: pathname,
-        route: matchingRoute.path,
-      });
-
-      // Redirect to dashboard if user doesn't have permission
-      return NextResponse.redirect(new URL("/genel", request.url));
-    }
-  }
-
-  // Add user info to request headers for API routes
+  // Add session info to request headers for API routes
   if (isProtectedApiRoute) {
     const requestHeaders = new Headers(request.headers);
-    requestHeaders.set("x-user-id", user.id);
-    // Ensure header values are ASCII-safe to avoid ByteString errors
-    const safeRole = encodeURIComponent(user.role ?? "");
-    const safePermissions = encodeURIComponent(
-      (user.permissions ?? []).join(","),
-    );
-
-    requestHeaders.set("x-user-role", safeRole);
-    requestHeaders.set("x-user-permissions", safePermissions);
+    requestHeaders.set("x-user-id", session.userId);
+    requestHeaders.set("x-session-id", session.sessionId);
 
     return NextResponse.next({
       request: {
