@@ -15,12 +15,13 @@ import {
 } from '@/components/ui/dialog';
 import { Plus, DollarSign, User, Calendar, FileText } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { BulkActionsToolbar } from '@/components/ui/bulk-actions-toolbar';
+import type { BulkEditField } from '@/components/ui/bulk-edit-modal';
 import { ExportMenu } from '@/components/ui/export-menu';
 import { useFilters } from '@/hooks/useFilters';
 import { FilterPanel, FilterField } from '@/components/ui/filter-panel';
-import { toast } from 'sonner';
+import { useBulkOperations } from '@/hooks/useBulkOperations';
 import type { DonationDocument } from '@/types/database';
 
 const DonationForm = dynamic(
@@ -38,11 +39,19 @@ const DonationForm = dynamic(
 export default function DonationsPage() {
   const queryClient = useQueryClient();
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
   const { filters, resetFilters, handleFiltersChange } = useFilters({
     syncWithUrl: true,
     presetsKey: 'donations-filters',
+  });
+
+  // Bulk operations
+  const bulkOps = useBulkOperations({
+    endpoint: '/api/donations',
+    resourceName: 'bağış',
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['donations'] });
+    },
   });
 
   const { data, isLoading } = useQuery({
@@ -62,6 +71,57 @@ export default function DonationsPage() {
       type: 'text',
       placeholder: 'Bağışçı adı veya açıklama ile ara...',
     },
+    {
+      key: 'status',
+      label: 'Durum',
+      type: 'select',
+      options: [
+        { label: 'Tamamlandı', value: 'completed' },
+        { label: 'Beklemede', value: 'pending' },
+        { label: 'İptal Edildi', value: 'cancelled' },
+      ],
+    },
+  ];
+
+  // Bulk edit fields
+  const bulkEditFields: BulkEditField[] = useMemo(() => [
+    {
+      key: 'status',
+      label: 'Durum',
+      type: 'select',
+      options: [
+        { label: 'Tamamlandı', value: 'completed' },
+        { label: 'Beklemede', value: 'pending' },
+        { label: 'İptal Edildi', value: 'cancelled' },
+      ],
+    },
+    {
+      key: 'payment_method',
+      label: 'Ödeme Yöntemi',
+      type: 'select',
+      options: [
+        { label: 'Nakit', value: 'cash' },
+        { label: 'Kredi Kartı', value: 'credit_card' },
+        { label: 'Banka Transferi', value: 'bank_transfer' },
+        { label: 'Çek', value: 'check' },
+      ],
+    },
+    {
+      key: 'donation_type',
+      label: 'Bağış Türü',
+      type: 'select',
+      options: [
+        { label: 'Ayni', value: 'in_kind' },
+        { label: 'Nakdi', value: 'monetary' },
+      ],
+    },
+  ], []);
+
+  // Status options for bulk status change
+  const statusOptions = [
+    { label: 'Tamamlandı', value: 'completed' },
+    { label: 'Beklemede', value: 'pending' },
+    { label: 'İptal Edildi', value: 'cancelled' },
   ];
 
   // Memoize donations list and total amount to prevent unnecessary recalculations
@@ -72,92 +132,6 @@ export default function DonationsPage() {
   const totalAmount = useMemo(() => {
     return donationsList.reduce((sum, d) => sum + d.amount, 0);
   }, [donationsList]);
-
-  // Bulk operations mutations
-  const bulkDeleteMutation = useMutation({
-    mutationFn: async (ids: string[]) => {
-      const response = await fetch('/api/donations/bulk-delete', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ ids }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Bağışlar silinirken bir hata oluştu');
-      }
-
-      const result = await response.json();
-      return result.data;
-    },
-    onSuccess: (data) => {
-      const deleted = data?.deleted || selectedItems.size;
-      const failed = data?.failed || 0;
-      
-      if (failed > 0) {
-        toast.warning(`${deleted} bağış silindi, ${failed} bağış silinemedi`);
-      } else {
-        toast.success(`${deleted} bağış başarıyla silindi`);
-      }
-      
-      setSelectedItems(new Set());
-      queryClient.invalidateQueries({ queryKey: ['donations'] });
-    },
-    onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Bağışlar silinirken bir hata oluştu');
-    },
-  });
-
-  const bulkStatusUpdateMutation = useMutation({
-    mutationFn: async ({ ids, status }: { ids: string[]; status: string }) => {
-      const response = await fetch('/api/donations/bulk-update-status', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ ids, status }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Durum güncellenirken bir hata oluştu');
-      }
-
-      const result = await response.json();
-      return result.data;
-    },
-    onSuccess: (data, variables) => {
-      const updated = data?.updated || selectedItems.size;
-      const failed = data?.failed || 0;
-      const statusLabel = variables.status === 'completed' ? 'Tamamlandı' : variables.status === 'cancelled' ? 'İptal Edildi' : 'Beklemede';
-      
-      if (failed > 0) {
-        toast.warning(`${updated} bağış ${statusLabel} olarak güncellendi, ${failed} bağış güncellenemedi`);
-      } else {
-        toast.success(`${updated} bağış ${statusLabel} olarak güncellendi`);
-      }
-      
-      setSelectedItems(new Set());
-      queryClient.invalidateQueries({ queryKey: ['donations'] });
-    },
-    onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Durum güncellenirken bir hata oluştu');
-    },
-  });
-
-  const handleBulkDelete = () => {
-    const ids = Array.from(selectedItems);
-    bulkDeleteMutation.mutate(ids);
-  };
-
-  const handleBulkStatusChange = (status: string) => {
-    const ids = Array.from(selectedItems);
-    bulkStatusUpdateMutation.mutate({ ids, status });
-  };
 
   const columns: DataTableColumn<(typeof donationsList)[0]>[] = [
     {
@@ -324,15 +298,32 @@ export default function DonationsPage() {
 
       {/* Bulk Actions Toolbar */}
       <BulkActionsToolbar
-        selectedCount={selectedItems.size}
-        onClearSelection={() => setSelectedItems(new Set())}
-        onDelete={handleBulkDelete}
-        onStatusChange={handleBulkStatusChange}
-        statusOptions={[
-          { value: 'completed', label: 'Tamamlandı Yap' },
-          { value: 'pending', label: 'Beklemede Yap' },
-        ]}
-        isLoading={bulkDeleteMutation.isPending || bulkStatusUpdateMutation.isPending}
+        selectedCount={bulkOps.selectedCount}
+        onClearSelection={bulkOps.clearSelection}
+        onDelete={async () => {
+          await bulkOps.bulkDelete();
+        }}
+        onBulkEdit={async (values) => {
+          await bulkOps.bulkUpdate(values);
+        }}
+        onStatusChange={bulkOps.bulkStatusChange}
+        onExport={async (format) => {
+          const blob = await bulkOps.bulkExport(format);
+          if (blob) {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `bagislar-secili.${format}`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+          }
+        }}
+        statusOptions={statusOptions}
+        editFields={bulkEditFields}
+        isLoading={bulkOps.isLoading}
+        resourceName="bağış"
       />
 
       {/* Search */}
@@ -358,8 +349,12 @@ export default function DonationsPage() {
             rowHeight={70}
             containerHeight={700}
             selectable={true}
-            selectedItems={selectedItems}
-            onSelectionChange={setSelectedItems}
+            selectedItems={bulkOps.selectedIds}
+            onSelectionChange={(ids) => {
+              // Sync with bulk ops
+              bulkOps.clearSelection();
+              ids.forEach((id) => bulkOps.toggleSelection(id));
+            }}
             getItemId={(item) => item._id || item.$id || ''}
           />
         </CardContent>
