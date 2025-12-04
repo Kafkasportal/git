@@ -1,0 +1,200 @@
+{
+  "name": "Bağış Raporlama Otomasyonu",
+  "nodes": [
+    {
+      "parameters": {
+        "cronExpression": "0 9 * * *",
+        "timezone": "Europe/Istanbul"
+      },
+      "name": "Günlük Raporlama Zamanlayıcı",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "collection": "donations",
+        "query": "={\n  \"$createdAt\": {\n    \"$gte\": \"={{new Date(new Date().setDate(new Date().getDate() - 1)).toISOString()}}\",\n    \"$lt\": \"={{new Date().toISOString()}}\"\n  }\n}"
+      },
+      "name": "Günlük Bağışları Getir",
+      "type": "n8n-nodes-base.appwrite",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "aggregate",
+        "collection": "donations",
+        "aggregation": "={\n  \"total_amount\": {\n    \"$sum\": \"$amount\"\n  },\n  \"count\": {\n    \"$sum\": 1\n  },\n  \"avg_amount\": {\n    \"$avg\": \"$amount\"\n  }\n}"
+      },
+      "name": "İstatistikleri Hesapla",
+      "type": "n8n-nodes-base.appwrite",
+      "typeVersion": 1,
+      "position": [
+        650,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "to": "raporlama@kafkasder.com",
+        "subject": "Günlük Bağış Raporu - {{ $node[\"Günlük Raporlama Zamanlayıcı\"].json[\"date\"] }}",
+        "body": "Merhaba,\n\nBugünkü bağış raporu aşağıdadır:\n\n- Toplam Bağış Sayısı: {{ $node[\"İstatistikleri Hesapla\"].json[\"count\"] }}\n- Toplam Bağış Miktarı: {{ $node[\"İstatistikleri Hesapla\"].json[\"total_amount\"] }} TL\n- Ortalama Bağış Tutarı: {{ $node[\"İstatistikleri Hesapla\"].json[\"avg_amount\"] }} TL\n\nDetaylı bilgi için sistem paneline göz atabilirsiniz.\n\nİyi günler,\nKafkasder Otomasyon Sistemi"
+      },
+      "name": "Günlük Rapor E-postası",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        850,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "collection": "reports",
+        "data": "={\n  \"type\": \"daily_donation_report\",\n  \"date\": new Date().toISOString(),\n  \"total_donations\": $node[\"İstatistikleri Hesapla\"].json[\"count\"],\n  \"total_amount\": $node[\"İstatistikleri Hesapla\"].json[\"total_amount\"],\n  \"avg_amount\": $node[\"İstatistikleri Hesapla\"].json[\"avg_amount\"],\n  \"status\": \"generated\"\n}"
+      },
+      "name": "Raporu Veritabanına Kaydet",
+      "type": "n8n-nodes-base.appwrite",
+      "typeVersion": 1,
+      "position": [
+        850,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "cronExpression": "0 9 * * 1",
+        "timezone": "Europe/Istanbul"
+      },
+      "name": "Haftalık Raporlama Zamanlayıcı",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        250,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "collection": "donations",
+        "query": "={\n  \"$createdAt\": {\n    \"$gte\": \"={{new Date(new Date().setDate(new Date().getDate() - 7)).toISOString()}}\",\n    \"$lt\": \"={{new Date().toISOString()}}\"\n  }\n}"
+      },
+      "name": "Haftalık Bağışları Getir",
+      "type": "n8n-nodes-base.appwrite",
+      "typeVersion": 1,
+      "position": [
+        450,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "aggregate",
+        "collection": "donations",
+        "aggregation": "={\n  \"total_amount\": {\n    \"$sum\": \"$amount\"\n  },\n  \"count\": {\n    \"$sum\": 1\n  },\n  \"avg_amount\": {\n    \"$avg\": \"$amount\"\n  },\n  \"max_donation\": {\n    \"$max\": \"$amount\"\n  },\n  \"min_donation\": {\n    \"$min\": \"$amount\"\n  }\n}"
+      },
+      "name": "Haftalık İstatistikleri Hesapla",
+      "type": "n8n-nodes-base.appwrite",
+      "typeVersion": 1,
+      "position": [
+        650,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "to": "yonetim@kafkasder.com",
+        "subject": "Haftalık Bağış Raporu - {{ $node[\"Haftalık Raporlama Zamanlayıcı\"].json[\"date\"] }}",
+        "body": "Sayın Yönetim,\n\nGeçtiğimiz haftanın bağış raporu aşağıdadır:\n\n- Toplam Bağış Sayısı: {{ $node[\"Haftalık İstatistikleri Hesapla\"].json[\"count\"] }}\n- Toplam Bağış Miktarı: {{ $node[\"Haftalık İstatistikleri Hesapla\"].json[\"total_amount\"] }} TL\n- Ortalama Bağış Tutarı: {{ $node[\"Haftalık İstatistikleri Hesapla\"].json[\"avg_amount\"] }} TL\n- En Yüksek Bağış: {{ $node[\"Haftalık İstatistikleri Hesapla\"].json[\"max_donation\"] }} TL\n- En Düşük Bağış: {{ $node[\"Haftalık İstatistikleri Hesapla\"].json[\"min_donation\"] }} TL\n\nDetaylı analiz için sistem paneline göz atabilirsiniz.\n\nSaygılarımızla,\nKafkasder Otomasyon Sistemi"
+      },
+      "name": "Haftalık Rapor E-postası",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        850,
+        500
+      ]
+    }
+  ],
+  "connections": {
+    "Günlük Raporlama Zamanlayıcı": {
+      "main": [
+        [
+          {
+            "node": "Günlük Bağışları Getir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Günlük Bağışları Getir": {
+      "main": [
+        [
+          {
+            "node": "İstatistikleri Hesapla",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "İstatistikleri Hesapla": {
+      "main": [
+        [
+          {
+            "node": "Günlük Rapor E-postası",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Raporu Veritabanına Kaydet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Haftalık Raporlama Zamanlayıcı": {
+      "main": [
+        [
+          {
+            "node": "Haftalık Bağışları Getir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Haftalık Bağışları Getir": {
+      "main": [
+        [
+          {
+            "node": "Haftalık İstatistikleri Hesapla",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Haftalık İstatistikleri Hesapla": {
+      "main": [
+        [
+          {
+            "node": "Haftalık Rapor E-postası",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
