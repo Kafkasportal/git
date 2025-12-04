@@ -27,7 +27,7 @@ Modern, kapsamlı dernek yönetim sistemi - Next.js 16 + Appwrite ile geliştiri
 
 ```bash
 git clone <repository-url>
-cd git-2
+cd dernek-yonetim-sistemi
 ```
 
 ### 2. Bağımlılıkları yükleyin
@@ -158,6 +158,8 @@ Bu proje özel kullanım içindir. Tüm hakları saklıdır.
 ## 📖 Dokümantasyon
 
 - [README.md](README.md) - Genel bilgiler ve kurulum
+- [docs/ENV_SETUP.md](docs/ENV_SETUP.md) - Environment değişkenlerini doğru ve güvenli şekilde ayarlama
+- [docs/ENV_VARIABLES.md](docs/ENV_VARIABLES.md) - Platforma özel değişken çakışmalarını ve önerilen değerleri inceleme
 - [docs/API.md](docs/API.md) - REST API dokümantasyonu (87 endpoints)
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - Mimari dokümantasyonu
 - [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) - Katkıda bulunma rehberi
@@ -165,7 +167,6 @@ Bu proje özel kullanım içindir. Tüm hakları saklıdır.
 - [docs/CHANGELOG.md](docs/CHANGELOG.md) - Değişiklik geçmişi
 - [docs/SECURITY_AUDIT.md](docs/SECURITY_AUDIT.md) - Güvenlik denetimi
 - [docs/DEVELOPMENT_ROADMAP.md](docs/DEVELOPMENT_ROADMAP.md) - Geliştirme yol haritası
-- [docs/ENV_SETUP.md](docs/ENV_SETUP.md) - Environment değişkenleri kurulumu
 
 ## 🎯 Roadmap
 
