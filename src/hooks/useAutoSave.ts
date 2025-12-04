@@ -287,7 +287,7 @@ export function useAutoSave<T extends Record<string, unknown>>({
     return `${state.lastSaved.toLocaleTimeString('tr-TR', {
       hour: '2-digit',
       minute: '2-digit',
-    })  } tarihinde kaydedildi`;
+    })} tarihinde kaydedildi`;
   }, [state.lastSaved]);
 
   return {
