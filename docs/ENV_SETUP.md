@@ -4,10 +4,6 @@
 
 Bu dosya, projeniz için gerekli environment variable'ların doğru isimlerle nasıl ayarlanacağını gösterir.
 Değerleri `.env.example` dosyasından kopyalayıp ilgili platformun gizli değişken yönetimine ekleyin; gerçek anahtarları asla versiyon kontrolüne eklemeyin.
-**Kontrol listesi:**
-- `.env.local` veya CI/CD secret alanlarına eklerken değerleri düz metin olarak girin, yorum veya fazla boşluk bırakmayın.
-- Değişiklik sonrası `npm run build` çalıştırarak eksik değişkenleri erken tespit edin.
-- Secret'ları paylaşılan ekran görüntülerinde veya log çıktılarında sansürleyin.
 
 ## ⚠️ ÖNEMLİ: Doğru Variable İsimleri
 
@@ -95,7 +91,7 @@ GitHub Secrets olarak ekleyin:
 2. **New repository secret ekleyin:**
 
     ```
-    APPWRITE_ENDPOINT = https://cloud.appwrite.io/v1
+    NEXT_PUBLIC_APPWRITE_ENDPOINT = https://cloud.appwrite.io/v1
     APPWRITE_API_KEY = your-appwrite-api-key
     APPWRITE_SITE_ID = your-appwrite-site-id
     ```
