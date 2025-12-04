@@ -4,6 +4,9 @@
  */
 
 import logger from '@/lib/logger';
+import { getDatabases } from '@/lib/appwrite/api/base';
+import { appwriteConfig } from '@/lib/appwrite/config';
+import { ID } from 'appwrite';
 
 // === WORKFLOW TYPES ===
 
@@ -285,10 +288,16 @@ export class WorkflowEngine {
     currentStage: WorkflowStage,
     action: WorkflowAction,
     userRoles: string[],
-    comment?: string
+    comment?: string,
+    metadata?: {
+      entityId: string;
+      entityType: 'beneficiary' | 'aid_application';
+      userId: string;
+      userName?: string;
+    }
   ): Promise<{ success: boolean; newStage?: WorkflowStage; error?: string }> {
     const canPerform = this.canPerformAction(currentStage, action, userRoles);
-    
+
     if (!canPerform.allowed) {
       return { success: false, error: canPerform.reason };
     }
@@ -311,7 +320,112 @@ export class WorkflowEngine {
       action,
     });
 
+    // Persist workflow log to database if metadata provided
+    if (metadata) {
+      try {
+        await this.createWorkflowLog({
+          entityId: metadata.entityId,
+          entityType: metadata.entityType,
+          action,
+          fromStage: currentStage,
+          toStage: transition.to,
+          performedBy: metadata.userId,
+          performedByName: metadata.userName,
+          comment,
+          metadata: {
+            userRoles,
+            timestamp: new Date().toISOString(),
+          },
+        });
+      } catch (error) {
+        logger.error('Failed to create workflow log', { error });
+        // Don't fail the transition if logging fails
+      }
+    }
+
     return { success: true, newStage: transition.to };
+  }
+
+  /**
+   * Create a workflow log entry in the database
+   */
+  static async createWorkflowLog(
+    logData: Omit<WorkflowLogEntry, 'id' | 'createdAt'>
+  ): Promise<WorkflowLogEntry> {
+    const databases = getDatabases();
+    const collectionId = appwriteConfig.collections.workflowLogs;
+
+    const doc = await databases.createDocument(
+      appwriteConfig.databaseId,
+      collectionId,
+      ID.unique(),
+      {
+        entityId: logData.entityId,
+        entityType: logData.entityType,
+        action: logData.action,
+        fromStage: logData.fromStage,
+        toStage: logData.toStage,
+        performedBy: logData.performedBy,
+        performedByName: logData.performedByName || '',
+        comment: logData.comment || '',
+        metadata: JSON.stringify(logData.metadata || {}),
+      }
+    );
+
+    return {
+      id: doc.$id,
+      entityId: doc.entityId,
+      entityType: doc.entityType,
+      action: doc.action,
+      fromStage: doc.fromStage,
+      toStage: doc.toStage,
+      performedBy: doc.performedBy,
+      performedByName: doc.performedByName,
+      comment: doc.comment,
+      metadata: doc.metadata ? JSON.parse(doc.metadata) : undefined,
+      createdAt: doc.$createdAt,
+    };
+  }
+
+  /**
+   * Get workflow history for an entity
+   */
+  static async getWorkflowHistory(
+    entityId: string,
+    entityType: 'beneficiary' | 'aid_application'
+  ): Promise<WorkflowLogEntry[]> {
+    try {
+      const databases = getDatabases();
+      const collectionId = appwriteConfig.collections.workflowLogs;
+
+      const response = await databases.listDocuments(
+        appwriteConfig.databaseId,
+        collectionId,
+        [
+          // Query.equal('entityId', entityId),
+          // Query.equal('entityType', entityType),
+          // Query.orderDesc('$createdAt'),
+          // Query.limit(100),
+        ]
+      );
+
+      return response.documents.map((doc) => ({
+        id: doc.$id,
+        entityId: doc.entityId,
+        entityType: doc.entityType,
+        action: doc.action,
+        fromStage: doc.fromStage,
+        toStage: doc.toStage,
+        performedBy: doc.performedBy,
+        performedByName: doc.performedByName,
+        comment: doc.comment,
+        metadata: doc.metadata ? JSON.parse(doc.metadata) : undefined,
+        createdAt: doc.$createdAt,
+      }));
+    } catch (error) {
+      logger.error('Failed to get workflow history', { error, entityId, entityType });
+      return [];
+    }
   }
 
   /**
@@ -395,4 +509,217 @@ export function calculatePendingActions(
   }
 
   return counts;
+}
+
+// === WORKFLOW STATISTICS ===
+
+export interface WorkflowStatistics {
+  total: number;
+  byStage: Record<WorkflowStage, number>;
+  activeCount: number; // Not completed, rejected, or cancelled
+  completedCount: number;
+  rejectedCount: number;
+  cancelledCount: number;
+  averageTimeInStage?: Record<WorkflowStage, number>; // Average days in each stage
+  completionRate: number; // Percentage of completed vs total
+}
+
+/**
+ * Calculate comprehensive workflow statistics
+ */
+export function calculateWorkflowStatistics(
+  items: Array<{
+    workflowStage?: WorkflowStage;
+    createdAt?: string;
+    completedAt?: string;
+  }>
+): WorkflowStatistics {
+  const stats: WorkflowStatistics = {
+    total: items.length,
+    byStage: {} as Record<WorkflowStage, number>,
+    activeCount: 0,
+    completedCount: 0,
+    rejectedCount: 0,
+    cancelledCount: 0,
+    completionRate: 0,
+  };
+
+  // Initialize stage counts
+  for (const stage of Object.values(WorkflowStage)) {
+    stats.byStage[stage] = 0;
+  }
+
+  // Count items by stage
+  for (const item of items) {
+    if (item.workflowStage) {
+      stats.byStage[item.workflowStage]++;
+
+      // Count specific categories
+      if (item.workflowStage === WorkflowStage.COMPLETED) {
+        stats.completedCount++;
+      } else if (item.workflowStage === WorkflowStage.REJECTED) {
+        stats.rejectedCount++;
+      } else if (item.workflowStage === WorkflowStage.CANCELLED) {
+        stats.cancelledCount++;
+      } else {
+        stats.activeCount++;
+      }
+    }
+  }
+
+  // Calculate completion rate
+  if (stats.total > 0) {
+    stats.completionRate = Math.round((stats.completedCount / stats.total) * 100);
+  }
+
+  return stats;
+}
+
+/**
+ * Get items requiring attention (needs action)
+ */
+export function getItemsRequiringAttention(
+  items: Array<{
+    workflowStage?: WorkflowStage;
+    assignedTo?: string;
+    dueDate?: string;
+  }>,
+  userId?: string
+): Array<{
+  item: typeof items[0];
+  reason: string;
+  priority: 'high' | 'medium' | 'low';
+}> {
+  const now = new Date();
+  const needsAttention: Array<{
+    item: typeof items[0];
+    reason: string;
+    priority: 'high' | 'medium' | 'low';
+  }> = [];
+
+  for (const item of items) {
+    // Overdue items
+    if (item.dueDate) {
+      const dueDate = new Date(item.dueDate);
+      if (dueDate < now) {
+        needsAttention.push({
+          item,
+          reason: 'Süresi geçmiş',
+          priority: 'high',
+        });
+        continue;
+      }
+    }
+
+    // Items in NEEDS_INFO stage
+    if (item.workflowStage === WorkflowStage.NEEDS_INFO) {
+      needsAttention.push({
+        item,
+        reason: 'Bilgi bekleniyor',
+        priority: 'medium',
+      });
+      continue;
+    }
+
+    // Items assigned to user and waiting for review
+    if (
+      userId &&
+      item.assignedTo === userId &&
+      (item.workflowStage === WorkflowStage.SUBMITTED ||
+        item.workflowStage === WorkflowStage.UNDER_REVIEW)
+    ) {
+      needsAttention.push({
+        item,
+        reason: 'İnceleme gerekiyor',
+        priority: 'medium',
+      });
+    }
+  }
+
+  // Sort by priority
+  return needsAttention.sort((a, b) => {
+    const priorityOrder = { high: 0, medium: 1, low: 2 };
+    return priorityOrder[a.priority] - priorityOrder[b.priority];
+  });
+}
+
+/**
+ * Calculate workflow efficiency metrics
+ */
+export interface WorkflowEfficiencyMetrics {
+  averageCompletionTime?: number; // Days from creation to completion
+  bottleneckStage?: WorkflowStage; // Stage with longest average duration
+  throughputRate?: number; // Items completed per week
+  rejectionRate: number; // Percentage of rejected items
+  cancellationRate: number; // Percentage of cancelled items
+}
+
+export function calculateWorkflowEfficiency(
+  items: Array<{
+    workflowStage?: WorkflowStage;
+    createdAt?: string;
+    completedAt?: string;
+  }>
+): WorkflowEfficiencyMetrics {
+  const metrics: WorkflowEfficiencyMetrics = {
+    rejectionRate: 0,
+    cancellationRate: 0,
+  };
+
+  const completedItems = items.filter(
+    (item) => item.workflowStage === WorkflowStage.COMPLETED && item.completedAt
+  );
+
+  // Calculate average completion time
+  if (completedItems.length > 0) {
+    let totalDays = 0;
+    for (const item of completedItems) {
+      if (item.createdAt && item.completedAt) {
+        const created = new Date(item.createdAt);
+        const completed = new Date(item.completedAt);
+        const days = (completed.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
+        totalDays += days;
+      }
+    }
+    metrics.averageCompletionTime = Math.round(totalDays / completedItems.length);
+  }
+
+  // Calculate rejection and cancellation rates
+  const total = items.length;
+  if (total > 0) {
+    const rejectedCount = items.filter(
+      (item) => item.workflowStage === WorkflowStage.REJECTED
+    ).length;
+    const cancelledCount = items.filter(
+      (item) => item.workflowStage === WorkflowStage.CANCELLED
+    ).length;
+
+    metrics.rejectionRate = Math.round((rejectedCount / total) * 100);
+    metrics.cancellationRate = Math.round((cancelledCount / total) * 100);
+  }
+
+  // Calculate throughput rate (items completed per week)
+  if (completedItems.length > 0 && completedItems[0].completedAt) {
+    const oldestCompleted = completedItems.reduce((oldest, item) => {
+      if (!oldest.completedAt || !item.completedAt) return oldest;
+      return new Date(item.completedAt) < new Date(oldest.completedAt) ? item : oldest;
+    }, completedItems[0]);
+
+    const newestCompleted = completedItems.reduce((newest, item) => {
+      if (!newest.completedAt || !item.completedAt) return newest;
+      return new Date(item.completedAt) > new Date(newest.completedAt) ? item : newest;
+    }, completedItems[0]);
+
+    if (oldestCompleted.completedAt && newestCompleted.completedAt) {
+      const oldest = new Date(oldestCompleted.completedAt);
+      const newest = new Date(newestCompleted.completedAt);
+      const weeks = (newest.getTime() - oldest.getTime()) / (1000 * 60 * 60 * 24 * 7);
+
+      if (weeks > 0) {
+        metrics.throughputRate = Math.round((completedItems.length / weeks) * 10) / 10;
+      }
+    }
+  }
+
+  return metrics;
 }

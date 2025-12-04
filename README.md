@@ -144,6 +144,10 @@ src/
 
 Bu proje özel kullanım içindir. Tüm hakları saklıdır.
 
+## 🚫 Katkı Politikası
+
+Bu depo yalnızca sahibi tarafından geliştirilecektir. Dışarıdan pull request, issue veya fork talepleri kabul edilmez; lütfen değişiklik ihtiyacı olduğunda doğrudan depo sahibine bildirin.
+
 ## 📚 Teknolojiler
 
 - **Framework**: Next.js 16
