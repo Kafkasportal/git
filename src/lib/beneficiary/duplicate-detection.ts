@@ -8,6 +8,58 @@ import { getDatabases } from '@/lib/appwrite/api/base';
 import { appwriteConfig } from '@/lib/appwrite/config';
 import logger from '@/lib/logger';
 
+// Simple in-memory cache for TC and phone duplicate checks (5 minute TTL)
+interface CacheEntry {
+  result: { exists: boolean; existingId?: string; existingName?: string };
+  timestamp: number;
+}
+
+const duplicateCheckCache = new Map<string, CacheEntry>();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Clear expired cache entries
+ */
+function clearExpiredCache() {
+  const now = Date.now();
+  for (const [key, entry] of duplicateCheckCache.entries()) {
+    if (now - entry.timestamp > CACHE_TTL_MS) {
+      duplicateCheckCache.delete(key);
+    }
+  }
+}
+
+/**
+ * Get cached result if available and not expired
+ */
+function getCachedResult(cacheKey: string): CacheEntry['result'] | null {
+  const entry = duplicateCheckCache.get(cacheKey);
+  if (!entry) return null;
+
+  const now = Date.now();
+  if (now - entry.timestamp > CACHE_TTL_MS) {
+    duplicateCheckCache.delete(cacheKey);
+    return null;
+  }
+
+  return entry.result;
+}
+
+/**
+ * Set cache entry
+ */
+function setCachedResult(cacheKey: string, result: CacheEntry['result']) {
+  // Periodically clear expired entries
+  if (duplicateCheckCache.size > 100) {
+    clearExpiredCache();
+  }
+
+  duplicateCheckCache.set(cacheKey, {
+    result,
+    timestamp: Date.now(),
+  });
+}
+
 export interface DuplicateCheckInput {
   tc_no?: string;
   firstName?: string;
@@ -184,24 +236,28 @@ export async function checkDuplicates(
     // 2. Telefon numarası ile tam eşleşme kontrolü
     if (input.phone) {
       const normalizedPhone = normalizePhone(input.phone);
-      const phoneQueries = [Query.limit(10)];
-      
+
+      // Optimize: Use indexed query instead of fetching all and filtering
+      const phoneQueries = [
+        Query.equal('phone', input.phone),
+        Query.limit(5)
+      ];
+
       if (input.excludeId) {
         phoneQueries.push(Query.notEqual('$id', input.excludeId));
       }
 
-      const phoneMatches = await databases.listDocuments(
-        appwriteConfig.databaseId,
-        collectionId,
-        phoneQueries
-      );
+      try {
+        const phoneMatches = await databases.listDocuments(
+          appwriteConfig.databaseId,
+          collectionId,
+          phoneQueries
+        );
 
-      for (const doc of phoneMatches.documents) {
-        // TC ile zaten eşleşti mi kontrol et
-        if (result.matches.some((m) => m.id === doc.$id)) continue;
+        for (const doc of phoneMatches.documents) {
+          // TC ile zaten eşleşti mi kontrol et
+          if (result.matches.some((m) => m.id === doc.$id)) continue;
 
-        const docPhone = normalizePhone(doc.phone || '');
-        if (docPhone && docPhone === normalizedPhone) {
           result.matches.push({
             id: doc.$id,
             name: `${doc.firstName || ''} ${doc.lastName || ''}`.trim() || doc.name || 'İsimsiz',
@@ -212,6 +268,38 @@ export async function checkDuplicates(
             matchScore: 95,
             createdAt: doc.$createdAt,
           });
+        }
+      } catch (error) {
+        // If indexed query fails, fallback to normalized phone search
+        logger.warn('Phone exact match query failed, trying fallback', { error });
+
+        const fallbackQueries = [Query.limit(50)];
+        if (input.excludeId) {
+          fallbackQueries.push(Query.notEqual('$id', input.excludeId));
+        }
+
+        const fallbackMatches = await databases.listDocuments(
+          appwriteConfig.databaseId,
+          collectionId,
+          fallbackQueries
+        );
+
+        for (const doc of fallbackMatches.documents) {
+          if (result.matches.some((m) => m.id === doc.$id)) continue;
+
+          const docPhone = normalizePhone(doc.phone || '');
+          if (docPhone && docPhone === normalizedPhone) {
+            result.matches.push({
+              id: doc.$id,
+              name: `${doc.firstName || ''} ${doc.lastName || ''}`.trim() || doc.name || 'İsimsiz',
+              tc_no: doc.tc_no,
+              phone: doc.phone,
+              address: doc.address,
+              matchType: 'exact_phone',
+              matchScore: 95,
+              createdAt: doc.$createdAt,
+            });
+          }
         }
       }
     }
@@ -343,13 +431,21 @@ export async function checkDuplicates(
 }
 
 /**
- * Hızlı TC Kimlik kontrolü
+ * Hızlı TC Kimlik kontrolü (with caching)
  */
 export async function checkTcNoDuplicate(
   tcNo: string,
   excludeId?: string
 ): Promise<{ exists: boolean; existingId?: string; existingName?: string }> {
   try {
+    // Check cache first
+    const cacheKey = `tc:${tcNo}:${excludeId || 'none'}`;
+    const cached = getCachedResult(cacheKey);
+    if (cached) {
+      logger.debug('TC duplicate check: cache hit', { tcNo: '***' });
+      return cached;
+    }
+
     const databases = getDatabases();
     const collectionId = appwriteConfig.collections.beneficiaries;
 
@@ -364,18 +460,33 @@ export async function checkTcNoDuplicate(
       queries
     );
 
+    let finalResult: { exists: boolean; existingId?: string; existingName?: string };
+
     if (result.documents.length > 0) {
       const doc = result.documents[0];
-      return {
+      finalResult = {
         exists: true,
         existingId: doc.$id,
         existingName: `${doc.firstName || ''} ${doc.lastName || ''}`.trim() || doc.name,
       };
+    } else {
+      finalResult = { exists: false };
     }
 
-    return { exists: false };
+    // Cache the result
+    setCachedResult(cacheKey, finalResult);
+
+    return finalResult;
   } catch (error) {
     logger.error('TC No duplicate check failed', { error });
     return { exists: false };
   }
+}
+
+/**
+ * Clear duplicate check cache (useful after creating/updating beneficiaries)
+ */
+export function clearDuplicateCheckCache() {
+  duplicateCheckCache.clear();
+  logger.debug('Duplicate check cache cleared');
 }

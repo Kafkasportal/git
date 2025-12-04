@@ -59,6 +59,9 @@ export const appwriteConfig = {
     communicationLogs: "communication_logs",
     workflowNotifications: "workflow_notifications",
 
+    // Workflow
+    workflowLogs: "workflow_logs",
+
     // Meetings & Tasks
     meetings: "meetings",
     meetingDecisions: "meeting_decisions",
