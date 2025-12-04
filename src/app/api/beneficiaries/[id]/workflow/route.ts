@@ -80,7 +80,7 @@ export const GET = buildApiRoute({
       dueDate: beneficiary.dueDate as string | undefined,
       priority: beneficiary.priority as string | undefined,
     });
-  } catch (error) {
+  } catch (_error) {
     return errorResponse('Workflow bilgisi alınamadı', 500);
   }
 });
@@ -199,7 +199,7 @@ export const PATCH = buildApiRoute({
       actionLabel: ACTION_LABELS[action].label,
       stageInfo: STAGE_LABELS[transitionResult.newStage!],
     }, `Başvuru durumu "${STAGE_LABELS[transitionResult.newStage!].label}" olarak güncellendi`);
-  } catch (error) {
+  } catch (_error) {
     return errorResponse('Workflow güncellenemedi', 500);
   }
 });

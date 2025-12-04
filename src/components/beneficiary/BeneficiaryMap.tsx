@@ -544,6 +544,8 @@ export function BeneficiaryMap({
 }
 
 // Type declaration for Leaflet
+/* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 declare global {
   namespace L {
     interface Map {
@@ -581,3 +583,5 @@ declare global {
     }
   }
 }
+/* eslint-enable @typescript-eslint/no-namespace */
+/* eslint-enable @typescript-eslint/no-empty-object-type */

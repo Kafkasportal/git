@@ -124,7 +124,7 @@ export function DuplicateChecker({
 
   const maskTcNo = (tc: string) => {
     if (!tc || tc.length !== 11) return tc;
-    return tc.slice(0, 3) + '****' + tc.slice(-4);
+    return `${tc.slice(0, 3)  }****${  tc.slice(-4)}`;
   };
 
   return (

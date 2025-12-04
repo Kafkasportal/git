@@ -405,19 +405,21 @@ export const useAuthStore = create<AuthStore>()(
             });
             // Update Sentry user context when auth user changes
             if (user) {
-              try {
-                const { setSentryUser } = require("@/lib/sentry");
-                setSentryUser(user.id, user.email, user.name);
-              } catch (e) {
-                // Sentry not available yet, that's ok
-              }
+              import("@/lib/sentry")
+                .then(({ setSentryUser }) => {
+                  setSentryUser(user.id, user.email, user.name);
+                })
+                .catch((_e) => {
+                  // Sentry not available yet, that's ok
+                });
             } else {
-              try {
-                const { clearSentryUser } = require("@/lib/sentry");
-                clearSentryUser();
-              } catch (e) {
-                // Sentry not available, that's ok
-              }
+              import("@/lib/sentry")
+                .then(({ clearSentryUser }) => {
+                  clearSentryUser();
+                })
+                .catch((_e) => {
+                  // Sentry not available, that's ok
+                });
             }
           },
 
