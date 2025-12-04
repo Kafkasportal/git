@@ -72,7 +72,7 @@ export const POST = buildApiRoute({
     const result = await checkDuplicates(validation.data);
 
     return successResponse(result, result.hasDuplicates ? 'Olası mükerrer kayıt bulundu' : 'Mükerrer kayıt bulunamadı');
-  } catch (err) {
+  } catch (_err) {
     return errorResponse('Mükerrer kontrol sırasında bir hata oluştu', 500);
   }
 });

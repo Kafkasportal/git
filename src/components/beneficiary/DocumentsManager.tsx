@@ -498,7 +498,7 @@ export function DocumentsManager({
           <DialogHeader>
             <DialogTitle>Belge Doğrulama</DialogTitle>
             <DialogDescription>
-              "{selectedDocument?.name}" belgesini doğrulamak istiyor musunuz?
+              &ldquo;{selectedDocument?.name}&rdquo; belgesini doğrulamak istiyor musunuz?
             </DialogDescription>
           </DialogHeader>
 

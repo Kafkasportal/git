@@ -97,7 +97,7 @@ export const GET = buildApiRoute({
         label,
       })),
     });
-  } catch (error) {
+  } catch (_error) {
     // Collection might not exist
     return successResponse({
       documents: [],
@@ -185,7 +185,7 @@ export const POST = buildApiRoute({
       typeLabel: DOCUMENT_TYPE_LABELS[type],
       createdAt: result.$createdAt,
     }, 'Belge başarıyla eklendi');
-  } catch (error) {
+  } catch (_error) {
     return errorResponse('Belge eklenirken bir hata oluştu', 500);
   }
 });
@@ -242,7 +242,7 @@ export const DELETE = buildApiRoute({
     );
 
     return successResponse({ deleted: documentId }, 'Belge başarıyla silindi');
-  } catch (error) {
+  } catch (_error) {
     return errorResponse('Belge silinirken bir hata oluştu', 500);
   }
 });
@@ -331,7 +331,7 @@ export const PATCH = buildApiRoute({
       notes: result.notes,
       updatedAt: result.$updatedAt,
     }, isVerified ? 'Belge doğrulandı' : 'Belge güncellendi');
-  } catch (error) {
+  } catch (_error) {
     return errorResponse('Belge güncellenirken bir hata oluştu', 500);
   }
 });
