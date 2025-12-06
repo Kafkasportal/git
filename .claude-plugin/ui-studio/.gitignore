@@ -1,0 +1,9 @@
+# Local settings
+.claude/*.local.md
+
+# Node modules (if any scripts added)
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
