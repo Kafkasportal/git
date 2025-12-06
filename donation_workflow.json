@@ -1,0 +1,188 @@
+{
+  "name": "Bağış Yönetimi Otomasyonu",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Webhook Tetikleyici",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json[\"amount\"]}}",
+              "operation": "greaterThan",
+              "value2": "0"
+            }
+          ]
+        }
+      },
+      "name": "Veri Doğrulama",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "collection": "donations",
+        "data": "={\n  \"amount\": $json[\"amount\"],\n  \"donor_id\": $json[\"donor_id\"],\n  \"currency\": $json[\"currency\"],\n  \"payment_method\": $json[\"payment_method\"],\n  \"status\": \"completed\",\n  \"date\": new Date().toISOString()\n}"
+      },
+      "name": "Bağış Kaydı Oluştur",
+      "type": "n8n-nodes-base.appwrite",
+      "typeVersion": 1,
+      "position": [
+        650,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "to": "={{$json[\"donor_email\"]}}",
+        "subject": "Bağışınız için teşekkürler!",
+        "body": "Sayın {{ $json[\"donor_name\"] }},\n\n{{ $json[\"amount\"] }} {{ $json[\"currency\"] }} tutarındaki bağışınız için teşekkür ederiz. Destekleriniz için minnettarız.\n\nİyi günler dileriz,\nKafkasder Ekibi"
+      },
+      "name": "Teşekkür E-postası Gönder",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        850,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json[\"amount\"]}}",
+              "operation": "greaterThan",
+              "value2": "1000"
+            }
+          ]
+        }
+      },
+      "name": "Büyük Bağış Kontrolü",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        650,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "to": "+90{{$json[\"donor_phone\"]}}",
+        "message": "Sayın {{ $json[\"donor_name\"] }}, {{ $json[\"amount\"] }} {{ $json[\"currency\"] }} tutarındaki cömert bağışınız için teşekkür ederiz!"
+      },
+      "name": "Büyük Bağış SMS Bildirimi",
+      "type": "n8n-nodes-base.smsSend",
+      "typeVersion": 1,
+      "position": [
+        850,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "collection": "donors",
+        "documentId": "={{$json[\"donor_id\"]}}",
+        "data": "={\n  \"total_donations\": \"={{$node[\"Bağış Kaydı Oluştur\"].json[\"total_donations\"] + $json[\"amount\"]}}\",\n  \"last_donation_date\": new Date().toISOString()\n}"
+      },
+      "name": "Bağışçı Bilgilerini Güncelle",
+      "type": "n8n-nodes-base.appwrite",
+      "typeVersion": 1,
+      "position": [
+        650,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "collection": "financial_records",
+        "data": "={\n  \"amount\": $json[\"amount\"],\n  \"type\": \"income\",\n  \"category\": \"donation\",\n  \"date\": new Date().toISOString(),\n  \"description\": \"Bağış: {{ $json[\"donor_name\"] }}\"\n}"
+      },
+      "name": "Finansal Kayıt Oluştur",
+      "type": "n8n-nodes-base.appwrite",
+      "typeVersion": 1,
+      "position": [
+        850,
+        100
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Tetikleyici": {
+      "main": [
+        [
+          {
+            "node": "Veri Doğrulama",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Veri Doğrulama": {
+      "main": [
+        [
+          {
+            "node": "Bağış Kaydı Oluştur",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Bağışçı Bilgilerini Güncelle",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Finansal Kayıt Oluştur",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bağış Kaydı Oluştur": {
+      "main": [
+        [
+          {
+            "node": "Teşekkür E-postası Gönder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Büyük Bağış Kontrolü",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Büyük Bağış Kontrolü": {
+      "main": [
+        [
+          {
+            "node": "Büyük Bağış SMS Bildirimi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

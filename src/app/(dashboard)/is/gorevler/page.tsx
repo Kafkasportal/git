@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Plus,
   LayoutGrid,
@@ -32,6 +33,9 @@ import dynamic from 'next/dynamic';
 import { useFilters } from '@/hooks/useFilters';
 import { FilterPanel } from '@/components/ui/filter-panel';
 import type { FilterField } from '@/components/ui/filter-panel';
+import { BulkActionsToolbar } from '@/components/ui/bulk-actions-toolbar';
+import type { BulkEditField } from '@/components/ui/bulk-edit-modal';
+import { useBulkOperations } from '@/hooks/useBulkOperations';
 
 const TaskForm = dynamic(
   () => import('@/components/forms/TaskForm').then((mod) => ({ default: mod.TaskForm })),
@@ -75,6 +79,16 @@ export default function TasksPage() {
   });
 
   const limit = 20;
+
+  // Bulk operations
+  const bulkOps = useBulkOperations({
+    endpoint: '/api/tasks',
+    resourceName: 'görev',
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+    },
+  });
 
   // Data fetching
   const { data: tasksData, isLoading, error } = useQuery({
@@ -134,6 +148,57 @@ export default function TasksPage() {
       options: usersList.map((u) => ({ label: u.name, value: u.$id || u._id || '' })),
     },
   ], [usersList]);
+
+  // Bulk edit fields
+  const bulkEditFields: BulkEditField[] = useMemo(() => [
+    {
+      key: 'status',
+      label: 'Durum',
+      type: 'select',
+      options: [
+        { label: 'Bekliyor', value: 'pending' },
+        { label: 'Devam Ediyor', value: 'in_progress' },
+        { label: 'Tamamlandı', value: 'completed' },
+        { label: 'İptal Edildi', value: 'cancelled' },
+      ],
+    },
+    {
+      key: 'priority',
+      label: 'Öncelik',
+      type: 'select',
+      options: [
+        { label: 'Düşük', value: 'low' },
+        { label: 'Normal', value: 'normal' },
+        { label: 'Yüksek', value: 'high' },
+        { label: 'Acil', value: 'urgent' },
+      ],
+    },
+    {
+      key: 'assigned_to',
+      label: 'Atanan Kişi',
+      type: 'select',
+      options: usersList.map((u) => ({ label: u.name, value: u.$id || u._id || '' })),
+    },
+    {
+      key: 'category',
+      label: 'Kategori',
+      type: 'text',
+      placeholder: 'Kategori adı...',
+    },
+    {
+      key: 'due_date',
+      label: 'Son Tarih',
+      type: 'date',
+    },
+  ], [usersList]);
+
+  // Status options for bulk status change
+  const statusOptions = [
+    { label: 'Bekliyor', value: 'pending' },
+    { label: 'Devam Ediyor', value: 'in_progress' },
+    { label: 'Tamamlandı', value: 'completed' },
+    { label: 'İptal Edildi', value: 'cancelled' },
+  ];
 
   // Calculate stats
   const stats = {
@@ -321,6 +386,39 @@ export default function TasksPage() {
         onReset={resetFilters}
       />
 
+      {/* Bulk Actions Toolbar */}
+      {viewMode === 'list' && (
+        <BulkActionsToolbar
+          selectedCount={bulkOps.selectedCount}
+          onClearSelection={bulkOps.clearSelection}
+          onDelete={async () => {
+            await bulkOps.bulkDelete();
+          }}
+          onBulkEdit={async (values) => {
+            await bulkOps.bulkUpdate(values);
+          }}
+          onStatusChange={bulkOps.bulkStatusChange}
+          onExport={async (format) => {
+            const blob = await bulkOps.bulkExport(format);
+            if (blob) {
+              // Download file
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `gorevler-secili.${format}`;
+              document.body.appendChild(a);
+              a.click();
+              window.URL.revokeObjectURL(url);
+              document.body.removeChild(a);
+            }
+          }}
+          statusOptions={statusOptions}
+          editFields={bulkEditFields}
+          isLoading={bulkOps.isLoading}
+          resourceName="görev"
+        />
+      )}
+
       {/* Content */}
       {isLoading ? (
         <Card>
@@ -363,25 +461,58 @@ export default function TasksPage() {
         /* List View */
         <Card>
           <CardHeader>
-            <CardTitle>Liste Görünümü</CardTitle>
-            <CardDescription>Toplam {total} görev kaydı</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Liste Görünümü</CardTitle>
+                <CardDescription>Toplam {total} görev kaydı</CardDescription>
+              </div>
+              {tasksList.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    checked={bulkOps.selectedCount === tasksList.length && tasksList.length > 0}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        bulkOps.selectAll(tasksList.map((t) => t._id || t.$id || ''));
+                      } else {
+                        bulkOps.clearSelection();
+                      }
+                    }}
+                  />
+                  <span className="text-sm text-muted-foreground">Tümünü Seç</span>
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {tasksList.map((task) => {
                 const isOverdue = task.due_date ? isTaskOverdue(task.due_date) : false;
                 const isDueSoon = task.due_date ? isTaskDueSoon(task.due_date) : false;
+                const taskId = task._id || task.$id || '';
+                const isSelected = bulkOps.isSelected(taskId);
 
                 return (
                   <div
-                    key={task._id}
-                    className="border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer"
-                    onClick={() => {
-                      handleTaskClick(task);
-                    }}
+                    key={taskId}
+                    className={`border rounded-lg p-4 hover:bg-muted/50 transition-colors ${
+                      isSelected ? 'border-primary bg-primary/5' : ''
+                    }`}
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 space-y-3">
+                    <div className="flex items-start gap-3">
+                      {/* Checkbox for bulk selection */}
+                      <div className="pt-1" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={() => bulkOps.toggleSelection(taskId)}
+                        />
+                      </div>
+
+                      <div
+                        className="flex-1 space-y-3 cursor-pointer"
+                        onClick={() => {
+                          handleTaskClick(task);
+                        }}
+                      >
                         {/* Header */}
                         <div className="flex items-start justify-between">
                           <div>

@@ -129,7 +129,7 @@ export const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
     },
     ref
   ) => {
-    const styles = variantStyles[variant] ?? variantStyles.default;
+    const styles = variantStyles[variant] || variantStyles.default;
 
     const renderIcon = useCallback(() => {
       if (!icon) {

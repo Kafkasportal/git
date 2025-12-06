@@ -36,6 +36,7 @@ export function CorporateLoginForm({
   const [passwordError, setPasswordError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [adminInfo, setAdminInfo] = useState<{ email: string; name: string; role: string } | null>(null);
+  const [devTestPassword, setDevTestPassword] = useState<string | null>(null);
 
   const initRef = useRef(false);
   const emailInputRef = useRef<HTMLInputElement>(null);
@@ -45,23 +46,27 @@ export function CorporateLoginForm({
 
   // Development mode - auto-fill credentials for easy testing
   const isDevelopment = process.env.NODE_ENV === 'development';
-  // Admin test credentials - ONLY in development mode
-  // SECURITY: Never use NEXT_PUBLIC_ prefix for passwords!
-  // In production, this feature is disabled
+  // Admin email constant
   const adminEmail = 'admin@kafkasder.com';
-  // Only use test password in development - production should use real authentication
-  const adminPassword = isDevelopment 
-    ? (process.env.NEXT_PUBLIC_ADMIN_TEST_PASSWORD || 'Admin123!')
-    : null;
 
-  // Fetch admin info on mount
+  // Fetch admin info and test password on mount (development only)
+  // SECURITY: Test credentials are fetched from server-side API, never exposed in client bundle
   useEffect(() => {
     if (isDevelopment && !adminInfo) {
-      fetch('/api/auth/admin-info')
+      // Fetch admin info AND test password from server (single request)
+      fetch('/api/auth/dev-credentials')
         .then((res) => res.json())
         .then((data) => {
           if (data.success && data.data) {
-            setAdminInfo(data.data);
+            setAdminInfo({
+              email: data.data.email,
+              name: data.data.name,
+              role: data.data.role,
+            });
+            // Password is only available in development via server API
+            if (data.data.testPassword) {
+              setDevTestPassword(data.data.testPassword);
+            }
           }
         })
         .catch(() => {
@@ -73,20 +78,20 @@ export function CorporateLoginForm({
           });
         });
     }
-  }, [isDevelopment, adminInfo]);
+  }, [isDevelopment, adminInfo, adminEmail]);
+
+  // Auto-fill credentials in development when test password is available
+  useEffect(() => {
+    if (isDevelopment && devTestPassword && adminInfo) {
+      setEmail(adminInfo.email);
+      setPassword(devTestPassword);
+    }
+  }, [isDevelopment, devTestPassword, adminInfo]);
 
   // Handle hydration
   useEffect(() => {
     if (!initRef.current) {
       initRef.current = true;
-
-      // Development mode: auto-fill admin credentials for easy testing
-      if (isDevelopment && adminPassword) {
-        setEmail(adminEmail);
-        setPassword(adminPassword);
-        setMounted(true);
-        return;
-      }
 
       // Load remember me data (only on client-side)
       if (typeof window !== 'undefined') {
@@ -108,7 +113,7 @@ export function CorporateLoginForm({
 
       setMounted(true);
     }
-  }, [isDevelopment, adminEmail, adminPassword]);
+  }, []);
 
   useEffect(() => {
     if (mounted && initRef.current) {
@@ -212,18 +217,18 @@ export function CorporateLoginForm({
 
   // Quick admin login handler - ONLY in development
   const handleQuickAdminLogin = async () => {
-    if (!isDevelopment || !adminPassword) {
+    if (!isDevelopment || !devTestPassword || !adminInfo) {
       toast.error('Bu özellik sadece development modunda kullanılabilir');
       return;
     }
-    setEmail(adminEmail);
-    setPassword(adminPassword); // adminPassword is guaranteed to be string here due to check above
+    setEmail(adminInfo.email);
+    setPassword(devTestPassword);
     setEmailError('');
     setPasswordError('');
-    
+
     setIsLoading(true);
     try {
-      await login(adminEmail, adminPassword); // adminPassword is guaranteed to be string here
+      await login(adminInfo.email, devTestPassword);
       toast.success('Admin olarak giriş yaptınız', {
         description: 'Sisteme hoş geldiniz!',
       });
@@ -312,7 +317,7 @@ export function CorporateLoginForm({
         </div>
 
         {/* Grid Pattern Overlay */}
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_70%)] opacity-10 z-0" />
+        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center mask-[radial-gradient(ellipse_at_center,black_40%,transparent_70%)] opacity-10 z-0" />
       </div>
 
       <motion.div
@@ -324,7 +329,7 @@ export function CorporateLoginForm({
         {/* Glass Card */}
         <div className="relative group">
           {/* Glow effect behind card */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/30 via-indigo-500/30 to-purple-500/30 rounded-3xl blur-xl opacity-50 group-hover:opacity-70 transition duration-1000 group-hover:duration-200" />
+          <div className="absolute -inset-1 bg-linear-to-r from-blue-500/30 via-indigo-500/30 to-purple-500/30 rounded-3xl blur-xl opacity-50 group-hover:opacity-70 transition duration-1000 group-hover:duration-200" />
 
           <div className="relative bg-slate-900/40 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 sm:p-10 shadow-2xl ring-1 ring-white/5">
             {/* Header Section */}
@@ -339,7 +344,7 @@ export function CorporateLoginForm({
                     damping: 20,
                     delay: 0.1,
                   }}
-                  className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl mb-6 shadow-lg shadow-blue-500/20 ring-4 ring-white/5"
+                  className="inline-flex items-center justify-center w-20 h-20 bg-linear-to-br from-blue-600 to-indigo-700 rounded-2xl mb-6 shadow-lg shadow-blue-500/20 ring-4 ring-white/5"
                 >
                   <Building2 className="w-10 h-10 text-white" />
                 </motion.div>
@@ -390,7 +395,7 @@ export function CorporateLoginForm({
                     className={cn(
                       'pl-11 h-14 bg-slate-950/50 border-slate-600/60 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 focus:bg-slate-900/80 transition-all duration-300 rounded-xl font-body text-base shadow-inner',
                       emailError &&
-                        'border-red-500/50 focus:border-red-500/50 focus:ring-red-500/10'
+                      'border-red-500/50 focus:border-red-500/50 focus:ring-red-500/10'
                     )}
                   />
                   {emailError && (
@@ -433,7 +438,7 @@ export function CorporateLoginForm({
                     className={cn(
                       'pl-11 pr-12 h-14 bg-slate-950/50 border-slate-600/60 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 focus:bg-slate-900/80 transition-all duration-300 rounded-xl font-body text-base shadow-inner',
                       passwordError &&
-                        'border-red-500/50 focus:border-red-500/50 focus:ring-red-500/10'
+                      'border-red-500/50 focus:border-red-500/50 focus:ring-red-500/10'
                     )}
                   />
                   <button
@@ -489,7 +494,7 @@ export function CorporateLoginForm({
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-14 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-lg rounded-xl shadow-lg shadow-blue-500/25 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 font-heading"
+                  className="w-full h-14 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-lg rounded-xl shadow-lg shadow-blue-500/25 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 font-heading"
                 >
                   {isLoading ? (
                     <div className="flex items-center gap-2">
@@ -507,14 +512,14 @@ export function CorporateLoginForm({
             </form>
 
             {/* Admin Test Login Info - Always Visible */}
-            {isDevelopment && adminPassword && (
+            {isDevelopment && devTestPassword && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.85 }}
                 className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl backdrop-blur-sm"
               >
-                    <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3">
                   <div className="p-2 bg-blue-500/20 rounded-lg">
                     <User className="h-4 w-4 text-blue-400" />
                   </div>
@@ -528,36 +533,36 @@ export function CorporateLoginForm({
                         onClick={handleQuickAdminLogin}
                         disabled={isLoading}
                         size="sm"
-                      className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-500 text-white border-0"
-                    >
-                      <Zap className="h-3 w-3 mr-1" />
-                      Hızlı Giriş
-                    </Button>
-                  </div>
-                  <div className="space-y-1 text-xs text-slate-300 font-mono">
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-3 w-3 text-slate-400" />
-                      <span className="text-slate-200">{adminInfo?.email || adminEmail}</span>
+                        className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-500 text-white border-0"
+                      >
+                        <Zap className="h-3 w-3 mr-1" />
+                        Hızlı Giriş
+                      </Button>
                     </div>
-                    {adminInfo?.name && (
-                      <div className="flex items-center gap-2 text-slate-400">
-                        <User className="h-3 w-3" />
-                        <span className="text-slate-300">{adminInfo.name}</span>
-                        <span className="text-slate-500">({adminInfo.role})</span>
+                    <div className="space-y-1 text-xs text-slate-300 font-mono">
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-3 w-3 text-slate-400" />
+                        <span className="text-slate-200">{adminInfo?.email || adminEmail}</span>
                       </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <Lock className="h-3 w-3 text-slate-400" />
-                      <span className="text-slate-200">••••••••</span>
-                      <span className="text-slate-400 text-[10px]">(Test şifresi)</span>
+                      {adminInfo?.name && (
+                        <div className="flex items-center gap-2 text-slate-400">
+                          <User className="h-3 w-3" />
+                          <span className="text-slate-300">{adminInfo.name}</span>
+                          <span className="text-slate-500">({adminInfo.role})</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2">
+                        <Lock className="h-3 w-3 text-slate-400" />
+                        <span className="text-slate-200">••••••••</span>
+                        <span className="text-slate-400 text-[10px]">(Test şifresi)</span>
+                      </div>
                     </div>
+                    <p className="text-[10px] text-slate-400 mt-2">
+                      💡 Test için admin bilgileri otomatik doldurulur. &quot;Hızlı Giriş&quot; butonuna tıklayarak tek tıkla giriş yapabilirsiniz.
+                    </p>
                   </div>
-                  <p className="text-[10px] text-slate-400 mt-2">
-                    💡 Test için admin bilgileri otomatik doldurulur. &quot;Hızlı Giriş&quot; butonuna tıklayarak tek tıkla giriş yapabilirsiniz.
-                  </p>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
             )}
 
             {/* Footer */}

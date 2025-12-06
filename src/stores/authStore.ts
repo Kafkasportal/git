@@ -1,18 +1,23 @@
-'use client';
+"use client";
 
-import logger from '@/lib/logger';
-import { getCsrfTokenFromCookie } from '@/lib/csrf-client';
+import logger from "@/lib/logger";
+import { getCsrfTokenFromCookie } from "@/lib/csrf-client";
 
 /**
  * Authentication Store (Zustand)
  * Real authentication using server-side API routes and Appwrite backend
  */
 
-import { create } from 'zustand';
-import { devtools, persist, subscribeWithSelector, createJSONStorage } from 'zustand/middleware';
-import { immer } from 'zustand/middleware/immer';
-import { User } from '@/types/auth';
-import type { PermissionValue } from '@/types/permissions';
+import { create } from "zustand";
+import {
+  devtools,
+  persist,
+  subscribeWithSelector,
+  createJSONStorage,
+} from "zustand/middleware";
+import { immer } from "zustand/middleware/immer";
+import { User } from "@/types/auth";
+import type { PermissionValue } from "@/types/permissions";
 
 interface Session {
   userId: string;
@@ -37,7 +42,11 @@ interface AuthState {
 
 interface AuthActions {
   // Authentication actions
-  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
+  login: (
+    email: string,
+    password: string,
+    rememberMe?: boolean,
+  ) => Promise<void>;
   logout: (callback?: () => void) => void;
   initializeAuth: () => void;
 
@@ -115,10 +124,10 @@ export const useAuthStore = create<AuthStore>()(
 
               try {
                 // Fetch current user (this validates session on server)
-                const userResp = await fetch('/api/auth/user', {
-                  method: 'GET',
-                  cache: 'no-store',
-                  credentials: 'include',
+                const userResp = await fetch("/api/auth/user", {
+                  method: "GET",
+                  cache: "no-store",
+                  credentials: "include",
                 });
 
                 if (userResp.ok) {
@@ -126,19 +135,15 @@ export const useAuthStore = create<AuthStore>()(
                   if (userData.success && userData.data) {
                     const user = userData.data;
 
-                    // Update localStorage (for offline fallback)
+                    // Update localStorage (minimal info for offline fallback)
+                    // SECURITY: Don't store sensitive data like email, role, permissions
                     localStorage.setItem(
-                      'auth-session',
+                      "auth-session",
                       JSON.stringify({
                         userId: user.id,
-                        email: user.email,
-                        name: user.name,
-                        role: user.role,
-                        permissions: user.permissions ?? [],
-                        avatar: user.avatar ?? null,
-                        createdAt: user.createdAt,
-                        updatedAt: user.updatedAt,
-                      })
+                        isAuthenticated: true,
+                        lastVerified: Date.now(),
+                      }),
                     );
 
                     set((state) => {
@@ -152,7 +157,7 @@ export const useAuthStore = create<AuthStore>()(
                 }
 
                 // No valid session - clear localStorage
-                localStorage.removeItem('auth-session');
+                localStorage.removeItem("auth-session");
                 set((state) => {
                   state.isAuthenticated = false;
                   state.user = null;
@@ -161,32 +166,26 @@ export const useAuthStore = create<AuthStore>()(
                 });
               } catch (_error) {
                 // Network error - try localStorage fallback
-                const stored = localStorage.getItem('auth-session');
+                const stored = localStorage.getItem("auth-session");
                 if (stored) {
                   try {
                     const localData = JSON.parse(stored);
-                    // Check for valid data and no old wildcard permissions
-                    const hasValidData = localData.userId && localData.email;
-                    const hasOldWildcard =
-                      Array.isArray(localData.permissions) &&
-                      localData.permissions.includes('*');
+                    // SECURITY: Only check for basic session validity
+                    // Full user data should be fetched from server when online
+                    const hasValidData =
+                      localData.userId && localData.isAuthenticated;
+                    const isStale =
+                      !localData.lastVerified ||
+                      Date.now() - localData.lastVerified > 24 * 60 * 60 * 1000; // 24 hours
 
-                    if (hasValidData && !hasOldWildcard) {
+                    if (hasValidData && !isStale) {
+                      // Note: We only set isAuthenticated flag here
+                      // User data will be fetched when network is available
                       set((state) => {
-                        state.user = {
-                          id: localData.userId,
-                          email: localData.email,
-                          name: localData.name,
-                          role: localData.role,
-                          permissions: localData.permissions ?? [],
-                          avatar: localData.avatar ?? null,
-                          isActive: true,
-                          createdAt: localData.createdAt || new Date().toISOString(),
-                          updatedAt: localData.updatedAt || new Date().toISOString(),
-                        };
                         state.isAuthenticated = true;
                         state.isInitialized = true;
                         state.isLoading = false;
+                        // Don't set user data from localStorage to avoid stale data
                       });
                       return;
                     }
@@ -196,7 +195,7 @@ export const useAuthStore = create<AuthStore>()(
                 }
 
                 // Clear everything on error
-                localStorage.removeItem('auth-session');
+                localStorage.removeItem("auth-session");
                 set((state) => {
                   state.isAuthenticated = false;
                   state.user = null;
@@ -208,7 +207,11 @@ export const useAuthStore = create<AuthStore>()(
           },
 
           // Login action
-          login: async (email: string, password: string, rememberMe = false) => {
+          login: async (
+            email: string,
+            password: string,
+            rememberMe = false,
+          ) => {
             set((state) => {
               state.isLoading = true;
               state.error = null;
@@ -217,24 +220,28 @@ export const useAuthStore = create<AuthStore>()(
 
             try {
               // Get CSRF token first
-              const csrfResponse = await fetch('/api/csrf');
+              const csrfResponse = await fetch("/api/csrf");
 
               if (!csrfResponse.ok) {
-                throw new Error('Güvenlik doğrulaması başarısız. Lütfen sayfayı yenileyin.');
+                throw new Error(
+                  "Güvenlik doğrulaması başarısız. Lütfen sayfayı yenileyin.",
+                );
               }
 
               const csrfData = await csrfResponse.json();
 
               if (!csrfData.success) {
-                throw new Error('Güvenlik doğrulaması başarısız. Lütfen sayfayı yenileyin.');
+                throw new Error(
+                  "Güvenlik doğrulaması başarısız. Lütfen sayfayı yenileyin.",
+                );
               }
 
               // Call server-side login API (sets HttpOnly cookie)
-              const response = await fetch('/api/auth/login', {
-                method: 'POST',
+              const response = await fetch("/api/auth/login", {
+                method: "POST",
                 headers: {
-                  'Content-Type': 'application/json',
-                  'x-csrf-token': csrfData.token,
+                  "Content-Type": "application/json",
+                  "x-csrf-token": csrfData.token,
                 },
                 body: JSON.stringify({ email, password, rememberMe }),
               });
@@ -244,15 +251,19 @@ export const useAuthStore = create<AuthStore>()(
               if (!result.success) {
                 // Handle specific error cases
                 if (response.status === 401) {
-                  throw new Error('E-posta veya şifre hatalı. Lütfen kontrol edin.');
+                  throw new Error(
+                    "E-posta veya şifre hatalı. Lütfen kontrol edin.",
+                  );
                 } else if (response.status === 429) {
                   throw new Error(
-                    'Çok fazla deneme yapıldı. Lütfen 15 dakika sonra tekrar deneyin.'
+                    "Çok fazla deneme yapıldı. Lütfen 15 dakika sonra tekrar deneyin.",
                   );
                 } else if (response.status === 400) {
-                  throw new Error('E-posta ve şifre alanları zorunludur.');
+                  throw new Error("E-posta ve şifre alanları zorunludur.");
                 } else {
-                  throw new Error(result.error || 'Giriş yapılamadı. Lütfen tekrar deneyin.');
+                  throw new Error(
+                    result.error || "Giriş yapılamadı. Lütfen tekrar deneyin.",
+                  );
                 }
               }
 
@@ -261,21 +272,19 @@ export const useAuthStore = create<AuthStore>()(
               // Create session object (without actual token - stored in HttpOnly cookie)
               const sessionObj: Session = {
                 userId: user.id,
-                accessToken: 'stored-in-httponly-cookie', // Not stored client-side
+                accessToken: "stored-in-httponly-cookie", // Not stored client-side
                 expire: result.data.session.expire,
               };
 
-              // Save session info to localStorage (for persistence)
+              // Save minimal session info to localStorage
+              // SECURITY: Don't store sensitive data like email, role, permissions
               localStorage.setItem(
-                'auth-session',
+                "auth-session",
                 JSON.stringify({
                   userId: user.id,
-                  email: user.email,
-                  name: user.name,
-                  role: user.role,
-                  permissions: user.permissions ?? [],
-                  avatar: user.avatar ?? null,
-                })
+                  isAuthenticated: true,
+                  lastVerified: Date.now(),
+                }),
               );
 
               set((state) => {
@@ -287,20 +296,20 @@ export const useAuthStore = create<AuthStore>()(
                 state.error = null;
               });
             } catch (error: unknown) {
-              let errorMessage = 'Giriş yapılamadı. Lütfen tekrar deneyin.';
+              let errorMessage = "Giriş yapılamadı. Lütfen tekrar deneyin.";
 
               if (error instanceof Error) {
                 errorMessage = error.message;
-              } else if (typeof error === 'string') {
+              } else if (typeof error === "string") {
                 errorMessage = error;
               }
 
               // Network error handling
               if (
-                errorMessage.includes('Failed to fetch') ||
-                errorMessage.includes('NetworkError')
+                errorMessage.includes("Failed to fetch") ||
+                errorMessage.includes("NetworkError")
               ) {
-                errorMessage = 'İnternet bağlantınızı kontrol edin.';
+                errorMessage = "İnternet bağlantınızı kontrol edin.";
               }
 
               set((state) => {
@@ -317,16 +326,16 @@ export const useAuthStore = create<AuthStore>()(
             try {
               // Call server-side logout API (clears HttpOnly cookie)
               const token = getCsrfTokenFromCookie();
-              await fetch('/api/auth/logout', {
-                method: 'POST',
-                headers: token ? { 'x-csrf-token': token } : undefined,
+              await fetch("/api/auth/logout", {
+                method: "POST",
+                headers: token ? { "x-csrf-token": token } : undefined,
               });
             } catch (error) {
-              logger.error('Logout error', { error });
+              logger.error("Logout error", { error });
             }
 
             // Clear localStorage
-            localStorage.removeItem('auth-session');
+            localStorage.removeItem("auth-session");
 
             set((state) => {
               state.user = null;
@@ -339,7 +348,7 @@ export const useAuthStore = create<AuthStore>()(
             if (callback) {
               callback();
             } else {
-              window.location.replace('/login');
+              window.location.replace("/login");
             }
           },
 
@@ -347,21 +356,23 @@ export const useAuthStore = create<AuthStore>()(
           hasPermission: (permission: PermissionValue | string) => {
             const { user, isAuthenticated } = get();
             if (!user || !isAuthenticated) return false;
-            return (user.permissions || []).includes(permission as PermissionValue);
+            return (user.permissions || []).includes(
+              permission as PermissionValue,
+            );
           },
 
           hasRole: (role: string) => {
             const { user, isAuthenticated } = get();
             if (!user || !isAuthenticated) return false;
             if (!role) return false;
-            return (user.role || '').toLowerCase() === role.toLowerCase();
+            return (user.role || "").toLowerCase() === role.toLowerCase();
           },
 
           hasAnyPermission: (permissions: Array<PermissionValue | string>) => {
             const { user, isAuthenticated } = get();
             if (!user || !isAuthenticated) return false;
             return permissions.some((permission) =>
-              (user.permissions || []).includes(permission as PermissionValue)
+              (user.permissions || []).includes(permission as PermissionValue),
             );
           },
 
@@ -369,7 +380,7 @@ export const useAuthStore = create<AuthStore>()(
             const { user, isAuthenticated } = get();
             if (!user || !isAuthenticated) return false;
             return permissions.every((permission) =>
-              (user.permissions || []).includes(permission as PermissionValue)
+              (user.permissions || []).includes(permission as PermissionValue),
             );
           },
 
@@ -405,19 +416,21 @@ export const useAuthStore = create<AuthStore>()(
             });
             // Update Sentry user context when auth user changes
             if (user) {
-              try {
-                const { setSentryUser } = require("@/lib/sentry");
-                setSentryUser(user.id, user.email, user.name);
-              } catch (e) {
-                // Sentry not available yet, that's ok
-              }
+              import("@/lib/sentry")
+                .then(({ setSentryUser }) => {
+                  setSentryUser(user.id, user.email, user.name);
+                })
+                .catch((_e) => {
+                  // Sentry not available yet, that's ok
+                });
             } else {
-              try {
-                const { clearSentryUser } = require("@/lib/sentry");
-                clearSentryUser();
-              } catch (e) {
-                // Sentry not available, that's ok
-              }
+              import("@/lib/sentry")
+                .then(({ clearSentryUser }) => {
+                  clearSentryUser();
+                })
+                .catch((_e) => {
+                  // Sentry not available, that's ok
+                });
             }
           },
 
@@ -440,10 +453,10 @@ export const useAuthStore = create<AuthStore>()(
           },
         })),
         {
-          name: 'auth-store',
+          name: "auth-store",
           storage: createJSONStorage(() => {
             // Safe localStorage wrapper for SSR
-            if (typeof window === 'undefined') {
+            if (typeof window === "undefined") {
               return {
                 getItem: () => null,
                 setItem: () => {},
@@ -467,11 +480,11 @@ export const useAuthStore = create<AuthStore>()(
             }
           },
           skipHydration: false,
-        }
-      )
+        },
+      ),
     ),
-    { name: 'AuthStore' }
-  )
+    { name: "AuthStore" },
+  ),
 );
 
 // Selectors for performance optimization

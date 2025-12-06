@@ -9,7 +9,7 @@ export interface KPICardProps {
   title: string;
   value: string | number;
   icon: LucideIcon;
-  colorTheme: 'green' | 'orange' | 'blue' | 'red' | 'gray' | 'purple';
+  colorTheme: 'green' | 'orange' | 'blue' | 'red' | 'gray' | 'purple' | 'pink';
   description?: string;
   trend?: {
     value: string;
@@ -61,6 +61,13 @@ const colorThemes = {
     border: 'border-purple-500/20',
     text: 'text-purple-600',
   },
+  pink: {
+    bg: 'from-pink-500 to-pink-600',
+    iconBg: 'bg-pink-500/10',
+    iconColor: 'text-pink-600 dark:text-pink-400',
+    border: 'border-pink-500/20',
+    text: 'text-pink-600',
+  },
 };
 
 function KPICardComponent({
@@ -72,7 +79,7 @@ function KPICardComponent({
   trend,
   onClick,
 }: KPICardProps) {
-  const theme = colorThemes[colorTheme];
+  const theme = colorThemes[colorTheme] || colorThemes.gray;
 
   return (
     <Card
@@ -87,7 +94,7 @@ function KPICardComponent({
       <div
         className={cn(
           'absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-200',
-          'bg-gradient-to-br',
+          'bg-linear-to-br',
           theme.bg
         )}
       />

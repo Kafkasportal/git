@@ -1,6 +1,6 @@
-@import 'tailwindcss';
-@import '../styles/theme-variables.css';
-@import '../styles/animations.css';
+@import "tailwindcss";
+@import "../styles/theme-variables.css";
+@import "../styles/animations.css";
 
 /* ========================================
    TAILWIND V4 THEME CONFIGURATION
@@ -53,208 +53,150 @@
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 0.75rem; /* Larger radius for modern feel */
 
   /* ========================================
-     SOFT & EASY ON THE EYES COLOR PALETTE
-     Modern, gentle design that reduces eye strain
+     VIBRANT & MODERN COLOR PALETTE
+     High contrast, deep colors, and engaging gradients
      ======================================== */
 
-  /* Font Variables - Using Next.js Font Optimization */
+  /* Font Variables */
   --font-geist-sans: var(--font-body);
-  --font-geist-mono: 'JetBrains Mono', 'Fira Code', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+  --font-geist-mono: "JetBrains Mono", "Fira Code", monospace;
   --font-heading: var(--font-heading);
   --font-body: var(--font-body);
 
-  /* Ring Offset Background */
-  --ring-offset-background: var(--background);
+  /* Base Colors - Clean and Crisp */
+  --background: #ffffff; /* Pure white for higher contrast */
+  --foreground: #020617; /* slate-950 - Sharp dark */
 
-  /* Base Colors - Warm off-white for reduced eye strain */
-  --background: #fafaf9; /* Warm off-white - easier on eyes than pure white */
-  --foreground: #1c1917; /* stone-900 - warm dark for readability */
-
-  /* Cards - Soft cream with subtle warmth */
+  /* Cards - Clean White with depth */
   --card: #ffffff;
-  --card-foreground: #1c1917; /* stone-900 */
+  --card-foreground: #020617;
 
-  /* Popover/Dropdown */
+  /* Popover */
   --popover: #ffffff;
-  --popover-foreground: #1c1917;
+  --popover-foreground: #020617;
 
-  /* Primary - Soft Indigo - calming and professional */
-  --primary: #4f46e5; /* indigo-600 - balanced, not too bright */
+  /* Primary - Electric Indigo */
+  --primary: #4f46e5; /* indigo-600 */
   --primary-foreground: #ffffff;
 
-  /* Secondary - Warm stone for backgrounds */
-  --secondary: #f5f5f4; /* stone-100 */
-  --secondary-foreground: #44403c; /* stone-700 */
+  /* Primary Gradient for Buttons/Accents */
+  --primary-gradient-start: #6366f1; /* indigo-500 */
+  --primary-gradient-end: #8b5cf6; /* violet-500 */
 
-  /* Muted - Gentle backgrounds */
-  --muted: #f5f5f4; /* stone-100 */
-  --muted-foreground: #78716c; /* stone-500 - good contrast, not too dark */
+  /* Secondary - Soft Blue-Gray */
+  --secondary: #f1f5f9; /* slate-100 */
+  --secondary-foreground: #0f172a; /* slate-900 */
 
-  /* Accent - Soft lavender highlight */
-  --accent: #e9e5ff; /* soft lavender */
-  --accent-foreground: #3730a3; /* indigo-800 */
+  /* Muted */
+  --muted: #f1f5f9; /* slate-100 */
+  --muted-foreground: #64748b; /* slate-500 */
 
-  /* Destructive - Softer red */
-  --destructive: #dc2626; /* red-600 */
+  /* Accent - Vibrant Lavender */
+  --accent: #eef2ff; /* indigo-50 */
+  --accent-foreground: #4338ca; /* indigo-700 */
+
+  /* Destructive */
+  --destructive: #ef4444; /* red-500 */
   --destructive-foreground: #ffffff;
 
-  /* Borders - Warm and subtle */
-  --border: #e7e5e4; /* stone-200 */
-  --input: #d6d3d1; /* stone-300 */
-  --ring: #a8a29e; /* stone-400 */
+  /* Borders */
+  --border: #e2e8f0; /* slate-200 */
+  --input: #e2e8f0; /* slate-200 */
+  --ring: #6366f1; /* indigo-500 */
 
-  /* Chart Colors - Balanced, vibrant but not harsh */
-  --chart-1: #6366f1; /* indigo-500 */
-  --chart-2: #10b981; /* emerald-500 */
-  --chart-3: #f59e0b; /* amber-500 */
-  --chart-4: #8b5cf6; /* violet-500 */
-  --chart-5: #ec4899; /* pink-500 */
+  /* Chart Colors - Neon/Vibrant */
+  --chart-1: #6366f1; /* Indigo */
+  --chart-2: #8b5cf6; /* Violet */
+  --chart-3: #ec4899; /* Pink */
+  --chart-4: #06b6d4; /* Cyan */
+  --chart-5: #10b981; /* Emerald */
 
-  /* Sidebar Colors - Warm Dark Sidebar */
-  --sidebar: #292524; /* stone-800 - warm dark sidebar */
-  --sidebar-foreground: #fafaf9; /* stone-50 - warm light text */
-  --sidebar-primary: #818cf8; /* indigo-400 - soft accent */
-  --sidebar-primary-foreground: #1e1b4b;
-  --sidebar-accent: #44403c; /* stone-700 - hover state */
-  --sidebar-accent-foreground: #fafaf9; /* stone-50 */
-  --sidebar-border: #44403c; /* stone-700 */
-  --sidebar-ring: #57534e; /* stone-600 */
-
-  /* Brand Colors - Soft Indigo Palette */
-  --brand-primary: #4f46e5; /* indigo-600 */
-  --brand-primary-light: #818cf8; /* indigo-400 */
-  --brand-primary-dark: #3730a3; /* indigo-800 */
-  --brand-secondary: #059669; /* emerald-600 */
-  --brand-accent: #d97706; /* amber-600 */
-
-  /* Semantic Colors - Success */
-  --success: oklch(0.6 0.17 145);
-  --success-light: oklch(0.75 0.12 145);
-  --success-dark: oklch(0.45 0.2 145);
-  --success-foreground: oklch(0.98 0 0);
-
-  /* Semantic Colors - Warning */
-  --warning: oklch(0.75 0.15 85);
-  --warning-light: oklch(0.85 0.12 85);
-  --warning-dark: oklch(0.6 0.18 85);
-  --warning-foreground: oklch(0.2 0 0);
-
-  /* Semantic Colors - Error */
-  --error: oklch(0.6 0.22 25);
-  --error-light: oklch(0.75 0.18 25);
-  --error-dark: oklch(0.45 0.25 25);
-  --error-foreground: oklch(0.98 0 0);
-
-  /* Semantic Colors - Info */
-  --info: oklch(0.6 0.18 230);
-  --info-light: oklch(0.75 0.14 230);
-  --info-dark: oklch(0.45 0.2 230);
-  --info-foreground: oklch(0.98 0 0);
+  /* Sidebar - Dark Glassy */
+  --sidebar: #020617; /* Slate-950 */
+  --sidebar-foreground: #f8fafc; /* Slate-50 */
+  --sidebar-primary: #818cf8; /* Indigo-400 */
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1e293b; /* Slate-800 */
+  --sidebar-accent-foreground: #f8fafc;
+  --sidebar-border: #1e293b; /* Slate-800 */
+  --sidebar-ring: #6366f1;
 }
 
 .dark {
   /* ========================================
-     DARK MODE - SOFT & RELAXING
-     Easy on the eyes, reduces strain
+     DARK MODE - DEEP SPACE
+     Rich, dark blues/slates with glowing accents
      ======================================== */
 
-  /* Base Colors - Warm dark, not pure black */
-  --background: #1c1917; /* stone-900 - warm dark, easier on eyes */
-  --foreground: #fafaf9; /* stone-50 - bright but warm white */
+  /* Base Colors - Deep Space Blue */
+  --background: #020617; /* slate-950 */
+  --foreground: #f8fafc; /* slate-50 */
 
-  /* Cards - Subtle elevation with warmth */
-  --card: #292524; /* stone-800 */
-  --card-foreground: #fafaf9; /* stone-50 */
+  /* Cards - Glassy Dark */
+  --card: #0f172a; /* slate-900 */
+  --card-foreground: #f8fafc;
 
-  /* Popover/Dropdown */
-  --popover: #292524; /* stone-800 */
-  --popover-foreground: #fafaf9; /* stone-50 */
+  /* Popover */
+  --popover: #0f172a; /* slate-900 */
+  --popover-foreground: #f8fafc;
 
-  /* Primary - Soft indigo, not too bright */
-  --primary: #a5b4fc; /* indigo-300 - gentle on dark bg */
-  --primary-foreground: #1e1b4b; /* indigo-950 */
+  /* Primary - Glowing Indigo */
+  --primary: #818cf8; /* indigo-400 */
+  --primary-foreground: #020617;
 
   /* Secondary */
-  --secondary: #44403c; /* stone-700 */
-  --secondary-foreground: #e7e5e4; /* stone-200 */
+  --secondary: #1e293b; /* slate-800 */
+  --secondary-foreground: #f8fafc;
 
   /* Muted */
-  --muted: #44403c; /* stone-700 */
-  --muted-foreground: #a8a29e; /* stone-400 - good contrast */
+  --muted: #1e293b; /* slate-800 */
+  --muted-foreground: #94a3b8; /* slate-400 */
 
   /* Accent */
-  --accent: #3f3f46; /* zinc-700 - subtle accent */
-  --accent-foreground: #e7e5e4; /* stone-200 */
+  --accent: #1e293b; /* slate-800 */
+  --accent-foreground: #f8fafc;
 
   /* Destructive */
-  --destructive: #f87171; /* red-400 - softer red */
-  --destructive-foreground: #1c1917;
+  --destructive: #f87171; /* red-400 */
+  --destructive-foreground: #020617;
 
-  /* Borders - Warm and visible */
-  --border: #44403c; /* stone-700 */
-  --input: #57534e; /* stone-600 */
-  --ring: #78716c; /* stone-500 */
+  /* Borders - Subtle Blue-Grey */
+  --border: #1e293b; /* slate-800 */
+  --input: #1e293b; /* slate-800 */
+  --ring: #818cf8; /* indigo-400 */
 
-  /* Chart Colors - Soft pastels for dark mode */
-  --chart-1: #a5b4fc; /* indigo-300 */
-  --chart-2: #6ee7b7; /* emerald-300 */
-  --chart-3: #fcd34d; /* amber-300 */
-  --chart-4: #c4b5fd; /* violet-300 */
-  --chart-5: #f9a8d4; /* pink-300 */
+  /* Chart Colors - Glowing Neon */
+  --chart-1: #818cf8; /* Indigo-400 */
+  --chart-2: #a78bfa; /* Violet-400 */
+  --chart-3: #f472b6; /* Pink-400 */
+  --chart-4: #22d3ee; /* Cyan-400 */
+  --chart-5: #34d399; /* Emerald-400 */
 
-  /* Sidebar Colors - Warm dark */
-  --sidebar: #1c1917; /* stone-900 */
-  --sidebar-foreground: #d6d3d1; /* stone-300 */
-  --sidebar-primary: #a5b4fc; /* indigo-300 */
-  --sidebar-primary-foreground: #1e1b4b;
-  --sidebar-accent: #292524; /* stone-800 - hover */
-  --sidebar-accent-foreground: #e7e5e4; /* stone-200 */
-  --sidebar-border: #44403c; /* stone-700 */
-  --sidebar-ring: #57534e; /* stone-600 */
+  /* Sidebar */
+  --sidebar: #020617; /* Slate-950 */
+  --sidebar-foreground: #94a3b8; /* Slate-400 */
+  --sidebar-primary: #818cf8;
+  --sidebar-primary-foreground: #020617;
+  --sidebar-accent: #1e293b; /* Slate-800 */
+  --sidebar-accent-foreground: #f8fafc;
+  --sidebar-border: #1e293b; /* Slate-800 */
+  --sidebar-ring: #818cf8;
 
-  /* Brand Colors - Dark Mode Soft */
-  --brand-primary: #a5b4fc; /* indigo-300 */
-  --brand-primary-light: #c7d2fe; /* indigo-200 */
-  --brand-primary-dark: #818cf8; /* indigo-400 */
-  --brand-secondary: #34d399; /* emerald-400 */
-  --brand-accent: #fbbf24; /* amber-400 */
-
-  /* Semantic Colors - Success - Dark Mode */
-  --success: oklch(0.5 0.19 145);
-  --success-light: oklch(0.65 0.15 145);
-  --success-dark: oklch(0.35 0.22 145);
-  --success-foreground: oklch(0.98 0 0);
-
-  /* Semantic Colors - Warning - Dark Mode */
-  --warning: oklch(0.65 0.17 85);
-  --warning-light: oklch(0.75 0.14 85);
-  --warning-dark: oklch(0.5 0.2 85);
-  --warning-foreground: oklch(0.1 0 0);
-
-  /* Semantic Colors - Error - Dark Mode */
-  --error: oklch(0.5 0.24 25);
-  --error-light: oklch(0.65 0.2 25);
-  --error-dark: oklch(0.35 0.27 25);
-  --error-foreground: oklch(0.98 0 0);
-
-  /* Semantic Colors - Info - Dark Mode */
-  --info: oklch(0.5 0.2 230);
-  --info-light: oklch(0.65 0.16 230);
-  --info-dark: oklch(0.35 0.22 230);
-  --info-foreground: oklch(0.98 0 0);
-
-  /* Shadow System - Dark Mode Adjustments */
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.2);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
-  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.5);
-  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.2);
-  --shadow-glass: 0 8px 32px 0 rgb(0 0 0 / 0.3), 0 0 0 1px rgb(255 255 255 / 0.05);
+  /* Shadow System - Colored Glows */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.5), 0 1px 2px -1px rgb(0 0 0 / 0.5);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+  --shadow-xl:
+    0 20px 25px -5px rgb(0 0 0 / 0.6), 0 8px 10px -6px rgb(0 0 0 / 0.6);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.7);
+  --shadow-glass:
+    0 8px 32px 0 rgb(0 0 0 / 0.5), 0 0 0 1px rgb(255 255 255 / 0.05);
+  --shadow-glow: 0 0 20px rgb(99 102 241 / 0.15); /* Indigo glow */
 }
 
 @layer base {
@@ -274,40 +216,40 @@
      TAILWIND V4 COLOR UTILITIES
      Custom classes to replace missing tw utilities
      ======================================== */
-  
+
   /* Background Colors */
   .bg-background {
     background-color: var(--background);
   }
-  
+
   .bg-foreground {
     background-color: var(--foreground);
   }
-  
+
   .bg-card {
     background-color: var(--card);
   }
-  
+
   .bg-popover {
     background-color: var(--popover);
   }
-  
+
   .bg-primary {
     background-color: var(--primary);
   }
-  
+
   .bg-secondary {
     background-color: var(--secondary);
   }
-  
+
   .bg-muted {
     background-color: var(--muted);
   }
-  
+
   .bg-accent {
     background-color: var(--accent);
   }
-  
+
   .bg-destructive {
     background-color: var(--destructive);
   }
@@ -316,39 +258,39 @@
   .text-foreground {
     color: var(--foreground);
   }
-  
+
   .text-card-foreground {
     color: var(--card-foreground);
   }
-  
+
   .text-popover-foreground {
     color: var(--popover-foreground);
   }
-  
+
   .text-primary {
     color: var(--primary);
   }
-  
+
   .text-primary-foreground {
     color: var(--primary-foreground);
   }
-  
+
   .text-secondary-foreground {
     color: var(--secondary-foreground);
   }
-  
+
   .text-muted-foreground {
     color: var(--muted-foreground);
   }
-  
+
   .text-accent-foreground {
     color: var(--accent-foreground);
   }
-  
+
   .text-destructive {
     color: var(--destructive);
   }
-  
+
   .text-destructive-foreground {
     color: var(--destructive-foreground);
   }
@@ -357,15 +299,15 @@
   .border-border {
     border-color: var(--border);
   }
-  
+
   .border-input {
     border-color: var(--input);
   }
-  
+
   .border-primary {
     border-color: var(--primary);
   }
-  
+
   .border-destructive {
     border-color: var(--destructive);
   }
@@ -374,7 +316,7 @@
   .ring-ring {
     --tw-ring-color: var(--ring);
   }
-  
+
   .ring-primary {
     --tw-ring-color: var(--primary);
   }
@@ -383,19 +325,19 @@
   .bg-sidebar {
     background-color: var(--sidebar);
   }
-  
+
   .text-sidebar-foreground {
     color: var(--sidebar-foreground);
   }
-  
+
   .bg-sidebar-accent {
     background-color: var(--sidebar-accent);
   }
-  
+
   .text-sidebar-accent-foreground {
     color: var(--sidebar-accent-foreground);
   }
-  
+
   .border-sidebar-border {
     border-color: var(--sidebar-border);
   }
@@ -779,9 +721,21 @@
 
   .bg-gradient-mesh {
     background:
-      radial-gradient(at 0% 0%, var(--color-brand-primary-light) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, var(--color-brand-secondary) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, var(--color-brand-accent) 0px, transparent 50%);
+      radial-gradient(
+        at 0% 0%,
+        var(--color-brand-primary-light) 0px,
+        transparent 50%
+      ),
+      radial-gradient(
+        at 100% 0%,
+        var(--color-brand-secondary) 0px,
+        transparent 50%
+      ),
+      radial-gradient(
+        at 100% 100%,
+        var(--color-brand-accent) 0px,
+        transparent 50%
+      );
   }
 
   .shadow-glow-primary {
@@ -802,7 +756,11 @@
 
   /* Gradient Background Utilities */
   .bg-gradient-subtle {
-    background: linear-gradient(135deg, var(--brand-primary-light) 0%, var(--brand-secondary) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--brand-primary-light) 0%,
+      var(--brand-secondary) 100%
+    );
   }
 
   .bg-gradient-vibrant {
@@ -825,7 +783,11 @@
 
   .bg-gradient-mesh {
     background:
-      radial-gradient(at 0% 0%, var(--brand-primary-light) 0px, transparent 50%),
+      radial-gradient(
+        at 0% 0%,
+        var(--brand-primary-light) 0px,
+        transparent 50%
+      ),
       radial-gradient(at 100% 0%, var(--brand-secondary) 0px, transparent 50%),
       radial-gradient(at 100% 100%, var(--brand-accent) 0px, transparent 50%),
       radial-gradient(at 0% 100%, var(--info-light) 0px, transparent 50%);
@@ -869,22 +831,22 @@
 
   /* Enhanced Button Interactions */
   button,
-  a[role='button'],
-  [role='button'] {
+  a[role="button"],
+  [role="button"] {
     transition-property: all;
     transition-duration: 200ms;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   button:active:not(:disabled),
-  a[role='button']:active,
-  [role='button']:active {
+  a[role="button"]:active,
+  [role="button"]:active {
     transform: scale(0.98);
   }
 
   button:hover:not(:disabled),
-  a[role='button']:hover,
-  [role='button']:hover {
+  a[role="button"]:hover,
+  [role="button"]:hover {
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
@@ -943,12 +905,12 @@
   }
 
   /* Link Hover Effects */
-  a:not([role='button']) {
+  a:not([role="button"]) {
     transition: color 200ms cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
   }
 
-  a:not([role='button']):hover {
+  a:not([role="button"]):hover {
     color: hsl(var(--primary));
   }
 
@@ -1015,7 +977,11 @@
 
   /* Gradient Text */
   .gradient-text {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.6));
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary)),
+      hsl(var(--primary) / 0.6)
+    );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -1239,7 +1205,7 @@
     --border: #000000;
     --ring: #000000;
   }
-  
+
   .dark {
     --border: #ffffff;
     --ring: #ffffff;
@@ -1301,14 +1267,14 @@
     min-height: 44px;
     min-width: 44px;
   }
-  
+
   /* Larger touch targets for links in lists */
   .touch-target {
     position: relative;
   }
-  
+
   .touch-target::after {
-    content: '';
+    content: "";
     position: absolute;
     top: -8px;
     right: -8px;
@@ -1329,7 +1295,7 @@
   body {
     -webkit-tap-highlight-color: transparent;
   }
-  
+
   /* Prevent text selection on interactive elements */
   button,
   a,
@@ -1337,11 +1303,16 @@
     -webkit-user-select: none;
     user-select: none;
   }
-  
+
   /* Allow text selection on content */
   p,
   span,
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     -webkit-user-select: text;
     user-select: text;
   }
@@ -1452,7 +1423,9 @@
 
 /* Smooth theme transition */
 html {
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 html.disable-transitions,

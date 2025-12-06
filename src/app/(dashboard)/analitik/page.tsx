@@ -9,6 +9,7 @@ import { DemoBanner } from '@/components/ui/demo-banner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { DashboardError } from '@/components/errors/DashboardError';
 import { TrendingUp, Users, MousePointerClick, Clock, Activity, Eye, Zap } from 'lucide-react';
+import SessionTracking from '@/lib/analytics/session-tracking';
 import {
   BarChart,
   Bar,
@@ -53,14 +54,22 @@ function AnalyticsPageContent() {
     },
   });
 
+  // Get session metrics from session tracking module
+  const sessionMetrics = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      return SessionTracking.getSessionMetrics();
+    }
+    return { avgSessionDuration: 0, bounceRate: 0, pagesPerSession: 0, totalSessions: 0, activeSessions: 0 };
+  }, []);
+
   const stats = useMemo(
     () => ({
       totalEvents: analyticsData.totalEvents,
       totalUsers: analyticsData.uniqueUsers,
-      avgSessionDuration: 0, // Not yet implemented
-      bounceRate: 0, // Not yet implemented
+      avgSessionDuration: sessionMetrics.avgSessionDuration,
+      bounceRate: Math.round(sessionMetrics.bounceRate),
     }),
-    [analyticsData]
+    [analyticsData, sessionMetrics]
   );
 
   const pageViewsData = useMemo(() => {
@@ -319,13 +328,12 @@ function AnalyticsPageContent() {
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className={`h-2 rounded-full ${
-                          vital.status === 'good'
+                        className={`h-2 rounded-full ${vital.status === 'good'
                             ? 'bg-green-500'
                             : vital.status === 'needs-improvement'
                               ? 'bg-yellow-500'
                               : 'bg-red-500'
-                        }`}
+                          }`}
                         style={{
                           width: `${Math.min((vital.value / vital.threshold) * 100, 100)}%`,
                         }}

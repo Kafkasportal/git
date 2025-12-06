@@ -50,11 +50,17 @@ const CalendarView = dynamic(
   },
 );
 
-// MeetingListView component is not implemented yet
-// const MeetingListView = dynamic(() => import('@/components/meetings/MeetingListView').then((m) => ({ default: m.MeetingListView })), {
-//   loading: () => <div className="p-8 text-center">Yükleniyor...</div>,
-//   ssr: false,
-// });
+// Dynamic import for MeetingListView - lazy load for better performance
+const MeetingListView = dynamic(
+  () =>
+    import('@/components/meetings/MeetingListView').then((m) => ({
+      default: m.MeetingListView,
+    })),
+  {
+    loading: () => <div className="p-8 text-center">Yükleniyor...</div>,
+    ssr: false,
+  }
+);
 
 export default function MeetingsPage() {
   const queryClient = useQueryClient();
@@ -247,10 +253,29 @@ export default function MeetingsPage() {
               onDateClick={(_date) => setShowCreateModal(true)}
             />
           ) : (
-            <div className="p-8 text-center text-muted-foreground">
-              Liste görünümü henüz uygulanmadı. Lütfen takvim görünümünü
-              kullanın.
-            </div>
+            <MeetingListView
+              meetings={meetings.map(m => ({
+                id: m.$id || '',
+                title: m.title,
+                description: m.description,
+                date: m.meeting_date,
+                location: m.location,
+                type: (m.meeting_type === 'board' ? 'in_person' : m.meeting_type === 'general' ? 'in_person' : 'hybrid') as 'in_person' | 'online' | 'hybrid',
+                status: m.status as 'scheduled' | 'in_progress' | 'completed' | 'cancelled',
+                participants: [],
+                createdAt: m.$createdAt || new Date().toISOString(),
+              }))}
+              onView={(meeting) => {
+                const original = meetings.find(m => m.$id === meeting.id);
+                if (original) setSelectedMeeting(original);
+              }}
+              onEdit={(meeting) => {
+                const original = meetings.find(m => m.$id === meeting.id);
+                if (original) setSelectedMeeting(original);
+              }}
+              onDelete={(meeting) => setMeetingToDelete(meeting.id)}
+              isLoading={isLoading}
+            />
           )}
         </CardContent>
       </Card>

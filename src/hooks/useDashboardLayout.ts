@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from "react";
 import {
   WidgetConfig,
   DashboardLayout,
   defaultWidgets,
   widgetToLayoutItem,
   layoutItemToWidget,
-} from '@/types/dashboard';
+} from "@/types/dashboard";
 
 export interface UseDashboardLayoutOptions {
   storageKey?: string;
@@ -17,14 +17,14 @@ export interface UseDashboardLayoutOptions {
 
 export function useDashboardLayout(options: UseDashboardLayoutOptions = {}) {
   const {
-    storageKey = 'dashboard-layout',
+    storageKey = "dashboard-layout",
     defaultLayout = defaultWidgets,
     onLayoutChange,
   } = options;
 
   // Initialize widgets from localStorage or defaults
   const [widgets, setWidgets] = useState<WidgetConfig[]>(() => {
-    if (typeof window === 'undefined') return defaultLayout;
+    if (typeof window === "undefined") return defaultLayout;
 
     const stored = localStorage.getItem(storageKey);
     if (stored) {
@@ -55,7 +55,7 @@ export function useDashboardLayout(options: UseDashboardLayoutOptions = {}) {
   const [isEditMode, setIsEditMode] = useState(false);
   // Initialize savedLayouts from localStorage to avoid setState in effect
   const [savedLayouts, setSavedLayouts] = useState<DashboardLayout[]>(() => {
-    if (typeof window === 'undefined') return [];
+    if (typeof window === "undefined") return [];
     const stored = localStorage.getItem(`${storageKey}-saved`);
     if (stored) {
       try {
@@ -69,7 +69,7 @@ export function useDashboardLayout(options: UseDashboardLayoutOptions = {}) {
 
   // Save to localStorage when widgets change
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       localStorage.setItem(storageKey, JSON.stringify(widgets));
       onLayoutChange?.(widgets);
     }
@@ -77,9 +77,11 @@ export function useDashboardLayout(options: UseDashboardLayoutOptions = {}) {
 
   // Note: savedLayouts is now initialized from localStorage in useState
 
-  // Visible widgets only
+  // Visible widgets only (with validation)
   const visibleWidgets = useMemo(() => {
-    return widgets.filter((w) => w.visible);
+    return widgets.filter(
+      (w) => w && w.id && w.visible && w.position && w.size,
+    );
   }, [widgets]);
 
   // Convert to react-grid-layout format
@@ -89,7 +91,15 @@ export function useDashboardLayout(options: UseDashboardLayoutOptions = {}) {
 
   // Update widget positions from layout change
   const handleLayoutChange = useCallback(
-    (newLayout: Array<{ i: string; x: number; y: number; w: number; h: number }>) => {
+    (
+      newLayout: Array<{
+        i: string;
+        x: number;
+        y: number;
+        w: number;
+        h: number;
+      }>,
+    ) => {
       setWidgets((prev) => {
         return prev.map((widget) => {
           const layoutItem = newLayout.find((item) => item.i === widget.id);
@@ -100,20 +110,20 @@ export function useDashboardLayout(options: UseDashboardLayoutOptions = {}) {
         });
       });
     },
-    []
+    [],
   );
 
   // Toggle widget visibility
   const toggleWidget = useCallback((widgetId: string) => {
     setWidgets((prev) =>
-      prev.map((w) => (w.id === widgetId ? { ...w, visible: !w.visible } : w))
+      prev.map((w) => (w.id === widgetId ? { ...w, visible: !w.visible } : w)),
     );
   }, []);
 
   // Set widget visibility
   const setWidgetVisible = useCallback((widgetId: string, visible: boolean) => {
     setWidgets((prev) =>
-      prev.map((w) => (w.id === widgetId ? { ...w, visible } : w))
+      prev.map((w) => (w.id === widgetId ? { ...w, visible } : w)),
     );
   }, []);
 
@@ -122,17 +132,19 @@ export function useDashboardLayout(options: UseDashboardLayoutOptions = {}) {
     (widgetId: string, settings: Record<string, unknown>) => {
       setWidgets((prev) =>
         prev.map((w) =>
-          w.id === widgetId ? { ...w, settings: { ...w.settings, ...settings } } : w
-        )
+          w.id === widgetId
+            ? { ...w, settings: { ...w.settings, ...settings } }
+            : w,
+        ),
       );
     },
-    []
+    [],
   );
 
   // Reset to default layout
   const resetLayout = useCallback(() => {
     setWidgets(defaultLayout);
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       localStorage.removeItem(storageKey);
     }
   }, [defaultLayout, storageKey]);
@@ -151,13 +163,16 @@ export function useDashboardLayout(options: UseDashboardLayoutOptions = {}) {
       const updatedLayouts = [...savedLayouts, newLayout];
       setSavedLayouts(updatedLayouts);
 
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(`${storageKey}-saved`, JSON.stringify(updatedLayouts));
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          `${storageKey}-saved`,
+          JSON.stringify(updatedLayouts),
+        );
       }
 
       return newLayout;
     },
-    [widgets, savedLayouts, storageKey]
+    [widgets, savedLayouts, storageKey],
   );
 
   // Load a saved layout
@@ -168,7 +183,7 @@ export function useDashboardLayout(options: UseDashboardLayoutOptions = {}) {
         setWidgets(layout.widgets);
       }
     },
-    [savedLayouts]
+    [savedLayouts],
   );
 
   // Delete a saved layout
@@ -177,17 +192,20 @@ export function useDashboardLayout(options: UseDashboardLayoutOptions = {}) {
       const updatedLayouts = savedLayouts.filter((l) => l.id !== layoutId);
       setSavedLayouts(updatedLayouts);
 
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(`${storageKey}-saved`, JSON.stringify(updatedLayouts));
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          `${storageKey}-saved`,
+          JSON.stringify(updatedLayouts),
+        );
       }
     },
-    [savedLayouts, storageKey]
+    [savedLayouts, storageKey],
   );
 
   // Get widget by id
   const getWidget = useCallback(
     (widgetId: string) => widgets.find((w) => w.id === widgetId),
-    [widgets]
+    [widgets],
   );
 
   return {
@@ -215,4 +233,3 @@ export function useDashboardLayout(options: UseDashboardLayoutOptions = {}) {
 }
 
 export default useDashboardLayout;
-

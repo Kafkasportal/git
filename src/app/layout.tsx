@@ -91,7 +91,7 @@ export default function RootLayout({
         />
         <LazyGoogleAnalytics />
       </head>
-      <body style={fontVariables as React.CSSProperties} className="font-sans">
+      <body style={fontVariables as React.CSSProperties} className="font-sans" suppressHydrationWarning>
         <Providers>
           <ServiceWorkerRegister />
           <LazyWebVitalsTracker />
