@@ -25,17 +25,11 @@ Branches allow you to separate your work from the main branch. In other words, e
 
 2. Navigate to the **< > Code** tab in the header menu of your repository.
 
-   ![Code tab](https://user-images.githubusercontent.com/1221423/213035519-4aa3bdb8-d5f7-4e1f-8e34-c40df2d2fa2c.png)
-
 3. Click on the **main** branch drop-down.
-
-   ![Main branch dropdown](https://user-images.githubusercontent.com/1221423/213035719-0f29f3e6-8e1f-4c9d-8e1f-8e1f8e1f8e1f.png)
 
 4. In the field, name your branch `my-first-branch`. In this case, the name must be `my-first-branch` to trigger the course workflow.
 
 5. Click **Create branch: my-first-branch** to create your branch.
-
-   ![Create branch button](https://user-images.githubusercontent.com/1221423/213035819-0f29f3e6-8e1f-4c9d-8e1f-8e1f8e1f8e1f.png)
 
 6. The branch will automatically switch to the one you have just created. The main branch drop-down bar will reflect your new branch and display the new branch name.
 
