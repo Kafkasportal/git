@@ -4,7 +4,7 @@ import logger from '@/lib/logger';
 
 /**
  * POST /api/system_alerts/create
- * Create a system alert (for n8n workflows)
+ * Sistem uyarısı oluştur
  * Body: { alert_type, severity, title, description, metadata? }
  */
 export async function POST(request: NextRequest) {

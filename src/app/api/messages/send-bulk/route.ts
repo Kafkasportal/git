@@ -1,16 +1,14 @@
 /**
  * POST /api/messages/send-bulk
- * Send bulk messages via SMS or Email
- * Supports multiple message types and recipient lists
- * Requires authentication and messages module access
+ * Toplu email gönderimi
+ * Kimlik doğrulama ve messages modülü erişimi gerektirir
  *
  * REQUEST BODY:
  * {
- *   type: 'sms' | 'email',
- *   recipients: string[], // Phone numbers or email addresses
+ *   recipients: string[], // Email adresleri
  *   message: string,
- *   subject?: string, // Required for email
- *   template?: string, // Optional template ID
+ *   subject: string,
+ *   template?: string, // Opsiyonel şablon ID
  * }
  *
  * RESPONSE:
@@ -20,7 +18,6 @@
  *   successful: number,
  *   failed: number,
  *   failedRecipients: Array<{recipient: string, error: string}>,
- *   communicationLogId?: string
  * }
  */
 
@@ -30,7 +27,6 @@ import { successResponse, errorResponse, parseBody } from '@/lib/api/route-helpe
 import { requireAuthenticatedUser, verifyCsrfToken } from '@/lib/api/auth-utils';
 import logger from '@/lib/logger';
 import { z } from 'zod';
-import { sendBulkSMS } from '@/lib/services/sms';
 import { sendEmail } from '@/lib/services/email';
 
 /**
@@ -45,38 +41,14 @@ interface BulkMessageResult {
 
 // Validation schema
 const bulkMessageSchema = z.object({
-  type: z.enum(['sms', 'email']),
   recipients: z
-    .array(z.string().min(1, 'Alıcı bilgisi boş olamaz'))
+    .array(z.string().email('Geçerli bir email adresi girin'))
     .min(1, 'En az bir alıcı belirtmelisiniz')
     .max(1000, 'Maksimum 1000 alıcıya aynı anda mesaj gönderebilirsiniz'),
   message: z.string().min(1, 'Mesaj boş olamaz'),
-  subject: z.string().optional(),
+  subject: z.string().min(1, 'Konu başlığı gereklidir'),
   template: z.string().optional(),
 });
-
-/**
- * Convert SMS bulk result to standard format
- * Uses existing sendBulkSMS service function to avoid code duplication
- */
-async function sendBulkSMSMessages(
-  recipients: string[],
-  message: string
-): Promise<BulkMessageResult> {
-  const result = await sendBulkSMS(recipients, message);
-
-  return {
-    total: recipients.length,
-    successful: result.success,
-    failed: result.failed,
-    failedRecipients: result.results
-      .filter((r) => !r.success)
-      .map((r) => ({
-        recipient: r.phone,
-        error: r.error || 'SMS gönderilemedi',
-      })),
-  };
-}
 
 /**
  * Send bulk Email messages with rate limiting and error tracking
@@ -149,40 +121,19 @@ export const POST = buildApiRoute({
     return errorResponse('Geçersiz istek', 400, validation.error.issues.map((i) => i.message));
   }
 
-  const { type, recipients, message, subject } = validation.data;
+  const { recipients, message, subject } = validation.data;
 
-  // Email requires subject
-  if (type === 'email' && !subject) {
-    return errorResponse('Email göndermek için konu başlığı gereklidir', 400);
-  }
-
-  logger.info('Starting bulk message sending', {
+  logger.info('Starting bulk email sending', {
     service: 'messages',
-    type,
     userId: user.id,
     recipientCount: recipients.length,
     messageLength: message.length,
   });
 
-  let result: BulkMessageResult;
+  const result = await sendBulkEmailMessages(recipients, message, subject);
 
-  // Send messages based on type
-  switch (type) {
-    case 'sms':
-      result = await sendBulkSMSMessages(recipients, message);
-      break;
-
-    case 'email':
-      result = await sendBulkEmailMessages(recipients, message, subject);
-      break;
-
-    default:
-      return errorResponse('Geçersiz mesaj tipi', 400);
-  }
-
-  logger.info('Bulk message sending completed', {
+  logger.info('Bulk email sending completed', {
     service: 'messages',
-    type,
     userId: user.id,
     total: result.total,
     successful: result.successful,
@@ -194,7 +145,7 @@ export const POST = buildApiRoute({
     const { appwriteCommunicationLogs } = await import('@/lib/appwrite/api');
     
     const logData = {
-      type: type as 'email' | 'sms',
+      type: 'email' as const,
       recipient_count: recipients.length,
       message,
       successful: result.successful,

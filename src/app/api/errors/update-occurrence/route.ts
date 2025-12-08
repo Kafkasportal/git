@@ -4,7 +4,7 @@ import logger from '@/lib/logger';
 
 /**
  * POST /api/errors/update-occurrence
- * Update error occurrence count (for n8n workflows)
+ * Hata tekrar sayısını güncelle
  * Body: { error_id: string, occurrence_count?: number, last_seen?: string, ... }
  */
 export async function POST(request: NextRequest) {

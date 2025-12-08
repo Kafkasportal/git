@@ -4,7 +4,7 @@ import logger from '@/lib/logger';
 
 /**
  * GET /api/meetings/upcoming
- * Get upcoming meetings (for n8n workflows)
+ * Yaklaşan toplantıları getir
  * Query params: from (ISO date), to (ISO date)
  */
 export async function GET(request: NextRequest) {
