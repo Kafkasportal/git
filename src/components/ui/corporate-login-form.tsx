@@ -533,7 +533,10 @@ export function CorporateLoginForm({
                   toast.success('Demo hesabiyla giris yapildi', {
                     description: 'Tum ozellikler aktif!',
                   });
-                  // Navigation handled by useEffect when isAuthenticated becomes true
+                  // Navigate immediately after demo login
+                  setTimeout(() => {
+                    router.push(redirectTo);
+                  }, 100);
                 }}
                 disabled={isLoading}
                 variant="outline"
