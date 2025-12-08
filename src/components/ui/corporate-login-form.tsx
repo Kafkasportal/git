@@ -42,7 +42,7 @@ export function CorporateLoginForm({
   const emailInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
 
-  const { login, isAuthenticated, initializeAuth } = useAuthStore();
+  const { login, demoLogin, isAuthenticated, initializeAuth } = useAuthStore();
 
   // Development mode - auto-fill credentials for easy testing
   const isDevelopment = process.env.NODE_ENV === 'development';
@@ -511,7 +511,43 @@ export function CorporateLoginForm({
               </motion.div>
             </form>
 
-            {/* Admin Test Login Info - Always Visible */}
+            {/* Demo Login - No Backend Required */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="mt-6"
+            >
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-slate-700" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-slate-900/40 px-2 text-slate-500">veya</span>
+                </div>
+              </div>
+              <Button
+                type="button"
+                onClick={() => {
+                  demoLogin();
+                  toast.success('Demo hesabiyla giris yapildi', {
+                    description: 'Tum ozellikler aktif!',
+                  });
+                  // Navigation handled by useEffect when isAuthenticated becomes true
+                }}
+                disabled={isLoading}
+                variant="outline"
+                className="w-full mt-4 h-12 bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 font-semibold rounded-xl transition-all duration-300"
+              >
+                <Zap className="w-4 h-4 mr-2" />
+                Demo Giris (Backend Gerektirmez)
+              </Button>
+              <p className="text-[10px] text-slate-500 text-center mt-2">
+                Appwrite baglantisi olmadan tum ozellikleri test edin
+              </p>
+            </motion.div>
+
+            {/* Admin Test Login Info - Development Only */}
             {isDevelopment && devTestPassword && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}

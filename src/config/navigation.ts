@@ -125,6 +125,7 @@ export const navigationModules: NavigationModule[] = [
     subPages: [
       { name: 'Kurum İçi', href: '/mesaj/kurum-ici', description: 'İç iletişim' },
       { name: 'Toplu Mesaj', href: '/mesaj/toplu', description: 'Toplu bildirimler' },
+      { name: 'WhatsApp', href: '/mesaj/whatsapp', description: 'WhatsApp mesajlaşma' },
       { name: 'İletişim Geçmişi', href: '/mesaj/gecmis', description: 'E-posta ve SMS kayıtları' },
     ],
   },

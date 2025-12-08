@@ -74,6 +74,10 @@ const baseConfig: NextConfig = {
     'exceljs',
     'nodemailer',
     'twilio',
+    // WhatsApp Web.js and its dependencies (Puppeteer-based)
+    'whatsapp-web.js',
+    'puppeteer',
+    'puppeteer-core',
   ],
 
   // Image optimization - aggressive caching and modern formats

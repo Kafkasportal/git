@@ -121,6 +121,26 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
 
   // Initialize auth on mount (only once)
   useEffect(() => {
+    // Check if demo session exists - no need to call initializeAuth
+    const storedSession = localStorage.getItem('auth-session');
+    if (storedSession) {
+      try {
+        const sessionData = JSON.parse(storedSession);
+        if (sessionData.isDemo && sessionData.isAuthenticated) {
+          if (process.env.NODE_ENV === 'development') {
+            logger.debug('Dashboard: Demo session detected, skipping API auth');
+          }
+          // Demo session - state should already be set by demoLogin
+          // If not, initializeAuth will handle it
+          if (isAuthenticated && isInitialized) {
+            return;
+          }
+        }
+      } catch {
+        // Invalid session data
+      }
+    }
+
     if (isInitialized) {
       // Already initialized, skip
       return;
@@ -142,7 +162,7 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
       logger.debug('Dashboard: Auth initialization called');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
+  }, [isAuthenticated, isInitialized]); // Re-check when auth state changes
 
   useEffect(() => {
     if (isInitialized && !isAuthenticated) {
@@ -322,9 +342,27 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timeoutId);
   }, [pathname, isAuthenticated, isInitialized, queryClient]);
 
-  if (!isInitialized || !isAuthenticated) {
+  // Check for demo session
+  const [hasDemoSession, setHasDemoSession] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('auth-session');
+      if (stored) {
+        const data = JSON.parse(stored);
+        if (data.isDemo && data.isAuthenticated) {
+          setHasDemoSession(true);
+        }
+      }
+    } catch {
+      // Invalid data
+    }
+  }, []);
+
+  // Show loading only if not authenticated AND not a demo session
+  if ((!isInitialized || !isAuthenticated) && !hasDemoSession) {
     if (process.env.NODE_ENV === 'development') {
-      logger.debug('Dashboard: Loading state', { isInitialized, isAuthenticated });
+      logger.debug('Dashboard: Loading state', { isInitialized, isAuthenticated, hasDemoSession });
     }
     return <LoadingOverlay variant="pulse" fullscreen={true} text="Yükleniyor..." />;
   }

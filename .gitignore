@@ -152,3 +152,7 @@ appwrite.json
 
 # Local IDE settings (contains secrets)
 .vscode/settings.local.json
+
+# WhatsApp Web.js session data
+.wwebjs_auth/
+.wwebjs_cache/

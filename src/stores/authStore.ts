@@ -47,6 +47,7 @@ interface AuthActions {
     password: string,
     rememberMe?: boolean,
   ) => Promise<void>;
+  demoLogin: () => void;
   logout: (callback?: () => void) => void;
   initializeAuth: () => void;
 
@@ -122,6 +123,60 @@ export const useAuthStore = create<AuthStore>()(
                 state.isLoading = true;
               });
 
+              // Check for demo session first (no API call needed)
+              const stored = localStorage.getItem("auth-session");
+              if (stored) {
+                try {
+                  const localData = JSON.parse(stored);
+                  if (localData.isDemo && localData.isAuthenticated) {
+                    // Demo session - restore demo user without API call
+                    const demoUser: User = {
+                      id: "demo-user-001",
+                      email: "demo@dernek.org",
+                      name: "Demo Kullanici",
+                      role: "admin",
+                      avatar: null,
+                      permissions: [
+                        "donations:read",
+                        "donations:write",
+                        "beneficiaries:read",
+                        "beneficiaries:write",
+                        "scholarships:read",
+                        "scholarships:write",
+                        "finance:read",
+                        "finance:write",
+                        "messages:read",
+                        "messages:write",
+                        "workflow:read",
+                        "workflow:write",
+                        "partners:read",
+                        "partners:write",
+                        "reports:read",
+                        "reports:write",
+                        "settings:read",
+                        "settings:write",
+                        "users:manage",
+                        "aid_applications:read",
+                        "aid_applications:write",
+                      ] as PermissionValue[],
+                      isActive: true,
+                      createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString(),
+                    };
+
+                    set((state) => {
+                      state.user = demoUser;
+                      state.isAuthenticated = true;
+                      state.isInitialized = true;
+                      state.isLoading = false;
+                    });
+                    return;
+                  }
+                } catch {
+                  // Invalid localStorage, continue with normal flow
+                }
+              }
+
               try {
                 // Fetch current user (this validates session on server)
                 const userResp = await fetch("/api/auth/user", {
@@ -166,10 +221,10 @@ export const useAuthStore = create<AuthStore>()(
                 });
               } catch (_error) {
                 // Network error - try localStorage fallback
-                const stored = localStorage.getItem("auth-session");
-                if (stored) {
+                const storedFallback = localStorage.getItem("auth-session");
+                if (storedFallback) {
                   try {
-                    const localData = JSON.parse(stored);
+                    const localData = JSON.parse(storedFallback);
                     // SECURITY: Only check for basic session validity
                     // Full user data should be fetched from server when online
                     const hasValidData =
@@ -319,6 +374,79 @@ export const useAuthStore = create<AuthStore>()(
 
               throw new Error(errorMessage);
             }
+          },
+
+          // Demo Login action (bypasses Appwrite)
+          demoLogin: () => {
+            const demoUser: User = {
+              id: "demo-user-001",
+              email: "demo@dernek.org",
+              name: "Demo Kullanici",
+              role: "admin",
+              avatar: null,
+              permissions: [
+                "donations:read",
+                "donations:write",
+                "beneficiaries:read",
+                "beneficiaries:write",
+                "scholarships:read",
+                "scholarships:write",
+                "finance:read",
+                "finance:write",
+                "messages:read",
+                "messages:write",
+                "workflow:read",
+                "workflow:write",
+                "partners:read",
+                "partners:write",
+                "reports:read",
+                "reports:write",
+                "settings:read",
+                "settings:write",
+                "users:manage",
+                "aid_applications:read",
+                "aid_applications:write",
+              ] as PermissionValue[],
+              isActive: true,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            };
+
+            const demoSession: Session = {
+              userId: demoUser.id,
+              accessToken: "demo-token",
+              expire: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            };
+
+            // Set localStorage for client-side state
+            localStorage.setItem(
+              "auth-session",
+              JSON.stringify({
+                userId: demoUser.id,
+                isAuthenticated: true,
+                lastVerified: Date.now(),
+                isDemo: true,
+              }),
+            );
+
+            // Set cookie for middleware authentication
+            // This is a demo session cookie that the middleware can verify
+            const demoSessionCookie = JSON.stringify({
+              sessionId: "demo-session-001",
+              userId: demoUser.id,
+              expire: demoSession.expire,
+              isDemo: true,
+            });
+            document.cookie = `auth-session=${encodeURIComponent(demoSessionCookie)}; path=/; max-age=${24 * 60 * 60}; SameSite=Lax`;
+
+            set((state) => {
+              state.user = demoUser;
+              state.session = demoSession;
+              state.isAuthenticated = true;
+              state.isInitialized = true;
+              state.isLoading = false;
+              state.error = null;
+            });
           },
 
           // Logout action
