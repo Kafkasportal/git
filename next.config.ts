@@ -260,15 +260,6 @@ const baseConfig: NextConfig = {
       // Bundle analyzer will be handled by the wrapper
     }
 
-    // Suppress baseline-browser-mapping warnings
-    config.ignoreWarnings = [
-      ...(config.ignoreWarnings || []),
-      {
-        module: /baseline-browser-mapping/,
-        message: /The data in this module is over two months old/,
-      },
-    ];
-
     // Exclude test-only dependencies from build (additional webpack externals)
     // jsdom is only needed for tests, not for production builds
     if (isServer) {
@@ -399,12 +390,6 @@ const baseConfig: NextConfig = {
         splitChunks: false,
       };
     }
-
-    // SVG optimization
-    config.module.rules.push({
-      test: /\\.svg$/,
-      use: ['@svgr/webpack'],
-    });
 
     return config;
   },
