@@ -97,6 +97,13 @@ export async function parseAuthSessionEdge(
     return null;
   }
 
+  // Check if cookie is legacy JSON format (starts with { or URL-encoded {)
+  const decodedStart = decodeURIComponent(cookieValue.substring(0, 10));
+  if (decodedStart.startsWith('{')) {
+    // This is a legacy JSON session (unsigned)
+    return parseLegacySession(cookieValue);
+  }
+
   const secret = process.env.SESSION_SECRET;
   if (!secret || secret.length < 16) {
     // Fall back to legacy parsing if no secret configured
