@@ -6,11 +6,11 @@ import { readOnlyRateLimit } from '@/lib/rate-limit';
 
 /**
  * POST /api/users/batch
- * Get multiple users by IDs (for n8n workflows and batch operations)
- * Requires authentication - prevents unauthorized user data access
+ * Birden fazla kullanıcıyı ID ile getir (toplu işlemler için)
+ * Kimlik doğrulama gerektirir - yetkisiz erişimi engeller
  * Body: { user_ids: string[] }
  *
- * SECURITY CRITICAL: Batch user data retrieval without auth = mass PII data leak
+ * GÜVENLİK KRİTİK: Toplu kullanıcı verisi erişimi kimlik doğrulama gerektirir
  */
 async function batchGetUsersHandler(request: NextRequest) {
   try {

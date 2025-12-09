@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { appwriteMessages } from "@/lib/appwrite/api";
 import logger from "@/lib/logger";
 import { extractParams } from "@/lib/api/route-helpers";
-import { sanitizePhone } from "@/lib/sanitization";
 import type { MessageDocument, UserDocument } from "@/types/database";
 
 function validateMessageUpdate(data: Record<string, unknown>): {
@@ -200,42 +199,12 @@ async function sendMessageHandler(
 
     let sendResult: { success: boolean; error?: string } = { success: false };
 
-    // Send based on message type
+    // Send based on message type - SMS devre dışı, sadece email destekleniyor
     if (messageData.message_type === "sms") {
-      const { sendBulkSMS } = await import("@/lib/services/sms");
-      // Extract phone numbers from users and beneficiaries (phone field exists in database schema)
-      const phoneNumbers = recipients
-        .map((user) => {
-          const phone = (user as { phone?: string })?.phone;
-          if (!phone) return null;
-          // Sanitize phone to ensure standard format
-          return sanitizePhone(phone);
-        })
-        .filter(
-          (phone): phone is string => phone !== null && phone.length === 10,
-        );
-
-      if (phoneNumbers.length === 0) {
-        logger.warn("No valid phone numbers found for SMS recipients", {
-          recipients: messageData.recipients,
-        });
-        sendResult = {
-          success: false,
-          error: "Geçerli telefon numarası bulunamadı",
-        };
-      } else {
-        const result = await sendBulkSMS(
-          phoneNumbers,
-          messageData.content || "",
-        );
-        sendResult = {
-          success: result.failed === 0,
-          error:
-            result.failed > 0
-              ? `${result.failed} SMS gönderilemedi`
-              : undefined,
-        };
-      }
+      sendResult = {
+        success: false,
+        error: "SMS gönderimi şu anda devre dışı",
+      };
     } else if (messageData.message_type === "email") {
       const { sendBulkEmails } = await import("@/lib/services/email");
       const emails = recipients

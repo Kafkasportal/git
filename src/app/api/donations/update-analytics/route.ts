@@ -4,7 +4,7 @@ import logger from '@/lib/logger';
 
 /**
  * POST /api/donations/update-analytics
- * Update donation analytics (for n8n workflows)
+ * Bağış analitiği güncelleme
  */
 export async function POST(request: NextRequest) {
   try {

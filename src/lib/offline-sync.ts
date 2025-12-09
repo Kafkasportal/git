@@ -36,9 +36,22 @@ const DB_VERSION = 1;
 const STORE_NAME = 'pending-mutations';
 
 /**
+ * Check if IndexedDB is available
+ */
+function isIndexedDBAvailable(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (!window.indexedDB) return false;
+  return true;
+}
+
+/**
  * Initialize IndexedDB for offline storage
  */
 async function initDB(): Promise<IDBDatabase> {
+  if (!isIndexedDBAvailable()) {
+    throw new Error('IndexedDB is not available');
+  }
+  
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
@@ -74,6 +87,11 @@ async function initDB(): Promise<IDBDatabase> {
 export async function queueOfflineMutation(
   mutation: Omit<OfflineMutation, 'id' | 'timestamp'>
 ): Promise<void> {
+  if (!isIndexedDBAvailable()) {
+    logger.warn('IndexedDB not available, mutation not queued');
+    return;
+  }
+  
   try {
     const db = await initDB();
     const transaction = db.transaction([STORE_NAME], 'readwrite');
@@ -95,7 +113,7 @@ export async function queueOfflineMutation(
 
     logger.info('Offline mutation queued', { mutation: offlineMutation });
   } catch (error) {
-    logger.error('Failed to queue offline mutation', { error });
+    logger.error('Failed to queue offline mutation', error as Error);
     throw error;
   }
 }
@@ -104,6 +122,10 @@ export async function queueOfflineMutation(
  * Get all pending mutations
  */
 export async function getPendingMutations(): Promise<OfflineMutation[]> {
+  if (!isIndexedDBAvailable()) {
+    return [];
+  }
+  
   try {
     const db = await initDB();
     const transaction = db.transaction([STORE_NAME], 'readonly');
@@ -115,7 +137,10 @@ export async function getPendingMutations(): Promise<OfflineMutation[]> {
       request.onerror = () => reject(request.error);
     });
   } catch (error) {
-    logger.error('Failed to get pending mutations', { error });
+    // Only log if it's not the expected "IndexedDB not available" error
+    if (error instanceof Error && error.message !== 'IndexedDB is not available') {
+      logger.error('Failed to get pending mutations', error);
+    }
     return [];
   }
 }
@@ -124,6 +149,8 @@ export async function getPendingMutations(): Promise<OfflineMutation[]> {
  * Remove a mutation from queue after successful sync
  */
 export async function removeMutation(id: string): Promise<void> {
+  if (!isIndexedDBAvailable()) return;
+  
   try {
     const db = await initDB();
     const transaction = db.transaction([STORE_NAME], 'readwrite');
@@ -138,7 +165,7 @@ export async function removeMutation(id: string): Promise<void> {
 
     logger.info('Mutation removed from queue', { id });
   } catch (error) {
-    logger.error('Failed to remove mutation', { error, id });
+    logger.error('Failed to remove mutation', error as Error, { id });
   }
 }
 
@@ -146,6 +173,8 @@ export async function removeMutation(id: string): Promise<void> {
  * Update mutation retry count and timestamp
  */
 async function updateMutationRetry(id: string, retryCount: number): Promise<void> {
+  if (!isIndexedDBAvailable()) return;
+  
   try {
     const db = await initDB();
     const transaction = db.transaction([STORE_NAME], 'readwrite');
@@ -170,7 +199,7 @@ async function updateMutationRetry(id: string, retryCount: number): Promise<void
       transaction.onerror = () => reject(transaction.error);
     });
   } catch (error) {
-    logger.error('Failed to update mutation retry', { error, id });
+    logger.error('Failed to update mutation retry', error as Error, { id });
   }
 }
 
@@ -182,7 +211,7 @@ export async function getFailedMutations(): Promise<OfflineMutation[]> {
     const mutations = await getPendingMutations();
     return mutations.filter((m) => m.retryCount >= 3);
   } catch (error) {
-    logger.error('Failed to get failed mutations', { error });
+    logger.error('Failed to get failed mutations', error as Error);
     return [];
   }
 }
@@ -191,6 +220,8 @@ export async function getFailedMutations(): Promise<OfflineMutation[]> {
  * Retry a failed mutation by resetting its retry count
  */
 export async function retryMutation(id: string): Promise<void> {
+  if (!isIndexedDBAvailable()) return;
+  
   try {
     const db = await initDB();
     const transaction = db.transaction([STORE_NAME], 'readwrite');
@@ -217,7 +248,7 @@ export async function retryMutation(id: string): Promise<void> {
 
     logger.info('Mutation retry count reset', { id });
   } catch (error) {
-    logger.error('Failed to retry mutation', { error, id });
+    logger.error('Failed to retry mutation', error as Error, { id });
     throw error;
   }
 }
@@ -226,6 +257,8 @@ export async function retryMutation(id: string): Promise<void> {
  * Clear all pending mutations (use with caution)
  */
 export async function clearAllMutations(): Promise<void> {
+  if (!isIndexedDBAvailable()) return;
+  
   try {
     const db = await initDB();
     const transaction = db.transaction([STORE_NAME], 'readwrite');
@@ -240,7 +273,7 @@ export async function clearAllMutations(): Promise<void> {
 
     logger.info('All mutations cleared');
   } catch (error) {
-    logger.error('Failed to clear mutations', { error });
+    logger.error('Failed to clear mutations', error as Error);
   }
 }
 
@@ -339,7 +372,7 @@ export async function syncPendingMutations(): Promise<{ success: number; failed:
       await removeMutation(mutation.id);
       success++;
     } catch (error) {
-      logger.error('Failed to sync mutation', { error, mutation });
+      logger.error('Failed to sync mutation', error as Error, { mutation });
       // Retry count already incremented in try block for non-409 errors
       if (mutation.retryCount < 3) {
         failed++;

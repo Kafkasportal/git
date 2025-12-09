@@ -66,7 +66,18 @@ function safeEqualEdge(a: string, b: string): boolean {
 function parseLegacySession(cookieValue?: string): AuthSession | null {
   if (!cookieValue) return null;
   try {
-    const parsed = JSON.parse(cookieValue) as AuthSession;
+    const decoded = decodeURIComponent(cookieValue);
+    const parsed = JSON.parse(decoded) as AuthSession & { isDemo?: boolean };
+    
+    // Handle demo session
+    if (parsed?.isDemo && parsed?.userId) {
+      return {
+        sessionId: parsed.sessionId || 'demo-session-001',
+        userId: parsed.userId,
+        expire: parsed.expire,
+      };
+    }
+    
     if (!parsed?.sessionId || !parsed?.userId) {
       return null;
     }
@@ -84,6 +95,13 @@ export async function parseAuthSessionEdge(
 ): Promise<AuthSession | null> {
   if (!cookieValue) {
     return null;
+  }
+
+  // Check if cookie is legacy JSON format (starts with { or URL-encoded {)
+  const decodedStart = decodeURIComponent(cookieValue.substring(0, 10));
+  if (decodedStart.startsWith('{')) {
+    // This is a legacy JSON session (unsigned)
+    return parseLegacySession(cookieValue);
   }
 
   const secret = process.env.SESSION_SECRET;

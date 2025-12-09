@@ -73,7 +73,7 @@ export function ServiceWorkerRegister() {
           logger.info('Service Worker controller changed');
         });
       } catch (error) {
-        logger.error('Service Worker registration failed', { error });
+        logger.error('Service Worker registration failed', error as Error);
       }
     };
 
@@ -142,7 +142,7 @@ export function ServiceWorkerRegister() {
           (registration as any).sync.register('sync-offline-data');
           logger.info('Background sync registered');
         } catch (error) {
-          logger.error('Background sync registration failed', { error });
+          logger.error('Background sync registration failed', error as Error);
           // Fallback to direct sync if background sync fails
           await syncOfflineData();
         }
@@ -175,7 +175,7 @@ export function ServiceWorkerRegister() {
           logger.info('Periodic sync completed', result);
         }
       } catch (error) {
-        logger.error('Periodic sync failed', { error });
+        logger.error('Periodic sync failed', error as Error);
       }
     };
 
