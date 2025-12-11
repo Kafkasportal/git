@@ -37,6 +37,7 @@ export function Pagination({
           disabled={currentPage === 1}
           className="h-9 w-9"
           title="Önceki sayfa"
+          aria-label="Önceki sayfa"
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -55,6 +56,7 @@ export function Pagination({
             className="h-9 w-14 text-center"
             min="1"
             max={totalPages}
+            aria-label="Sayfa numarası"
           />
           <span className="text-sm text-muted-foreground">/ {totalPages}</span>
         </div>
@@ -68,6 +70,7 @@ export function Pagination({
           disabled={currentPage === totalPages}
           className="h-9 w-9"
           title="Sonraki sayfa"
+          aria-label="Sonraki sayfa"
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
