@@ -1,7 +1,7 @@
 'use client';
 
-import { ReactNode, useState, useCallback } from 'react';
-import GridLayout, { Layout } from 'react-grid-layout';
+import { ReactNode, useState, useCallback, useMemo } from 'react';
+import { Responsive, WidthProvider, Layout } from 'react-grid-layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -37,6 +37,8 @@ import { cn } from '@/lib/utils';
 import { WidgetConfig, DashboardLayout, widgetTypeLabels } from '@/types/dashboard';
 import 'react-grid-layout/css/styles.css';
 
+const ResponsiveGridLayout = WidthProvider(Responsive);
+
 interface WidgetGridProps {
   widgets: WidgetConfig[];
   visibleWidgets: WidgetConfig[];
@@ -51,7 +53,7 @@ interface WidgetGridProps {
   onDeleteLayout: (layoutId: string) => void;
   onEditModeChange: (editMode: boolean) => void;
   renderWidget: (widget: WidgetConfig) => ReactNode;
-  cols?: number;
+  cols?: number; // Kept for compatibility but we use responsive cols
   rowHeight?: number;
   containerPadding?: [number, number];
   margin?: [number, number];
@@ -72,7 +74,7 @@ export function WidgetGrid({
   onDeleteLayout,
   onEditModeChange,
   renderWidget,
-  cols = 12,
+  cols = 12, // Default fallback
   rowHeight = 80,
   containerPadding = [0, 0],
   margin = [16, 16],
@@ -91,21 +93,31 @@ export function WidgetGrid({
 
   const hiddenWidgetsCount = widgets.filter((w) => !w.visible).length;
 
+  // Create responsive layouts object - mapping the single layout to all breakpoints
+  // This ensures the layout adapts but starts from the user's defined positions
+  const layouts = useMemo(() => ({
+    lg: layoutItems,
+    md: layoutItems,
+    sm: layoutItems,
+    xs: layoutItems,
+    xxs: layoutItems
+  }), [layoutItems]);
+
   return (
-    <div className={cn('relative', className)}>
+    <div className={cn('relative w-full', className)}>
       {/* Toolbar */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold">Dashboard</h2>
           {isEditMode && (
-            <Badge variant="secondary" className="gap-1">
+            <Badge variant="secondary" className="gap-1 animate-pulse">
               <Settings2 className="h-3 w-3" />
               Düzenleme Modu
             </Badge>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
           {/* Widget Visibility Toggle */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -191,7 +203,7 @@ export function WidgetGrid({
           >
             <Settings2 className="h-4 w-4" />
             <span className="hidden sm:inline">
-              {isEditMode ? 'Düzenlemeyi Bitir' : 'Düzenle'}
+              {isEditMode ? 'Bitti' : 'Düzenle'}
             </span>
           </Button>
 
@@ -221,9 +233,9 @@ export function WidgetGrid({
         </div>
       </div>
 
-      {/* Grid */}
+      {/* Responsive Grid */}
       {visibleWidgets.length === 0 ? (
-        <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-lg">
+        <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-lg bg-slate-50 dark:bg-slate-900/50">
           <div className="text-center text-muted-foreground">
             <LayoutGrid className="h-12 w-12 mx-auto mb-3 opacity-20" />
             <p className="font-medium">Hiç widget görünür değil</p>
@@ -231,26 +243,28 @@ export function WidgetGrid({
           </div>
         </div>
       ) : (
-        <GridLayout
+        <ResponsiveGridLayout
           className="layout"
-          layout={layoutItems}
-          cols={cols}
+          layouts={layouts}
+          breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+          cols={{ lg: cols, md: 10, sm: 6, xs: 4, xxs: 2 }}
           rowHeight={rowHeight}
-          width={1200}
           containerPadding={containerPadding}
           margin={margin}
           isDraggable={isEditMode}
           isResizable={isEditMode}
-          onLayoutChange={onLayoutChange}
+          onLayoutChange={(layout) => onLayoutChange(layout)}
           draggableHandle=".drag-handle"
           useCSSTransforms={true}
+          measureBeforeMount={false}
+          compactType="vertical"
         >
           {visibleWidgets.map((widget) => (
-            <div key={widget.id} className={cn(isEditMode && 'drag-handle')}>
+            <div key={widget.id} className={cn(isEditMode && 'drag-handle touch-none')}>
               {renderWidget(widget)}
             </div>
           ))}
-        </GridLayout>
+        </ResponsiveGridLayout>
       )}
 
       {/* Save Layout Dialog */}
@@ -288,4 +302,3 @@ export function WidgetGrid({
 }
 
 export default WidgetGrid;
-
