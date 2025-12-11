@@ -18,55 +18,65 @@ export interface KPICardProps {
   onClick?: () => void;
 }
 
+// Corporate Palette Mapping
+// We map the requested themes to a professional, restrained color set
+// focusing on Indigo (Primary), Slate (Neutral), Emerald (Success), and Rose (Danger).
 const colorThemes = {
+  // Success / Growth
   green: {
-    bg: 'from-green-500 to-green-600',
-    iconBg: 'bg-green-500/10',
-    iconColor: 'text-green-600 dark:text-green-400',
-    border: 'border-green-500/20',
-    text: 'text-green-600',
+    bg: 'from-emerald-500 to-emerald-600',
+    iconBg: 'bg-emerald-50 dark:bg-emerald-950/30',
+    iconColor: 'text-emerald-700 dark:text-emerald-400',
+    border: 'border-emerald-200 dark:border-emerald-800/30',
+    text: 'text-emerald-700 dark:text-emerald-400',
   },
+  // Warning / Attention
   orange: {
-    bg: 'from-orange-500 to-orange-600',
-    iconBg: 'bg-orange-500/10',
-    iconColor: 'text-orange-600 dark:text-orange-400',
-    border: 'border-orange-500/20',
-    text: 'text-orange-600',
+    bg: 'from-amber-500 to-amber-600',
+    iconBg: 'bg-amber-50 dark:bg-amber-950/30',
+    iconColor: 'text-amber-700 dark:text-amber-400',
+    border: 'border-amber-200 dark:border-amber-800/30',
+    text: 'text-amber-700 dark:text-amber-400',
   },
+  // Primary / Corporate Blue
   blue: {
-    bg: 'from-blue-500 to-blue-600',
-    iconBg: 'bg-blue-500/10',
-    iconColor: 'text-blue-600 dark:text-blue-400',
-    border: 'border-blue-500/20',
-    text: 'text-blue-600',
+    bg: 'from-indigo-500 to-indigo-600',
+    iconBg: 'bg-indigo-50 dark:bg-indigo-950/30',
+    iconColor: 'text-indigo-700 dark:text-indigo-400',
+    border: 'border-indigo-200 dark:border-indigo-800/30',
+    text: 'text-indigo-700 dark:text-indigo-400',
   },
+  // Critical / Danger
   red: {
-    bg: 'from-red-500 to-red-600',
-    iconBg: 'bg-red-500/10',
-    iconColor: 'text-red-600 dark:text-red-400',
-    border: 'border-red-500/20',
-    text: 'text-red-600',
+    bg: 'from-rose-500 to-rose-600',
+    iconBg: 'bg-rose-50 dark:bg-rose-950/30',
+    iconColor: 'text-rose-700 dark:text-rose-400',
+    border: 'border-rose-200 dark:border-rose-800/30',
+    text: 'text-rose-700 dark:text-rose-400',
   },
+  // Neutral / Information
   gray: {
-    bg: 'from-gray-500 to-gray-600',
-    iconBg: 'bg-gray-500/10',
-    iconColor: 'text-gray-600 dark:text-gray-400',
-    border: 'border-gray-500/20',
-    text: 'text-gray-600',
+    bg: 'from-slate-500 to-slate-600',
+    iconBg: 'bg-slate-50 dark:bg-slate-800',
+    iconColor: 'text-slate-700 dark:text-slate-400',
+    border: 'border-slate-200 dark:border-slate-700',
+    text: 'text-slate-700 dark:text-slate-400',
   },
+  // Mapped to Corporate Blue/Indigo for consistency
   purple: {
-    bg: 'from-purple-500 to-purple-600',
-    iconBg: 'bg-purple-500/10',
-    iconColor: 'text-purple-600 dark:text-purple-400',
-    border: 'border-purple-500/20',
-    text: 'text-purple-600',
+    bg: 'from-indigo-500 to-violet-600',
+    iconBg: 'bg-indigo-50 dark:bg-indigo-950/30',
+    iconColor: 'text-indigo-700 dark:text-indigo-400',
+    border: 'border-indigo-200 dark:border-indigo-800/30',
+    text: 'text-indigo-700 dark:text-indigo-400',
   },
+  // Mapped to Slate for professional look instead of hot pink
   pink: {
-    bg: 'from-pink-500 to-pink-600',
-    iconBg: 'bg-pink-500/10',
-    iconColor: 'text-pink-600 dark:text-pink-400',
-    border: 'border-pink-500/20',
-    text: 'text-pink-600',
+    bg: 'from-slate-500 to-slate-600',
+    iconBg: 'bg-slate-50 dark:bg-slate-800',
+    iconColor: 'text-slate-700 dark:text-slate-400',
+    border: 'border-slate-200 dark:border-slate-700',
+    text: 'text-slate-700 dark:text-slate-400',
   },
 };
 
@@ -84,48 +94,62 @@ function KPICardComponent({
   return (
     <Card
       className={cn(
-        'group relative overflow-hidden transition-all duration-200 hover:shadow-lg',
+        'group relative overflow-hidden transition-all duration-200 hover:shadow-md',
+        'border bg-card', // Use standard card background
         theme.border,
-        onClick && 'cursor-pointer hover:scale-105'
+        onClick && 'cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-700'
       )}
       onClick={onClick}
     >
-      {/* Background gradient overlay */}
+      {/* Subtle Background gradient overlay on hover */}
       <div
         className={cn(
-          'absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-200',
+          'absolute inset-0 opacity-0 group-hover:opacity-[0.03] transition-opacity duration-200',
           'bg-linear-to-br',
           theme.bg
         )}
       />
 
-      <CardContent className="p-6 relative">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
-            <h3 className="text-3xl font-bold tracking-tight mb-2">{value}</h3>
-            {description && <p className="text-xs text-muted-foreground">{description}</p>}
-            {trend && (
-              <div className="flex items-center gap-1 mt-2">
-                <span
-                  className={cn(
-                    'text-xs font-medium',
-                    trend.direction === 'up' ? 'text-green-600' : 'text-red-600'
-                  )}
-                >
-                  {trend.value}
-                </span>
-                <span className="text-xs text-muted-foreground">son 30 gün</span>
+      <CardContent className="p-5 relative">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-muted-foreground mb-1 truncate" title={title}>
+              {title}
+            </p>
+            <div className="flex items-baseline gap-2">
+              <h3 className="text-2xl lg:text-3xl font-bold tracking-tight text-foreground truncate" title={String(value)}>
+                {value}
+              </h3>
+            </div>
+
+            {(description || trend) && (
+              <div className="mt-2 flex items-center gap-2 flex-wrap">
+                {trend && (
+                  <div className={cn(
+                    "flex items-center text-xs font-medium px-1.5 py-0.5 rounded-full",
+                    trend.direction === 'up'
+                      ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
+                      : "bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400"
+                  )}>
+                    {trend.value}
+                  </div>
+                )}
+                {description && (
+                  <p className="text-xs text-muted-foreground truncate max-w-full" title={description}>
+                    {description}
+                  </p>
+                )}
               </div>
             )}
           </div>
+
           <div
             className={cn(
-              'p-3 rounded-xl transition-transform group-hover:scale-110',
+              'p-2.5 rounded-lg shrink-0 transition-colors',
               theme.iconBg
             )}
           >
-            <Icon className={cn('h-6 w-6', theme.iconColor)} />
+            <Icon className={cn('h-5 w-5', theme.iconColor)} />
           </div>
         </div>
       </CardContent>
