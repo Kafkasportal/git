@@ -1,5 +1,7 @@
 # Dernek Yönetim Sistemi
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/32fcdacc0b1a4db0bf22deae2a259f9e)](https://app.codacy.com/gh/Kafkasportal/git?utm_source=github.com&utm_medium=referral&utm_content=Kafkasportal/git&utm_campaign=Badge_Grade)
+
 Modern, kapsamlı dernek yönetim sistemi - Next.js 16 + Appwrite ile geliştirilmiştir.
 
 ## 🚀 Özellikler
