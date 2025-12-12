@@ -59,7 +59,7 @@ export function BeneficiaryFormWizard({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const methods = useForm<BeneficiaryFormData>({
-    resolver: zodResolver(beneficiarySchema) as any,
+    resolver: zodResolver(beneficiarySchema) as unknown,
     defaultValues: {
       mernisCheck: false,
       familyMemberCount: 1,
@@ -137,7 +137,7 @@ export function BeneficiaryFormWizard({
     },
     onSuccess: () => {
       toast.success('İhtiyaç sahibi başarıyla eklendi');
-      queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
+      void queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
       onSuccess?.();
     },
     onError: (err: unknown) => {
@@ -228,8 +228,8 @@ export function BeneficiaryFormWizard({
     },
     onSuccess: () => {
       toast.success('İhtiyaç sahibi başarıyla güncellendi');
-      queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
-      queryClient.invalidateQueries({ queryKey: ['beneficiaries', beneficiaryId] });
+      void queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
+      void queryClient.invalidateQueries({ queryKey: ['beneficiaries', beneficiaryId] });
       onSuccess?.();
     },
     onError: (err: unknown) => {

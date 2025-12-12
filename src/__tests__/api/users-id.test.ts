@@ -139,7 +139,7 @@ describe('PATCH /api/users/[id]', () => {
       isActive: true,
     };
 
-    vi.mocked(appwriteApi.appwriteUsers.update).mockResolvedValue(updatedUser as any);
+    vi.mocked(appwriteApi.appwriteUsers.update).mockResolvedValue(updatedUser as unknown);
 
     const request = new NextRequest('http://localhost/api/users/test-id', {
       method: 'PATCH',
@@ -280,7 +280,7 @@ describe('PATCH /api/users/[id]', () => {
       email: 'test@example.com',
     };
 
-    vi.mocked(appwriteApi.appwriteUsers.update).mockResolvedValue(updatedUser as any);
+    vi.mocked(appwriteApi.appwriteUsers.update).mockResolvedValue(updatedUser as unknown);
 
     const request = new NextRequest('http://localhost/api/users/test-id', {
       method: 'PATCH',

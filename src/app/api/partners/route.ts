@@ -116,13 +116,13 @@ export const GET = buildApiRoute({
     limit: params.limit,
     skip: params.skip,
     search: params.search,
-    type: filters?.type as
+    type: filters.type as
       | "organization"
       | "individual"
       | "sponsor"
       | undefined,
-    status: filters?.status as "pending" | "active" | "inactive" | undefined,
-    partnership_type: filters?.partnership_type as
+    status: filters.status as "pending" | "active" | "inactive" | undefined,
+    partnership_type: filters.partnership_type as
       | "sponsor"
       | "donor"
       | "supplier"

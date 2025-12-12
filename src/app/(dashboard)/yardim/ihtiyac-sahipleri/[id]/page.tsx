@@ -39,8 +39,8 @@ export default function BeneficiaryDetailPage({ params }: { params: Promise<{ id
       return result.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['beneficiary', id] });
-      queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
+      void queryClient.invalidateQueries({ queryKey: ['beneficiary', id] });
+      void queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
       toast.success('İhtiyaç sahibi başarıyla güncellendi');
     },
     onError: (error: Error) => {
@@ -56,7 +56,7 @@ export default function BeneficiaryDetailPage({ params }: { params: Promise<{ id
       return result.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
+      void queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
       toast.success('İhtiyaç sahibi başarıyla silindi');
       router.push('/yardim/ihtiyac-sahipleri');
     },
@@ -121,21 +121,21 @@ export default function BeneficiaryDetailPage({ params }: { params: Promise<{ id
     mobilePhone: beneficiary.phone || undefined,
     email: beneficiary.email || undefined,
     address: beneficiary.address || undefined,
-    city: beneficiary.city as any,
+    city: beneficiary.city as unknown,
     district: beneficiary.district || undefined,
     neighborhood: beneficiary.neighborhood || undefined,
     birthDate: beneficiary.birth_date || undefined,
-    gender: beneficiary.gender as any,
-    maritalStatus: beneficiary.marital_status as any,
-    educationStatus: beneficiary.education_level as any,
+    gender: beneficiary.gender as unknown,
+    maritalStatus: beneficiary.marital_status as unknown,
+    educationStatus: beneficiary.education_level as unknown,
     occupation: beneficiary.occupation || undefined,
     familyMemberCount: beneficiary.family_size || 1,
     notes: beneficiary.notes || undefined,
     mernisCheck: false,
     nationality: 'Türkiye',
-    category: 'GENEL' as any,
-    fundRegion: 'TR' as any,
-    fileConnection: 'DERNEK' as any,
+    category: 'GENEL' as unknown,
+    fundRegion: 'TR' as unknown,
+    fileConnection: 'DERNEK' as unknown,
     fileNumber: beneficiary.tc_no || 'AUTO',
   };
 

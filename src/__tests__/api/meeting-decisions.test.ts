@@ -192,7 +192,7 @@ describe('POST /api/meeting-decisions', () => {
     };
 
     vi.mocked(appwriteApi.appwriteMeetingDecisions.create).mockResolvedValue(
-      createdDecision as any
+      createdDecision as unknown
     );
 
     const request = new NextRequest('http://localhost/api/meeting-decisions', {

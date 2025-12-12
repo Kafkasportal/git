@@ -85,8 +85,8 @@ export default function TasksPage() {
     endpoint: '/api/tasks',
     resourceName: 'görev',
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      void queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
     },
   });
 
@@ -214,8 +214,8 @@ export default function TasksPage() {
       tasksApi.update(taskId, { status: newStatus }),
     onSuccess: () => {
       toast.success('Görev durumu güncellendi');
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      void queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
     },
     onError: (error: unknown) => {
       const message = error instanceof Error ? error.message : 'Bilinmeyen hata';
@@ -228,8 +228,8 @@ export default function TasksPage() {
     mutationFn: (taskId: string) => tasksApi.delete(taskId),
     onSuccess: () => {
       toast.success('Görev silindi');
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      void queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
     },
     onError: (error: unknown) => {
       const message = error instanceof Error ? error.message : 'Bilinmeyen hata';
@@ -326,8 +326,8 @@ export default function TasksPage() {
                 onSuccess={() => {
                   setShowCreateModal(false);
                   // Refresh tasks list
-                  queryClient.invalidateQueries({ queryKey: ['tasks'] });
-                  queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      void queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
                 }}
                 onCancel={() => setShowCreateModal(false)}
               />
@@ -674,8 +674,8 @@ export default function TasksPage() {
                 setShowEditModal(false);
                 setSelectedTask(null);
                 // Refresh tasks list
-                queryClient.invalidateQueries({ queryKey: ['tasks'] });
-                queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      void queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
               }}
               onCancel={() => {
                 setShowEditModal(false);

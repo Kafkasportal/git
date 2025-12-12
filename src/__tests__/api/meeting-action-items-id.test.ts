@@ -102,7 +102,7 @@ describe('PUT /api/meeting-action-items/[id]', () => {
     };
 
     vi.mocked(appwriteApi.appwriteMeetingActionItems.update).mockResolvedValue(
-      updatedActionItem as any
+      updatedActionItem as unknown
     );
 
     const request = new NextRequest('http://localhost/api/meeting-action-items/test-id', {
@@ -134,7 +134,7 @@ describe('PUT /api/meeting-action-items/[id]', () => {
     };
 
     vi.mocked(appwriteApi.appwriteMeetingActionItems.updateStatus).mockResolvedValue(
-      updatedActionItem as any
+      updatedActionItem as unknown
     );
 
     const request = new NextRequest('http://localhost/api/meeting-action-items/test-id', {

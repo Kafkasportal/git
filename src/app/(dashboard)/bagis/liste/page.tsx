@@ -50,7 +50,7 @@ export default function DonationsPage() {
     endpoint: '/api/donations',
     resourceName: 'bağış',
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['donations'] });
+      void queryClient.invalidateQueries({ queryKey: ['donations'] });
     },
   });
 

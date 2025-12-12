@@ -160,7 +160,7 @@ async function createMessageHandler(request: NextRequest) {
       );
     }
 
-    const response = await appwriteMessages.create(messageData as any);
+    const response = await appwriteMessages.create(messageData as unknown);
 
     return NextResponse.json(
       { success: true, data: response, message: 'Mesaj taslağı oluşturuldu' },

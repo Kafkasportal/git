@@ -115,7 +115,7 @@ async function createTaskHandler(request: NextRequest) {
       is_read: validation.normalizedData.is_read ?? false,
     };
 
-    const response = await appwriteTasks.create(taskData as any);
+    const response = await appwriteTasks.create(taskData as unknown);
 
     return NextResponse.json(
       { success: true, data: response, message: 'Görev başarıyla oluşturuldu' },

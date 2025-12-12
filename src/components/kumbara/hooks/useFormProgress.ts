@@ -17,7 +17,7 @@ export function useFormProgress<T extends FieldValues>({
 }: UseFormProgressOptions<T>) {
   const watchedFields = useWatch({
     control,
-    name: requiredFieldNames as any,
+    name: requiredFieldNames as unknown,
   });
 
   const progress = useMemo(() => {

@@ -206,7 +206,7 @@ export default function CashVaultPage() {
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
             Kasa bakiyesi minimum eşik değerin ({formatCurrency(MINIMUM_BALANCE_THRESHOLD)})
-            altında! Mevcut bakiye: {formatCurrency(vaultBalance?.balance || 0)}
+            altında! Mevcut bakiye: {formatCurrency(vaultBalance.balance || 0)}
           </AlertDescription>
         </Alert>
       )}
@@ -223,7 +223,7 @@ export default function CashVaultPage() {
               {vaultBalance ? formatCurrency(vaultBalance.balance) : '...'}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {vaultBalance?.transactionCount || 0} işlem
+              {vaultBalance.transactionCount || 0} işlem
             </p>
           </CardContent>
         </Card>

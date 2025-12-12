@@ -70,7 +70,7 @@ export function ConsentsManager({ beneficiaryId }: ConsentsManagerProps) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['consents', beneficiaryId] });
+      void queryClient.invalidateQueries({ queryKey: ['consents', beneficiaryId] });
       toast.success('Rıza beyanı başarıyla eklendi');
       setShowForm(false);
       setFormData({
@@ -91,7 +91,7 @@ export function ConsentsManager({ beneficiaryId }: ConsentsManagerProps) {
       return await appwriteConsents.remove(consentId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['consents', beneficiaryId] });
+      void queryClient.invalidateQueries({ queryKey: ['consents', beneficiaryId] });
       toast.success('Rıza beyanı silindi');
     },
     onError: () => toast.error('Silme işlemi başarısız'),

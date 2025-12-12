@@ -99,7 +99,7 @@ describe('PUT /api/meeting-decisions/[id]', () => {
     };
 
     vi.mocked(appwriteApi.appwriteMeetingDecisions.update).mockResolvedValue(
-      updatedDecision as any
+      updatedDecision as unknown
     );
 
     const request = new NextRequest('http://localhost/api/meeting-decisions/test-id', {

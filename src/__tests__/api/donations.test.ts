@@ -18,7 +18,7 @@ vi.mock('@/lib/appwrite/api', () => ({
 
 // Mock middleware
 vi.mock('@/lib/api/middleware', () => ({
-  buildApiRoute: vi.fn((_options) => (handler: any) => handler),
+  buildApiRoute: vi.fn((_options) => (handler: unknown) => handler),
 }));
 
 // Mock route helpers
@@ -207,7 +207,7 @@ describe('POST /api/donations', () => {
       status: 'pending',
     };
 
-    vi.mocked(appwriteApi.appwriteDonations.create).mockResolvedValue(createdDonation as any);
+    vi.mocked(appwriteApi.appwriteDonations.create).mockResolvedValue(createdDonation as unknown);
 
     const request = new NextRequest('http://localhost/api/donations', {
       method: 'POST',

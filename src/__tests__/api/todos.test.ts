@@ -20,7 +20,7 @@ vi.mock('@/lib/appwrite/api', () => ({
 
 // Mock middleware
 vi.mock('@/lib/api/middleware', () => ({
-  buildApiRoute: vi.fn((_config) => (handler: any) => handler),
+  buildApiRoute: vi.fn((_config) => (handler: unknown) => handler),
 }));
 
 // Mock route helpers
@@ -262,7 +262,7 @@ describe('POST /api/todos', () => {
       completed: false,
     };
 
-    vi.mocked(appwriteApi.appwriteTodos.create).mockResolvedValue(createdTodo as any);
+    vi.mocked(appwriteApi.appwriteTodos.create).mockResolvedValue(createdTodo as unknown);
 
     const request = new NextRequest('http://localhost/api/todos', {
       method: 'POST',
@@ -382,7 +382,7 @@ describe('POST /api/todos', () => {
       completed: false,
     };
 
-    vi.mocked(appwriteApi.appwriteTodos.create).mockResolvedValue(createdTodo as any);
+    vi.mocked(appwriteApi.appwriteTodos.create).mockResolvedValue(createdTodo as unknown);
 
     const request = new NextRequest('http://localhost/api/todos', {
       method: 'POST',

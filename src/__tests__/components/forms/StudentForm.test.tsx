@@ -40,7 +40,7 @@ afterEach(() => {
     Element.prototype.scrollIntoView = originalScrollIntoView;
   } else {
     // If it didn't exist originally, delete it
-    delete (Element.prototype as any).scrollIntoView;
+    delete (Element.prototype as unknown).scrollIntoView;
   }
 });
 

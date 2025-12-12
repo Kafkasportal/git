@@ -32,11 +32,11 @@ export const GET = buildApiRoute({
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       const monthLabel = monthNames[date.getMonth()];
-      monthlyData.set(monthKey, { amount: 0, beneficiaries: new Set(), month: monthLabel } as any);
+      monthlyData.set(monthKey, { amount: 0, beneficiaries: new Set(), month: monthLabel } as unknown);
     }
 
     // Aggregate donations by month
-    donations.forEach((donation: any) => {
+    donations.forEach((donation: unknown) => {
       if (donation.status === 'completed') {
         const createdDate = new Date(donation.$createdAt || donation._creationTime || Date.now());
         const monthKey = `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}`;
@@ -54,7 +54,7 @@ export const GET = buildApiRoute({
 
     // Convert to array format for charts
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const donationTrend = Array.from(monthlyData.values()).map((data: any) => ({
+    const donationTrend = Array.from(monthlyData.values()).map((data: unknown) => ({
       month: data.month,
       amount: Math.round(data.amount),
       beneficiaries: data.beneficiaries.size,
@@ -62,7 +62,7 @@ export const GET = buildApiRoute({
 
     // Aggregate category data from aid applications
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let categoryData: any[] = [];
+    let categoryData: unknown[] = [];
 
     try {
       const aidApplicationsResponse = await appwriteAidApplications.list({
@@ -95,7 +95,7 @@ export const GET = buildApiRoute({
         // Fallback: Aggregate by donation purpose
         const purposeMap = new Map<string, number>();
 
-        donations.forEach((donation: any) => {
+        donations.forEach((donation: unknown) => {
           if (donation.status === 'completed') {
             const purpose = donation.donation_purpose || 'Diğer';
             purposeMap.set(purpose, (purposeMap.get(purpose) || 0) + 1);

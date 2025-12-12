@@ -104,7 +104,7 @@ describe('PUT /api/meetings/[id]', () => {
       status: 'completed',
     };
 
-    vi.mocked(appwriteApi.appwriteMeetings.update).mockResolvedValue(updatedMeeting as any);
+    vi.mocked(appwriteApi.appwriteMeetings.update).mockResolvedValue(updatedMeeting as unknown);
 
     const request = new NextRequest('http://localhost/api/meetings/test-id', {
       method: 'PUT',

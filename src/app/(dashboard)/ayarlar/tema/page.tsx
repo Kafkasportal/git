@@ -100,7 +100,7 @@ export default function ThemeSettingsPage() {
       }
 
       // Invalidate queries to refetch
-      await queryClient.invalidateQueries({ queryKey: ['theme-presets'] });
+      void queryClient.invalidateQueries({ queryKey: ['theme-presets'] });
 
       // Apply the new theme
       await setTheme(customThemeName.trim());
@@ -131,7 +131,7 @@ export default function ThemeSettingsPage() {
       }
 
       // Invalidate queries to refetch
-      await queryClient.invalidateQueries({ queryKey: ['theme-presets'] });
+      void queryClient.invalidateQueries({ queryKey: ['theme-presets'] });
 
       toast.success(`${presetName} teması başarıyla silindi`);
     } catch (error) {

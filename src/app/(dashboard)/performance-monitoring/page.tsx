@@ -22,7 +22,7 @@ interface RouteMetrics {
   fps?: number;
   memory?: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  performance?: any;
+  performance?: unknown;
   timestamp?: string;
 }
 

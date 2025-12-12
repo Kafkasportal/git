@@ -83,7 +83,7 @@ export default function BulkMessagingPage() {
       setSendingProgress(100);
       setSendingResults(response.data as SendingResult);
       toast.success('Mesajlar başarıyla gönderildi!');
-      queryClient.invalidateQueries({ queryKey: ['messages'] });
+      void queryClient.invalidateQueries({ queryKey: ['messages'] });
     },
     onError: (error) => {
       toast.error(`Hata: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);

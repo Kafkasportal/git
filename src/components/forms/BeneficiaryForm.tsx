@@ -70,7 +70,7 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
     trigger,
     formState: { errors },
   } = useForm<BeneficiaryFormData>({
-    resolver: zodResolver(beneficiarySchema) as any,
+    resolver: zodResolver(beneficiarySchema) as unknown,
     defaultValues: {
       family_size: 1,
       income_level: "0-3000",

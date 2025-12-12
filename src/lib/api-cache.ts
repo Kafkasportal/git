@@ -292,10 +292,10 @@ export function usePrefetchWithCache() {
           // Some browsers throw when unknown init fields are provided; probe support first
           // Using Request constructor to detect support without sending a network request
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          new Request(url, { priority: priority as any });
+          new Request(url, { priority: priority as unknown });
           // If we reach here, assign priority to init for fetch
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (init as any).priority = priority;
+          (init as unknown).priority = priority;
         } catch {
           // Ignore unsupported priority; proceed without it
         }
@@ -370,7 +370,7 @@ export function useInvalidateCache() {
       }
 
       // Invalidate React Query cache
-      queryClient.invalidateQueries({ queryKey: [endpoint] });
+      void queryClient.invalidateQueries({ queryKey: [endpoint] });
     },
     [queryClient]
   );
@@ -385,7 +385,7 @@ export function useInvalidateCache() {
       }
 
       // Invalidate matching queries
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         predicate: (query) => {
           const firstKey = query.queryKey[0];
           return typeof firstKey === 'string' && firstKey.includes(pattern);

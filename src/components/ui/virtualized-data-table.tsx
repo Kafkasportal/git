@@ -165,7 +165,7 @@ function VirtualizedDataTableComponent<T>({
             <input
               type="checkbox"
               checked={selectedItems.has(getItemId(item))}
-              onChange={(e) => handleSelectItem(item, e as any)}
+              onChange={(e) => handleSelectItem(item, e as unknown)}
               onClick={(e) => e.stopPropagation()}
               className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
             />
@@ -197,7 +197,7 @@ function VirtualizedDataTableComponent<T>({
               role="cell"
               aria-colindex={memoizedColumns.findIndex((col) => col.key === column.key) + 1}
             >
-              {column.render ? column.render(item) : String((item as any)[column.key] ?? '-')}
+              {column.render ? column.render(item) : String((item as unknown)[column.key] ?? '-')}
             </div>
           );
         })}

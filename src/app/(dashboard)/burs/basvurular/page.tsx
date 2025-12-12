@@ -74,7 +74,7 @@ export default function ScholarshipApplicationsPage() {
     mutationFn: ({ id, data }: { id: string; data: { status?: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'waitlisted'; reviewed_at?: string; [key: string]: unknown } }) =>
       scholarshipApplicationsApi.update(id, data as { status?: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'waitlisted'; reviewed_at?: string; reviewed_by?: string; submitted_at?: string }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['scholarship-applications'] });
+      void queryClient.invalidateQueries({ queryKey: ['scholarship-applications'] });
       toast.success('Başvuru güncellendi');
       setIsDetailDialogOpen(false);
     },

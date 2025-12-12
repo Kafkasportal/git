@@ -42,7 +42,7 @@ export default function CreateUserPage() {
     },
     onSuccess: () => {
       toast.success('Kullanıcı başarıyla oluşturuldu');
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      void queryClient.invalidateQueries({ queryKey: ['users'] });
       router.push('/kullanici');
     },
     onError: (error: unknown) => {

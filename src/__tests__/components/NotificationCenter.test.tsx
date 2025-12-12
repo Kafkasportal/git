@@ -66,7 +66,7 @@ describe('NotificationCenter', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useNotificationStore as any).mockReturnValue({
+    (useNotificationStore as unknown).mockReturnValue({
       notifications: mockNotifications,
       unreadCount: vi.fn(() => 1), // unreadCount is a function in the store
       markAsRead: vi.fn(),

@@ -39,7 +39,7 @@ export interface CollectionConfig {
   id: string; // collectionId
   attributes?: Attribute[];
   indexes?: Index[];
-  permissions?: any[];
+  permissions?: unknown[];
 }
 
 const PERM_PUBLIC_READ = [Permission.read(Role.any())];

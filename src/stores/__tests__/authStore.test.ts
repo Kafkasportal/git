@@ -67,7 +67,7 @@ vi.mock('zustand/middleware', async (importOriginal) => {
   return {
     ...actual,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    persist: (creator: any) => creator, // Return the creator directly, effectively disabling persistence
+    persist: (creator: unknown) => creator, // Return the creator directly, effectively disabling persistence
   };
 });
 

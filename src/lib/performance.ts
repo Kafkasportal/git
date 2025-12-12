@@ -73,8 +73,8 @@ export function lazyLoadComponent<T extends React.ComponentType<any>>(
 ) {
   const Component = React.lazy(importFunc);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, react/display-name
-  const LazyComponent = React.forwardRef((props: any, ref) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-unknown, react/display-name
+  const LazyComponent = React.forwardRef((props: unknown, ref) => {
     const FallbackComponent = fallback || (() => React.createElement('div', null, 'Loading...'));
 
     return React.createElement(

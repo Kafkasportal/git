@@ -24,10 +24,10 @@ export function useFileUpload<T extends FieldValues>({
       if (file) {
         const fileName = sanitizedFilename || file.name;
         setUploadedFileName(fileName);
-        setValue(fieldName, fileName as any, { shouldValidate: true });
+        setValue(fieldName, fileName as unknown, { shouldValidate: true });
       } else {
         setUploadedFileName('');
-        setValue(fieldName, undefined as any, { shouldValidate: false });
+        setValue(fieldName, undefined as unknown, { shouldValidate: false });
       }
     },
     [setValue, fieldName]
@@ -36,7 +36,7 @@ export function useFileUpload<T extends FieldValues>({
   const resetFile = useCallback(() => {
     setUploadedFile(null);
     setUploadedFileName('');
-    setValue(fieldName, undefined as any, { shouldValidate: false });
+    setValue(fieldName, undefined as unknown, { shouldValidate: false });
   }, [setValue, fieldName]);
 
   return {

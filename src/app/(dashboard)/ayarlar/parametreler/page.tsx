@@ -316,7 +316,7 @@ function ParameterForm({ onSuccess }: { onSuccess?: () => void }) {
       ),
     onSuccess: () => {
       toast.success('Parametre eklendi');
-      queryClient.invalidateQueries({ queryKey: ['parameters'] });
+      void queryClient.invalidateQueries({ queryKey: ['parameters'] });
       onSuccess?.();
     },
     onError: (error: unknown) => {

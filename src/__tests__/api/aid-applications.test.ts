@@ -194,7 +194,7 @@ describe('POST /api/aid-applications', () => {
     };
 
     vi.mocked(appwriteApi.appwriteAidApplications.create).mockResolvedValue(
-      createdApplication as any
+      createdApplication as unknown
     );
 
     const request = new NextRequest('http://localhost/api/aid-applications', {
@@ -327,7 +327,7 @@ describe('POST /api/aid-applications', () => {
     };
 
     vi.mocked(appwriteApi.appwriteAidApplications.create).mockResolvedValue(
-      createdApplication as any
+      createdApplication as unknown
     );
 
     const request = new NextRequest('http://localhost/api/aid-applications', {

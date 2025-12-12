@@ -14,7 +14,7 @@ vi.mock('@/lib/appwrite/api', () => ({
 
 // Mock middleware
 vi.mock('@/lib/api/middleware', () => ({
-  buildApiRoute: vi.fn((_config) => (handler: any) => handler),
+  buildApiRoute: vi.fn((_config) => (handler: unknown) => handler),
 }));
 
 // Mock route helpers
@@ -153,7 +153,7 @@ describe('PUT /api/todos/[id]', () => {
     };
 
     vi.mocked(appwriteApi.appwriteTodos.get).mockResolvedValue(existingTodo);
-    vi.mocked(appwriteApi.appwriteTodos.update).mockResolvedValue(updatedTodo as any);
+    vi.mocked(appwriteApi.appwriteTodos.update).mockResolvedValue(updatedTodo as unknown);
 
     const request = new NextRequest('http://localhost/api/todos/test-id', {
       method: 'PUT',

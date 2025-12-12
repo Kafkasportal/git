@@ -233,7 +233,7 @@ export default function InternalMessagingPage() {
               onSuccess={() => {
                 setShowComposeModal(false);
                 // Refresh messages list
-                queryClient.invalidateQueries({ queryKey: ['internal-messages'] });
+      void queryClient.invalidateQueries({ queryKey: ['internal-messages'] });
               }}
               onCancel={() => setShowComposeModal(false)}
             />

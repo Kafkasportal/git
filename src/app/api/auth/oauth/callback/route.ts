@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     // Find user in our users collection by email
     const emailLower = appwriteUser.email.toLowerCase();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let user: any = await appwriteUsers.getByEmail(emailLower);
+    let user: unknown = await appwriteUsers.getByEmail(emailLower);
 
     // If user doesn't exist, create one
     if (!user) {

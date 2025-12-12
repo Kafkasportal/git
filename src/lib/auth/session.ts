@@ -208,7 +208,7 @@ export async function getUserFromSession(session: AuthSession | null): Promise<S
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const user = await appwriteUsers.get(session.userId) as any;
+    const user = await appwriteUsers.get(session.userId) as unknown;
 
     if (!user || !user.isActive) {
       return null;

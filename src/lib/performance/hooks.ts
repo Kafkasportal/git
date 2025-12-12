@@ -10,7 +10,7 @@ import logger from '@/lib/logger';
  * Debounced callback hook
  * Delays function execution until specified time has passed without invocation
  */
-export function useDebounce<T extends (...args: any[]) => any>(callback: T, delay: number): T {
+export function useDebounce<T extends (...args: unknown[]) => any>(callback: T, delay: number): T {
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const callbackRef = useRef(callback);
 
@@ -36,7 +36,7 @@ export function useDebounce<T extends (...args: any[]) => any>(callback: T, dela
  * Throttled callback hook
  * Limits function execution to once every specified time period
  */
-export function useThrottle<T extends (...args: any[]) => any>(callback: T, delay: number): T {
+export function useThrottle<T extends (...args: unknown[]) => any>(callback: T, delay: number): T {
   const lastRunRef = useRef<number>(0);
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const callbackRef = useRef(callback);

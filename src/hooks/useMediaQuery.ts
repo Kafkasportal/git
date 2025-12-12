@@ -45,8 +45,8 @@ export function useMediaQuery(query: string): boolean {
     // Legacy browsers (Safari < 14)
     else {
       // Legacy API for older browsers
-      (mediaQuery as any).addListener(handleChange);
-      return () => (mediaQuery as any).removeListener(handleChange);
+      (mediaQuery as unknown).addListener(handleChange);
+      return () => (mediaQuery as unknown).removeListener(handleChange);
     }
   }, [query, handleChange]);
 

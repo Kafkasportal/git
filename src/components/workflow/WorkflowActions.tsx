@@ -141,9 +141,9 @@ export function WorkflowActions({
       setSelectedAction(null);
 
       // Invalidate queries
-      queryClient.invalidateQueries({ queryKey: ['beneficiary', entityId] });
-      queryClient.invalidateQueries({ queryKey: ['workflow-actions'] });
-      queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
+      void queryClient.invalidateQueries({ queryKey: ['beneficiary', entityId] });
+      void queryClient.invalidateQueries({ queryKey: ['workflow-actions'] });
+      void queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
 
       onActionComplete?.(newStage);
     },

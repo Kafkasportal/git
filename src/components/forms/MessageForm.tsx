@@ -152,7 +152,7 @@ export function MessageForm({
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
       onSuccess?.();
     },
   });
@@ -164,7 +164,7 @@ export function MessageForm({
     mutationFn: (data: { id: string; data: MessageFormData }) =>
       messagesApi.update(data.id, data.data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
       onSuccess?.();
     },
   });
@@ -182,7 +182,7 @@ export function MessageForm({
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
       onSuccess?.();
     },
   });

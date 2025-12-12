@@ -78,7 +78,7 @@ export const POST = authRateLimit(async (request: NextRequest) => {
       const account = new Account(client);
       await account.createEmailPasswordSession(email, password);
       // Valid credentials
-    } catch (_authError: any) {
+    } catch (_authError: unknown) {
       // Record failed attempt
       recordLoginAttempt(email, false);
       const failedAttempts = getFailedAttemptCount(email);

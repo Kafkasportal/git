@@ -165,7 +165,7 @@ describe('POST /api/meetings', () => {
       ...newMeeting,
     };
 
-    vi.mocked(appwriteApi.appwriteMeetings.create).mockResolvedValue(createdMeeting as any);
+    vi.mocked(appwriteApi.appwriteMeetings.create).mockResolvedValue(createdMeeting as unknown);
 
     const request = new NextRequest('http://localhost/api/meetings', {
       method: 'POST',
@@ -268,7 +268,7 @@ describe('POST /api/meetings', () => {
       status: 'scheduled',
     };
 
-    vi.mocked(appwriteApi.appwriteMeetings.create).mockResolvedValue(createdMeeting as any);
+    vi.mocked(appwriteApi.appwriteMeetings.create).mockResolvedValue(createdMeeting as unknown);
 
     const request = new NextRequest('http://localhost/api/meetings', {
       method: 'POST',

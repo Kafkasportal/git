@@ -128,7 +128,7 @@ export const usePerformanceTracking = () => {
 
   const getMemoryUsage = useCallback(() => {
     if ('memory' in performance) {
-      const memoryInfo = (performance as any).memory;
+      const memoryInfo = (performance as unknown).memory;
       return memoryInfo.usedJSHeapSize;
     }
     return null;

@@ -169,7 +169,7 @@ export function useStandardForm<TFormData extends FieldValues, TResponse = unkno
   });
 
   return {
-    form: form as any,
+    form: form as unknown,
     handleSubmit,
     isSubmitting: form.formState.isSubmitting || mutation.isPending,
     isDirty: form.formState.isDirty,

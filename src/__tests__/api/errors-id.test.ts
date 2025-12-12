@@ -92,7 +92,7 @@ describe('PATCH /api/errors/[id]', () => {
       category: 'runtime',
     };
 
-    vi.mocked(appwriteApi.appwriteErrors.update).mockResolvedValue(updatedError as any);
+    vi.mocked(appwriteApi.appwriteErrors.update).mockResolvedValue(updatedError as unknown);
 
     const request = new NextRequest('http://localhost/api/errors/test-id', {
       method: 'PATCH',

@@ -90,7 +90,7 @@ describe('PUT /api/partners/[id]', () => {
       status: 'active',
     };
 
-    vi.mocked(appwriteApi.appwritePartners.update).mockResolvedValue(updatedPartner as any);
+    vi.mocked(appwriteApi.appwritePartners.update).mockResolvedValue(updatedPartner as unknown);
 
     const request = new NextRequest('http://localhost/api/partners/test-id', {
       method: 'PUT',

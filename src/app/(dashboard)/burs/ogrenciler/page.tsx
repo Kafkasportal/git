@@ -115,13 +115,13 @@ export default function StudentsPage() {
 
   const scholarshipsMap = useMemo(() => {
     const map: Record<string, { title: string; amount: number }> = {};
-    scholarshipsResponse?.forEach((s: any) => {
+    scholarshipsResponse?.forEach((s: unknown) => {
       map[s.$id] = { title: s.title, amount: s.amount };
     });
     return map;
   }, [scholarshipsResponse]);
 
-  const applications = (applicationsResponse?.data || []) as any[];
+  const applications = (applicationsResponse?.data || []) as unknown[];
   const total = applicationsResponse?.total || 0;
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -183,7 +183,7 @@ export default function StudentsPage() {
     onSuccess: () => {
       toast.success('Öğrenci başarıyla eklendi');
       setIsAddDialogOpen(false);
-      queryClient.invalidateQueries({ queryKey: ['scholarship-applications'] });
+      void queryClient.invalidateQueries({ queryKey: ['scholarship-applications'] });
     },
     onError: (error) => {
       toast.error(`Hata: ${error.message}`);

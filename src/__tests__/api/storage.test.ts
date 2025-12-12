@@ -32,7 +32,7 @@ describe('GET /api/storage', () => {
       user: {
         id: 'test-user',
       },
-    } as any);
+    } as unknown);
   });
 
   it('returns file list successfully', async () => {
@@ -54,7 +54,7 @@ describe('GET /api/storage', () => {
     vi.mocked(appwriteApi.appwriteFiles.list).mockResolvedValue({
       documents: mockFiles,
       total: 2,
-    } as any);
+    } as unknown);
 
     const request = new NextRequest('http://localhost/api/storage');
     const response = await GET(request);
@@ -78,7 +78,7 @@ describe('GET /api/storage', () => {
     vi.mocked(appwriteApi.appwriteFiles.list).mockResolvedValue({
       documents: mockFiles,
       total: 1,
-    } as any);
+    } as unknown);
 
     const request = new NextRequest('http://localhost/api/storage?beneficiaryId=ben-1');
     const response = await GET(request);
@@ -104,7 +104,7 @@ describe('GET /api/storage', () => {
     vi.mocked(appwriteApi.appwriteFiles.list).mockResolvedValue({
       documents: mockFiles,
       total: 1,
-    } as any);
+    } as unknown);
 
     const request = new NextRequest('http://localhost/api/storage?bucket=images');
     const response = await GET(request);
@@ -130,7 +130,7 @@ describe('GET /api/storage', () => {
     vi.mocked(appwriteApi.appwriteFiles.list).mockResolvedValue({
       documents: mockFiles,
       total: 1,
-    } as any);
+    } as unknown);
 
     const request = new NextRequest('http://localhost/api/storage?documentType=pdf');
     const response = await GET(request);
@@ -148,7 +148,7 @@ describe('GET /api/storage', () => {
     vi.mocked(appwriteApi.appwriteFiles.list).mockResolvedValue({
       documents: [],
       total: 0,
-    } as any);
+    } as unknown);
 
     const request = new NextRequest('http://localhost/api/storage');
     const response = await GET(request);

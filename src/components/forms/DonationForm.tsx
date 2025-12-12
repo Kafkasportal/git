@@ -120,7 +120,7 @@ export function DonationForm({ onSuccess, onCancel }: DonationFormProps) {
         throw new Error(response.error || 'Bağış kaydedilemedi');
       }
 
-      return response.data as any;
+      return response.data as unknown;
     },
     onSuccess: (_data) => {
       setReceiptFile(null);

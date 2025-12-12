@@ -226,7 +226,7 @@ describe('POST /api/partners', () => {
       ...newPartner,
     };
 
-    vi.mocked(appwriteApi.appwritePartners.create).mockResolvedValue(createdPartner as any);
+    vi.mocked(appwriteApi.appwritePartners.create).mockResolvedValue(createdPartner as unknown);
 
     const request = new NextRequest('http://localhost/api/partners', {
       method: 'POST',
@@ -401,7 +401,7 @@ describe('POST /api/partners', () => {
       status: 'active',
     };
 
-    vi.mocked(appwriteApi.appwritePartners.create).mockResolvedValue(createdPartner as any);
+    vi.mocked(appwriteApi.appwritePartners.create).mockResolvedValue(createdPartner as unknown);
 
     const request = new NextRequest('http://localhost/api/partners', {
       method: 'POST',

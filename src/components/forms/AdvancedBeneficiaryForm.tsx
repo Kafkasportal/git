@@ -87,7 +87,7 @@ export function AdvancedBeneficiaryForm({
     watch,
     formState: { errors },
   } = useForm<AdvancedBeneficiaryFormData>({
-    resolver: zodResolver(advancedBeneficiarySchema) as any,
+    resolver: zodResolver(advancedBeneficiarySchema) as unknown,
     defaultValues: {
       mernisCheck: false,
       familyMemberCount: 1,
@@ -186,8 +186,8 @@ export function AdvancedBeneficiaryForm({
     },
     onSuccess: () => {
       toast.success('İhtiyaç sahibi başarıyla güncellendi');
-      queryClient.invalidateQueries({ queryKey: ['beneficiary', beneficiaryId] });
-      queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
+      void queryClient.invalidateQueries({ queryKey: ['beneficiary', beneficiaryId] });
+      void queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
       onSuccess?.();
     },
     onError: (err: unknown) => {
@@ -481,7 +481,7 @@ export function AdvancedBeneficiaryForm({
                 <ParameterSelect
                   category="gender"
                   value={watch('gender')}
-                  onChange={(value) => setValue('gender', value as any)}
+                  onChange={(value) => setValue('gender', value as unknown)}
                   label="Cinsiyet"
                   error={errors.gender?.message}
                 />
@@ -489,7 +489,7 @@ export function AdvancedBeneficiaryForm({
                 <ParameterSelect
                   category="religion"
                   value={watch('religion')}
-                  onChange={(value) => setValue('religion', value as any)}
+                  onChange={(value) => setValue('religion', value as unknown)}
                   label="İnanç"
                   error={errors.religion?.message}
                 />
@@ -497,7 +497,7 @@ export function AdvancedBeneficiaryForm({
                 <ParameterSelect
                   category="marital_status"
                   value={watch('maritalStatus')}
-                  onChange={(value) => setValue('maritalStatus', value as any)}
+                  onChange={(value) => setValue('maritalStatus', value as unknown)}
                   label="Medeni Durum"
                   error={errors.maritalStatus?.message}
                 />
@@ -635,7 +635,7 @@ export function AdvancedBeneficiaryForm({
                 <ParameterSelect
                   category="housing_type"
                   value={watch('livingPlace')}
-                  onChange={(value) => setValue('livingPlace', value as any)}
+                  onChange={(value) => setValue('livingPlace', value as unknown)}
                   label="Konut Durumu"
                   error={errors.livingPlace?.message}
                 />

@@ -99,7 +99,7 @@ export function TaskForm({ onSuccess, onCancel, initialData, taskId }: TaskFormP
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
       onSuccess?.();
     },
   });
@@ -120,7 +120,7 @@ export function TaskForm({ onSuccess, onCancel, initialData, taskId }: TaskFormP
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
       onSuccess?.();
     },
   });

@@ -35,7 +35,7 @@ describe("useFormProgress", () => {
 
     const { result } = renderHook(() =>
       useFormProgress<TestFormData>({
-        control: {} as any,
+        control: {} as unknown,
         requiredFieldNames: requiredFields,
       }),
     );
@@ -52,7 +52,7 @@ describe("useFormProgress", () => {
 
     const { result } = renderHook(() =>
       useFormProgress<TestFormData>({
-        control: {} as any,
+        control: {} as unknown,
         requiredFieldNames: requiredFields,
       }),
     );
@@ -69,7 +69,7 @@ describe("useFormProgress", () => {
 
     const { result } = renderHook(() =>
       useFormProgress<TestFormData>({
-        control: {} as any,
+        control: {} as unknown,
         requiredFieldNames: requiredFields,
       }),
     );
@@ -86,7 +86,7 @@ describe("useFormProgress", () => {
 
     const { result } = renderHook(() =>
       useFormProgress<TestFormData>({
-        control: {} as any,
+        control: {} as unknown,
         requiredFieldNames: requiredFields,
       }),
     );
@@ -103,7 +103,7 @@ describe("useFormProgress", () => {
 
     const { result } = renderHook(() =>
       useFormProgress<TestFormData>({
-        control: {} as any,
+        control: {} as unknown,
         requiredFieldNames: requiredFields,
       }),
     );
@@ -120,7 +120,7 @@ describe("useFormProgress", () => {
 
     const { result } = renderHook(() =>
       useFormProgress<TestFormData>({
-        control: {} as any,
+        control: {} as unknown,
         requiredFieldNames: requiredFields,
       }),
     );

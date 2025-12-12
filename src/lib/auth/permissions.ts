@@ -74,7 +74,7 @@ export function hasPermission(
 }
 
 /**
- * Check if a user has any of the specified permissions
+ * Check if a user has unknown of the specified permissions
  */
 export function hasAnyPermission(
   userPermissions: PermissionValue[],

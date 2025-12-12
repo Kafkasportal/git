@@ -109,7 +109,7 @@ export function useFormMutation<TData = unknown, TVariables = unknown>({
       // Only invalidate queries and show toasts if mutation was actually executed (not queued)
       if (!isOffline || !enableOfflineQueue) {
         // Invalidate queries to refresh data
-        queryClient.invalidateQueries({ queryKey: Array.isArray(queryKey) ? queryKey : [queryKey] });
+      void queryClient.invalidateQueries({ queryKey: Array.isArray(queryKey) ? queryKey : [queryKey] });
 
         // Show success toast
         if (showSuccessToast) {
@@ -175,7 +175,7 @@ export function useFormHelpers() {
    */
   const getFieldError = (errors: Record<string, unknown>, field: string): string | undefined => {
     const error = errors[field] as { message?: string } | undefined;
-    return error?.message;
+    return error.message;
   };
 
   return {

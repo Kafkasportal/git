@@ -139,7 +139,7 @@ export function DocumentsManager({
       toast.success('Belge başarıyla eklendi');
       setShowAddDialog(false);
       resetForm();
-      queryClient.invalidateQueries({ queryKey: ['beneficiary-documents', beneficiaryId] });
+      void queryClient.invalidateQueries({ queryKey: ['beneficiary-documents', beneficiaryId] });
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -164,7 +164,7 @@ export function DocumentsManager({
     },
     onSuccess: () => {
       toast.success('Belge silindi');
-      queryClient.invalidateQueries({ queryKey: ['beneficiary-documents', beneficiaryId] });
+      void queryClient.invalidateQueries({ queryKey: ['beneficiary-documents', beneficiaryId] });
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -191,7 +191,7 @@ export function DocumentsManager({
       toast.success(data.message);
       setShowVerifyDialog(false);
       setSelectedDocument(null);
-      queryClient.invalidateQueries({ queryKey: ['beneficiary-documents', beneficiaryId] });
+      void queryClient.invalidateQueries({ queryKey: ['beneficiary-documents', beneficiaryId] });
     },
     onError: (error: Error) => {
       toast.error(error.message);

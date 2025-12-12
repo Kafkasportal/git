@@ -85,7 +85,7 @@ Lütfen ${severity === "critical" ? "acilen" : ""} kontrol edin.
           body: notificationBody,
           status: "beklemede",
           reference: {
-            type: "error" as any, // Error type not in current schema, using 'hatirlatma' instead
+            type: "error" as unknown, // Error type not in current schema, using 'hatirlatma' instead
             id: errorId,
           },
           metadata: {

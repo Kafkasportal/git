@@ -18,7 +18,7 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 // Track EventSource instances at module level
-const eventSourceInstances: any[] = [];
+const eventSourceInstances: unknown[] = [];
 const mockClose = vi.fn();
 
 describe('useNotificationStream', () => {
@@ -29,12 +29,12 @@ describe('useNotificationStream', () => {
     eventSourceInstances.length = 0; // Clear array
     mockClose.mockClear();
     
-    (useNotificationStore as any).mockReturnValue({
+    (useNotificationStore as unknown).mockReturnValue({
       addNotification: mockAddNotification,
     });
 
     // Mock EventSource at global level
-    (global as any).EventSource = vi.fn().mockImplementation(function(this: any) {
+    (global as unknown).EventSource = vi.fn().mockImplementation(function(this: unknown) {
       this.onopen = null;
       this.onmessage = null;
       this.onerror = null;

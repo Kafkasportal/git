@@ -82,7 +82,7 @@ export function DependentsManager({ beneficiaryId }: DependentsManagerProps) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dependents', beneficiaryId] });
+      void queryClient.invalidateQueries({ queryKey: ['dependents', beneficiaryId] });
       toast.success('Bağımlı kişi başarıyla eklendi');
       setShowForm(false);
       setFormData({
@@ -109,7 +109,7 @@ export function DependentsManager({ beneficiaryId }: DependentsManagerProps) {
       return await appwriteDependents.remove(dependentId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dependents', beneficiaryId] });
+      void queryClient.invalidateQueries({ queryKey: ['dependents', beneficiaryId] });
       toast.success('Bağımlı kişi silindi');
     },
     onError: () => toast.error('Silme işlemi başarısız'),

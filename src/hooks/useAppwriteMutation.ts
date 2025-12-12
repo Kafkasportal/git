@@ -108,7 +108,7 @@ export function useAppwriteMutation<
       if (!isOffline || !enableOfflineQueue) {
         // Invalidate queries
         if (queryKey) {
-          queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
             queryKey: Array.isArray(queryKey) ? queryKey : [queryKey],
           });
         }

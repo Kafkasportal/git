@@ -55,7 +55,7 @@ function DialogContent({
   showCloseButton?: boolean;
 }) {
   const autoDescriptionId = React.useId();
-  const describedBy = (props as any)['aria-describedby'] ?? autoDescriptionId;
+  const describedBy = (props as unknown)['aria-describedby'] ?? autoDescriptionId;
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
@@ -81,7 +81,7 @@ function DialogContent({
         {...props}
       >
         {/* Provide an accessible description if none is supplied */}
-        {!(props as any)['aria-describedby'] && (
+        {!(props as unknown)['aria-describedby'] && (
           <DialogDescription id={autoDescriptionId} className="sr-only">
             Dialog içerik alanı. Lütfen başlık ve içeriği inceleyin.
           </DialogDescription>

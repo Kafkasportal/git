@@ -185,8 +185,8 @@ export default function BeneficiariesPage() {
     onSuccess: () => {
       toast.success(`${selectedItems.size} kayıt başarıyla silindi`);
       setSelectedItems(new Set());
-      queryClient.invalidateQueries({ queryKey: ['beneficiaries-cached'] });
-      queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
+      void queryClient.invalidateQueries({ queryKey: ['beneficiaries-cached'] });
+      void queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
       refetch();
       fallbackQuery.refetch();
     },
@@ -216,8 +216,8 @@ export default function BeneficiariesPage() {
       const statusLabel = variables.status === 'AKTIF' ? 'Aktif' : 'Pasif';
       toast.success(`${selectedItems.size} kayıt ${statusLabel} olarak güncellendi`);
       setSelectedItems(new Set());
-      queryClient.invalidateQueries({ queryKey: ['beneficiaries-cached'] });
-      queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
+      void queryClient.invalidateQueries({ queryKey: ['beneficiaries-cached'] });
+      void queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
       refetch();
       fallbackQuery.refetch();
     },

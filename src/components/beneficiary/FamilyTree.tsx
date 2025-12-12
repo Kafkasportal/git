@@ -151,7 +151,7 @@ export function FamilyTree({
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['family', beneficiaryId] });
+      void queryClient.invalidateQueries({ queryKey: ['family', beneficiaryId] });
       setIsAddDialogOpen(false);
     },
   });
@@ -168,7 +168,7 @@ export function FamilyTree({
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['family', beneficiaryId] });
+      void queryClient.invalidateQueries({ queryKey: ['family', beneficiaryId] });
       setEditingMember(null);
     },
   });
@@ -185,7 +185,7 @@ export function FamilyTree({
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['family', beneficiaryId] });
+      void queryClient.invalidateQueries({ queryKey: ['family', beneficiaryId] });
     },
   });
 

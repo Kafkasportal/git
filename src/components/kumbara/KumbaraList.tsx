@@ -90,8 +90,8 @@ export function KumbaraList({ onCreate }: KumbaraListProps) {
       skipInitial: true,
       onChange: (event: { events: string[] }) => {
         // Invalidate queries to refresh the list
-        queryClient.invalidateQueries({ queryKey: ['kumbara-donations'] });
-        queryClient.invalidateQueries({ queryKey: ['kumbara-stats'] });
+      void queryClient.invalidateQueries({ queryKey: ['kumbara-donations'] });
+      void queryClient.invalidateQueries({ queryKey: ['kumbara-stats'] });
         
         // Show specific messages based on event type
         const eventType = event.events[0];
@@ -141,8 +141,8 @@ export function KumbaraList({ onCreate }: KumbaraListProps) {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['kumbara-donations'] });
-      queryClient.invalidateQueries({ queryKey: ['kumbara-stats'] });
+      void queryClient.invalidateQueries({ queryKey: ['kumbara-donations'] });
+      void queryClient.invalidateQueries({ queryKey: ['kumbara-stats'] });
       toast.success('Kumbara bağışı başarıyla silindi');
     },
     onError: (error: Error) => {

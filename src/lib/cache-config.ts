@@ -298,7 +298,7 @@ export function invalidateRelatedCaches(
 
   // Execute all invalidations
   invalidations.forEach((queryKey) => {
-    queryClient.invalidateQueries({ queryKey });
+      void queryClient.invalidateQueries({ queryKey });
   });
 }
 

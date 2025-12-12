@@ -69,7 +69,7 @@ export function DocumentsManager({ beneficiaryId }: DocumentsManagerProps) {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['documents', beneficiaryId] });
+      void queryClient.invalidateQueries({ queryKey: ['documents', beneficiaryId] });
       toast.success('Doküman başarıyla silindi');
     },
     onError: (error) => {
@@ -99,7 +99,7 @@ export function DocumentsManager({ beneficiaryId }: DocumentsManagerProps) {
       }
 
       toast.success('Doküman başarıyla yüklendi');
-      queryClient.invalidateQueries({ queryKey: ['documents', beneficiaryId] });
+      void queryClient.invalidateQueries({ queryKey: ['documents', beneficiaryId] });
     } catch (_error) {
       toast.error(_error instanceof Error ? _error.message : 'Dosya yükleme hatası');
     } finally {

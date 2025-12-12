@@ -73,7 +73,7 @@ class LRUCache<K, V> {
  * @example
  * const memoizedFormat = memoize(formatCurrency, 50);
  */
-export function memoize<T extends (...args: any[]) => any>(
+export function memoize<T extends (...args: unknown[]) => any>(
   fn: T,
   maxSize: number = 100,
   keyFn?: (...args: Parameters<T>) => string
@@ -128,7 +128,7 @@ export function memoizeWeak<T extends (arg: object) => any>(fn: T): T {
  * @example
  * const memoizedFetch = memoizeAsync(fetchData, 30);
  */
-export function memoizeAsync<T extends (...args: any[]) => Promise<any>>(
+export function memoizeAsync<T extends (...args: unknown[]) => Promise<any>>(
   fn: T,
   maxSize: number = 50,
   keyFn?: (...args: Parameters<T>) => string
@@ -164,7 +164,7 @@ export function memoizeAsync<T extends (...args: any[]) => Promise<any>>(
  * @param maxSize - Maximum cache size (default: 100)
  * @returns Memoized function
  */
-export function memoizeWithKey<T extends (...args: any[]) => any>(
+export function memoizeWithKey<T extends (...args: unknown[]) => any>(
   fn: T,
   keyFn: (...args: Parameters<T>) => string,
   maxSize: number = 100
@@ -177,7 +177,7 @@ export function memoizeWithKey<T extends (...args: any[]) => any>(
  * Note: This only works for functions memoized with the exported utilities
  * WeakMap caches cannot be cleared externally
  */
-const globalCaches: Set<LRUCache<any, any>> = new Set();
+const globalCaches: Set<LRUCache<unknown, any>> = new Set();
 
 export function clearAllMemoCaches(): void {
   globalCaches.forEach((cache) => cache.clear());

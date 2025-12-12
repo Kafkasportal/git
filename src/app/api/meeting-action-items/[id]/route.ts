@@ -85,8 +85,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     body = (await request.json()) as Record<string, unknown>;
     const { id } = await params;
 
-    const status = body?.status as ActionStatus | undefined;
-    const changed_by = body?.changed_by as string | undefined;
+    const status = body.status as ActionStatus | undefined;
+    const changed_by = body.changed_by as string | undefined;
 
     if (!status || !['beklemede', 'devam', 'hazir', 'iptal'].includes(status)) {
       return NextResponse.json({ success: false, error: 'Geçersiz durum' }, { status: 400 });
@@ -102,7 +102,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const response = await appwriteMeetingActionItems.updateStatus(id as string, {
       status,
       changed_by,
-      note: body?.note as string | undefined,
+      note: body.note as string | undefined,
     });
 
     return NextResponse.json({

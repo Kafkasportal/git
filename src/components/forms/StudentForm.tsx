@@ -37,7 +37,7 @@ interface StudentFormProps {
 
 export function StudentForm({ initialData, onSubmit, isLoading }: StudentFormProps) {
   const form = useForm<StudentFormValues>({
-    resolver: zodResolver(studentFormSchema) as any,
+    resolver: zodResolver(studentFormSchema) as unknown,
     defaultValues: {
       applicant_name: initialData?.applicant_name || '',
       applicant_tc_no: initialData?.applicant_tc_no || '',
@@ -240,7 +240,7 @@ export function StudentForm({ initialData, onSubmit, isLoading }: StudentFormPro
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {scholarships?.map((scholarship: any) => (
+                    {scholarships?.map((scholarship: unknown) => (
                       <SelectItem key={scholarship.$id} value={scholarship.$id}>
                         {scholarship.title}
                       </SelectItem>

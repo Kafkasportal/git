@@ -42,7 +42,7 @@ describe('GET /api/settings', () => {
         id: 'test-user',
         permissions: ['settings:manage'],
       },
-    } as any);
+    } as unknown);
   });
 
   it('returns all settings successfully', async () => {
@@ -51,7 +51,7 @@ describe('GET /api/settings', () => {
       notifications: { email: true },
     };
 
-    vi.mocked(appwriteApi.appwriteSystemSettings.getAll).mockResolvedValue(mockSettings as any);
+    vi.mocked(appwriteApi.appwriteSystemSettings.getAll).mockResolvedValue(mockSettings as unknown);
 
     const request = new NextRequest('http://localhost/api/settings');
     const response = await GET(request);
@@ -69,7 +69,7 @@ describe('GET /api/settings', () => {
     };
 
     vi.mocked(appwriteApi.appwriteSystemSettings.getByCategory).mockResolvedValue(
-      mockSettings as any
+      mockSettings as unknown
     );
 
     const request = new NextRequest('http://localhost/api/settings?category=general');
@@ -90,7 +90,7 @@ describe('GET /api/settings', () => {
         id: 'test-user',
         permissions: [], // No settings:manage permission
       },
-    } as any);
+    } as unknown);
 
     const request = new NextRequest('http://localhost/api/settings');
     const response = await GET(request);
@@ -124,7 +124,7 @@ describe('POST /api/settings', () => {
         id: 'test-user',
         permissions: ['settings:manage'],
       },
-    } as any);
+    } as unknown);
   });
 
   it('updates settings by category successfully', async () => {
@@ -186,7 +186,7 @@ describe('POST /api/settings', () => {
         id: 'test-user',
         permissions: [],
       },
-    } as any);
+    } as unknown);
 
     const updateData = {
       category: 'general',
@@ -243,7 +243,7 @@ describe('PUT /api/settings', () => {
         id: 'test-user',
         permissions: ['settings:manage'],
       },
-    } as any);
+    } as unknown);
   });
 
   it('updates all settings successfully', async () => {
@@ -329,7 +329,7 @@ describe('DELETE /api/settings', () => {
         id: 'test-user',
         permissions: ['settings:manage'],
       },
-    } as any);
+    } as unknown);
   });
 
   it('resets all settings successfully', async () => {

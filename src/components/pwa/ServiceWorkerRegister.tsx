@@ -139,7 +139,7 @@ export function ServiceWorkerRegister() {
       // Try background sync first
       if (registration && 'sync' in registration) {
         try {
-          (registration as any).sync.register('sync-offline-data');
+          (registration as unknown).sync.register('sync-offline-data');
           logger.info('Background sync registered');
         } catch (error) {
           logger.error('Background sync registration failed', error as Error);

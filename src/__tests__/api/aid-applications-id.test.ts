@@ -99,7 +99,7 @@ describe('PATCH /api/aid-applications/[id]', () => {
     };
 
     vi.mocked(appwriteApi.appwriteAidApplications.update).mockResolvedValue(
-      updatedApplication as any
+      updatedApplication as unknown
     );
 
     const request = new NextRequest('http://localhost/api/aid-applications/test-id', {
@@ -176,7 +176,7 @@ describe('PATCH /api/aid-applications/[id]', () => {
     };
 
     vi.mocked(appwriteApi.appwriteAidApplications.update).mockResolvedValue(
-      updatedApplication as any
+      updatedApplication as unknown
     );
 
     const request = new NextRequest('http://localhost/api/aid-applications/test-id', {

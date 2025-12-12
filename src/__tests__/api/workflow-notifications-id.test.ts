@@ -101,7 +101,7 @@ describe('PATCH /api/workflow-notifications/[id]', () => {
     };
 
     vi.mocked(appwriteApi.appwriteWorkflowNotifications.markAsSent).mockResolvedValue(
-      updatedNotification as any
+      updatedNotification as unknown
     );
 
     const request = new NextRequest('http://localhost/api/workflow-notifications/test-id', {
@@ -134,7 +134,7 @@ describe('PATCH /api/workflow-notifications/[id]', () => {
     };
 
     vi.mocked(appwriteApi.appwriteWorkflowNotifications.markAsRead).mockResolvedValue(
-      updatedNotification as any
+      updatedNotification as unknown
     );
 
     const request = new NextRequest('http://localhost/api/workflow-notifications/test-id', {

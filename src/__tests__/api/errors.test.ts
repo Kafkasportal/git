@@ -48,7 +48,7 @@ describe('GET /api/errors', () => {
         role: 'ADMIN',
         permissions: [],
       },
-    } as any);
+    } as unknown);
   });
 
   it('returns error list successfully', async () => {
@@ -73,7 +73,7 @@ describe('GET /api/errors', () => {
 
     vi.mocked(appwriteApi.appwriteErrors.list).mockResolvedValue({
       documents: mockErrors,
-    } as any);
+    } as unknown);
 
     const request = new NextRequest('http://localhost/api/errors');
     const response = await GET(request);
@@ -95,7 +95,7 @@ describe('GET /api/errors', () => {
 
     vi.mocked(appwriteApi.appwriteErrors.list).mockResolvedValue({
       documents: mockErrors,
-    } as any);
+    } as unknown);
 
     const request = new NextRequest('http://localhost/api/errors?status=new');
     const response = await GET(request);
@@ -122,7 +122,7 @@ describe('GET /api/errors', () => {
 
     vi.mocked(appwriteApi.appwriteErrors.list).mockResolvedValue({
       documents: mockErrors,
-    } as any);
+    } as unknown);
 
     const request = new NextRequest('http://localhost/api/errors?severity=critical');
     const response = await GET(request);
@@ -149,7 +149,7 @@ describe('GET /api/errors', () => {
 
     vi.mocked(appwriteApi.appwriteErrors.list).mockResolvedValue({
       documents: mockErrors,
-    } as any);
+    } as unknown);
 
     const request = new NextRequest('http://localhost/api/errors?category=security');
     const response = await GET(request);
@@ -172,7 +172,7 @@ describe('GET /api/errors', () => {
         role: 'USER',
         permissions: [],
       },
-    } as any);
+    } as unknown);
 
     const request = new NextRequest('http://localhost/api/errors');
     const response = await GET(request);
@@ -186,7 +186,7 @@ describe('GET /api/errors', () => {
   it('handles empty list', async () => {
     vi.mocked(appwriteApi.appwriteErrors.list).mockResolvedValue({
       documents: [],
-    } as any);
+    } as unknown);
 
     const request = new NextRequest('http://localhost/api/errors');
     const response = await GET(request);
@@ -219,7 +219,7 @@ describe('POST /api/errors', () => {
         role: 'ADMIN',
         permissions: [],
       },
-    } as any);
+    } as unknown);
   });
 
   it('creates error successfully', async () => {
@@ -237,7 +237,7 @@ describe('POST /api/errors', () => {
       ...newError,
     };
 
-    vi.mocked(appwriteApi.appwriteErrors.create).mockResolvedValue(createdError as any);
+    vi.mocked(appwriteApi.appwriteErrors.create).mockResolvedValue(createdError as unknown);
 
     const request = new NextRequest('http://localhost/api/errors', {
       method: 'POST',
@@ -342,7 +342,7 @@ describe('POST /api/errors', () => {
       ...validError,
     };
 
-    vi.mocked(appwriteApi.appwriteErrors.create).mockResolvedValue(createdError as any);
+    vi.mocked(appwriteApi.appwriteErrors.create).mockResolvedValue(createdError as unknown);
 
     const request = new NextRequest('http://localhost/api/errors', {
       method: 'POST',

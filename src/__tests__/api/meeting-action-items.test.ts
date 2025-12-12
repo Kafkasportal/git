@@ -197,7 +197,7 @@ describe('POST /api/meeting-action-items', () => {
     };
 
     vi.mocked(appwriteApi.appwriteMeetingActionItems.create).mockResolvedValue(
-      createdActionItem as any
+      createdActionItem as unknown
     );
 
     const request = new NextRequest('http://localhost/api/meeting-action-items', {

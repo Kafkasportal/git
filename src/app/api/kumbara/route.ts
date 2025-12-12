@@ -484,7 +484,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create donation in Appwrite
-    const donationId = (await appwriteDonations.create((validation.normalizedData || {}) as any)) as string;
+    const donationId = (await appwriteDonations.create((validation.normalizedData || {}) as unknown)) as string;
 
     // Generate QR code for the kumbara
     const qrCode = await generateKumbaraQR({

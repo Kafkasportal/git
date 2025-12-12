@@ -108,7 +108,7 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
     },
     onSuccess: (_data, id) => {
       markAsRead(id);
-      queryClient.invalidateQueries({ queryKey: ['workflow-notifications', userId] });
+      void queryClient.invalidateQueries({ queryKey: ['workflow-notifications', userId] });
       toast.success('Bildirim okundu olarak işaretlendi');
     },
     onError: () => {
@@ -136,7 +136,7 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
     },
     onSuccess: () => {
       markAllAsRead();
-      queryClient.invalidateQueries({ queryKey: ['workflow-notifications', userId] });
+      void queryClient.invalidateQueries({ queryKey: ['workflow-notifications', userId] });
       toast.success('Tüm bildirimler okundu olarak işaretlendi');
     },
     onError: () => {
@@ -151,7 +151,7 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
     },
     onSuccess: (_data, id) => {
       deleteNotification(id);
-      queryClient.invalidateQueries({ queryKey: ['workflow-notifications', userId] });
+      void queryClient.invalidateQueries({ queryKey: ['workflow-notifications', userId] });
       toast.success('Bildirim silindi');
     },
     onError: () => {
