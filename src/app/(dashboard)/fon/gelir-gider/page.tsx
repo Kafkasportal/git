@@ -67,7 +67,7 @@ export default function IncomeExpensePage() {
   };
 
   const handleExportPDF = () => {
-    exportToPDF(records);
+    void exportToPDF(records);
   };
 
   const handleViewRecord = (record: FinanceRecord) => {

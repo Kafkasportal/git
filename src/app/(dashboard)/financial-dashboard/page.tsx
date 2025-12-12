@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import logger from '@/lib/logger';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,23 +21,30 @@ import {
   DollarSign,
   CreditCard,
 } from 'lucide-react';
-import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
 import type { PieLabelRenderProps } from 'recharts';
 import { PageLayout } from '@/components/layouts/PageLayout';
+
+type RechartsModule = typeof import('recharts');
+
+function useRecharts() {
+  const [mod, setMod] = useState<RechartsModule | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    import('recharts')
+      .then((m) => {
+        if (!cancelled) setMod(m);
+      })
+      .catch(() => {
+        // Ignore chart load errors; UI will keep fallback
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return mod;
+}
 
 const COLORS = [
   '#0088FE',
@@ -51,6 +58,7 @@ const COLORS = [
 ];
 
 function FinancialDashboardPageContent() {
+  const recharts = useRecharts();
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({
     from: startOfMonth(subMonths(new Date(), 11)),
     to: endOfMonth(new Date()),
@@ -309,20 +317,38 @@ function FinancialDashboardPageContent() {
               <CardDescription>Son 12 ayın gelir ve gider karşılaştırması</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
-              <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={monthlyData || []}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" tickFormatter={formatMonth} />
-                  <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                  <Tooltip
-                    formatter={(value: number) => formatCurrency(value)}
-                    labelFormatter={formatMonth}
-                  />
-                  <Legend />
-                  <Bar dataKey="income" name="Gelir" fill="#10b981" />
-                  <Bar dataKey="expenses" name="Gider" fill="#ef4444" />
-                </BarChart>
-              </ResponsiveContainer>
+              {recharts ? (
+                (() => {
+                  const {
+                    BarChart,
+                    Bar,
+                    XAxis,
+                    YAxis,
+                    CartesianGrid,
+                    Tooltip,
+                    Legend,
+                    ResponsiveContainer,
+                  } = recharts;
+                  return (
+                    <ResponsiveContainer width="100%" height={350}>
+                      <BarChart data={monthlyData || []}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" tickFormatter={formatMonth} />
+                        <YAxis tickFormatter={(value: number) => formatCurrency(value)} />
+                        <Tooltip
+                          formatter={(value: number) => formatCurrency(value)}
+                          labelFormatter={formatMonth}
+                        />
+                        <Legend />
+                        <Bar dataKey="income" name="Gelir" fill="#10b981" />
+                        <Bar dataKey="expenses" name="Gider" fill="#ef4444" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  );
+                })()
+              ) : (
+                <div className="h-[350px] w-full rounded-md bg-muted animate-pulse" />
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -334,40 +360,58 @@ function FinancialDashboardPageContent() {
               <CardDescription>Zaman içindeki biriken gelir ve gider</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
-              <ResponsiveContainer width="100%" height={350}>
-                <LineChart data={cumulativeData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" tickFormatter={formatMonth} />
-                  <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                  <Tooltip
-                    formatter={(value: number) => formatCurrency(value)}
-                    labelFormatter={formatMonth}
-                  />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="cumulativeIncome"
-                    name="Kümülatif Gelir"
-                    stroke="#10b981"
-                    strokeWidth={2}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="cumulativeExpenses"
-                    name="Kümülatif Gider"
-                    stroke="#ef4444"
-                    strokeWidth={2}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="cumulativeNet"
-                    name="Net Bakiye"
-                    stroke="#3b82f6"
-                    strokeWidth={2}
-                    strokeDasharray="5 5"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {recharts ? (
+                (() => {
+                  const {
+                    LineChart,
+                    Line,
+                    XAxis,
+                    YAxis,
+                    CartesianGrid,
+                    Tooltip,
+                    Legend,
+                    ResponsiveContainer,
+                  } = recharts;
+                  return (
+                    <ResponsiveContainer width="100%" height={350}>
+                      <LineChart data={cumulativeData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" tickFormatter={formatMonth} />
+                        <YAxis tickFormatter={(value: number) => formatCurrency(value)} />
+                        <Tooltip
+                          formatter={(value: number) => formatCurrency(value)}
+                          labelFormatter={formatMonth}
+                        />
+                        <Legend />
+                        <Line
+                          type="monotone"
+                          dataKey="cumulativeIncome"
+                          name="Kümülatif Gelir"
+                          stroke="#10b981"
+                          strokeWidth={2}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="cumulativeExpenses"
+                          name="Kümülatif Gider"
+                          stroke="#ef4444"
+                          strokeWidth={2}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="cumulativeNet"
+                          name="Net Bakiye"
+                          stroke="#3b82f6"
+                          strokeWidth={2}
+                          strokeDasharray="5 5"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  );
+                })()
+              ) : (
+                <div className="h-[350px] w-full rounded-md bg-muted animate-pulse" />
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -379,29 +423,38 @@ function FinancialDashboardPageContent() {
               <CardDescription>Kategorilere göre gelir dağılımı</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
-              <ResponsiveContainer width="100%" height={350}>
-                <PieChart>
-                  <Pie
-                    data={incomeByCategory || []}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }: PieLabelRenderProps) => {
-                      const labelName = typeof name === 'string' ? name : String(name ?? '');
-                      const value = ((typeof percent === 'number' ? percent : 0) * 100).toFixed(0);
-                      return `${labelName} (${value}%)`;
-                    }}
-                    outerRadius={120}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {(incomeByCategory || []).map((_item: unknown, index: number) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                </PieChart>
-              </ResponsiveContainer>
+              {recharts ? (
+                (() => {
+                  const { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } = recharts;
+                  return (
+                    <ResponsiveContainer width="100%" height={350}>
+                      <PieChart>
+                        <Pie
+                          data={incomeByCategory || []}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, percent }: PieLabelRenderProps) => {
+                            const labelName = typeof name === 'string' ? name : String(name ?? '');
+                            const value = ((typeof percent === 'number' ? percent : 0) * 100).toFixed(0);
+                            return `${labelName} (${value}%)`;
+                          }}
+                          outerRadius={120}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {(incomeByCategory || []).map((_item: unknown, index: number) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  );
+                })()
+              ) : (
+                <div className="h-[350px] w-full rounded-md bg-muted animate-pulse" />
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -413,29 +466,38 @@ function FinancialDashboardPageContent() {
               <CardDescription>Kategorilere göre gider dağılımı</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
-              <ResponsiveContainer width="100%" height={350}>
-                <PieChart>
-                  <Pie
-                    data={expensesByCategory || []}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }: PieLabelRenderProps) => {
-                      const labelName = typeof name === 'string' ? name : String(name ?? '');
-                      const value = ((typeof percent === 'number' ? percent : 0) * 100).toFixed(0);
-                      return `${labelName} (${value}%)`;
-                    }}
-                    outerRadius={120}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {(expensesByCategory || []).map((_item: unknown, index: number) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                </PieChart>
-              </ResponsiveContainer>
+              {recharts ? (
+                (() => {
+                  const { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } = recharts;
+                  return (
+                    <ResponsiveContainer width="100%" height={350}>
+                      <PieChart>
+                        <Pie
+                          data={expensesByCategory || []}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, percent }: PieLabelRenderProps) => {
+                            const labelName = typeof name === 'string' ? name : String(name ?? '');
+                            const value = ((typeof percent === 'number' ? percent : 0) * 100).toFixed(0);
+                            return `${labelName} (${value}%)`;
+                          }}
+                          outerRadius={120}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {(expensesByCategory || []).map((_item: unknown, index: number) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  );
+                })()
+              ) : (
+                <div className="h-[350px] w-full rounded-md bg-muted animate-pulse" />
+              )}
             </CardContent>
           </Card>
         </TabsContent>

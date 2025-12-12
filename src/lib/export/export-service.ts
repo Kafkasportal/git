@@ -3,9 +3,6 @@
  * Provides unified export functionality for PDF, Excel, and CSV formats
  */
 
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import ExcelJS from 'exceljs';
 import { format } from 'date-fns';
 
 // Types
@@ -46,6 +43,60 @@ export interface CSVExportOptions<T = Record<string, unknown>> {
   delimiter?: string;
 }
 
+type JsPdfConstructor = new (options?: unknown) => {
+  setFontSize: (size: number) => void;
+  setTextColor: (r: number | string, g?: number, b?: number) => void;
+  text: (text: string, x: number, y: number, options?: unknown) => void;
+  save: (filename: string) => void;
+  setPage: (pageNumber: number) => void;
+  internal: {
+    pageSize: { getWidth: () => number; getHeight: () => number; width: number; height: number };
+    getNumberOfPages?: () => number;
+  };
+};
+
+async function loadJsPdf() {
+  // jspdf exports vary between versions (default vs named `jsPDF`)
+  const mod = await import('jspdf');
+  const JsPDF = ((mod as unknown as { jsPDF?: JsPdfConstructor }).jsPDF ||
+    (mod as unknown as { default?: JsPdfConstructor }).default) as JsPdfConstructor | undefined;
+
+  if (!JsPDF) {
+    throw new Error('PDF kütüphanesi yüklenemedi');
+  }
+
+  return JsPDF;
+}
+
+async function loadAutoTable() {
+  // jspdf-autotable can export `default` or `autoTable` depending on build
+  const mod = await import('jspdf-autotable');
+  const autoTable = ((mod as unknown as { default?: unknown }).default ||
+    (mod as unknown as { autoTable?: unknown }).autoTable) as
+    | ((doc: unknown, options: unknown) => void)
+    | undefined;
+
+  if (!autoTable) {
+    throw new Error('PDF tablo eklentisi yüklenemedi');
+  }
+
+  return autoTable;
+}
+
+async function loadExcelJs() {
+  const mod = await import('exceljs');
+  // exceljs is commonly CJS; support both default and module itself
+  const ExcelJS = ((mod as unknown as { default?: unknown }).default || mod) as
+    | { Workbook: new () => { addWorksheet: (name: string) => unknown; xlsx: { writeBuffer: () => Promise<ArrayBuffer> } } }
+    | undefined;
+
+  if (!ExcelJS || typeof ExcelJS !== 'object' || !('Workbook' in ExcelJS)) {
+    throw new Error('Excel kütüphanesi yüklenemedi');
+  }
+
+  return ExcelJS;
+}
+
 /**
  * Export data to PDF format
  */
@@ -65,7 +116,8 @@ export async function exportToPDF<T = Record<string, unknown>>(
   } = options;
 
   // Initialize jsPDF
-  const doc = new jsPDF({
+  const [JsPDF, autoTable] = await Promise.all([loadJsPdf(), loadAutoTable()]);
+  const doc = new JsPDF({
     orientation,
     unit: 'mm',
     format: pageFormat,
@@ -129,9 +181,10 @@ export async function exportToPDF<T = Record<string, unknown>>(
 
   // Add footer
   if (includeFooter) {
-    const pageCount = (
-      doc as typeof doc & { internal: { getNumberOfPages: () => number } }
-    ).internal.getNumberOfPages();
+    const getNumberOfPages =
+      (doc as unknown as { internal?: { getNumberOfPages?: () => number } }).internal
+        ?.getNumberOfPages || (() => 1);
+    const pageCount = getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
       doc.setFontSize(8);
@@ -166,8 +219,19 @@ export async function exportToExcel<T = Record<string, unknown>>(
   } = options;
 
   // Create workbook
+  const ExcelJS = await loadExcelJs();
   const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet(sheetName);
+  const worksheet = workbook.addWorksheet(sheetName) as unknown as {
+    addRow: (row: unknown[]) => unknown;
+    getRow: (index: number) => {
+      font?: unknown;
+      fill?: unknown;
+      alignment?: unknown;
+      height?: number;
+      number?: number;
+    };
+    getColumn: (index: number) => { width?: number };
+  };
 
   // Prepare headers
   const headers = columns.map((col) => col.header);
@@ -206,7 +270,7 @@ export async function exportToExcel<T = Record<string, unknown>>(
       }
       return col.key === columns[0].key ? 'TOPLAM' : '';
     });
-    const totalRowIndex = worksheet.addRow(totalRow);
+    const totalRowIndex = worksheet.addRow(totalRow) as unknown as { number: number };
 
     // Style total row
     const totalRowObj = worksheet.getRow(totalRowIndex.number);

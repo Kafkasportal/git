@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,22 +10,31 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { DashboardError } from '@/components/errors/DashboardError';
 import { TrendingUp, Users, MousePointerClick, Clock, Activity, Eye, Zap } from 'lucide-react';
 import SessionTracking from '@/lib/analytics/session-tracking';
-import {
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
 
 import { useQuery } from '@tanstack/react-query';
 import { analyticsApi } from '@/lib/api/client';
+
+type RechartsModule = typeof import('recharts');
+
+function useRecharts() {
+  const [mod, setMod] = useState<RechartsModule | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    import('recharts')
+      .then((m) => {
+        if (!cancelled) setMod(m);
+      })
+      .catch(() => {
+        // Ignore chart load errors; UI will keep fallback
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return mod;
+}
 
 const mockCoreWebVitals = [
   { metric: 'LCP', value: 2.1, threshold: 2.5, status: 'good' },
@@ -35,6 +44,7 @@ const mockCoreWebVitals = [
 ];
 
 function AnalyticsPageContent() {
+  const recharts = useRecharts();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [timeRange] = useState<'day' | 'week' | 'month'>('week');
 
@@ -211,18 +221,36 @@ function AnalyticsPageContent() {
             </CardHeader>
             <CardContent>
               <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={pageViewsData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="page" angle={-45} textAnchor="end" height={100} />
-                    <YAxis yAxisId="left" />
-                    <YAxis yAxisId="right" orientation="right" />
-                    <Tooltip />
-                    <Legend />
-                    <Bar yAxisId="left" dataKey="views" fill="#8884d8" name="Görüntüleme" />
-                    <Bar yAxisId="right" dataKey="avgTime" fill="#82ca9d" name="Ort. Süre (sn)" />
-                  </BarChart>
-                </ResponsiveContainer>
+                {recharts ? (
+                  (() => {
+                    const {
+                      BarChart,
+                      Bar,
+                      XAxis,
+                      YAxis,
+                      CartesianGrid,
+                      Tooltip,
+                      Legend,
+                      ResponsiveContainer,
+                    } = recharts;
+                    return (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={pageViewsData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="page" angle={-45} textAnchor="end" height={100} />
+                          <YAxis yAxisId="left" />
+                          <YAxis yAxisId="right" orientation="right" />
+                          <Tooltip />
+                          <Legend />
+                          <Bar yAxisId="left" dataKey="views" fill="#8884d8" name="Görüntüleme" />
+                          <Bar yAxisId="right" dataKey="avgTime" fill="#82ca9d" name="Ort. Süre (sn)" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    );
+                  })()
+                ) : (
+                  <div className="h-full w-full rounded-md bg-muted animate-pulse" />
+                )}
               </div>
             </CardContent>
           </Card>
@@ -268,25 +296,34 @@ function AnalyticsPageContent() {
             </CardHeader>
             <CardContent>
               <div className="h-96 flex items-center">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={eventTypesData}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={120}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label
-                    >
-                      {eventTypesData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+                {recharts ? (
+                  (() => {
+                    const { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } = recharts;
+                    return (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={eventTypesData}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={120}
+                            fill="#8884d8"
+                            dataKey="value"
+                            label
+                          >
+                            {eventTypesData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    );
+                  })()
+                ) : (
+                  <div className="h-96 w-full rounded-md bg-muted animate-pulse" />
+                )}
               </div>
             </CardContent>
           </Card>

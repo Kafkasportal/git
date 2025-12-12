@@ -1,5 +1,3 @@
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import { formatCurrency } from "@/lib/utils/format";
@@ -19,12 +17,27 @@ export const exportToPDF = (
   records: FinanceRecord[],
   title: string = "Finansal Rapor",
 ) => {
+  // Lazy-load heavy dependencies to keep initial JS small
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  return (async () => {
+    const [jspdfMod, autoTableMod] = await Promise.all([import("jspdf"), import("jspdf-autotable")]);
+    const JsPDF =
+      (jspdfMod as unknown as { jsPDF?: new (...args: any[]) => any }).jsPDF ||
+      ((jspdfMod as unknown as { default?: new (...args: any[]) => any }).default as any);
+    const autoTable =
+      ((autoTableMod as unknown as { default?: any }).default as any) ||
+      ((autoTableMod as unknown as { autoTable?: any }).autoTable as any);
+
+    if (!JsPDF || !autoTable) {
+      throw new Error("PDF kütüphanesi yüklenemedi");
+    }
+
   // A4 boyutunda dikey PDF oluştur
-  const doc = new jsPDF();
+    const doc = new JsPDF();
 
   // Başlık
-  doc.setFontSize(18);
-  doc.text(title, 14, 22);
+    doc.setFontSize(18);
+    doc.text(title, 14, 22);
 
   // Rapor Tarihi
   doc.setFontSize(11);
@@ -58,7 +71,7 @@ export const exportToPDF = (
   const netBalance = totalIncome - totalExpense;
 
   // Tabloyu Oluştur
-  autoTable(doc, {
+    autoTable(doc, {
     head: [["Tarih", "Tip", "Kategori", "Açıklama", "Durum", "Tutar"]],
     body: tableBody,
     startY: 40,
@@ -82,7 +95,7 @@ export const exportToPDF = (
     alternateRowStyles: {
       fillColor: [245, 245, 245],
     },
-    didDrawPage: (_data) => {
+    didDrawPage: (_data: unknown) => {
       // Alt Bilgi (Sayfa Numarası)
       const pageCount = doc.getNumberOfPages();
       doc.setFontSize(8);
@@ -93,10 +106,10 @@ export const exportToPDF = (
         { align: "center" },
       );
     },
-  });
+    });
 
   // Özet Bilgiler (Tablonun altına)
-  const finalY = doc.lastAutoTable.finalY + 10;
+    const finalY = doc.lastAutoTable.finalY + 10;
 
   doc.setFontSize(11);
   doc.setTextColor(0);
@@ -123,7 +136,8 @@ export const exportToPDF = (
   doc.text(`Net Bakiye: ${formatCurrency(netBalance, "TRY")}`, 14, finalY + 21);
 
   // PDF'i indir
-  doc.save(`Finansal_Rapor_${format(new Date(), "yyyy-MM-dd")}.pdf`);
+    doc.save(`Finansal_Rapor_${format(new Date(), "yyyy-MM-dd")}.pdf`);
+  })();
 };
 
 // Legacy PDF generation functions
