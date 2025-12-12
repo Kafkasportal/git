@@ -254,6 +254,45 @@ export function CorporateLoginForm({
     <div
       className={`min-h-screen flex items-center justify-center bg-[#0f172a] overflow-hidden relative ${className}`}
     >
+      {/* Demo Login - No Backend Required */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.8 }}
+        className="mt-6"
+      >
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-slate-700" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-slate-900/40 px-2 text-slate-500">veya</span>
+          </div>
+        </div>
+        <Button
+          type="button"
+          onClick={() => {
+            demoLogin();
+            toast.success('Demo hesabiyla giris yapildi', {
+              description: 'Tum ozellikler aktif!',
+            });
+            // Navigate immediately after demo login
+            setTimeout(() => {
+              router.push(redirectTo);
+            }, 100);
+          }}
+          disabled={isLoading}
+          variant="outline"
+          className="w-full mt-4 h-12 bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 font-semibold rounded-xl transition-all duration-300 shadow-none"
+          style={{ boxShadow: 'none', boxSizing: 'content-box' }}
+        >
+          <Zap className="w-4 h-4 mr-2" />
+          Demo Giris (Backend Gerektirmez)
+        </Button>
+        <p className="text-[10px] text-slate-500 text-center mt-2">
+          Appwrite baglantisi olmadan tum ozellikleri test edin
+        </p>
+      </motion.div>
       {/* Dynamic Background Elements - Ultra Modern Mesh Gradient */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Deep Space Base */}
@@ -330,6 +369,61 @@ export function CorporateLoginForm({
         {/* Grid Pattern Overlay */}
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center mask-[radial-gradient(ellipse_at_center,black_40%,transparent_70%)] opacity-10 z-0" />
       </div>
+
+      {/* Admin Test Login Info - Development Only */}
+      {isDevelopment && devTestPassword && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.85 }}
+          className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl w-[400px] flex flex-col justify-start items-center"
+          style={{ backdropFilter: 'none' }}
+        >
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-blue-500/20 rounded-lg">
+              <User className="h-4 w-4 text-blue-400" />
+            </div>
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-blue-300 uppercase tracking-wider">
+                  Admin Test Giriş (Development Only)
+                </p>
+                <Button
+                  type="button"
+                  onClick={handleQuickAdminLogin}
+                  disabled={isLoading}
+                  size="sm"
+                  className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-500 text-white border-0"
+                >
+                  <Zap className="h-3 w-3 mr-1" />
+                  Hızlı Giriş
+                </Button>
+              </div>
+              <div className="space-y-1 text-xs text-slate-300 font-mono">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-3 w-3 text-slate-400" />
+                  <span className="text-slate-200">{adminInfo?.email || adminEmail}</span>
+                </div>
+                {adminInfo?.name && (
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <User className="h-3 w-3" />
+                    <span className="text-slate-300">{adminInfo.name}</span>
+                    <span className="text-slate-500">({adminInfo.role})</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <Lock className="h-3 w-3 text-slate-400" />
+                  <span className="text-slate-200">••••••••</span>
+                  <span className="text-slate-400 text-[10px]">(Test şifresi)</span>
+                </div>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-2">
+                💡 Test için admin bilgileri otomatik doldurulur. &quot;Hızlı Giriş&quot; butonuna tıklayarak tek tıkla giriş yapabilirsiniz.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -496,124 +590,38 @@ export function CorporateLoginForm({
                 </a>
               </motion.div>
 
-              {/* Submit Button */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 }}
-              >
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full h-14 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-lg rounded-xl shadow-lg shadow-blue-500/25 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 font-heading"
-                >
-                  {isLoading ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Giriş yapılıyor...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <span>Giriş Yap</span>
-                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  )}
-                </Button>
-              </motion.div>
             </form>
 
-            {/* Demo Login - No Backend Required */}
+            {/* Submit Button */}
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 }}
-              className="mt-6"
+              transition={{ delay: 0.7 }}
             >
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-slate-700" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-slate-900/40 px-2 text-slate-500">veya</span>
-                </div>
-              </div>
               <Button
                 type="button"
-                onClick={() => {
-                  demoLogin();
-                  toast.success('Demo hesabiyla giris yapildi', {
-                    description: 'Tum ozellikler aktif!',
-                  });
-                  // Navigate immediately after demo login
-                  setTimeout(() => {
-                    router.push(redirectTo);
-                  }, 100);
-                }}
                 disabled={isLoading}
-                variant="outline"
-                className="w-full mt-4 h-12 bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 font-semibold rounded-xl transition-all duration-300"
+                onClick={(e) => {
+                  e.preventDefault();
+                  void handleSubmit(e as unknown as React.FormEvent);
+                }}
+                className="w-full h-14 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-lg rounded-xl shadow-lg shadow-blue-500/25 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 font-heading overflow-hidden"
+                style={{ boxSizing: 'content-box', overflow: 'hidden' }}
               >
-                <Zap className="w-4 h-4 mr-2" />
-                Demo Giris (Backend Gerektirmez)
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Giriş yapılıyor...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span>Giriş Yap</span>
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                )}
               </Button>
-              <p className="text-[10px] text-slate-500 text-center mt-2">
-                Appwrite baglantisi olmadan tum ozellikleri test edin
-              </p>
             </motion.div>
 
-            {/* Admin Test Login Info - Development Only */}
-            {isDevelopment && devTestPassword && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.85 }}
-                className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl backdrop-blur-sm"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <User className="h-4 w-4 text-blue-400" />
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-blue-300 uppercase tracking-wider">
-                        Admin Test Giriş (Development Only)
-                      </p>
-                      <Button
-                        type="button"
-                        onClick={handleQuickAdminLogin}
-                        disabled={isLoading}
-                        size="sm"
-                        className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-500 text-white border-0"
-                      >
-                        <Zap className="h-3 w-3 mr-1" />
-                        Hızlı Giriş
-                      </Button>
-                    </div>
-                    <div className="space-y-1 text-xs text-slate-300 font-mono">
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-3 w-3 text-slate-400" />
-                        <span className="text-slate-200">{adminInfo?.email || adminEmail}</span>
-                      </div>
-                      {adminInfo?.name && (
-                        <div className="flex items-center gap-2 text-slate-400">
-                          <User className="h-3 w-3" />
-                          <span className="text-slate-300">{adminInfo.name}</span>
-                          <span className="text-slate-500">({adminInfo.role})</span>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-2">
-                        <Lock className="h-3 w-3 text-slate-400" />
-                        <span className="text-slate-200">••••••••</span>
-                        <span className="text-slate-400 text-[10px]">(Test şifresi)</span>
-                      </div>
-                    </div>
-                    <p className="text-[10px] text-slate-400 mt-2">
-                      💡 Test için admin bilgileri otomatik doldurulur. &quot;Hızlı Giriş&quot; butonuna tıklayarak tek tıkla giriş yapabilirsiniz.
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
 
             {/* Footer */}
             <motion.div

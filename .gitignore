@@ -153,3 +153,7 @@ appwrite.json
 # Local IDE settings (contains secrets)
 .vscode/settings.local.json
 .env
+
+
+#Ignore vscode AI rules
+.github\instructions\codacy.instructions.md

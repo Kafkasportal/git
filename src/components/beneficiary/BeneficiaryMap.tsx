@@ -24,6 +24,7 @@ import {
   Users,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import logger from '@/lib/logger';
 
 // Türkiye şehir koordinatları
 const TURKEY_CITIES: Record<string, { lat: number; lng: number }> = {
@@ -254,7 +255,7 @@ export function BeneficiaryMap({
         setIsMapReady(true);
         setIsLoading(false);
       } catch (error) {
-        console.error('Map initialization failed:', error);
+        logger.error('Map initialization failed', error instanceof Error ? error : undefined, error instanceof Error ? undefined : { error });
         setIsLoading(false);
       }
     };

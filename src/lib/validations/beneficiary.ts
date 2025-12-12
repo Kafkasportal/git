@@ -146,7 +146,7 @@ export const beneficiarySchema = z
       .min(2, 'Uyruk en az 2 karakter olmalıdır')
       .max(50, 'Uyruk en fazla 50 karakter olmalıdır'),
     identityNumber: tcKimlikNoSchema.optional(),
-    mernisCheck: z.boolean().default(false),
+    mernisCheck: z.boolean(),
     category: z.nativeEnum(BeneficiaryCategory, {
       message: 'Kategori seçiniz',
     }),

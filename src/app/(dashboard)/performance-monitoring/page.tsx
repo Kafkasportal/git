@@ -21,8 +21,7 @@ interface RouteMetrics {
   memoryUsage?: number;
   fps?: number;
   memory?: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  performance?: any;
+  performance?: PerformanceMetrics;
   timestamp?: string;
 }
 
@@ -40,6 +39,7 @@ import {
   usePerformanceMonitor,
   useFPSMonitor,
   perfLog,
+  type PerformanceMetrics,
 } from "@/lib/performance-monitor";
 import {
   Activity,

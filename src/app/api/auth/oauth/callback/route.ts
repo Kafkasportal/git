@@ -6,6 +6,7 @@ import { generateCsrfToken } from "@/lib/csrf";
 import { serializeSessionCookie } from "@/lib/auth/session";
 import { cookies } from "next/headers";
 import logger from "@/lib/logger";
+import type { UserDocument } from "@/types/database";
 
 /**
  * GET /api/auth/oauth/callback
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
     if (error) {
       logger.warn("OAuth authentication failed", { error });
       return NextResponse.redirect(
-        new URL("/login?error=oauth_failed", request.url)
+        new URL("/login?error=oauth_failed", request.url),
       );
     }
 
@@ -48,14 +49,13 @@ export async function GET(request: NextRequest) {
     } catch (sessionError) {
       logger.error("Failed to get OAuth session", { error: sessionError });
       return NextResponse.redirect(
-        new URL("/login?error=session_failed", request.url)
+        new URL("/login?error=session_failed", request.url),
       );
     }
 
     // Find user in our users collection by email
     const emailLower = appwriteUser.email.toLowerCase();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let user: any = await appwriteUsers.getByEmail(emailLower);
+    let user: UserDocument | null = (await appwriteUsers.getByEmail(emailLower)) as unknown as UserDocument | null;
 
     // If user doesn't exist, create one
     if (!user) {
@@ -72,11 +72,11 @@ export async function GET(request: NextRequest) {
         labels: ["oauth"],
       });
 
-      user = newUser;
+      user = newUser as UserDocument;
     }
 
     // Check if user is active
-    if (!user || !user.isActive) {
+    if (!user || !(user as UserDocument).isActive) {
       const maskedEmail = `${emailLower.substring(0, 3)}***`;
       logger.warn("OAuth login failed - inactive account", {
         email: maskedEmail,
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
       }
 
       return NextResponse.redirect(
-        new URL("/login?error=account_inactive", request.url)
+        new URL("/login?error=account_inactive", request.url),
       );
     }
 
@@ -103,11 +103,9 @@ export async function GET(request: NextRequest) {
 
     // Create custom session
     const cookieStore = await cookies();
-    const userId = user.$id || user._id || "";
+    const userId = (user as UserDocument).$id || (user as UserDocument)._id || "";
     const expireTime = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days for OAuth
-    const sessionId = `session_${Date.now()}_${Math.random()
-      .toString(36)
-      .substring(7)}`;
+    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
     const signedSession = serializeSessionCookie({
       sessionId,
@@ -158,7 +156,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.redirect(
-      new URL("/login?error=oauth_error", request.url)
+      new URL("/login?error=oauth_error", request.url),
     );
   }
 }

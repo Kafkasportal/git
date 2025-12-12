@@ -63,7 +63,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     let taskId: string | null = null;
     if (create_task) {
       try {
-        const errorData = error as any;
+        const errorData = error as { 
+          severity?: string; 
+          title?: string; 
+          description?: string;
+          error_code?: string;
+          category?: string;
+          component?: string;
+          metadata?: Record<string, unknown>;
+        };
         // Determine task priority based on error severity
         let taskPriority: 'low' | 'normal' | 'high' | 'urgent' = 'normal';
         if (errorData.severity === 'critical') taskPriority = 'urgent';
@@ -84,11 +92,11 @@ ${errorData.component ? `Bileşen: ${errorData.component}` : ''}`,
           priority: taskPriority,
           status: 'pending',
           category: 'bug_fix',
-          tags: ['error', errorData.category, errorData.severity].filter(Boolean),
+          tags: ['error', errorData.category, errorData.severity].filter((x): x is string => Boolean(x)),
           is_read: false,
         });
 
-        taskId = (task as any).$id || (task as any).id || '';
+        taskId = (task as { $id?: string; id?: string }).$id || (task as { $id?: string; id?: string }).id || '';
 
         // Link task to error in metadata
         await appwriteErrors.update(id, {

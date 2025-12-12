@@ -1,7 +1,6 @@
 import { cookies } from 'next/headers';
 import type { NextRequest } from 'next/server';
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { appwriteUsers } from '@/lib/appwrite/api';
 import { MODULE_PERMISSIONS, SPECIAL_PERMISSIONS, type PermissionValue } from '@/types/permissions';
 import { getEffectivePermissions } from '@/lib/auth/permissions';
 
@@ -207,30 +206,39 @@ export async function getUserFromSession(session: AuthSession | null): Promise<S
   }
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const user = await appwriteUsers.get(session.userId) as any;
+    // Get user from Appwrite Auth
+    const { getServerUsers } = await import('@/lib/appwrite/server');
+    const serverUsers = getServerUsers();
+    const appwriteUser = await serverUsers.get(session.userId);
 
-    if (!user || !user.isActive) {
-      return null;
+    // Extract role and permissions from preferences
+    let role = "Personel";
+    let permissions: PermissionValue[] = [];
+    
+    if (appwriteUser.prefs) {
+      role = (appwriteUser.prefs.role as string) || "Personel";
+      const permissionsStr = appwriteUser.prefs.permissions as string;
+      if (permissionsStr) {
+        try {
+          const parsed = JSON.parse(permissionsStr);
+          permissions = Array.isArray(parsed) ? parsed : [];
+        } catch {
+          permissions = [];
+        }
+      }
     }
 
-    const roleString = (user.role || '').toString();
-    const explicitPermissions: PermissionValue[] = Array.isArray(user.permissions)
-      ? (user.permissions as PermissionValue[])
-      : [];
-
     // Get effective permissions (includes role-based auto-grants for admin roles)
-    const effectivePermissions = getEffectivePermissions(roleString, explicitPermissions);
+    const effectivePermissions = getEffectivePermissions(role, permissions);
 
-    const userId = user.$id || user._id || session.userId;
     return {
-      id: userId,
-      email: user.email || '',
-      name: user.name || '',
-      role: roleString || 'Personel',
+      id: appwriteUser.$id,
+      email: appwriteUser.email || '',
+      name: appwriteUser.name || '',
+      role,
       permissions: effectivePermissions,
-      isActive: user.isActive,
-      labels: user.labels || [],
+      isActive: true, // Appwrite users are always active unless deleted
+      labels: [],
     };
   } catch {
     return null;

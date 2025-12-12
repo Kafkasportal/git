@@ -4,6 +4,7 @@ import logger from '@/lib/logger';
 import { verifyCsrfToken, buildErrorResponse, requireModuleAccess } from '@/lib/api/auth-utils';
 import { parseBody } from '@/lib/api/route-helpers';
 import { dataModificationRateLimit, readOnlyRateLimit } from '@/lib/rate-limit';
+import type { TaskCreateInput } from '@/lib/api/types';
 
 function validateTask(data: Record<string, unknown>): {
   isValid: boolean;
@@ -115,7 +116,7 @@ async function createTaskHandler(request: NextRequest) {
       is_read: validation.normalizedData.is_read ?? false,
     };
 
-    const response = await appwriteTasks.create(taskData as any);
+    const response = await appwriteTasks.create(taskData as TaskCreateInput);
 
     return NextResponse.json(
       { success: true, data: response, message: 'Görev başarıyla oluşturuldu' },

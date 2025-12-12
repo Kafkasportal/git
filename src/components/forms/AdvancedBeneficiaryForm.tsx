@@ -34,6 +34,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { ParameterSelect } from './ParameterSelect';
+import type { Gender, Religion, MaritalStatus, LivingPlace } from '@/types/beneficiary';
 
 // Central validation schema
 import { beneficiarySchema } from '@/lib/validations/beneficiary';
@@ -348,7 +349,7 @@ export function AdvancedBeneficiaryForm({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
               <TabsTrigger value="personal" className="flex items-center gap-1">
@@ -481,7 +482,7 @@ export function AdvancedBeneficiaryForm({
                 <ParameterSelect
                   category="gender"
                   value={watch('gender')}
-                  onChange={(value) => setValue('gender', value as any)}
+                  onChange={(value) => setValue('gender', value as Gender)}
                   label="Cinsiyet"
                   error={errors.gender?.message}
                 />
@@ -489,7 +490,7 @@ export function AdvancedBeneficiaryForm({
                 <ParameterSelect
                   category="religion"
                   value={watch('religion')}
-                  onChange={(value) => setValue('religion', value as any)}
+                  onChange={(value) => setValue('religion', value as Religion)}
                   label="İnanç"
                   error={errors.religion?.message}
                 />
@@ -497,7 +498,7 @@ export function AdvancedBeneficiaryForm({
                 <ParameterSelect
                   category="marital_status"
                   value={watch('maritalStatus')}
-                  onChange={(value) => setValue('maritalStatus', value as any)}
+                  onChange={(value) => setValue('maritalStatus', value as MaritalStatus)}
                   label="Medeni Durum"
                   error={errors.maritalStatus?.message}
                 />
@@ -635,7 +636,7 @@ export function AdvancedBeneficiaryForm({
                 <ParameterSelect
                   category="housing_type"
                   value={watch('livingPlace')}
-                  onChange={(value) => setValue('livingPlace', value as any)}
+                  onChange={(value) => setValue('livingPlace', value as LivingPlace)}
                   label="Konut Durumu"
                   error={errors.livingPlace?.message}
                 />

@@ -113,15 +113,30 @@ export default function StudentsPage() {
     },
   });
 
+  interface ScholarshipItem {
+    $id: string;
+    title?: string;
+    amount?: number;
+    student_name?: string;
+    scholarship_amount?: number;
+  }
+
   const scholarshipsMap = useMemo(() => {
     const map: Record<string, { title: string; amount: number }> = {};
-    scholarshipsResponse?.forEach((s: any) => {
-      map[s.$id] = { title: s.title, amount: s.amount };
-    });
+    if (scholarshipsResponse) {
+      (scholarshipsResponse as unknown as ScholarshipItem[]).forEach((s) => {
+        // Support both field naming conventions: title/amount or student_name/scholarship_amount
+        const title = s.title || s.student_name || '';
+        const amount = s.amount || s.scholarship_amount || 0;
+        if (s.$id && (title || amount > 0)) {
+          map[s.$id] = { title, amount };
+        }
+      });
+    }
     return map;
   }, [scholarshipsResponse]);
 
-  const applications = (applicationsResponse?.data || []) as any[];
+  const applications = (applicationsResponse?.data || []) as unknown as ScholarshipApplication[];
   const total = applicationsResponse?.total || 0;
   const totalPages = Math.max(1, Math.ceil(total / limit));
 

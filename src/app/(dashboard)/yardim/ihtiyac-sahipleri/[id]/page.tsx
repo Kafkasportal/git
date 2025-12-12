@@ -11,6 +11,7 @@ import { AdvancedBeneficiaryForm } from '@/components/forms/AdvancedBeneficiaryF
 import { beneficiaries } from '@/lib/api/crud-factory';
 import type { BeneficiaryDocument } from '@/types/database';
 import type { BeneficiaryFormData } from '@/lib/validations/beneficiary';
+import { City, Gender, MaritalStatus, EducationStatus, BeneficiaryCategory, FundRegion, FileConnection } from '@/types/beneficiary';
 
 export default function BeneficiaryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -121,21 +122,21 @@ export default function BeneficiaryDetailPage({ params }: { params: Promise<{ id
     mobilePhone: beneficiary.phone || undefined,
     email: beneficiary.email || undefined,
     address: beneficiary.address || undefined,
-    city: beneficiary.city as any,
+    city: beneficiary.city as City | undefined,
     district: beneficiary.district || undefined,
     neighborhood: beneficiary.neighborhood || undefined,
     birthDate: beneficiary.birth_date || undefined,
-    gender: beneficiary.gender as any,
-    maritalStatus: beneficiary.marital_status as any,
-    educationStatus: beneficiary.education_level as any,
+    gender: beneficiary.gender as Gender | undefined,
+    maritalStatus: beneficiary.marital_status as MaritalStatus | undefined,
+    educationStatus: beneficiary.education_level as EducationStatus | undefined,
     occupation: beneficiary.occupation || undefined,
     familyMemberCount: beneficiary.family_size || 1,
     notes: beneficiary.notes || undefined,
     mernisCheck: false,
     nationality: 'Türkiye',
-    category: 'GENEL' as any,
-    fundRegion: 'TR' as any,
-    fileConnection: 'DERNEK' as any,
+    category: BeneficiaryCategory.IHTIYAC_SAHIBI_AILE,
+    fundRegion: FundRegion.AVRUPA,
+    fileConnection: FileConnection.BAGIMSIZ,
     fileNumber: beneficiary.tc_no || 'AUTO',
   };
 

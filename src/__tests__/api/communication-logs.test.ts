@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createMockDocuments } from '../test-utils';
+import { createMockDocuments, createMockAuthResponse } from '../test-utils';
 import { GET } from '@/app/api/communication-logs/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
 import * as authUtils from '@/lib/api/auth-utils';
+import type { Models } from 'node-appwrite';
 
 // Mock Appwrite API
 vi.mock('@/lib/appwrite/api', () => ({
@@ -40,12 +41,11 @@ vi.mock('@/lib/rate-limit', () => ({
 describe('GET /api/communication-logs', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(authUtils.requireModuleAccess).mockResolvedValue({
-      user: {
-        id: 'test-user',
-        permissions: ['messages:read'],
-      },
-    } as any);
+    vi.mocked(authUtils.requireModuleAccess).mockResolvedValue(
+      createMockAuthResponse({
+        permissions: ['messages:access' as const],
+      })
+    );
   });
 
   it('returns communication logs successfully', async () => {
@@ -68,7 +68,8 @@ describe('GET /api/communication-logs', () => {
 
     vi.mocked(appwriteApi.appwriteCommunicationLogs.list).mockResolvedValue({
       documents: mockLogs,
-    } as any);
+      total: mockLogs.length,
+    } as Models.DocumentList<Models.Document>);
 
     const request = new NextRequest('http://localhost/api/communication-logs');
     const response = await GET(request);
@@ -90,7 +91,8 @@ describe('GET /api/communication-logs', () => {
 
     vi.mocked(appwriteApi.appwriteCommunicationLogs.list).mockResolvedValue({
       documents: mockLogs,
-    } as any);
+      total: mockLogs.length,
+    } as Models.DocumentList<Models.Document>);
 
     const request = new NextRequest('http://localhost/api/communication-logs?type=email');
     const response = await GET(request);
@@ -117,7 +119,8 @@ describe('GET /api/communication-logs', () => {
 
     vi.mocked(appwriteApi.appwriteCommunicationLogs.list).mockResolvedValue({
       documents: mockLogs,
-    } as any);
+      total: mockLogs.length,
+    } as Models.DocumentList<Models.Document>);
 
     const request = new NextRequest('http://localhost/api/communication-logs?status=failed');
     const response = await GET(request);
@@ -143,7 +146,8 @@ describe('GET /api/communication-logs', () => {
 
     vi.mocked(appwriteApi.appwriteCommunicationLogs.list).mockResolvedValue({
       documents: mockLogs,
-    } as any);
+      total: mockLogs.length,
+    } as Models.DocumentList<Models.Document>);
 
     const request = new NextRequest('http://localhost/api/communication-logs?limit=50');
     const response = await GET(request);
@@ -155,7 +159,8 @@ describe('GET /api/communication-logs', () => {
   it('handles empty list', async () => {
     vi.mocked(appwriteApi.appwriteCommunicationLogs.list).mockResolvedValue({
       documents: [],
-    } as any);
+      total: 0,
+    } as Models.DocumentList<Models.Document>);
 
     const request = new NextRequest('http://localhost/api/communication-logs');
     const response = await GET(request);

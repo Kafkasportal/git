@@ -147,7 +147,6 @@ Environment variable'ları ayarladıktan sonra:
 
 1. `NODE_ENV` gibi platform variable'larını override etmeyin
 2. Sadece proje-specific variable'ları ekleyin
-3. `ENV_VARIABLES.md` dosyasına bakın
 
 ## 📝 Özet
 

@@ -2,16 +2,23 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createMockAuthResponse } from '../test-utils';
 import { GET, PATCH, DELETE } from '@/app/api/users/[id]/route';
 import { NextRequest } from 'next/server';
-import * as appwriteApi from '@/lib/appwrite/api';
 import * as authUtils from '@/lib/api/auth-utils';
 
-// Mock Appwrite API
-vi.mock('@/lib/appwrite/api', () => ({
-  appwriteUsers: {
-    get: vi.fn(),
-    update: vi.fn(),
-    remove: vi.fn(),
-  },
+// Mock Appwrite server
+const mockUsersInstance = {
+  get: vi.fn(),
+  update: vi.fn(),
+  delete: vi.fn(),
+  updatePrefs: vi.fn(),
+  updatePassword: vi.fn(),
+};
+
+vi.mock('@/lib/appwrite/server', () => ({
+  getServerClient: vi.fn(() => ({} as any)),
+}));
+
+vi.mock('node-appwrite', () => ({
+  Users: vi.fn(() => mockUsersInstance),
 }));
 
 // Mock route helpers
@@ -58,16 +65,21 @@ describe('GET /api/users/[id]', () => {
   });
 
   it('returns user by ID successfully', async () => {
-    const mockUser = {
-      _id: 'test-id',
+    const mockAppwriteUser = {
+      $id: 'test-id',
       name: 'Test User',
       email: 'test@example.com',
-      role: 'Personel',
-      permissions: ['beneficiaries:read'],
-      isActive: true,
+      $createdAt: '2024-01-01T00:00:00.000Z',
+      $updatedAt: '2024-01-01T00:00:00.000Z',
+      emailVerification: true,
+      phoneVerification: false,
+      prefs: {
+        role: 'Personel',
+        permissions: JSON.stringify(['beneficiaries:read']),
+      },
     };
 
-    vi.mocked(appwriteApi.appwriteUsers.get).mockResolvedValue(mockUser);
+    vi.mocked(mockUsersInstance.get).mockResolvedValue(mockAppwriteUser as any);
 
     const request = new NextRequest('http://localhost/api/users/test-id');
     const params = Promise.resolve({ id: 'test-id' });
@@ -76,11 +88,14 @@ describe('GET /api/users/[id]', () => {
 
     expect(response.status).toBe(200);
     expect(data.success).toBe(true);
-    expect(data.data).toEqual(mockUser);
+    expect(data.data.id).toBe('test-id');
+    expect(data.data.email).toBe('test@example.com');
+    expect(data.data.role).toBe('Personel');
+    expect(data.data.permissions).toEqual(['beneficiaries:read']);
   });
 
   it('returns 404 when user not found', async () => {
-    vi.mocked(appwriteApi.appwriteUsers.get).mockResolvedValue(null);
+    vi.mocked(mockUsersInstance.get).mockRejectedValue(new Error('User not found'));
 
     const request = new NextRequest('http://localhost/api/users/non-existent');
     const params = Promise.resolve({ id: 'non-existent' });
@@ -108,14 +123,14 @@ describe('GET /api/users/[id]', () => {
   });
 
   it('handles errors gracefully', async () => {
-    vi.mocked(appwriteApi.appwriteUsers.get).mockRejectedValue(new Error('Database error'));
+    vi.mocked(mockUsersInstance.get).mockRejectedValue(new Error('Database error'));
 
     const request = new NextRequest('http://localhost/api/users/test-id');
     const params = Promise.resolve({ id: 'test-id' });
     const response = await GET(request, { params });
     const data = await response.json();
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(404);
     expect(data.success).toBe(false);
   });
 });
@@ -131,15 +146,20 @@ describe('PATCH /api/users/[id]', () => {
       email: 'updated@example.com',
     };
 
-    const updatedUser = {
-      _id: 'test-id',
-      ...updateData,
-      role: 'Personel',
-      permissions: ['beneficiaries:read'],
-      isActive: true,
+    const mockAppwriteUser = {
+      $id: 'test-id',
+      name: 'Updated Name',
+      email: 'updated@example.com',
+      $createdAt: '2024-01-01T00:00:00.000Z',
+      $updatedAt: '2024-01-02T00:00:00.000Z',
+      prefs: {
+        role: 'Personel',
+        permissions: JSON.stringify(['beneficiaries:read']),
+      },
     };
 
-    vi.mocked(appwriteApi.appwriteUsers.update).mockResolvedValue(updatedUser as any);
+    vi.mocked(mockUsersInstance.update).mockResolvedValue(undefined);
+    vi.mocked(mockUsersInstance.get).mockResolvedValue(mockAppwriteUser as any);
 
     const request = new NextRequest('http://localhost/api/users/test-id', {
       method: 'PATCH',
@@ -154,7 +174,8 @@ describe('PATCH /api/users/[id]', () => {
 
     expect(response.status).toBe(200);
     expect(data.success).toBe(true);
-    expect(data.data).toEqual(updatedUser);
+    expect(data.data.name).toBe('Updated Name');
+    expect(data.data.email).toBe('updated@example.com');
     expect(data.message).toBe('Kullanıcı başarıyla güncellendi');
   });
 
@@ -274,13 +295,20 @@ describe('PATCH /api/users/[id]', () => {
       password: 'NewStrongPassword123!',
     };
 
-    const updatedUser = {
-      _id: 'test-id',
+    const mockAppwriteUser = {
+      $id: 'test-id',
       name: 'Test User',
       email: 'test@example.com',
+      $createdAt: '2024-01-01T00:00:00.000Z',
+      $updatedAt: '2024-01-02T00:00:00.000Z',
+      prefs: {
+        role: 'Personel',
+        permissions: JSON.stringify([]),
+      },
     };
 
-    vi.mocked(appwriteApi.appwriteUsers.update).mockResolvedValue(updatedUser as any);
+    vi.mocked(mockUsersInstance.updatePassword).mockResolvedValue(undefined);
+    vi.mocked(mockUsersInstance.get).mockResolvedValue(mockAppwriteUser as any);
 
     const request = new NextRequest('http://localhost/api/users/test-id', {
       method: 'PATCH',
@@ -293,11 +321,9 @@ describe('PATCH /api/users/[id]', () => {
     const response = await PATCH(request, { params });
 
     expect(response.status).toBe(200);
-    expect(vi.mocked(appwriteApi.appwriteUsers.update)).toHaveBeenCalledWith(
+    expect(vi.mocked(mockUsersInstance.updatePassword)).toHaveBeenCalledWith(
       'test-id',
-      expect.objectContaining({
-        passwordHash: 'hashed-password',
-      })
+      'NewStrongPassword123!'
     );
   });
 
@@ -327,7 +353,7 @@ describe('PATCH /api/users/[id]', () => {
   });
 
   it('returns 404 when user not found', async () => {
-    vi.mocked(appwriteApi.appwriteUsers.update).mockRejectedValue(new Error('Document not found'));
+    vi.mocked(mockUsersInstance.update).mockRejectedValue(new Error('User not found'));
 
     const updateData = {
       name: 'Updated Name',
@@ -349,7 +375,7 @@ describe('PATCH /api/users/[id]', () => {
   });
 
   it('handles update errors gracefully', async () => {
-    vi.mocked(appwriteApi.appwriteUsers.update).mockRejectedValue(new Error('Database error'));
+    vi.mocked(mockUsersInstance.update).mockRejectedValue(new Error('Database error'));
 
     const updateData = {
       name: 'Updated Name',
@@ -377,7 +403,7 @@ describe('DELETE /api/users/[id]', () => {
   });
 
   it('deletes user successfully', async () => {
-    vi.mocked(appwriteApi.appwriteUsers.remove).mockResolvedValue(undefined);
+    vi.mocked(mockUsersInstance.delete).mockResolvedValue(undefined);
 
     const request = new NextRequest('http://localhost/api/users/test-id', {
       method: 'DELETE',
@@ -389,7 +415,7 @@ describe('DELETE /api/users/[id]', () => {
     expect(response.status).toBe(200);
     expect(data.success).toBe(true);
     expect(data.message).toBe('Kullanıcı başarıyla silindi');
-    expect(vi.mocked(appwriteApi.appwriteUsers.remove)).toHaveBeenCalledWith('test-id');
+    expect(vi.mocked(mockUsersInstance.delete)).toHaveBeenCalledWith('test-id');
   });
 
   it('returns 403 when user does not have users:manage permission', async () => {
@@ -410,7 +436,7 @@ describe('DELETE /api/users/[id]', () => {
   });
 
   it('returns 404 when user not found', async () => {
-    vi.mocked(appwriteApi.appwriteUsers.remove).mockRejectedValue(new Error('Document not found'));
+    vi.mocked(mockUsersInstance.delete).mockRejectedValue(new Error('User not found'));
 
     const request = new NextRequest('http://localhost/api/users/non-existent', {
       method: 'DELETE',
@@ -424,7 +450,7 @@ describe('DELETE /api/users/[id]', () => {
   });
 
   it('handles delete errors gracefully', async () => {
-    vi.mocked(appwriteApi.appwriteUsers.remove).mockRejectedValue(new Error('Database error'));
+    vi.mocked(mockUsersInstance.delete).mockRejectedValue(new Error('Database error'));
 
     const request = new NextRequest('http://localhost/api/users/test-id', {
       method: 'DELETE',

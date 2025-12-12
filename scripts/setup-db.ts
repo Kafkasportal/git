@@ -1,12 +1,9 @@
-import { Client, Databases, ID } from "node-appwrite";
+import { Client, Databases } from "node-appwrite";
 import dotenv from "dotenv";
 import path from "path";
 import {
   COLLECTIONS,
   DB_ID,
-  CollectionConfig,
-  Attribute,
-  Index,
 } from "../src/lib/appwrite/schema";
 
 // Load environment variables

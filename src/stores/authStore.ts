@@ -464,6 +464,12 @@ export const useAuthStore = create<AuthStore>()(
 
             // Clear localStorage
             localStorage.removeItem("auth-session");
+            localStorage.removeItem("rememberMe");
+
+            // Clear demo cookie if exists (client-side)
+            if (typeof document !== "undefined") {
+              document.cookie = "auth-session=; path=/; max-age=0; SameSite=Lax";
+            }
 
             set((state) => {
               state.user = null;
@@ -471,6 +477,7 @@ export const useAuthStore = create<AuthStore>()(
               state.isAuthenticated = false;
               state.error = null;
               state.showLoginModal = false;
+              state.rememberMe = false;
             });
 
             if (callback) {

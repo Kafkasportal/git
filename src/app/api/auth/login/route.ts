@@ -3,9 +3,9 @@ import { generateCsrfToken, validateCsrfToken } from "@/lib/csrf";
 import { cookies } from "next/headers";
 import { authRateLimit } from "@/lib/rate-limit";
 import logger from "@/lib/logger";
-import { appwriteUsers } from "@/lib/appwrite/api";
 import { serializeSessionCookie } from "@/lib/auth/session";
-import { Client, Account } from "node-appwrite";
+import { Client, Account, Users, Query } from "node-appwrite";
+import { getServerClient } from "@/lib/appwrite/server";
 import {
   isAccountLocked,
   getRemainingLockoutTime,
@@ -69,24 +69,126 @@ export const POST = authRateLimit(async (request: NextRequest) => {
     }
 
     // Verify Credentials using Appwrite Auth
-    // We create a temporary client without API key to act as a user and attempt login
-    try {
-      const client = new Client()
-        .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
-        .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!);
+    // Note: We need to use client SDK for password verification since Appwrite
+    // doesn't expose password verification in server-side Users API
+    // We'll create a temporary session to verify password, then create our own session
+    const client = new Client()
+      .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
+      .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!);
 
-      const account = new Account(client);
-      await account.createEmailPasswordSession(email, password);
-      // Valid credentials
+    const account = new Account(client);
+    const serverClient = getServerClient();
+    const serverUsers = new Users(serverClient);
+    
+    let appwriteUser;
+
+    // Önce kullanıcının Appwrite Auth'da kayıtlı olduğunu kontrol et
+    try {
+      // Email ile kullanıcıyı bul (Appwrite Users API'sinde email ile arama)
+      const emailLower = email.toLowerCase().trim();
+      
+      // Appwrite Users API'sinde email ile arama yap
+      // Not: Appwrite Users API'sinde email field'ı direkt query edilebilir
+      const usersList = await serverUsers.list(
+        [Query.equal("email", emailLower), Query.limit(1)]
+      );
+      
+      // Kullanıcı bulunamadıysa
+      if (!usersList.users || usersList.users.length === 0) {
+        recordLoginAttempt(email, false);
+        const failedAttempts = getFailedAttemptCount(email);
+        const remainingAttempts = LOCKOUT_CONFIG.maxAttempts - failedAttempts;
+
+        logger.warn("Login failed - user not found in Appwrite Auth", {
+          email: `${email?.substring(0, 3)}***`,
+          failedAttempts,
+        });
+
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Geçersiz email veya şifre",
+            remainingAttempts: Math.max(0, remainingAttempts),
+          },
+          { status: 401 },
+        );
+      }
+
+      // Kullanıcıyı al (zaten email ile filtrelendiği için ilk kullanıcı doğru kullanıcı)
+      const foundUser = usersList.users[0];
+
+      // Kullanıcının durumunu kontrol et (aktif olmalı)
+      if (foundUser.status === false) {
+        recordLoginAttempt(email, false);
+        logger.warn("Login failed - account is disabled", {
+          email: `${email?.substring(0, 3)}***`,
+          userId: foundUser.$id,
+        });
+
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Hesabınız devre dışı bırakılmış. Lütfen yönetici ile iletişime geçin.",
+          },
+          { status: 403 },
+        );
+      }
+
+      // Şifre doğrulaması için geçici bir session oluştur
+      // NOT: Client-side Account SDK server-side'da cookie set edemez,
+      // ama session oluşturma işlemi şifre doğrulaması yapar
+      // Session oluşturulamazsa şifre yanlış demektir
+      try {
+        // Create a new client instance without cookies for password verification
+        // This will fail if password is wrong, but won't set cookies server-side
+        const tempSession = await account.createEmailPasswordSession(email, password);
+        
+        // Session oluşturuldu, şifre doğru demektir
+        // User bilgilerini server-side Users API'den al (zaten bulduk)
+        appwriteUser = foundUser;
+        
+        // Geçici session'ı silmeye çalış (opsiyonel, session zaten cookie olmadan oluşturuldu)
+        try {
+          if (tempSession.$id) {
+            await account.deleteSession(tempSession.$id);
+          }
+        } catch {
+          // Session silme hatası önemli değil (cookie yoksa zaten çalışmaz)
+        }
+      } catch (sessionError) {
+        // Session oluşturulamadı = şifre yanlış
+        recordLoginAttempt(email, false);
+        const failedAttempts = getFailedAttemptCount(email);
+        const remainingAttempts = LOCKOUT_CONFIG.maxAttempts - failedAttempts;
+
+        const errorMessage = sessionError instanceof Error ? sessionError.message : "Unknown error";
+        logger.warn("Login failed - invalid password", {
+          email: `${email?.substring(0, 3)}***`,
+          failedAttempts,
+          error: errorMessage,
+        });
+
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Geçersiz email veya şifre",
+            remainingAttempts: Math.max(0, remainingAttempts),
+          },
+          { status: 401 },
+        );
+      }
     } catch (_authError: unknown) {
       // Record failed attempt
       recordLoginAttempt(email, false);
       const failedAttempts = getFailedAttemptCount(email);
       const remainingAttempts = LOCKOUT_CONFIG.maxAttempts - failedAttempts;
 
-      logger.warn("Login failed - invalid credentials", {
+      const errorMessage = _authError instanceof Error ? _authError.message : "Unknown error";
+      
+      logger.warn("Login failed - invalid credentials or Appwrite Auth error", {
         email: `${email?.substring(0, 3)}***`,
         failedAttempts,
+        error: errorMessage,
       });
 
       return NextResponse.json(
@@ -99,46 +201,45 @@ export const POST = authRateLimit(async (request: NextRequest) => {
       );
     }
 
-    // Credentials valid, now fetch full user details from Admin API
-    // We do this to get permissions, roles, and status
-    const emailLower = email.toLowerCase();
-    const user = await appwriteUsers.getByEmail(emailLower);
-
-    if (!user) {
-      // Should theoretically not happen if auth succeeded, but possible if DB sync is off
-      return NextResponse.json(
-        { success: false, error: "Kullanıcı profili bulunamadı" },
-        { status: 404 },
-      );
-    }
-
-    // Check if user is active
-    if (!user.isActive) {
-      logger.warn("Login failed - inactive account", {
-        email: `${email?.substring(0, 3)}***`,
-      });
-      return NextResponse.json(
-        { success: false, error: "Hesap aktif değil" },
-        { status: 403 },
-      );
-    }
-
     // Record successful login (clears failed attempts)
     recordLoginAttempt(email, true);
 
-    const userId = user.$id || user._id || "";
+    // Get user preferences (role and permissions) from Appwrite
+    // appwriteUser zaten foundUser'dan geldi, preferences'ları oku
+    let role = "Personel";
+    let permissions: string[] = [];
+
+    try {
+      // Read role and permissions from preferences
+      if (appwriteUser.prefs) {
+        role = (appwriteUser.prefs.role as string) || "Personel";
+        const permissionsStr = appwriteUser.prefs.permissions as string;
+        if (permissionsStr) {
+          try {
+            permissions = JSON.parse(permissionsStr);
+          } catch {
+            permissions = [];
+          }
+        }
+      }
+    } catch (prefsError) {
+      logger.warn("Failed to read user preferences, using defaults", {
+        userId: appwriteUser.$id,
+        error: prefsError,
+      });
+    }
+
+    // Use Appwrite Auth user data with preferences
+    const userId = appwriteUser.$id;
     const userData = {
       id: userId,
-      email: user.email,
-      name: user.name,
-      role: user.role || "Personel",
-      permissions: Array.isArray(user.permissions) ? user.permissions : [],
-      isActive: user.isActive,
-      createdAt:
-        user.$createdAt || user._creationTime || new Date().toISOString(),
-      updatedAt: user.$updatedAt || user._updatedAt || new Date().toISOString(),
-      phone: user.phone,
-      labels: user.labels ?? [],
+      email: appwriteUser.email,
+      name: appwriteUser.name,
+      role,
+      permissions,
+      isActive: true,
+      createdAt: appwriteUser.$createdAt || new Date().toISOString(),
+      updatedAt: appwriteUser.$updatedAt || new Date().toISOString(),
     };
 
     // Generate CSRF token
@@ -166,12 +267,11 @@ export const POST = authRateLimit(async (request: NextRequest) => {
 
     // Set session cookies (signed)
 
-    // Create session
-    const expireTime = new Date(
-      Date.now() +
-        (rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000),
-    );
-    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    // Create our own custom session (not Appwrite session)
+    // We use Appwrite session ID format but manage it ourselves
+    const sessionId = `appwrite_session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    // Session expiry: 30 days if rememberMe, 24 hours otherwise
+    const expireTime = new Date(Date.now() + (rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000));
     const signedSession = serializeSessionCookie({
       sessionId,
       userId,
@@ -195,19 +295,6 @@ export const POST = authRateLimit(async (request: NextRequest) => {
       maxAge: 24 * 60 * 60,
       path: "/",
     });
-
-    // Update last login time
-    try {
-      await appwriteUsers.update(userId, {
-        lastLogin: new Date().toISOString(),
-      });
-    } catch (_error) {
-      // Log but don't fail login if this fails
-      logger.warn("Failed to update last login time", {
-        error: _error,
-        userId,
-      });
-    }
 
     logger.info("User logged in successfully", {
       userId,

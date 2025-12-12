@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { appwriteMessages, normalizeQueryParams } from '@/lib/appwrite/api';
 import logger from '@/lib/logger';
 import { buildErrorResponse, verifyCsrfToken, requireModuleAccess } from '@/lib/api/auth-utils';
+import type { MessageCreateInput } from '@/lib/api/types';
 
 function validateMessage(data: Record<string, unknown>): {
   isValid: boolean;
@@ -160,7 +161,7 @@ async function createMessageHandler(request: NextRequest) {
       );
     }
 
-    const response = await appwriteMessages.create(messageData as any);
+    const response = await appwriteMessages.create(messageData as MessageCreateInput);
 
     return NextResponse.json(
       { success: true, data: response, message: 'Mesaj taslağı oluşturuldu' },
@@ -178,7 +179,7 @@ async function createMessageHandler(request: NextRequest) {
       messageType: (body as Record<string, unknown>)?.message_type,
       userId: currentUserId,
       recipientCount: Array.isArray((body as Record<string, unknown>)?.recipients)
-        ? ((body as Record<string, unknown>)?.recipients as any[]).length
+        ? ((body as Record<string, unknown>)?.recipients as unknown[]).length
         : 0,
     });
     return NextResponse.json(

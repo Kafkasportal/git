@@ -45,24 +45,24 @@ async function getThemePresetsHandler(_request: NextRequest) {
     const presets = await appwriteThemePresets.list();
 
     // Parse and format theme presets
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const formattedPresets: ThemePreset[] = presets.map((preset: any) => {
+    const formattedPresets: ThemePreset[] = presets.map((preset: unknown) => {
+      const presetData = preset as { theme_config?: string | Record<string, unknown> };
       // Parse theme_config JSON string
       let themeConfig: Record<string, unknown> = {};
       try {
         themeConfig =
-          typeof preset.theme_config === "string"
-            ? JSON.parse(preset.theme_config)
-            : preset.theme_config || {};
+          typeof presetData.theme_config === "string"
+            ? JSON.parse(presetData.theme_config)
+            : (presetData.theme_config || {});
       } catch (error) {
         logger.error("Failed to parse theme_config", { error, preset });
         themeConfig = {};
       }
 
       return {
-        _id: preset.$id || preset._id,
-        name: preset.name,
-        description: preset.description,
+        _id: (presetData as { $id?: string; _id?: string }).$id || (presetData as { $id?: string; _id?: string })._id || '',
+        name: (presetData as { name?: string }).name || '',
+        description: (presetData as { description?: string }).description || '',
         colors: (themeConfig.colors as ThemeColors) || {
           primary: "#3b82f6",
           secondary: "#64748b",
@@ -72,8 +72,8 @@ async function getThemePresetsHandler(_request: NextRequest) {
         },
         typography: themeConfig.typography as ThemeTypography,
         layout: themeConfig.layout as ThemeLayout,
-        isDefault: preset.is_default === true,
-        isCustom: preset.is_custom === true,
+        isDefault: (presetData as { is_default?: boolean }).is_default === true,
+        isCustom: (presetData as { is_custom?: boolean }).is_custom === true,
       };
     });
 

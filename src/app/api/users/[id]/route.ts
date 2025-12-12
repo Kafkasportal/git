@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import logger from '@/lib/logger';
-import { appwriteUsers } from '@/lib/appwrite/api';
 import { extractParams } from '@/lib/api/route-helpers';
-import { hashPassword, validatePasswordStrength } from '@/lib/auth/password';
+import { validatePasswordStrength } from '@/lib/auth/password';
 import {
   buildErrorResponse,
   requireAuthenticatedUser,
   verifyCsrfToken,
 } from '@/lib/api/auth-utils';
 import { ALL_PERMISSIONS, type PermissionValue } from '@/types/permissions';
+import { Users } from 'node-appwrite';
+import { getServerClient } from '@/lib/appwrite/server';
 
 const PERMISSION_SET = new Set(ALL_PERMISSIONS);
 
@@ -35,23 +36,61 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       );
     }
 
-    const user = await appwriteUsers.get(id);
+    // Get user from Appwrite Auth
+    const serverClient = getServerClient();
+    const users = new Users(serverClient);
+    const appwriteUser = await users.get(id);
 
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Kullanıcı bulunamadı' }, { status: 404 });
+    // Extract role and permissions from preferences
+    let role = "Personel";
+    let permissions: string[] = [];
+    
+    if (appwriteUser.prefs) {
+      role = (appwriteUser.prefs.role as string) || "Personel";
+      const permissionsStr = appwriteUser.prefs.permissions as string;
+      if (permissionsStr) {
+        try {
+          permissions = JSON.parse(permissionsStr);
+        } catch {
+          permissions = [];
+        }
+      }
     }
+
+    const userData = {
+      id: appwriteUser.$id,
+      email: appwriteUser.email,
+      name: appwriteUser.name,
+      role,
+      permissions,
+      createdAt: appwriteUser.$createdAt,
+      updatedAt: appwriteUser.$updatedAt,
+      emailVerification: appwriteUser.emailVerification,
+      phoneVerification: appwriteUser.phoneVerification,
+    };
 
     return NextResponse.json({
       success: true,
-      data: user,
+      data: userData,
     });
-  } catch (_error) {
-    logger.error('Get user error', _error, {
+  } catch (error) {
+    const authError = buildErrorResponse(error);
+    if (authError) {
+      return NextResponse.json(authError.body, { status: authError.status });
+    }
+
+    logger.error('Get user error', error, {
       endpoint: '/api/users/[id]',
       method: 'GET',
       userId: id,
     });
-    return NextResponse.json({ success: false, _error: 'Veri alınamadı' }, { status: 500 });
+
+    const errorMessage = error instanceof Error ? error.message : '';
+    if (errorMessage.includes('not found')) {
+      return NextResponse.json({ success: false, error: 'Kullanıcı bulunamadı' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: false, error: 'Kullanıcı bilgisi alınamadı' }, { status: 500 });
   }
 }
 
@@ -106,7 +145,19 @@ async function updateUserHandler(
       );
     }
 
-    let passwordHash: string | undefined;
+    // Update user in Appwrite Auth
+    const serverClient = getServerClient();
+    const users = new Users(serverClient);
+
+    // Update basic user info
+    if (body.name && typeof body.name === 'string') {
+      await users.updateName(id, body.name.trim());
+    }
+    if (body.email && typeof body.email === 'string') {
+      await users.updateEmail(id, body.email.trim().toLowerCase());
+    }
+
+    // Update password if provided
     if (body.password && typeof body.password === 'string' && body.password.trim().length > 0) {
       const passwordValidation = validatePasswordStrength(body.password);
       if (!passwordValidation.valid) {
@@ -115,31 +166,59 @@ async function updateUserHandler(
           { status: 400 }
         );
       }
-      passwordHash = await hashPassword(body.password.trim());
+      await users.updatePassword(id, body.password.trim());
     }
 
-    const userData: Parameters<typeof appwriteUsers.update>[1] = {
-      name: typeof body.name === 'string' ? body.name.trim() : undefined,
-      email: typeof body.email === 'string' ? body.email.trim().toLowerCase() : undefined,
-      role: typeof body.role === 'string' ? (body.role.trim() as any) : undefined,
-      permissions,
-      isActive: typeof body.isActive === 'boolean' ? body.isActive : undefined,
-      phone:
-        typeof body.phone === 'string' && body.phone.trim().length > 0
-          ? body.phone.trim()
-          : undefined,
-      avatar: typeof body.avatar === 'string' ? body.avatar : undefined,
-      labels: Array.isArray(body.labels)
-        ? body.labels.filter((item): item is string => typeof item === 'string')
-        : undefined,
-      ...(passwordHash && { passwordHash }),
-    };
+    // Update role and permissions in preferences
+    const currentUser = await users.get(id);
+    const currentPrefs = (currentUser.prefs as Record<string, unknown>) || {};
+    const newPrefs: Record<string, string> = {};
+    
+    // Copy existing prefs, converting values to strings
+    for (const [key, value] of Object.entries(currentPrefs)) {
+      newPrefs[key] = String(value);
+    }
 
-    const updated = await appwriteUsers.update(id, userData);
+    if (body.role && typeof body.role === 'string') {
+      newPrefs.role = body.role.trim();
+    }
+
+    if (permissions !== undefined) {
+      newPrefs.permissions = JSON.stringify(permissions);
+    }
+
+    await users.updatePrefs(id, newPrefs);
+
+    // Get updated user
+    const updatedUser = await users.get(id);
+    let updatedRole = "Personel";
+    let updatedPermissions: string[] = [];
+    
+    if (updatedUser.prefs) {
+      updatedRole = (updatedUser.prefs.role as string) || "Personel";
+      const permissionsStr = updatedUser.prefs.permissions as string;
+      if (permissionsStr) {
+        try {
+          updatedPermissions = JSON.parse(permissionsStr);
+        } catch {
+          updatedPermissions = [];
+        }
+      }
+    }
+
+    const updatedData = {
+      id: updatedUser.$id,
+      email: updatedUser.email,
+      name: updatedUser.name,
+      role: updatedRole,
+      permissions: updatedPermissions,
+      createdAt: updatedUser.$createdAt,
+      updatedAt: updatedUser.$updatedAt,
+    };
 
     return NextResponse.json({
       success: true,
-      data: updated,
+      data: updatedData,
       message: 'Kullanıcı başarıyla güncellendi',
     });
   } catch (error) {
@@ -156,11 +235,11 @@ async function updateUserHandler(
 
     const errorMessage = error instanceof Error ? error.message : '';
     if (errorMessage.includes('not found')) {
-      return NextResponse.json({ success: false, _error: 'Kullanıcı bulunamadı' }, { status: 404 });
+      return NextResponse.json({ success: false, error: 'Kullanıcı bulunamadı' }, { status: 404 });
     }
 
     return NextResponse.json(
-      { success: false, _error: 'Güncelleme işlemi başarısız' },
+      { success: false, error: 'Güncelleme işlemi başarısız' },
       { status: 500 }
     );
   }
@@ -184,7 +263,10 @@ async function deleteUserHandler(
       );
     }
 
-    await appwriteUsers.remove(id);
+    // Delete user from Appwrite Auth
+    const serverClient = getServerClient();
+    const users = new Users(serverClient);
+    await users.delete(id);
 
     return NextResponse.json({
       success: true,
@@ -203,11 +285,11 @@ async function deleteUserHandler(
     });
 
     const errorMessage = error instanceof Error ? error.message : '';
-    if (errorMessage?.includes('not found')) {
-      return NextResponse.json({ success: false, _error: 'Kullanıcı bulunamadı' }, { status: 404 });
+    if (errorMessage.includes('not found')) {
+      return NextResponse.json({ success: false, error: 'Kullanıcı bulunamadı' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: false, _error: 'Silme işlemi başarısız' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Silme işlemi başarısız' }, { status: 500 });
   }
 }
 

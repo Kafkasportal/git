@@ -12,6 +12,7 @@ import {
 import { Download, FileJson, FileSpreadsheet, FileText, Table } from 'lucide-react';
 import { exportToCSV, exportToJSON, exportToTSV, exportToPDF } from '@/lib/data-export';
 import { toast } from 'sonner';
+import logger from '@/lib/logger';
 
 interface ExportMenuProps {
   data: readonly Record<string, unknown>[] | object[];
@@ -45,7 +46,7 @@ export function ExportMenu({ data, filename = 'export', title = 'Export', disabl
       toast.success(`${format.toUpperCase()} olarak dışa aktarıldı`);
     } catch (error) {
       toast.error('Dışa aktarma başarısız oldu');
-      console.error(error);
+      logger.error('Export failed', error instanceof Error ? error : undefined, error instanceof Error ? undefined : { error });
     }
   };
 

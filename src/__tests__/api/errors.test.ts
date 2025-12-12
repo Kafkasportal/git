@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createMockDocuments } from '../test-utils';
+import { createMockDocuments, createMockAuthResponse } from '../test-utils';
+import type { Models } from 'node-appwrite';
 import { GET, POST } from '@/app/api/errors/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
@@ -42,13 +43,12 @@ vi.mock('@/lib/rate-limit', () => ({
 describe('GET /api/errors', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValue({
-      user: {
-        id: 'test-user',
+    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValue(
+      createMockAuthResponse({
         role: 'ADMIN',
         permissions: [],
-      },
-    } as any);
+      })
+    );
   });
 
   it('returns error list successfully', async () => {
@@ -73,7 +73,8 @@ describe('GET /api/errors', () => {
 
     vi.mocked(appwriteApi.appwriteErrors.list).mockResolvedValue({
       documents: mockErrors,
-    } as any);
+      total: mockErrors.length,
+    } as Models.DocumentList<Models.Document>);
 
     const request = new NextRequest('http://localhost/api/errors');
     const response = await GET(request);
@@ -95,7 +96,8 @@ describe('GET /api/errors', () => {
 
     vi.mocked(appwriteApi.appwriteErrors.list).mockResolvedValue({
       documents: mockErrors,
-    } as any);
+      total: mockErrors.length,
+    } as Models.DocumentList<Models.Document>);
 
     const request = new NextRequest('http://localhost/api/errors?status=new');
     const response = await GET(request);
@@ -122,7 +124,8 @@ describe('GET /api/errors', () => {
 
     vi.mocked(appwriteApi.appwriteErrors.list).mockResolvedValue({
       documents: mockErrors,
-    } as any);
+      total: mockErrors.length,
+    } as Models.DocumentList<Models.Document>);
 
     const request = new NextRequest('http://localhost/api/errors?severity=critical');
     const response = await GET(request);
@@ -149,7 +152,8 @@ describe('GET /api/errors', () => {
 
     vi.mocked(appwriteApi.appwriteErrors.list).mockResolvedValue({
       documents: mockErrors,
-    } as any);
+      total: mockErrors.length,
+    } as Models.DocumentList<Models.Document>);
 
     const request = new NextRequest('http://localhost/api/errors?category=security');
     const response = await GET(request);
@@ -167,12 +171,16 @@ describe('GET /api/errors', () => {
 
   it('requires admin permission', async () => {
     vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValue({
+      session: { sessionId: 'test-session', userId: 'test-user' },
       user: {
         id: 'test-user',
         role: 'USER',
         permissions: [],
+        email: 'test@example.com',
+        name: 'Test User',
+        isActive: true,
       },
-    } as any);
+    });
 
     const request = new NextRequest('http://localhost/api/errors');
     const response = await GET(request);
@@ -186,7 +194,8 @@ describe('GET /api/errors', () => {
   it('handles empty list', async () => {
     vi.mocked(appwriteApi.appwriteErrors.list).mockResolvedValue({
       documents: [],
-    } as any);
+      total: 0,
+    } as Models.DocumentList<Models.Document>);
 
     const request = new NextRequest('http://localhost/api/errors');
     const response = await GET(request);
@@ -213,13 +222,6 @@ describe('POST /api/errors', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(authUtils.buildErrorResponse).mockReturnValue(null);
-    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValue({
-      user: {
-        id: 'test-user',
-        role: 'ADMIN',
-        permissions: [],
-      },
-    } as any);
   });
 
   it('creates error successfully', async () => {
@@ -237,7 +239,7 @@ describe('POST /api/errors', () => {
       ...newError,
     };
 
-    vi.mocked(appwriteApi.appwriteErrors.create).mockResolvedValue(createdError as any);
+    vi.mocked(appwriteApi.appwriteErrors.create).mockResolvedValue(createdError as unknown);
 
     const request = new NextRequest('http://localhost/api/errors', {
       method: 'POST',
@@ -342,7 +344,7 @@ describe('POST /api/errors', () => {
       ...validError,
     };
 
-    vi.mocked(appwriteApi.appwriteErrors.create).mockResolvedValue(createdError as any);
+    vi.mocked(appwriteApi.appwriteErrors.create).mockResolvedValue(createdError as unknown);
 
     const request = new NextRequest('http://localhost/api/errors', {
       method: 'POST',

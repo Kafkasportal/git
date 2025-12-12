@@ -4,7 +4,7 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import logger from '@/lib/logger';
 
-interface PerformanceMetrics {
+export interface PerformanceMetrics {
   // Core Web Vitals
   lcp?: number; // Largest Contentful Paint
   fid?: number; // First Input Delay
