@@ -139,10 +139,10 @@ export function AnalyticsTrackerComponent({
         if (entry.entryType === 'largest-contentful-paint') {
           tracker.trackPerformanceMetric('LCP', entry.startTime);
         } else if (entry.entryType === 'first-input') {
-          const timing = entry as unknown as { processingDuration?: number };
+          const timing = entry as any as { processingDuration?: number };
           tracker.trackPerformanceMetric('FID', timing.processingDuration || 0);
         } else if (entry.entryType === 'layout-shift') {
-          const shiftEntry = entry as unknown as { value?: number };
+          const shiftEntry = entry as any as { value?: number };
           tracker.trackPerformanceMetric('CLS', shiftEntry.value || 0);
         }
       }

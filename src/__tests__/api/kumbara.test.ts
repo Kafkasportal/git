@@ -82,7 +82,7 @@ describe('GET /api/kumbara', () => {
     vi.mocked(appwriteApi.appwriteDonations.list).mockResolvedValue({
       documents: mockDonations,
       total: 2,
-    } as unknown);
+    } as any);
 
     const request = new NextRequest('http://localhost/api/kumbara');
     const response = await GET(request);
@@ -111,7 +111,7 @@ describe('GET /api/kumbara', () => {
     vi.mocked(appwriteApi.appwriteDonations.list).mockResolvedValue({
       documents: mockDonations.filter((d) => d.is_kumbara),
       total: 1,
-    } as unknown);
+    } as any);
 
     const request = new NextRequest('http://localhost/api/kumbara');
     const response = await GET(request);

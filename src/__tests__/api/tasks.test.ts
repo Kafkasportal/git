@@ -197,7 +197,7 @@ describe('POST /api/tasks', () => {
       ...newTask,
     };
 
-    vi.mocked(appwriteApi.appwriteTasks.create).mockResolvedValue(createdTask as unknown);
+    vi.mocked(appwriteApi.appwriteTasks.create).mockResolvedValue(createdTask as any);
 
     const request = new NextRequest('http://localhost/api/tasks', {
       method: 'POST',
@@ -296,7 +296,7 @@ describe('POST /api/tasks', () => {
       priority: 'normal',
     };
 
-    vi.mocked(appwriteApi.appwriteTasks.create).mockResolvedValue(createdTask as unknown);
+    vi.mocked(appwriteApi.appwriteTasks.create).mockResolvedValue(createdTask as any);
 
     const request = new NextRequest('http://localhost/api/tasks', {
       method: 'POST',

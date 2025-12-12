@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     // Update metadata if other updates provided
     if (Object.keys(otherUpdates).length > 0) {
       updateData.metadata = {
-        ...((currentError as unknown as Record<string, unknown>).metadata || {}),
+        ...((currentError as any as Record<string, unknown>).metadata || {}),
         ...otherUpdates,
       };
     }

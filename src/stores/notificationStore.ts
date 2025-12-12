@@ -198,7 +198,7 @@ function playNotificationSound() {
   if (typeof window !== 'undefined') {
     try {
       // Create a simple beep using Web Audio API
-      const audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+      const audioContext = new (window.AudioContext || (window as any as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
 

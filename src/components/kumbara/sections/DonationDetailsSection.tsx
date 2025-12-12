@@ -37,7 +37,7 @@ export const DonationDetailsSection = memo(function DonationDetailsSection({
       </div>
       <div className="grid grid-cols-3 gap-2">
         <FormField
-          control={control as unknown as Control<KumbaraCreateInput>}
+          control={control as any as Control<KumbaraCreateInput>}
           name="amount"
           render={({ field }) => (
             <FormItem className="space-y-1">
@@ -70,7 +70,7 @@ export const DonationDetailsSection = memo(function DonationDetailsSection({
         />
 
         <FormField
-          control={control as unknown as Control<KumbaraCreateInput>}
+          control={control as any as Control<KumbaraCreateInput>}
           name="currency"
           render={({ field }) => (
             <FormItem className="space-y-1">
@@ -95,7 +95,7 @@ export const DonationDetailsSection = memo(function DonationDetailsSection({
         />
 
         <FormField
-          control={control as unknown as Control<KumbaraCreateInput>}
+          control={control as any as Control<KumbaraCreateInput>}
           name="payment_method"
           render={({ field }) => (
             <FormItem className="space-y-1">

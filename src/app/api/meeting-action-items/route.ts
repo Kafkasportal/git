@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     }
 
     // After validation, we can safely cast to ActionItemInput
-    body = rawBody as unknown as ActionItemInput;
+    body = rawBody as any as ActionItemInput;
 
     const response = await appwriteMeetingActionItems.create({
       meeting_id: body.meeting_id,

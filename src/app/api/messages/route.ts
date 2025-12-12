@@ -160,7 +160,7 @@ async function createMessageHandler(request: NextRequest) {
       );
     }
 
-    const response = await appwriteMessages.create(messageData as unknown);
+    const response = await appwriteMessages.create(messageData as any);
 
     return NextResponse.json(
       { success: true, data: response, message: 'Mesaj taslağı oluşturuldu' },
@@ -178,7 +178,7 @@ async function createMessageHandler(request: NextRequest) {
       messageType: (body as Record<string, unknown>)?.message_type,
       userId: currentUserId,
       recipientCount: Array.isArray((body as Record<string, unknown>)?.recipients)
-        ? ((body as Record<string, unknown>)?.recipients as unknown[]).length
+        ? ((body as Record<string, unknown>)?.recipients as any[]).length
         : 0,
     });
     return NextResponse.json(

@@ -43,7 +43,7 @@ export function HealthInfoStep() {
             <ParameterSelect
               parameter="KAN_GRUBU"
               value={watch('bloodType')}
-              onValueChange={(value) => setValue('bloodType', value as unknown)}
+              onValueChange={(value) => setValue('bloodType', value as any)}
               placeholder="Kan grubu seçin"
               className={errors.bloodType ? 'border-red-500' : ''}
             />
@@ -55,7 +55,7 @@ export function HealthInfoStep() {
             <ParameterSelect
               parameter="SIGARA_KULLANIMI"
               value={watch('smokingStatus')}
-              onValueChange={(value) => setValue('smokingStatus', value as unknown)}
+              onValueChange={(value) => setValue('smokingStatus', value as any)}
               placeholder="Durum seçin"
               className={errors.smokingStatus ? 'border-red-500' : ''}
             />
@@ -121,7 +121,7 @@ export function HealthInfoStep() {
                 <ParameterSelect
                   parameter="ENGELLILIK_DURUMU"
                   value={watch('disabilityStatus')}
-                  onValueChange={(value) => setValue('disabilityStatus', value as unknown)}
+                  onValueChange={(value) => setValue('disabilityStatus', value as any)}
                   placeholder="Engellilik durumu seçin"
                   className={errors.disabilityStatus ? 'border-red-500' : ''}
                 />
@@ -171,7 +171,7 @@ export function HealthInfoStep() {
               <ParameterSelect
                 parameter="SOSYAL_GUVENLIK_DURUMU"
                 value={String(watch('socialSecurity') ?? '')}
-                onValueChange={(value) => setValue('socialSecurity', value as unknown)}
+                onValueChange={(value) => setValue('socialSecurity', value as any)}
                 placeholder="Sosyal güvenlik durumu seçin"
                 className={errors.socialSecurity ? 'border-red-500' : ''}
               />

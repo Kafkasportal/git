@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
               ]
             );
             
-            (response.documents as unknown as AppwriteDocument[]).forEach((doc) => {
+            (response.documents as any as AppwriteDocument[]).forEach((doc) => {
               const name = String(doc.name || '');
               const tcNo = String(doc.tc_no || '');
               const phone = String(doc.phone || '');
@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
               ]
             );
             
-            (response.documents as unknown as AppwriteDocument[]).forEach((doc) => {
+            (response.documents as any as AppwriteDocument[]).forEach((doc) => {
               const donorName = String(doc.donor_name || '');
               const amount = Number(doc.amount) || 0;
               
@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
               ]
             );
             
-            (response.documents as unknown as AppwriteDocument[]).forEach((doc) => {
+            (response.documents as any as AppwriteDocument[]).forEach((doc) => {
               const title = String(doc.title || '');
               const description = String(doc.description || '');
               
@@ -181,7 +181,7 @@ export async function GET(request: NextRequest) {
               ]
             );
             
-            (response.documents as unknown as AppwriteDocument[]).forEach((doc) => {
+            (response.documents as any as AppwriteDocument[]).forEach((doc) => {
               const title = String(doc.title || '');
               const description = String(doc.description || '');
               
@@ -220,7 +220,7 @@ export async function GET(request: NextRequest) {
               ]
             );
             
-            (response.documents as unknown as AppwriteDocument[]).forEach((doc) => {
+            (response.documents as any as AppwriteDocument[]).forEach((doc) => {
               const name = String(doc.name || '');
               const email = String(doc.email || '');
               

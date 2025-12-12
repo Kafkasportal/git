@@ -132,7 +132,7 @@ describe('PUT /api/messages/[id]', () => {
       status: 'sent',
     };
 
-    vi.mocked(appwriteApi.appwriteMessages.update).mockResolvedValue(updatedMessage as unknown);
+    vi.mocked(appwriteApi.appwriteMessages.update).mockResolvedValue(updatedMessage as any);
 
     const request = new NextRequest('http://localhost/api/messages/test-id', {
       method: 'PUT',
@@ -325,12 +325,12 @@ describe('POST /api/messages/[id]/send', () => {
       status: 'draft',
     };
 
-    vi.mocked(appwriteApi.appwriteMessages.get).mockResolvedValue(mockMessage as unknown);
+    vi.mocked(appwriteApi.appwriteMessages.get).mockResolvedValue(mockMessage as any);
     vi.mocked(appwriteApi.appwriteMessages.update).mockResolvedValue({
       ...mockMessage,
       status: 'sent',
       sent_at: new Date().toISOString(),
-    } as unknown);
+    } as any);
 
     const request = new NextRequest('http://localhost/api/messages/test-id/send', {
       method: 'POST',
@@ -358,8 +358,8 @@ describe('POST /api/messages/[id]/send', () => {
       phone: '5551234567',
     };
 
-    vi.mocked(appwriteApi.appwriteMessages.get).mockResolvedValue(mockMessage as unknown);
-    vi.mocked(appwriteApi.appwriteUsers.get).mockResolvedValue(mockUser as unknown);
+    vi.mocked(appwriteApi.appwriteMessages.get).mockResolvedValue(mockMessage as any);
+    vi.mocked(appwriteApi.appwriteUsers.get).mockResolvedValue(mockUser as any);
 
     const request = new NextRequest('http://localhost/api/messages/test-id/send', {
       method: 'POST',
@@ -388,12 +388,12 @@ describe('POST /api/messages/[id]/send', () => {
       email: 'test@example.com',
     };
 
-    vi.mocked(appwriteApi.appwriteMessages.get).mockResolvedValue(mockMessage as unknown);
-    vi.mocked(appwriteApi.appwriteUsers.get).mockResolvedValue(mockUser as unknown);
+    vi.mocked(appwriteApi.appwriteMessages.get).mockResolvedValue(mockMessage as any);
+    vi.mocked(appwriteApi.appwriteUsers.get).mockResolvedValue(mockUser as any);
     vi.mocked(appwriteApi.appwriteMessages.update).mockResolvedValue({
       ...mockMessage,
       status: 'sent',
-    } as unknown);
+    } as any);
 
     const request = new NextRequest('http://localhost/api/messages/test-id/send', {
       method: 'POST',

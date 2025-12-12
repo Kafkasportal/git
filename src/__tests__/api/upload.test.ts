@@ -56,7 +56,7 @@ describe('POST /api/upload', () => {
       user: {
         id: 'test-user',
       },
-    } as unknown);
+    } as any);
   });
 
   it('generates file ID successfully', async () => {
@@ -112,7 +112,7 @@ describe('GET /api/upload', () => {
       user: {
         id: 'test-user',
       },
-    } as unknown);
+    } as any);
   });
 
   it('returns file download URL successfully', async () => {
@@ -173,7 +173,7 @@ describe('DELETE /api/upload', () => {
       user: {
         id: 'test-user',
       },
-    } as unknown);
+    } as any);
   });
 
   it('deletes file successfully', async () => {

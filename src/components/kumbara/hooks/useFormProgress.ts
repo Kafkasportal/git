@@ -17,13 +17,13 @@ export function useFormProgress<T extends FieldValues>({
 }: UseFormProgressOptions<T>) {
   const watchedFields = useWatch({
     control,
-    name: requiredFieldNames as unknown,
+    name: requiredFieldNames as any,
   });
 
   const progress = useMemo(() => {
-    const fieldValues = Array.isArray(watchedFields) ? watchedFields : [watchedFields] as unknown[];
+    const fieldValues = Array.isArray(watchedFields) ? watchedFields : [watchedFields] as any[];
 
-    const completedFields = (fieldValues as unknown[]).filter((value: unknown) => {
+    const completedFields = (fieldValues as any[]).filter((value: unknown) => {
       return value !== undefined && value !== null && value !== '';
     });
 

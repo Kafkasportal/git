@@ -1,6 +1,6 @@
 /**
  * Memoization Utilities
- * 
+ *
  * Provides reusable memoization functions with different caching strategies:
  * - LRU cache for function results
  * - WeakMap for object-based memoization
@@ -64,25 +64,25 @@ class LRUCache<K, V> {
 
 /**
  * Memoize a function with LRU cache
- * 
+ *
  * @param fn - Function to memoize
  * @param maxSize - Maximum cache size (default: 100)
  * @param keyFn - Optional function to generate cache key from arguments
  * @returns Memoized function
- * 
+ *
  * @example
  * const memoizedFormat = memoize(formatCurrency, 50);
  */
-export function memoize<T extends (...args: unknown[]) => any>(
-  fn: T,
+export function memoize<Args extends any[], Result>(
+  fn: (...args: Args) => Result,
   maxSize: number = 100,
-  keyFn?: (...args: Parameters<T>) => string
-): T {
-  const cache = new LRUCache<string, ReturnType<T>>(maxSize);
+  keyFn?: (...args: Args) => string
+): (...args: Args) => Result {
+  const cache = new LRUCache<string, Result>(maxSize);
 
-  return ((...args: Parameters<T>): ReturnType<T> => {
+  return (...args: Args): Result => {
     const key = keyFn ? keyFn(...args) : JSON.stringify(args);
-    
+
     if (cache.has(key)) {
       return cache.get(key)!;
     }
@@ -90,16 +90,16 @@ export function memoize<T extends (...args: unknown[]) => any>(
     const result = fn(...args);
     cache.set(key, result);
     return result;
-  }) as T;
+  };
 }
 
 /**
  * Memoize a function using WeakMap for object-based caching
  * Useful when arguments are objects that should be garbage collected
- * 
+ *
  * @param fn - Function to memoize
  * @returns Memoized function
- * 
+ *
  * @example
  * const memoizedSanitize = memoizeWeak(sanitizeObject);
  */
@@ -119,25 +119,25 @@ export function memoizeWeak<T extends (arg: object) => any>(fn: T): T {
 
 /**
  * Memoize an async function with LRU cache
- * 
+ *
  * @param fn - Async function to memoize
  * @param maxSize - Maximum cache size (default: 50)
  * @param keyFn - Optional function to generate cache key from arguments
  * @returns Memoized async function
- * 
+ *
  * @example
  * const memoizedFetch = memoizeAsync(fetchData, 30);
  */
-export function memoizeAsync<T extends (...args: unknown[]) => Promise<any>>(
-  fn: T,
+export function memoizeAsync<Args extends any[], Result>(
+  fn: (...args: Args) => Promise<Result>,
   maxSize: number = 50,
-  keyFn?: (...args: Parameters<T>) => string
-): T {
-  const cache = new LRUCache<string, Promise<Awaited<ReturnType<T>>>>(maxSize);
+  keyFn?: (...args: Args) => string
+): (...args: Args) => Promise<Result> {
+  const cache = new LRUCache<string, Promise<Result>>(maxSize);
 
-  return ((...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
+  return (...args: Args): Promise<Result> => {
     const key = keyFn ? keyFn(...args) : JSON.stringify(args);
-    
+
     if (cache.has(key)) {
       return cache.get(key)!;
     }
@@ -150,25 +150,25 @@ export function memoizeAsync<T extends (...args: unknown[]) => Promise<any>>(
         throw error;
       }
     );
-    
+
     cache.set(key, promise);
     return promise;
-  }) as T;
+  };
 }
 
 /**
  * Create a memoized version of a function with custom cache key generator
- * 
+ *
  * @param fn - Function to memoize
  * @param keyFn - Function to generate cache key from arguments
  * @param maxSize - Maximum cache size (default: 100)
  * @returns Memoized function
  */
-export function memoizeWithKey<T extends (...args: unknown[]) => any>(
-  fn: T,
-  keyFn: (...args: Parameters<T>) => string,
+export function memoizeWithKey<Args extends any[], Result>(
+  fn: (...args: Args) => Result,
+  keyFn: (...args: Args) => string,
   maxSize: number = 100
-): T {
+): (...args: Args) => Result {
   return memoize(fn, maxSize, keyFn);
 }
 
@@ -182,4 +182,3 @@ const globalCaches: Set<LRUCache<unknown, any>> = new Set();
 export function clearAllMemoCaches(): void {
   globalCaches.forEach((cache) => cache.clear());
 }
-

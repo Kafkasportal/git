@@ -207,7 +207,7 @@ describe('POST /api/donations', () => {
       status: 'pending',
     };
 
-    vi.mocked(appwriteApi.appwriteDonations.create).mockResolvedValue(createdDonation as unknown);
+    vi.mocked(appwriteApi.appwriteDonations.create).mockResolvedValue(createdDonation as any);
 
     const request = new NextRequest('http://localhost/api/donations', {
       method: 'POST',

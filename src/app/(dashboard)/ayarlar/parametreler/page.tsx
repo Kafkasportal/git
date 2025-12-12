@@ -76,7 +76,7 @@ export default function ParametersPage() {
     retry: 1,
   });
 
-  const parameters = (data?.data || []) as unknown as Array<{
+  const parameters = (data?.data || []) as any as Array<{
     _id: string;
     category: string;
     name_tr: string;

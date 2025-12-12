@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
           'tasks',
           id
         );
-        tasks.push(taskToPlainObject(task as unknown as TaskDocument));
+        tasks.push(taskToPlainObject(task as any as TaskDocument));
       } catch (error) {
         logger.warn('Task not found for export', { id, error });
       }

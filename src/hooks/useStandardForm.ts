@@ -169,7 +169,7 @@ export function useStandardForm<TFormData extends FieldValues, TResponse = unkno
   });
 
   return {
-    form: form as unknown,
+    form: form as any,
     handleSubmit,
     isSubmitting: form.formState.isSubmitting || mutation.isPending,
     isDirty: form.formState.isDirty,
@@ -259,7 +259,7 @@ export function useDeleteForm<TResponse = unknown>(
     successMessage: `${entityName} başarıyla silindi`,
     errorMessage: `${entityName} silinirken hata`,
     onSuccess: () => {
-      onSuccess?.(undefined as unknown as TResponse);
+      onSuccess?.(undefined as any as TResponse);
     },
   });
 }

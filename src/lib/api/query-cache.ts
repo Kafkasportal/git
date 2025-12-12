@@ -34,21 +34,21 @@ export class QueryCache<T = unknown> {
    */
   async get<R>(key: string, queryFn: () => Promise<R>, ttl?: number): Promise<R> {
     // Check if data is in cache and still valid
-    const cached = this.cache.get(key as unknown);
+    const cached = this.cache.get(key as any);
     if (cached && !this.isExpired(cached)) {
-      return cached.data as unknown as R;
+      return cached.data as any as R;
     }
 
     // Check if request is already pending
     const pending = this.pendingRequests.get(key);
     if (pending) {
-      return pending as unknown as Promise<R>;
+      return pending as any as Promise<R>;
     }
 
     // Execute query and cache result
     const request = queryFn()
       .then((data) => {
-        this.set(key, data as unknown, ttl);
+        this.set(key, data as any, ttl);
         this.pendingRequests.delete(key);
         return data;
       })
@@ -57,7 +57,7 @@ export class QueryCache<T = unknown> {
         throw error;
       });
 
-    this.pendingRequests.set(key, request as unknown);
+    this.pendingRequests.set(key, request as any);
     return request;
   }
 

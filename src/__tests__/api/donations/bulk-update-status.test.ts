@@ -61,7 +61,7 @@ describe('POST /api/donations/bulk-update-status', () => {
   it('should successfully update status of multiple donations', async () => {
     const ids = ['id1', 'id2', 'id3'];
     const status = 'completed';
-    (appwriteApi.appwriteDonations.update as unknown).mockResolvedValue({ $id: 'id1', status });
+    (appwriteApi.appwriteDonations.update as any).mockResolvedValue({ $id: 'id1', status });
 
     const request = new NextRequest('http://localhost/api/donations/bulk-update-status', {
       method: 'POST',
@@ -95,7 +95,7 @@ describe('POST /api/donations/bulk-update-status', () => {
   it('should handle partial failures', async () => {
     const ids = ['id1', 'id2', 'id3'];
     const status = 'completed';
-    (appwriteApi.appwriteDonations.update as unknown)
+    (appwriteApi.appwriteDonations.update as any)
       .mockResolvedValueOnce({ $id: 'id1', status })
       .mockRejectedValueOnce(new Error('Not found'))
       .mockResolvedValueOnce({ $id: 'id3', status });

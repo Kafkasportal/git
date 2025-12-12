@@ -45,7 +45,7 @@ describe('GET /api/communication-logs', () => {
         id: 'test-user',
         permissions: ['messages:read'],
       },
-    } as unknown);
+    } as any);
   });
 
   it('returns communication logs successfully', async () => {
@@ -68,7 +68,7 @@ describe('GET /api/communication-logs', () => {
 
     vi.mocked(appwriteApi.appwriteCommunicationLogs.list).mockResolvedValue({
       documents: mockLogs,
-    } as unknown);
+    } as any);
 
     const request = new NextRequest('http://localhost/api/communication-logs');
     const response = await GET(request);
@@ -90,7 +90,7 @@ describe('GET /api/communication-logs', () => {
 
     vi.mocked(appwriteApi.appwriteCommunicationLogs.list).mockResolvedValue({
       documents: mockLogs,
-    } as unknown);
+    } as any);
 
     const request = new NextRequest('http://localhost/api/communication-logs?type=email');
     const response = await GET(request);
@@ -117,7 +117,7 @@ describe('GET /api/communication-logs', () => {
 
     vi.mocked(appwriteApi.appwriteCommunicationLogs.list).mockResolvedValue({
       documents: mockLogs,
-    } as unknown);
+    } as any);
 
     const request = new NextRequest('http://localhost/api/communication-logs?status=failed');
     const response = await GET(request);
@@ -143,7 +143,7 @@ describe('GET /api/communication-logs', () => {
 
     vi.mocked(appwriteApi.appwriteCommunicationLogs.list).mockResolvedValue({
       documents: mockLogs,
-    } as unknown);
+    } as any);
 
     const request = new NextRequest('http://localhost/api/communication-logs?limit=50');
     const response = await GET(request);
@@ -155,7 +155,7 @@ describe('GET /api/communication-logs', () => {
   it('handles empty list', async () => {
     vi.mocked(appwriteApi.appwriteCommunicationLogs.list).mockResolvedValue({
       documents: [],
-    } as unknown);
+    } as any);
 
     const request = new NextRequest('http://localhost/api/communication-logs');
     const response = await GET(request);

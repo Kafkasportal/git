@@ -124,13 +124,13 @@ describe('PUT /api/kumbara/[id]', () => {
       is_kumbara: true,
       amount: 1000,
       kumbara_location: 'Old Location',
-    } as unknown);
+    } as any);
 
     vi.mocked(appwriteApi.appwriteDonations.update).mockResolvedValue({
       _id: 'test-id',
       ...updateData,
       is_kumbara: true,
-    } as unknown);
+    } as any);
 
     const request = new NextRequest('http://localhost/api/kumbara/test-id', {
       method: 'PUT',
@@ -262,7 +262,7 @@ describe('DELETE /api/kumbara/[id]', () => {
       is_kumbara: true,
       amount: 1000,
       kumbara_location: 'Test Location',
-    } as unknown);
+    } as any);
     vi.mocked(appwriteApi.appwriteDonations.remove).mockResolvedValue(undefined);
 
     const request = new NextRequest('http://localhost/api/kumbara/test-id', {

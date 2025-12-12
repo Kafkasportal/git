@@ -91,7 +91,7 @@ export async function openDatabase(): Promise<IDBDatabase> {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.onerror = () => {
-      reject(new Error(`IndexedDB açılamadı: ${request.error.message}`));
+      reject(new Error(`IndexedDB açılamadı: ${request.error?.message}`));
     };
 
     request.onsuccess = () => {

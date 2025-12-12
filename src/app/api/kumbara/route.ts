@@ -198,16 +198,16 @@ export async function GET(request: NextRequest) {
       const searchLower = search.toLowerCase();
       filteredData = filteredData.filter(
         (donation) =>
-          (donation as unknown as DonationDocument).donor_name
+          (donation as any as DonationDocument).donor_name
             ?.toLowerCase()
             .includes(searchLower) ||
-          (donation as unknown as DonationDocument).kumbara_location
+          (donation as any as DonationDocument).kumbara_location
             ?.toLowerCase()
             .includes(searchLower) ||
-          (donation as unknown as DonationDocument).kumbara_institution
+          (donation as any as DonationDocument).kumbara_institution
             ?.toLowerCase()
             .includes(searchLower) ||
-          (donation as unknown as DonationDocument).receipt_number
+          (donation as any as DonationDocument).receipt_number
             ?.toLowerCase()
             .includes(searchLower)
       );
@@ -215,26 +215,26 @@ export async function GET(request: NextRequest) {
 
     if (location && location !== 'all') {
       filteredData = filteredData.filter(
-        (d) => (d as unknown as DonationDocument).kumbara_location === location
+        (d) => (d as any as DonationDocument).kumbara_location === location
       );
     }
 
     if (status && status !== 'all') {
       filteredData = filteredData.filter(
-        (d) => (d as unknown as DonationDocument).status === status
+        (d) => (d as any as DonationDocument).status === status
       );
     }
 
     if (currency && currency !== 'all') {
       filteredData = filteredData.filter(
-        (d) => (d as unknown as DonationDocument).currency === currency
+        (d) => (d as any as DonationDocument).currency === currency
       );
     }
 
     // Date range filtering
     if (startDate || endDate) {
       filteredData = filteredData.filter((d) => {
-        const collectionDate = (d as unknown as DonationDocument).collection_date;
+        const collectionDate = (d as any as DonationDocument).collection_date;
         if (!collectionDate) return false;
         const date = new Date(collectionDate);
         if (startDate && date < new Date(startDate)) return false;
@@ -484,7 +484,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create donation in Appwrite
-    const donationId = (await appwriteDonations.create((validation.normalizedData || {}) as unknown)) as string;
+    const donationId = (await appwriteDonations.create((validation.normalizedData || {}) as any)) as string;
 
     // Generate QR code for the kumbara
     const qrCode = await generateKumbaraQR({

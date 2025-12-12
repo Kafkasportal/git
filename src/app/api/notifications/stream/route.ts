@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
               recipient: userId,
             });
 
-            const notifications = (response.documents || []) as unknown as WorkflowNotificationDocument[];
+            const notifications = (response.documents || []) as any as WorkflowNotificationDocument[];
             
             // Filter new notifications (created after last check)
             const newNotifications = notifications.filter((notif) => {

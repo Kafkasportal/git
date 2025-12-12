@@ -259,7 +259,7 @@ describe('POST /api/users', () => {
       passwordHash: 'hashed-password',
     };
 
-    vi.mocked(appwriteApi.appwriteUsers.create).mockResolvedValue(createdUser as unknown);
+    vi.mocked(appwriteApi.appwriteUsers.create).mockResolvedValue(createdUser as any);
 
     const request = new NextRequest('http://localhost/api/users', {
       method: 'POST',

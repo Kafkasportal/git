@@ -55,10 +55,10 @@ export async function createUnifiedCrud<T>(
   const appwriteOps = createAppwriteCrudOperations(collectionKey as keyof typeof appwriteConfig.collections);
 
   return {
-    list: appwriteOps.list as unknown as UnifiedCrudOperations<T>['list'],
-    get: appwriteOps.get as unknown as UnifiedCrudOperations<T>['get'],
-    create: appwriteOps.create as unknown as UnifiedCrudOperations<T>['create'],
-    update: appwriteOps.update as unknown as UnifiedCrudOperations<T>['update'],
+    list: appwriteOps.list as any as UnifiedCrudOperations<T>['list'],
+    get: appwriteOps.get as any as UnifiedCrudOperations<T>['get'],
+    create: appwriteOps.create as any as UnifiedCrudOperations<T>['create'],
+    update: appwriteOps.update as any as UnifiedCrudOperations<T>['update'],
     delete: async (id: string) => {
       await appwriteOps.delete(id);
     },

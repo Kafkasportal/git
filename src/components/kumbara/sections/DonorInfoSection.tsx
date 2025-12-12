@@ -25,7 +25,7 @@ export const DonorInfoSection = memo(function DonorInfoSection({ control }: Dono
       </div>
       <div className="grid grid-cols-2 gap-2">
         <FormField
-          control={control as unknown as Control<KumbaraCreateInput>}
+          control={control as any as Control<KumbaraCreateInput>}
           name="donor_name"
           render={({ field }) => (
             <FormItem className="space-y-1">
@@ -41,7 +41,7 @@ export const DonorInfoSection = memo(function DonorInfoSection({ control }: Dono
         />
 
         <FormField
-          control={control as unknown as Control<KumbaraCreateInput>}
+          control={control as any as Control<KumbaraCreateInput>}
           name="donor_phone"
           render={({ field }) => (
             <FormItem className="space-y-1">
@@ -67,7 +67,7 @@ export const DonorInfoSection = memo(function DonorInfoSection({ control }: Dono
         />
 
         <FormField
-          control={control as unknown as Control<KumbaraCreateInput>}
+          control={control as any as Control<KumbaraCreateInput>}
           name="donor_email"
           render={({ field }) => (
             <FormItem className="space-y-1">
@@ -86,7 +86,7 @@ export const DonorInfoSection = memo(function DonorInfoSection({ control }: Dono
         />
 
         <FormField
-          control={control as unknown as Control<KumbaraCreateInput>}
+          control={control as any as Control<KumbaraCreateInput>}
           name="receipt_number"
           render={({ field }) => (
             <FormItem className="space-y-1">

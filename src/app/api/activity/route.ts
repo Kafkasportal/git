@@ -119,7 +119,7 @@ export async function GET(request: NextRequest) {
         queries
       );
 
-      const activities: Activity[] = (response.documents as unknown as ActivityDocument[]).map((doc) => ({
+      const activities: Activity[] = (response.documents as any as ActivityDocument[]).map((doc) => ({
         id: doc.$id,
         type: doc.type as ActivityType,
         title: doc.title,

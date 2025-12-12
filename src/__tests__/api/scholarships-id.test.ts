@@ -126,7 +126,7 @@ describe('PUT /api/scholarships/[id]', () => {
       category: 'academic',
     };
 
-    vi.mocked(appwriteApi.appwriteScholarships.update).mockResolvedValue(updatedScholarship as unknown);
+    vi.mocked(appwriteApi.appwriteScholarships.update).mockResolvedValue(updatedScholarship as any);
 
     const request = new NextRequest('http://localhost/api/scholarships/test-id', {
       method: 'PUT',

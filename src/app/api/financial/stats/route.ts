@@ -51,7 +51,7 @@ async function getFinancialStatsHandler(request: NextRequest) {
       queries
     );
 
-    const documents = response.documents as unknown as FinanceRecord[];
+    const documents = response.documents as any as FinanceRecord[];
 
     // 1. Totals
     let totalIncome = 0;

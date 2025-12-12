@@ -113,7 +113,7 @@ describe('PUT /api/beneficiaries/[id]', () => {
     };
 
     vi.mocked(appwriteApi.appwriteBeneficiaries.update).mockResolvedValue(
-      updatedBeneficiary as unknown
+      updatedBeneficiary as any
     );
 
     const request = new NextRequest('http://localhost/api/beneficiaries/test-id', {

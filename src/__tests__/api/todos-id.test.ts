@@ -153,7 +153,7 @@ describe('PUT /api/todos/[id]', () => {
     };
 
     vi.mocked(appwriteApi.appwriteTodos.get).mockResolvedValue(existingTodo);
-    vi.mocked(appwriteApi.appwriteTodos.update).mockResolvedValue(updatedTodo as unknown);
+    vi.mocked(appwriteApi.appwriteTodos.update).mockResolvedValue(updatedTodo as any);
 
     const request = new NextRequest('http://localhost/api/todos/test-id', {
       method: 'PUT',

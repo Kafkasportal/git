@@ -115,13 +115,13 @@ export default function StudentsPage() {
 
   const scholarshipsMap = useMemo(() => {
     const map: Record<string, { title: string; amount: number }> = {};
-    scholarshipsResponse?.forEach((s: unknown) => {
+    scholarshipsResponse?.forEach((s: any) => {
       map[s.$id] = { title: s.title, amount: s.amount };
     });
     return map;
   }, [scholarshipsResponse]);
 
-  const applications = (applicationsResponse?.data || []) as unknown[];
+  const applications = (applicationsResponse?.data || []) as any[];
   const total = applicationsResponse?.total || 0;
   const totalPages = Math.max(1, Math.ceil(total / limit));
 

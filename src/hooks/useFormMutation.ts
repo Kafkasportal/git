@@ -3,12 +3,12 @@
  * Eliminates duplicate code in form components
  */
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import type { UseMutationOptions } from '@tanstack/react-query';
-import logger from '@/lib/logger';
-import { useOnlineStatus } from './useOnlineStatus';
-import { queueOfflineMutation } from '@/lib/offline-sync';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import type { UseMutationOptions } from "@tanstack/react-query";
+import logger from "@/lib/logger";
+import { useOnlineStatus } from "./useOnlineStatus";
+import { queueOfflineMutation } from "@/lib/offline-sync";
 
 interface UseFormMutationOptions<TData, TVariables> {
   /**
@@ -34,7 +34,7 @@ interface UseFormMutationOptions<TData, TVariables> {
   /**
    * Mutation type for offline sync (create/update/delete)
    */
-  mutationType?: 'create' | 'update' | 'delete';
+  mutationType?: "create" | "update" | "delete";
   /**
    * Enable offline queue (default: true)
    */
@@ -67,7 +67,7 @@ export function useFormMutation<TData = unknown, TVariables = unknown>({
   errorMessage,
   mutationFn,
   collection,
-  mutationType = 'create',
+  mutationType = "create",
   enableOfflineQueue = true,
   options,
   onSuccess,
@@ -89,14 +89,15 @@ export function useFormMutation<TData = unknown, TVariables = unknown>({
             retryCount: 0,
           });
 
-          toast.info('İşlem offline kuyruğuna eklendi', {
-            description: 'İnternet bağlantısı kurulduğunda otomatik olarak senkronize edilecek',
+          toast.info("İşlem offline kuyruğuna eklendi", {
+            description:
+              "İnternet bağlantısı kurulduğunda otomatik olarak senkronize edilecek",
           });
 
           // Return a mock response to satisfy TypeScript
           return {} as TData;
         } catch (error) {
-          logger.error('Failed to queue offline mutation', error as Error);
+          logger.error("Failed to queue offline mutation", error as Error);
           throw error;
         }
       }
@@ -109,7 +110,9 @@ export function useFormMutation<TData = unknown, TVariables = unknown>({
       // Only invalidate queries and show toasts if mutation was actually executed (not queued)
       if (!isOffline || !enableOfflineQueue) {
         // Invalidate queries to refresh data
-      void queryClient.invalidateQueries({ queryKey: Array.isArray(queryKey) ? queryKey : [queryKey] });
+        void queryClient.invalidateQueries({
+          queryKey: Array.isArray(queryKey) ? queryKey : [queryKey],
+        });
 
         // Show success toast
         if (showSuccessToast) {
@@ -128,9 +131,9 @@ export function useFormMutation<TData = unknown, TVariables = unknown>({
       const message =
         error instanceof Error
           ? error.message
-          : typeof error === 'string'
-            ? error
-            : 'Bilinmeyen hata';
+          : typeof error === "string"
+          ? error
+          : "Bilinmeyen hata";
 
       // Show error toast
       if (showErrorToast) {
@@ -138,7 +141,7 @@ export function useFormMutation<TData = unknown, TVariables = unknown>({
       }
 
       // Log error for debugging
-      logger.error('Form mutation failed', { error, errorMessage });
+      logger.error("Form mutation failed", { error, errorMessage });
     },
   });
 
@@ -159,23 +162,29 @@ export function useFormHelpers() {
    */
   const getErrorMessage = (error: unknown): string => {
     if (error instanceof Error) return error.message;
-    if (typeof error === 'string') return error;
-    return 'Bilinmeyen hata';
+    if (typeof error === "string") return error;
+    return "Bilinmeyen hata";
   };
 
   /**
    * Check if field has error
    */
-  const hasError = (errors: Record<string, unknown>, field: string): boolean => {
+  const hasError = (
+    errors: Record<string, unknown>,
+    field: string
+  ): boolean => {
     return Boolean(errors[field]);
   };
 
   /**
    * Get field error message
    */
-  const getFieldError = (errors: Record<string, unknown>, field: string): string | undefined => {
+  const getFieldError = (
+    errors: Record<string, unknown>,
+    field: string
+  ): string | undefined => {
     const error = errors[field] as { message?: string } | undefined;
-    return error.message;
+    return error?.message;
   };
 
   return {

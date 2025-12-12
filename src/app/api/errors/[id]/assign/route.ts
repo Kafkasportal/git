@@ -63,7 +63,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     let taskId: string | null = null;
     if (create_task) {
       try {
-        const errorData = error as unknown;
+        const errorData = error as any;
         // Determine task priority based on error severity
         let taskPriority: 'low' | 'normal' | 'high' | 'urgent' = 'normal';
         if (errorData.severity === 'critical') taskPriority = 'urgent';
@@ -88,7 +88,7 @@ ${errorData.component ? `Bileşen: ${errorData.component}` : ''}`,
           is_read: false,
         });
 
-        taskId = (task as unknown).$id || (task as unknown).id || '';
+        taskId = (task as any).$id || (task as any).id || '';
 
         // Link task to error in metadata
         await appwriteErrors.update(id, {

@@ -168,7 +168,7 @@ describe('POST /api/beneficiaries', () => {
     };
 
     vi.mocked(appwriteApi.appwriteBeneficiaries.create).mockResolvedValue(
-      createdBeneficiary as unknown
+      createdBeneficiary as any
     );
 
     const request = new NextRequest('http://localhost/api/beneficiaries', {

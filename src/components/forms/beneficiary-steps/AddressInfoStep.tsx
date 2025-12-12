@@ -39,7 +39,7 @@ export function AddressInfoStep() {
             <ParameterSelect
               parameter="IL"
               value={watch('city')}
-              onValueChange={(value) => setValue('city', value as unknown)}
+              onValueChange={(value) => setValue('city', value as any)}
               placeholder="İl seçin"
               className={errors.city ? 'border-red-500' : ''}
             />
@@ -91,7 +91,7 @@ export function AddressInfoStep() {
             <ParameterSelect
               parameter="KONUT_DURUMU"
               value={watch('livingPlace')}
-              onValueChange={(value) => setValue('livingPlace', value as unknown)}
+              onValueChange={(value) => setValue('livingPlace', value as any)}
               placeholder="Konut durumu seçin"
               className={errors.livingPlace ? 'border-red-500' : ''}
             />
@@ -105,7 +105,7 @@ export function AddressInfoStep() {
             <ParameterSelect
               parameter="ILETISIM_TERCIHI"
               value={watch('contactPreference')}
-              onValueChange={(value) => setValue('contactPreference', value as unknown)}
+              onValueChange={(value) => setValue('contactPreference', value as any)}
               placeholder="İletişim tercihi seçin"
               className={errors.contactPreference ? 'border-red-500' : ''}
             />

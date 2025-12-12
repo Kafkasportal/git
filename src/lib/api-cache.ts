@@ -292,10 +292,10 @@ export function usePrefetchWithCache() {
           // Some browsers throw when unknown init fields are provided; probe support first
           // Using Request constructor to detect support without sending a network request
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          new Request(url, { priority: priority as unknown });
+          new Request(url, { priority: priority as any });
           // If we reach here, assign priority to init for fetch
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (init as unknown).priority = priority;
+          (init as any).priority = priority;
         } catch {
           // Ignore unsupported priority; proceed without it
         }

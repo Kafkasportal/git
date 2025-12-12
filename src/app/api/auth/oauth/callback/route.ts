@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     if (error) {
       logger.warn("OAuth authentication failed", { error });
       return NextResponse.redirect(
-        new URL("/login?error=oauth_failed", request.url),
+        new URL("/login?error=oauth_failed", request.url)
       );
     }
 
@@ -48,14 +48,14 @@ export async function GET(request: NextRequest) {
     } catch (sessionError) {
       logger.error("Failed to get OAuth session", { error: sessionError });
       return NextResponse.redirect(
-        new URL("/login?error=session_failed", request.url),
+        new URL("/login?error=session_failed", request.url)
       );
     }
 
     // Find user in our users collection by email
     const emailLower = appwriteUser.email.toLowerCase();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let user: unknown = await appwriteUsers.getByEmail(emailLower);
+    let user: any = await appwriteUsers.getByEmail(emailLower);
 
     // If user doesn't exist, create one
     if (!user) {
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
       }
 
       return NextResponse.redirect(
-        new URL("/login?error=account_inactive", request.url),
+        new URL("/login?error=account_inactive", request.url)
       );
     }
 
@@ -105,7 +105,9 @@ export async function GET(request: NextRequest) {
     const cookieStore = await cookies();
     const userId = user.$id || user._id || "";
     const expireTime = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days for OAuth
-    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    const sessionId = `session_${Date.now()}_${Math.random()
+      .toString(36)
+      .substring(7)}`;
 
     const signedSession = serializeSessionCookie({
       sessionId,
@@ -156,7 +158,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.redirect(
-      new URL("/login?error=oauth_error", request.url),
+      new URL("/login?error=oauth_error", request.url)
     );
   }
 }

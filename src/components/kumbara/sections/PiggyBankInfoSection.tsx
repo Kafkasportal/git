@@ -41,7 +41,7 @@ export const PiggyBankInfoSection = memo(function PiggyBankInfoSection({
       </div>
       <div className="grid grid-cols-2 gap-2">
         <FormField
-          control={control as unknown as Control<KumbaraCreateInput>}
+          control={control as any as Control<KumbaraCreateInput>}
           name="kumbara_location"
           render={({ field }) => (
             <FormItem className="space-y-1">
@@ -57,7 +57,7 @@ export const PiggyBankInfoSection = memo(function PiggyBankInfoSection({
         />
 
         <FormField
-          control={control as unknown as Control<KumbaraCreateInput>}
+          control={control as any as Control<KumbaraCreateInput>}
           name="kumbara_institution"
           render={({ field }) => (
             <FormItem className="space-y-1">
@@ -73,7 +73,7 @@ export const PiggyBankInfoSection = memo(function PiggyBankInfoSection({
         />
 
         <FormField
-          control={control as unknown as Control<KumbaraCreateInput>}
+          control={control as any as Control<KumbaraCreateInput>}
           name="collection_date"
           render={({ field }) => (
             <FormItem className="space-y-1">
@@ -119,7 +119,7 @@ export const PiggyBankInfoSection = memo(function PiggyBankInfoSection({
         />
 
         <FormField
-          control={control as unknown as Control<KumbaraCreateInput>}
+          control={control as any as Control<KumbaraCreateInput>}
           name="status"
           render={({ field }) => (
             <FormItem className="space-y-1">

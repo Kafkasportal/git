@@ -229,7 +229,7 @@ describe('POST /api/scholarships', () => {
       is_active: true,
     };
 
-    vi.mocked(appwriteApi.appwriteScholarships.create).mockResolvedValue(createdScholarship as unknown);
+    vi.mocked(appwriteApi.appwriteScholarships.create).mockResolvedValue(createdScholarship as any);
 
     const request = new NextRequest('http://localhost/api/scholarships', {
       method: 'POST',
@@ -274,7 +274,7 @@ describe('POST /api/scholarships', () => {
     const { z } = await import('zod');
     const { scholarshipCreateSchema } = await import('@/lib/validations/scholarship');
     vi.mocked(scholarshipCreateSchema.parse).mockImplementationOnce(() => {
-      throw new z.ZodError([{ path: ['title'], message: 'Title is required', code: 'custom' } as unknown]);
+      throw new z.ZodError([{ path: ['title'], message: 'Title is required', code: 'custom' } as any]);
     });
 
     const invalidScholarship = {

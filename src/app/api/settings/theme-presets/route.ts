@@ -46,7 +46,7 @@ async function getThemePresetsHandler(_request: NextRequest) {
 
     // Parse and format theme presets
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const formattedPresets: ThemePreset[] = presets.map((preset: unknown) => {
+    const formattedPresets: ThemePreset[] = presets.map((preset: any) => {
       // Parse theme_config JSON string
       let themeConfig: Record<string, unknown> = {};
       try {

@@ -86,7 +86,7 @@ export default function DonationReportsPage() {
   });
 
   const donations: DonationReport[] = useMemo(() => {
-    const data = (donationsData?.data || []) as unknown as Array<Record<string, unknown>>;
+    const data = (donationsData?.data || []) as any as Array<Record<string, unknown>>;
     return data.map((d) => {
       const doc = d as { _creationTime?: number; $createdAt?: string; createdAt?: string; [key: string]: unknown };
       return {

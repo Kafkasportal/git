@@ -74,7 +74,7 @@ export function FinancialInfoStep() {
           <Label htmlFor="sector">Sektör</Label>
           <ParameterSelect
             parameter="SEKTOR"
-            value={watch('sector') as unknown as string}
+            value={watch('sector') as any as string}
             onValueChange={(value) => setValue('sector', value as BeneficiaryFormData['sector'])}
             placeholder="Çalışılan sektör seçin"
             className={errors.sector ? 'border-red-500' : ''}

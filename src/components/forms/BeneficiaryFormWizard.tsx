@@ -59,7 +59,7 @@ export function BeneficiaryFormWizard({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const methods = useForm<BeneficiaryFormData>({
-    resolver: zodResolver(beneficiarySchema) as unknown,
+    resolver: zodResolver(beneficiarySchema) as any,
     defaultValues: {
       mernisCheck: false,
       familyMemberCount: 1,

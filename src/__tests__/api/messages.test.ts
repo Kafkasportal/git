@@ -197,7 +197,7 @@ describe('GET /api/messages', () => {
 
   it('allows admin users to view all messages', async () => {
     vi.mocked(authUtils.requireModuleAccess).mockResolvedValueOnce(
-      createMockAuthResponse({ id: 'admin-user', permissions: ['users:manage'] as unknown })
+      createMockAuthResponse({ id: 'admin-user', permissions: ['users:manage'] as any })
     );
 
     const mockMessages = createMockDocuments([
@@ -282,7 +282,7 @@ describe('POST /api/messages', () => {
       is_bulk: false,
     };
 
-    vi.mocked(appwriteApi.appwriteMessages.create).mockResolvedValue(createdMessage as unknown);
+    vi.mocked(appwriteApi.appwriteMessages.create).mockResolvedValue(createdMessage as any);
 
     const request = new NextRequest('http://localhost/api/messages', {
       method: 'POST',
@@ -386,7 +386,7 @@ describe('POST /api/messages', () => {
       is_bulk: false,
     };
 
-    vi.mocked(appwriteApi.appwriteMessages.create).mockResolvedValue(createdMessage as unknown);
+    vi.mocked(appwriteApi.appwriteMessages.create).mockResolvedValue(createdMessage as any);
 
     const request = new NextRequest('http://localhost/api/messages', {
       method: 'POST',
@@ -429,7 +429,7 @@ describe('POST /api/messages', () => {
 
   it('allows admin users to create bulk messages', async () => {
     vi.mocked(authUtils.requireModuleAccess).mockResolvedValueOnce(
-      createMockAuthResponse({ id: 'admin-user', permissions: ['users:manage'] as unknown })
+      createMockAuthResponse({ id: 'admin-user', permissions: ['users:manage'] as any })
     );
 
     const bulkMessage = {
@@ -446,7 +446,7 @@ describe('POST /api/messages', () => {
       status: 'draft',
     };
 
-    vi.mocked(appwriteApi.appwriteMessages.create).mockResolvedValue(createdMessage as unknown);
+    vi.mocked(appwriteApi.appwriteMessages.create).mockResolvedValue(createdMessage as any);
 
     const request = new NextRequest('http://localhost/api/messages', {
       method: 'POST',

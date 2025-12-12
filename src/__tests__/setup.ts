@@ -24,7 +24,7 @@ global.ResizeObserver = class ResizeObserver {
 
 // Mock IntersectionObserver
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(global as unknown).IntersectionObserver = class IntersectionObserver {
+(global as any).IntersectionObserver = class IntersectionObserver {
   observe(_element: Element): void {}
 
   unobserve(_element: Element): void {}

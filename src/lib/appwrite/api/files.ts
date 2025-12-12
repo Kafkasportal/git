@@ -113,10 +113,10 @@ export const appwriteStorage = {
       // Dynamically import InputFile to avoid middleware issues
       const nodeAppwrite = await import("node-appwrite");
       const InputFile =
-        (nodeAppwrite as unknown as Record<string, unknown>).InputFile ||
-        (nodeAppwrite as unknown as Record<string, Record<string, unknown>>)
+        (nodeAppwrite as any as Record<string, unknown>).InputFile ||
+        (nodeAppwrite as any as Record<string, Record<string, unknown>>)
           .default?.InputFile ||
-        (nodeAppwrite as unknown as Record<string, unknown>).InputFile;
+        (nodeAppwrite as any as Record<string, unknown>).InputFile;
 
       if (!InputFile) {
         throw new Error(

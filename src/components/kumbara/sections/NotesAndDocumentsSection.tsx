@@ -32,7 +32,7 @@ export function NotesAndDocumentsSection({
           <h3 className="text-[10px] font-medium text-gray-900 dark:text-gray-100">Notlar</h3>
         </div>
         <FormField
-          control={control as unknown as Control<KumbaraCreateInput>}
+          control={control as any as Control<KumbaraCreateInput>}
           name="notes"
           render={({ field }) => (
             <FormItem className="mb-0">

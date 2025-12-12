@@ -56,7 +56,7 @@ export const LocationSection = memo(function LocationSection({ control }: Locati
       </div>
       <div className="grid grid-cols-2 gap-2">
         <FormField
-          control={control as unknown as Control<KumbaraCreateInput>}
+          control={control as any as Control<KumbaraCreateInput>}
           name="location_address"
           render={({ field }) => (
             <FormItem className="space-y-1">
@@ -69,7 +69,7 @@ export const LocationSection = memo(function LocationSection({ control }: Locati
           )}
         />
         <FormField
-          control={control as unknown as Control<KumbaraCreateInput>}
+          control={control as any as Control<KumbaraCreateInput>}
           name="location_coordinates"
           render={({ field }) => {
             const currentLat = field.value?.lat;

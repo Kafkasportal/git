@@ -195,7 +195,7 @@ describe('POST /api/workflow-notifications', () => {
     };
 
     vi.mocked(appwriteApi.appwriteWorkflowNotifications.create).mockResolvedValue(
-      createdNotification as unknown
+      createdNotification as any
     );
 
     const request = new NextRequest('http://localhost/api/workflow-notifications', {
@@ -321,7 +321,7 @@ describe('POST /api/workflow-notifications', () => {
     };
 
     vi.mocked(appwriteApi.appwriteWorkflowNotifications.create).mockResolvedValue(
-      createdNotification as unknown
+      createdNotification as any
     );
 
     const request = new NextRequest('http://localhost/api/workflow-notifications', {

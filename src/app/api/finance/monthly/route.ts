@@ -72,7 +72,7 @@ async function getFinancialMonthlyHandler(request: NextRequest): Promise<NextRes
     // Fetch documents with optimized query
     const response = await databases.listDocuments(databaseId, collectionId, queries);
 
-    const documents = response.documents as unknown as FinanceRecord[];
+    const documents = response.documents as any as FinanceRecord[];
 
     // Aggregate monthly trends
     const monthlyStats: Record<string, { income: number; expense: number }> = {};

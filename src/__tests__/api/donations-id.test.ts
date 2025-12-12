@@ -146,7 +146,7 @@ describe('PUT /api/donations/[id]', () => {
       status: 'completed',
     };
 
-    vi.mocked(appwriteApi.appwriteDonations.update).mockResolvedValue(updatedDonation as unknown);
+    vi.mocked(appwriteApi.appwriteDonations.update).mockResolvedValue(updatedDonation as any);
 
     const request = new NextRequest('http://localhost/api/donations/test-id', {
       method: 'PUT',

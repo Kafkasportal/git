@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
     }
 
     // After validation, safely cast to DecisionInput
-    body = rawBody as unknown as DecisionInput;
+    body = rawBody as any as DecisionInput;
 
     const response = await appwriteMeetingDecisions.create({
       meeting_id: body.meeting_id,

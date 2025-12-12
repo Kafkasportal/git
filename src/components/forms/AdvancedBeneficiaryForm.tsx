@@ -87,7 +87,7 @@ export function AdvancedBeneficiaryForm({
     watch,
     formState: { errors },
   } = useForm<AdvancedBeneficiaryFormData>({
-    resolver: zodResolver(advancedBeneficiarySchema) as unknown,
+    resolver: zodResolver(advancedBeneficiarySchema) as any,
     defaultValues: {
       mernisCheck: false,
       familyMemberCount: 1,
@@ -481,7 +481,7 @@ export function AdvancedBeneficiaryForm({
                 <ParameterSelect
                   category="gender"
                   value={watch('gender')}
-                  onChange={(value) => setValue('gender', value as unknown)}
+                  onChange={(value) => setValue('gender', value as any)}
                   label="Cinsiyet"
                   error={errors.gender?.message}
                 />
@@ -489,7 +489,7 @@ export function AdvancedBeneficiaryForm({
                 <ParameterSelect
                   category="religion"
                   value={watch('religion')}
-                  onChange={(value) => setValue('religion', value as unknown)}
+                  onChange={(value) => setValue('religion', value as any)}
                   label="İnanç"
                   error={errors.religion?.message}
                 />
@@ -497,7 +497,7 @@ export function AdvancedBeneficiaryForm({
                 <ParameterSelect
                   category="marital_status"
                   value={watch('maritalStatus')}
-                  onChange={(value) => setValue('maritalStatus', value as unknown)}
+                  onChange={(value) => setValue('maritalStatus', value as any)}
                   label="Medeni Durum"
                   error={errors.maritalStatus?.message}
                 />
@@ -635,7 +635,7 @@ export function AdvancedBeneficiaryForm({
                 <ParameterSelect
                   category="housing_type"
                   value={watch('livingPlace')}
-                  onChange={(value) => setValue('livingPlace', value as unknown)}
+                  onChange={(value) => setValue('livingPlace', value as any)}
                   label="Konut Durumu"
                   error={errors.livingPlace?.message}
                 />

@@ -90,7 +90,7 @@ export function createAppwriteCrudOperations<T extends AppwriteDocument>(
         const response = await databases.listDocuments(databaseId, collectionId, queries);
 
         return {
-          data: response.documents as unknown as T[],
+          data: response.documents as any as T[],
           error: null,
           total: response.total,
         };
@@ -115,7 +115,7 @@ export function createAppwriteCrudOperations<T extends AppwriteDocument>(
         const document = await databases.getDocument(databaseId, collectionId, id);
 
         return {
-          data: document as unknown as T,
+          data: document as any as T,
           error: null,
         };
       } catch (error) {
@@ -144,7 +144,7 @@ export function createAppwriteCrudOperations<T extends AppwriteDocument>(
         );
 
         return {
-          data: document as unknown as T,
+          data: document as any as T,
           error: null,
         };
       } catch (error) {
@@ -173,7 +173,7 @@ export function createAppwriteCrudOperations<T extends AppwriteDocument>(
         );
 
         return {
-          data: document as unknown as T,
+          data: document as any as T,
           error: null,
         };
       } catch (error) {

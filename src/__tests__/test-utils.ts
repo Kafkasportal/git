@@ -26,7 +26,7 @@ export function createMockDocument<T extends object>(
     ...data,
   };
 
-  return baseDocument as unknown as Models.DefaultDocument;
+  return baseDocument as any as Models.DefaultDocument;
 }
 
 /**

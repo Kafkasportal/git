@@ -243,7 +243,7 @@ export function DocumentsManager({ beneficiaryId }: DocumentsManagerProps) {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDownload(doc as unknown as Document)}
+                        onClick={() => handleDownload(doc as any as Document)}
                         className="gap-2"
                       >
                         <Download className="h-4 w-4" />

@@ -108,7 +108,7 @@ describe('PUT /api/tasks/[id]', () => {
       priority: 'high',
     };
 
-    vi.mocked(appwriteApi.appwriteTasks.update).mockResolvedValue(updatedTask as unknown);
+    vi.mocked(appwriteApi.appwriteTasks.update).mockResolvedValue(updatedTask as any);
 
     const request = new NextRequest('http://localhost/api/tasks/test-id', {
       method: 'PUT',

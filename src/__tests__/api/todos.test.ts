@@ -262,7 +262,7 @@ describe('POST /api/todos', () => {
       completed: false,
     };
 
-    vi.mocked(appwriteApi.appwriteTodos.create).mockResolvedValue(createdTodo as unknown);
+    vi.mocked(appwriteApi.appwriteTodos.create).mockResolvedValue(createdTodo as any);
 
     const request = new NextRequest('http://localhost/api/todos', {
       method: 'POST',
@@ -382,7 +382,7 @@ describe('POST /api/todos', () => {
       completed: false,
     };
 
-    vi.mocked(appwriteApi.appwriteTodos.create).mockResolvedValue(createdTodo as unknown);
+    vi.mocked(appwriteApi.appwriteTodos.create).mockResolvedValue(createdTodo as any);
 
     const request = new NextRequest('http://localhost/api/todos', {
       method: 'POST',

@@ -202,7 +202,7 @@ async function createUserHandler(request: NextRequest) {
     const response = await appwriteUsers.create({
       name: validation.data.name,
       email: validation.data.email,
-      role: validation.data.role as unknown,
+      role: validation.data.role as any,
       permissions: validation.data.permissions,
       passwordHash,
       isActive: validation.data.isActive,

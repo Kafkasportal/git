@@ -68,15 +68,15 @@ export function BeneficiaryQuickAddModal({ open, onOpenChange }: BeneficiaryQuic
     resolver: zodResolver(quickAddBeneficiarySchema),
     mode: 'onChange',
     defaultValues: {
-      category: undefined as unknown,
+      category: undefined as any,
       firstName: '',
       lastName: '',
       nationality: '',
       birthDate: undefined,
       identityNumber: '',
       mernisCheck: false,
-      fundRegion: undefined as unknown,
-      fileConnection: undefined as unknown,
+      fundRegion: undefined as any,
+      fileConnection: undefined as any,
       fileNumber: '',
     },
   });
