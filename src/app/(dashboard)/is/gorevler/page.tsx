@@ -293,7 +293,7 @@ export default function TasksPage() {
             <Button
               variant={viewMode === 'kanban' ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => setViewMode('kanban')}
+              onClick={() => { setViewMode('kanban'); }}
               className="rounded-r-none"
             >
               <LayoutGrid className="h-4 w-4 mr-2" />
@@ -302,7 +302,7 @@ export default function TasksPage() {
             <Button
               variant={viewMode === 'list' ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => setViewMode('list')}
+              onClick={() => { setViewMode('list'); }}
               className="rounded-l-none"
             >
               <List className="h-4 w-4 mr-2" />

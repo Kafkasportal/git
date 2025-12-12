@@ -341,7 +341,7 @@ export default function InvoiceForm({
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => { removeItem(item.id); }}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -424,7 +424,7 @@ export default function InvoiceForm({
             <Textarea
               id="notes"
               value={formData.notes}
-              onChange={(e) => handleFieldChange('notes', e.target.value)}
+              onChange={(e) => { handleFieldChange('notes', e.target.value); }}
               placeholder="Fatura notları..."
               rows={3}
             />

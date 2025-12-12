@@ -349,7 +349,7 @@ export default function FundReportsPage() {
                     id="end-date"
                     type="date"
                     value={customEndDate}
-                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    onChange={(e) => { setCustomEndDate(e.target.value); }}
                   />
                 </div>
               </>

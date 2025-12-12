@@ -399,7 +399,7 @@ function MultiSelectFilter({
           {filteredOptions.map((option) => (
             <DropdownMenuItem
               key={option.value}
-              onClick={() => toggleOption(option.value)}
+              onClick={() => { toggleOption(option.value); }}
               className="flex items-center gap-2 cursor-pointer"
             >
               <div

@@ -342,9 +342,9 @@ export default function SecuritySettingsPage() {
                     <Switch
                       id="require-special"
                       checked={passwordForm.requireSpecialChars}
-                      onCheckedChange={(checked) =>
-                        setPasswordForm({ ...passwordForm, requireSpecialChars: checked })
-                      }
+                      onCheckedChange={(checked) => {
+                        setPasswordForm({ ...passwordForm, requireSpecialChars: checked });
+                      }}
                     />
                   </div>
                 </div>
@@ -761,9 +761,9 @@ export default function SecuritySettingsPage() {
                     <Switch
                       id="email-alerts"
                       checked={generalForm.securityEmailAlerts}
-                      onCheckedChange={(checked) =>
-                        setGeneralForm({ ...generalForm, securityEmailAlerts: checked })
-                      }
+                      onCheckedChange={(checked) => {
+                        setGeneralForm({ ...generalForm, securityEmailAlerts: checked });
+                      }}
                     />
                   </div>
 

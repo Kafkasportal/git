@@ -73,7 +73,7 @@ export function BankAccountsManager({ beneficiaryId }: BankAccountsManagerProps)
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bank-accounts', beneficiaryId] });
+      void queryClient.invalidateQueries({ queryKey: ['bank-accounts', beneficiaryId] });
       toast.success('Banka hesabı başarıyla eklendi');
       setShowForm(false);
       setFormData({
@@ -105,7 +105,7 @@ export function BankAccountsManager({ beneficiaryId }: BankAccountsManagerProps)
       inactive: 'Pasif',
       closed: 'Kapatıldı',
     };
-    return labels[status] || status;
+    return Object.hasOwn(labels, status) ? labels[status] : status;
   };
 
   return (

@@ -59,7 +59,7 @@ export function FinancialInfoStep() {
             <ParameterSelect
               parameter="CALISMA_DURUMU"
               value={watch('workStatus')}
-              onValueChange={(value) => setValue('workStatus', value as any)}
+              onValueChange={(value) => setValue('workStatus', value as BeneficiaryFormData['workStatus'])}
               placeholder="Çalışma durumu seçin"
               className={errors.workStatus ? 'border-red-500' : ''}
             />
@@ -75,7 +75,7 @@ export function FinancialInfoStep() {
           <ParameterSelect
             parameter="SEKTOR"
             value={watch('sector') as unknown as string}
-            onValueChange={(value) => setValue('sector', value as any)}
+            onValueChange={(value) => setValue('sector', value as BeneficiaryFormData['sector'])}
             placeholder="Çalışılan sektör seçin"
             className={errors.sector ? 'border-red-500' : ''}
           />

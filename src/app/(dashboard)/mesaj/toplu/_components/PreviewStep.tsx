@@ -110,7 +110,7 @@ export function PreviewStep({
         <Checkbox
           id="confirm-send"
           checked={confirmed}
-          onCheckedChange={(checked) => onConfirmedChange(checked === true)}
+          onCheckedChange={(checked) => { onConfirmedChange(checked === true); }}
         />
         <Label htmlFor="confirm-send" className="text-sm cursor-pointer">
           Mesaj bilgilerini kontrol ettim ve gönderilmesini onaylıyorum

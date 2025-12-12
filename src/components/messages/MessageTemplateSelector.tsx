@@ -298,7 +298,7 @@ export function MessageTemplateSelector({
           <Checkbox
             id="favorites-only"
             checked={showFavoritesOnly}
-            onCheckedChange={(checked) => setShowFavoritesOnly(checked === true)}
+            onCheckedChange={(checked) => { setShowFavoritesOnly(checked === true); }}
           />
           <Label htmlFor="favorites-only" className="text-sm">
             Sadece Favoriler
@@ -468,7 +468,7 @@ function SaveTemplateForm({
           <Input
             id="template-subject"
             value={formData.subject}
-            onChange={(e) => setFormData((prev) => ({ ...prev, subject: e.target.value }))}
+            onChange={(e) => { setFormData((prev) => ({ ...prev, subject: e.target.value })); }}
             placeholder="Şablon konusu"
             className="h-9"
           />

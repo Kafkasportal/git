@@ -323,7 +323,7 @@ export function RecipientSelector({
       </div>
 
       {/* Recipient Sources Tabs */}
-      <Tabs value={recipientSource} onValueChange={(value) => setRecipientSource(value as any)}>
+      <Tabs value={recipientSource} onValueChange={(value) => { setRecipientSource(value as 'beneficiaries' | 'donors' | 'users' | 'custom'); }}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="beneficiaries" disabled={messageType === 'internal'}>
             <Heart className="h-4 w-4 mr-1" />

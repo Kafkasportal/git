@@ -128,8 +128,8 @@ export default function CashVaultPage() {
       return await appwriteFinanceRecords.create(createData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vault-balance'] });
-      queryClient.invalidateQueries({ queryKey: ['vault-transactions'] });
+      void queryClient.invalidateQueries({ queryKey: ['vault-balance'] });
+      void queryClient.invalidateQueries({ queryKey: ['vault-transactions'] });
     },
   });
 

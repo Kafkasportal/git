@@ -137,7 +137,7 @@ export default function IncomeExpensePage() {
       toast.success('İşlem başarıyla güncellendi');
       setIsEditDialogOpen(false);
       setSelectedRecord(null);
-      queryClient.invalidateQueries({ queryKey: ['finance-records'] });
+      void queryClient.invalidateQueries({ queryKey: ['finance-records'] });
     },
   });
 

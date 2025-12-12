@@ -139,7 +139,7 @@ export function WidgetGrid({
                 <DropdownMenuCheckboxItem
                   key={widget.id}
                   checked={widget.visible}
-                  onCheckedChange={() => onToggleWidget(widget.id)}
+                  onCheckedChange={() => { onToggleWidget(widget.id); }}
                   className="gap-2"
                 >
                   {widget.visible ? (
@@ -175,7 +175,7 @@ export function WidgetGrid({
                     className="flex items-center justify-between px-2 py-1.5 hover:bg-accent rounded-sm"
                   >
                     <button
-                      onClick={() => onLoadLayout(layout.id)}
+                      onClick={() => { onLoadLayout(layout.id); }}
                       className="flex-1 text-left text-sm"
                     >
                       {layout.name}
@@ -184,7 +184,7 @@ export function WidgetGrid({
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6"
-                      onClick={() => onDeleteLayout(layout.id)}
+                      onClick={() => { onDeleteLayout(layout.id); }}
                     >
                       <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
                     </Button>
@@ -198,7 +198,7 @@ export function WidgetGrid({
           <Button
             variant={isEditMode ? 'default' : 'outline'}
             size="sm"
-            onClick={() => onEditModeChange(!isEditMode)}
+            onClick={() => { onEditModeChange(!isEditMode); }}
             className="gap-2"
           >
             <Settings2 className="h-4 w-4" />
@@ -253,7 +253,7 @@ export function WidgetGrid({
           margin={margin}
           isDraggable={isEditMode}
           isResizable={isEditMode}
-          onLayoutChange={(layout) => onLayoutChange(layout)}
+          onLayoutChange={(layout) => { onLayoutChange(layout); }}
           draggableHandle=".drag-handle"
           useCSSTransforms={true}
           measureBeforeMount={false}
@@ -283,12 +283,12 @@ export function WidgetGrid({
                 id="layout-name"
                 placeholder="Örn: Ana Dashboard"
                 value={layoutName}
-                onChange={(e) => setLayoutName(e.target.value)}
+                onChange={(e) => { setLayoutName(e.target.value); }}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>
+            <Button variant="outline" onClick={() => { setSaveDialogOpen(false); }}>
               İptal
             </Button>
             <Button onClick={handleSaveLayout} disabled={!layoutName.trim()}>

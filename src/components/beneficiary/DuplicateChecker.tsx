@@ -167,7 +167,7 @@ export function DuplicateChecker({
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Hata</AlertTitle>
           <AlertDescription>
-            {checkMutation.error?.message || 'Kontrol sırasında bir hata oluştu'}
+            {checkMutation.error.message || 'Kontrol sırasında bir hata oluştu'}
           </AlertDescription>
         </Alert>
       )}
@@ -224,12 +224,12 @@ export function DuplicateChecker({
                             variant="secondary"
                             className={cn(
                               'text-xs',
-                              MATCH_TYPE_LABELS[match.matchType]?.color
+                              MATCH_TYPE_LABELS[match.matchType].color
                             )}
                           >
-                            {MATCH_TYPE_LABELS[match.matchType]?.icon}
+                            {MATCH_TYPE_LABELS[match.matchType].icon}
                             <span className="ml-1">
-                              {MATCH_TYPE_LABELS[match.matchType]?.label}
+                              {MATCH_TYPE_LABELS[match.matchType].label}
                             </span>
                           </Badge>
                           <Badge variant="outline" className="text-xs">

@@ -91,7 +91,7 @@ export function KumbaraForm({ onSuccess, onCancel }: KumbaraFormProps) {
       return response.json();
     },
     onSuccess: (response) => {
-      queryClient.invalidateQueries({ queryKey: ['kumbara-donations'] });
+      void queryClient.invalidateQueries({ queryKey: ['kumbara-donations'] });
 
       // Show success message with QR code
       if (response.data?.qr_code) {

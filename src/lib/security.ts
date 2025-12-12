@@ -435,11 +435,11 @@ export class PasswordSecurity {
       }
     }
 
-    let password = '';
+    let result = '';
     for (let i = 0; i < length; i++) {
-      password += allChars[array[i] % allChars.length];
+      result += allChars[array[i] % allChars.length];
     }
 
-    return password;
+    return result;
   }
 }

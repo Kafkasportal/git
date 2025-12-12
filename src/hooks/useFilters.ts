@@ -141,9 +141,11 @@ export function useFilters(options: UseFiltersOptions = {}) {
       const newFilters = { ...prev };
       if (value !== undefined && Array.isArray(newFilters[key])) {
         const arr = newFilters[key] as string[];
-        newFilters[key] = arr.filter((v) => v !== value);
-        if ((newFilters[key] as string[]).length === 0) {
+        const filtered = arr.filter((v) => v !== value);
+        if (filtered.length === 0) {
           delete newFilters[key];
+        } else {
+          newFilters[key] = filtered;
         }
       } else {
         delete newFilters[key];

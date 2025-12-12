@@ -303,7 +303,7 @@ export function DocumentsManager({
             <CardDescription>Kayıta ait tüm belgeler</CardDescription>
           </div>
           {!readOnly && (
-            <Button onClick={() => setShowAddDialog(true)} size="sm">
+            <Button onClick={() => { setShowAddDialog(true); }} size="sm">
               <Plus className="h-4 w-4 mr-2" />
               Belge Ekle
             </Button>
@@ -392,7 +392,7 @@ export function DocumentsManager({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(doc)}
+                        onClick={() => { handleDelete(doc); }}
                         disabled={deleteMutation.isPending}
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
@@ -421,7 +421,7 @@ export function DocumentsManager({
               <Label>Belge Türü *</Label>
               <Select
                 value={formData.type}
-                onValueChange={(v) => setFormData((f) => ({ ...f, type: v as DocumentType }))}
+                onValueChange={(v) => { setFormData((f) => ({ ...f, type: v as DocumentType })); }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Belge türü seçin" />
@@ -440,7 +440,7 @@ export function DocumentsManager({
               <Label>Belge Adı *</Label>
               <Input
                 value={formData.name}
-                onChange={(e) => setFormData((f) => ({ ...f, name: e.target.value }))}
+                onChange={(e) => { setFormData((f) => ({ ...f, name: e.target.value })); }}
                 placeholder="Örn: TC Kimlik - Ahmet Yılmaz"
               />
             </div>
@@ -449,7 +449,7 @@ export function DocumentsManager({
               <Label>Dosya URL (opsiyonel)</Label>
               <Input
                 value={formData.fileUrl}
-                onChange={(e) => setFormData((f) => ({ ...f, fileUrl: e.target.value }))}
+                onChange={(e) => { setFormData((f) => ({ ...f, fileUrl: e.target.value })); }}
                 placeholder="https://..."
               />
             </div>
@@ -459,7 +459,7 @@ export function DocumentsManager({
               <Input
                 type="date"
                 value={formData.expiryDate}
-                onChange={(e) => setFormData((f) => ({ ...f, expiryDate: e.target.value }))}
+                onChange={(e) => { setFormData((f) => ({ ...f, expiryDate: e.target.value })); }}
               />
             </div>
 
@@ -467,7 +467,7 @@ export function DocumentsManager({
               <Label>Notlar (opsiyonel)</Label>
               <Textarea
                 value={formData.notes}
-                onChange={(e) => setFormData((f) => ({ ...f, notes: e.target.value }))}
+                onChange={(e) => { setFormData((f) => ({ ...f, notes: e.target.value })); }}
                 placeholder="Belge hakkında notlar..."
                 rows={2}
               />
@@ -475,7 +475,7 @@ export function DocumentsManager({
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddDialog(false)}>
+            <Button variant="outline" onClick={() => { setShowAddDialog(false); }}>
               İptal
             </Button>
             <Button onClick={handleAddSubmit} disabled={addMutation.isPending}>
@@ -503,7 +503,7 @@ export function DocumentsManager({
           </DialogHeader>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowVerifyDialog(false)}>
+            <Button variant="outline" onClick={() => { setShowVerifyDialog(false); }}>
               İptal
             </Button>
             <Button

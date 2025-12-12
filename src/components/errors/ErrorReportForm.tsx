@@ -70,7 +70,7 @@ export function ErrorReportForm({ userId, trigger }: ErrorReportFormProps) {
             Karşılaştığınız sorunu aşağıdaki forma yazarak bize bildirin.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4 mt-4">
           <div className="space-y-2">
             <Label htmlFor="title">Başlık</Label>
             <Input

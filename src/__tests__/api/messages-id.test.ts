@@ -344,7 +344,7 @@ describe('POST /api/messages/[id]/send', () => {
     expect(data.message).toBe('Mesaj gönderildi');
   });
 
-  it('sends SMS message successfully', async () => {
+  it('returns error for SMS message (SMS disabled)', async () => {
     const mockMessage = {
       _id: 'test-id',
       message_type: 'sms',
@@ -360,10 +360,6 @@ describe('POST /api/messages/[id]/send', () => {
 
     vi.mocked(appwriteApi.appwriteMessages.get).mockResolvedValue(mockMessage as any);
     vi.mocked(appwriteApi.appwriteUsers.get).mockResolvedValue(mockUser as any);
-    vi.mocked(appwriteApi.appwriteMessages.update).mockResolvedValue({
-      ...mockMessage,
-      status: 'sent',
-    } as any);
 
     const request = new NextRequest('http://localhost/api/messages/test-id/send', {
       method: 'POST',
@@ -372,8 +368,9 @@ describe('POST /api/messages/[id]/send', () => {
     const response = await POST(request, { params });
     const data = await response.json();
 
-    expect(response.status).toBe(200);
-    expect(data.success).toBe(true);
+    expect(response.status).toBe(500);
+    expect(data.success).toBe(false);
+    expect(data.error).toBe('SMS gönderimi şu anda devre dışı');
   });
 
   it('sends email message successfully', async () => {

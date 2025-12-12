@@ -279,7 +279,7 @@ export default function BeneficiariesPage() {
         label: 'Tür',
         className: 'flex-none w-[140px] max-w-[140px] text-xs overflow-hidden',
         render: (item) => {
-          const type = (item as any).beneficiary_type;
+          const type = (item as { beneficiary_type?: string }).beneficiary_type;
           return (
             <Badge variant="secondary" className="font-medium">
               {!type || type === 'primary_person'

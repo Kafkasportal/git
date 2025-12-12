@@ -18,7 +18,7 @@ vi.mock('@/lib/appwrite/api', () => ({
 
 // Mock middleware
 vi.mock('@/lib/api/middleware', () => ({
-  buildApiRoute: vi.fn((_options) => (handler: any) => handler),
+  buildApiRoute: vi.fn((_options) => (handler: unknown) => handler),
 }));
 
 // Mock route helpers

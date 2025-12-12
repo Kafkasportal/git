@@ -155,7 +155,7 @@ export default function Error({
             <RefreshCw className="mr-2 h-4 w-4" />
             Tekrar Dene
           </Button>
-          <Button onClick={() => router.push('/genel')} className="w-full" variant="outline">
+          <Button onClick={() => { router.push('/genel'); }} className="w-full" variant="outline">
             <Home className="mr-2 h-4 w-4" />
             Ana Sayfaya Dön
           </Button>
@@ -179,7 +179,7 @@ export default function Error({
           )}
           {isTestError && (
             <Button
-              onClick={() => router.push('/test-error-boundary')}
+              onClick={() => { router.push('/test-error-boundary'); }}
               className="w-full"
               variant="outline"
             >

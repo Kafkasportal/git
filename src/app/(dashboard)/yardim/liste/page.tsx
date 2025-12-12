@@ -165,7 +165,7 @@ export default function AidListPage() {
         app.in_kind_aid || 0,
         app.service_referral || 0,
         STAGE_LABELS[app.stage as keyof typeof STAGE_LABELS]?.label || app.stage,
-        STATUS_LABELS[app.status as keyof typeof STATUS_LABELS]?.label || app.status,
+        STATUS_LABELS[app.status as keyof typeof STATUS_LABELS].label || app.status,
         new Date(app.application_date).toLocaleDateString('tr-TR'),
       ]),
     ];
@@ -490,7 +490,7 @@ export default function AidListPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  onClick={() => { setPage((p) => Math.max(1, p - 1)); }}
                   disabled={page === 1}
                 >
                   Önceki

@@ -163,13 +163,13 @@ export function BulkActionsToolbar({
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Seçilenleri Dışa Aktar</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => onExport('excel')} className="cursor-pointer">
+                <DropdownMenuItem onClick={() => { onExport('excel'); }} className="cursor-pointer">
                   Excel (.xlsx)
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onExport('csv')} className="cursor-pointer">
+                <DropdownMenuItem onClick={() => { onExport('csv'); }} className="cursor-pointer">
                   CSV (.csv)
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onExport('pdf')} className="cursor-pointer">
+                <DropdownMenuItem onClick={() => { onExport('pdf'); }} className="cursor-pointer">
                   PDF (.pdf)
                 </DropdownMenuItem>
               </DropdownMenuContent>

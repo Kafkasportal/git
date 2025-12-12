@@ -62,12 +62,12 @@ export function useNotificationPanel(options: UseNotificationPanelOptions = {}) 
     if (!enablePolling) return;
 
     // Initial fetch
-    fetchNotifications();
+    void fetchNotifications();
 
     // Set up polling
     const interval = setInterval(fetchNotifications, pollingInterval);
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [enablePolling, pollingInterval, fetchNotifications]);
 
   // Request desktop notification permission

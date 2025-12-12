@@ -116,20 +116,20 @@ function OrgNode({
           {/* Children Container */}
           <div className="flex gap-8 relative">
             {/* Horizontal Line */}
-            {node.children!.length > 1 && (
+            {node.children && node.children.length > 1 && (
               <div
                 className="absolute top-0 h-px bg-border"
                 style={{
                   left: '50%',
                   right: '50%',
                   transform: 'translateX(-50%)',
-                  width: `calc(100% - ${200 / node.children!.length}px)`,
+                  width: `calc(100% - ${200 / node.children.length}px)`,
                 }}
               />
             )}
 
             {/* Child Nodes */}
-            {node.children!.map((child) => (
+            {node.children?.map((child) => (
               <div key={child._id} className="flex flex-col items-center">
                 {/* Vertical Line to Child */}
                 <div className="w-px h-8 bg-border" />
@@ -161,7 +161,7 @@ function buildTree(nodes: OrganizationNode[]): OrganizationNode[] {
     if (node.parent_id) {
       const parent = nodeMap.get(node.parent_id);
       if (parent) {
-        parent.children!.push(node);
+        parent.children?.push(node);
       } else {
         roots.push(node);
       }

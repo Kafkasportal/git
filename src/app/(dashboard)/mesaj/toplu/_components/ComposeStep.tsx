@@ -39,7 +39,7 @@ export function ComposeStep({ messageType, messageData, onMessageChange }: Compo
       <MessageTemplateSelector
         messageType={messageType}
         onSelect={(template) =>
-          onMessageChange({ subject: template.subject, content: template.content })
+          { onMessageChange({ subject: template.subject, content: template.content }); }
         }
       />
 

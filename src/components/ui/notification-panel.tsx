@@ -203,7 +203,7 @@ function NotificationList() {
                   <NotificationItem
                     key={notification.id}
                     notification={notification}
-                    onClick={() => handleNotificationClick(notification)}
+                    onClick={() => { handleNotificationClick(notification); }}
                     onRemove={() => removeNotification(notification.id)}
                     onMarkRead={() => markAsRead(notification.id)}
                   />

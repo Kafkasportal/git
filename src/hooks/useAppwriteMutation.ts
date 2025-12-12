@@ -59,10 +59,10 @@ export function useAppwriteMutation<
         // Determine mutation type from HTTP method or context
         // Try to infer from queryKey or use 'create' as default
         const mutationType: "create" | "update" | "delete" =
-          (queryKey?.[0] as string)?.includes("delete") ||
-          (queryKey?.[0] as string)?.includes("remove")
+          (queryKey?.[0] as string).includes("delete") ||
+          (queryKey?.[0] as string).includes("remove")
             ? "delete"
-            : (queryKey?.[0] as string)?.includes("update") ||
+            : (queryKey?.[0] as string).includes("update") ||
                 (queryKey?.[0] as string)?.includes("edit")
               ? "update"
               : "create";

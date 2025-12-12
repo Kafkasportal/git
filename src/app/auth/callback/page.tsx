@@ -114,7 +114,7 @@ export default function AuthCallbackPage() {
       }
     }
 
-    handleCallback();
+    void handleCallback();
   }, [router, searchParams, setUser]);
 
   return (

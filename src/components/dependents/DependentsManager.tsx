@@ -123,7 +123,7 @@ export function DependentsManager({ beneficiaryId }: DependentsManagerProps) {
       sibling: 'Kardeş',
       other: 'Diğer',
     };
-    return labels[relationship] || relationship;
+    return Object.hasOwn(labels, relationship) ? labels[relationship] : relationship;
   };
 
   return (
@@ -234,7 +234,7 @@ export function DependentsManager({ beneficiaryId }: DependentsManagerProps) {
                   <Label>Meslek</Label>
                   <Input
                     value={formData.occupation}
-                    onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
+                    onChange={(e) => { setFormData({ ...formData, occupation: e.target.value }); }}
                   />
                 </div>
                 <div className="space-y-2">
@@ -242,7 +242,7 @@ export function DependentsManager({ beneficiaryId }: DependentsManagerProps) {
                   <Input
                     type="number"
                     value={formData.monthlyIncome}
-                    onChange={(e) => setFormData({ ...formData, monthlyIncome: e.target.value })}
+                    onChange={(e) => { setFormData({ ...formData, monthlyIncome: e.target.value }); }}
                   />
                 </div>
               </div>

@@ -216,7 +216,7 @@ export default function OrphansPage() {
               <Input
                 placeholder="Ad, telefon veya üniversite ara..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => { setSearch(e.target.value); }}
                 className="pl-10"
               />
             </div>

@@ -227,8 +227,10 @@ export function withCors(allowedOrigins: string[] = ["http://localhost:3000"]) {
 
       const response = await handler(request, params);
 
-      // Add CORS headers
-      response.headers.set("Access-Control-Allow-Origin", origin || "*");
+      // Add CORS headers - only use origins from the pre-defined allowed list
+      // Find matching origin from allowedOrigins array or use first allowed origin
+      const corsOrigin = allowedOrigins.find(allowed => allowed === origin) ?? allowedOrigins[0];
+      response.headers.set("Access-Control-Allow-Origin", corsOrigin);
       response.headers.set(
         "Access-Control-Allow-Methods",
         "GET, POST, PUT, PATCH, DELETE, OPTIONS",

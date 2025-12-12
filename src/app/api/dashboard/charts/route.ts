@@ -53,6 +53,7 @@ export const GET = buildApiRoute({
     });
 
     // Convert to array format for charts
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const donationTrend = Array.from(monthlyData.values()).map((data: any) => ({
       month: data.month,
       amount: Math.round(data.amount),
@@ -60,6 +61,7 @@ export const GET = buildApiRoute({
     }));
 
     // Aggregate category data from aid applications
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let categoryData: any[] = [];
 
     try {

@@ -124,7 +124,7 @@ export default function UsersPage() {
       return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      void queryClient.invalidateQueries({ queryKey: ['users'] });
       void queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('Kullanıcı silindi');
     },

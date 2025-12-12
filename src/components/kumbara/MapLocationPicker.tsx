@@ -381,7 +381,7 @@ export function MapLocationPicker({
               id="address-search"
               placeholder="Örn: İstanbul, Türkiye"
               value={addressInput}
-              onChange={(e) => setAddressInput(e.target.value)}
+              onChange={(e) => { setAddressInput(e.target.value); }}
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();

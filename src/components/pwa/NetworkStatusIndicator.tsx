@@ -53,13 +53,13 @@ export function NetworkStatusIndicator() {
 
     // Load initial pending count
     if (!isOnline) {
-      loadPendingCount();
+      void loadPendingCount();
     }
 
     // Refresh pending count every 10 seconds when offline
     const interval = setInterval(() => {
       if (!isOnline) {
-        loadPendingCount();
+        void loadPendingCount();
       }
     }, 10000);
 

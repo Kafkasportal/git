@@ -199,7 +199,7 @@ export default function ThemeSettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Light Mode */}
                 <button
-                  onClick={() => handleThemeModeChange('light')}
+                  onClick={() => { handleThemeModeChange('light'); }}
                   className={`relative p-6 rounded-lg border-2 transition-all ${
                     themeMode === 'light'
                       ? 'border-primary bg-primary/5'
@@ -346,7 +346,7 @@ export default function ThemeSettingsPage() {
                                   <AlertDialogAction
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleDeleteCustomTheme(preset._id || '', preset.name);
+                                      void handleDeleteCustomTheme(preset._id || '', preset.name);
                                     }}
                                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                   >

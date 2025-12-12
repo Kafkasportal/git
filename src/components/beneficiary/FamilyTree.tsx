@@ -403,9 +403,9 @@ export function FamilyTree({
         <Dialog open={!!editingMember} onOpenChange={() => setEditingMember(null)}>
           <FamilyMemberDialog
             initialData={editingMember}
-            onSubmit={(data) =>
-              updateMemberMutation.mutate({ memberId: editingMember.id, ...data })
-            }
+            onSubmit={(data) => {
+              updateMemberMutation.mutate({ memberId: editingMember.id, ...data });
+            }}
             isSubmitting={updateMemberMutation.isPending}
           />
         </Dialog>
@@ -653,7 +653,7 @@ function FamilyMemberDialog({
             <Label>Meslek</Label>
             <Input
               value={formData.occupation || ''}
-              onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
+              onChange={(e) => { setFormData({ ...formData, occupation: e.target.value }); }}
             />
           </div>
           <div className="space-y-2">
@@ -662,7 +662,7 @@ function FamilyMemberDialog({
               type="number"
               min={0}
               value={formData.income || ''}
-              onChange={(e) => setFormData({ ...formData, income: Number(e.target.value) })}
+              onChange={(e) => { setFormData({ ...formData, income: Number(e.target.value) }); }}
             />
           </div>
         </div>

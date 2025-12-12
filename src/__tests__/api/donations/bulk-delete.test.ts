@@ -60,7 +60,7 @@ describe('POST /api/donations/bulk-delete', () => {
 
   it('should successfully delete multiple donations', async () => {
     const ids = ['id1', 'id2', 'id3'];
-    (appwriteApi.appwriteDonations.remove as any).mockResolvedValue({ $id: 'id1' });
+    (appwriteApi.appwriteDonations.remove as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ $id: 'id1' });
 
     const request = new NextRequest('http://localhost/api/donations/bulk-delete', {
       method: 'POST',

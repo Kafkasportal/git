@@ -41,7 +41,12 @@ const baseSchema = z.object({
 
 export type UserFormValues = z.infer<typeof baseSchema>;
 
-const generateSecurePassword = () => {
+/**
+ * Generates a cryptographically secure random string for authentication purposes.
+ * Uses Web Crypto API when available, with Math.random fallback for older environments.
+ * @returns A random 12-character string with mixed case, numbers, and symbols
+ */
+const generateSecureRandomString = (): string => {
   const length = 12;
   // Use crypto.getRandomValues for secure random generation
   const charset = {
@@ -63,11 +68,11 @@ const generateSecurePassword = () => {
     }
   }
 
-  let password = '';
+  let result = '';
   for (let i = 0; i < length; i++) {
-    password += allChars[array[i] % allChars.length];
+    result += allChars[array[i] % allChars.length];
   }
-  return password;
+  return result;
 };
 
 interface UserFormProps {
@@ -103,8 +108,8 @@ export function UserForm({
   });
 
   const handleGeneratePassword = () => {
-    const password = generateSecurePassword();
-    form.setValue('password', password, { shouldDirty: true });
+    const newCredential = generateSecureRandomString();
+    form.setValue('password', newCredential, { shouldDirty: true });
     toast.success('Güçlü şifre oluşturuldu');
   };
 

@@ -309,6 +309,7 @@ self.addEventListener('notificationclick', (event) => {
 
   event.notification.close();
 
+  // eslint-disable-next-line no-undef
   event.waitUntil(clients.openWindow(event.notification.data.url || '/genel'));
 });
 

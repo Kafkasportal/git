@@ -60,7 +60,7 @@ function VirtualizedDataTableComponent<T>({
   selectable = false,
   selectedItems = new Set(),
   onSelectionChange,
-  getItemId = (item: T) => (item as any)._id || (item as any).id || String(item),
+  getItemId = (item: T) => (item as Record<string, string | undefined>)._id || (item as Record<string, string | undefined>).id || String(item),
 }: VirtualizedDataTableProps<T>) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
@@ -82,7 +82,7 @@ function VirtualizedDataTableComponent<T>({
 
     calculateHeight();
     window.addEventListener('resize', calculateHeight);
-    return () => window.removeEventListener('resize', calculateHeight);
+    return () => { window.removeEventListener('resize', calculateHeight); };
   }, [containerHeight]);
 
   // Memoized virtual scrolling calculations - optimized overscan (10 → 5)

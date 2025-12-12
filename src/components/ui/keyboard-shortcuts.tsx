@@ -187,7 +187,7 @@ export function KeyboardShortcutsHelp({
   // Group shortcuts by category
   const groupedShortcuts = Array.from(shortcuts.entries()).reduce((acc, [, shortcut]) => {
     const category = shortcut.category || 'Diğer';
-    if (!acc[category]) acc[category] = [];
+    if (!Object.hasOwn(acc, category)) acc[category] = [];
     acc[category].push(shortcut);
     return acc;
   }, {} as Record<string, typeof shortcuts extends Map<string, infer V> ? V[] : never>);

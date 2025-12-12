@@ -57,7 +57,7 @@ jobs:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
 
       - name: Setup Appwrite CLI
-        uses: appwrite/setup-for-appwrite@v1
+        uses: appwrite/setup-for-appwrite@6203d07e0b56e2cc37cf1a2cd12ea58a8779d783 # v1
 
       - name: Login to Appwrite
         run: |

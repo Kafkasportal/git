@@ -254,7 +254,7 @@ export function MeetingListView({
                 <TableCell>
                   <Checkbox
                     checked={selectedIds.has(meeting.id)}
-                    onCheckedChange={(checked) => handleSelectOne(meeting.id, !!checked)}
+                    onCheckedChange={(checked) => { handleSelectOne(meeting.id, !!checked); }}
                     aria-label={`${meeting.title} seç`}
                   />
                 </TableCell>

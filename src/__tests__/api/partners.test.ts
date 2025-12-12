@@ -20,7 +20,7 @@ vi.mock('@/lib/appwrite/api', () => ({
 
 // Mock middleware
 vi.mock('@/lib/api/middleware', () => ({
-  buildApiRoute: vi.fn((_config) => (handler: any) => handler),
+  buildApiRoute: vi.fn((_config) => (handler: (req: Request) => Response | Promise<Response>) => handler),
 }));
 
 // Mock route helpers

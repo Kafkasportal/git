@@ -205,9 +205,9 @@ export default function SettingsPage() {
       await saveMutation.mutateAsync(category, categorySettings);
     } catch (error: unknown) {
       const errorObj = error as { errors?: Array<{ message?: string }> };
-      if (errorObj?.errors && Array.isArray(errorObj.errors)) {
+      if (errorObj.errors && Array.isArray(errorObj.errors)) {
         const firstError = errorObj.errors[0];
-        toast.error(firstError?.message || 'Form validasyon hatası');
+        toast.error(firstError.message || 'Form validasyon hatası');
       }
     }
   };
@@ -226,7 +226,7 @@ export default function SettingsPage() {
         activeTab as 'organization' | 'email' | 'notifications' | 'system'
       );
       if (response.success) {
-        queryClient.invalidateQueries({ queryKey: ['system-settings'] });
+        void queryClient.invalidateQueries({ queryKey: ['system-settings'] });
         toast.success('Ayarlar varsayılan değerlere sıfırlandı');
       } else {
         throw new Error(response.error);
