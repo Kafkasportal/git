@@ -59,14 +59,8 @@ const generateSecureRandomString = (): string => {
   const allChars = charset.upper + charset.lower + charset.numbers + charset.symbols;
   const array = new Uint8Array(length);
 
-  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-    crypto.getRandomValues(array);
-  } else {
-    // Fallback for environments without crypto (should not happen in modern browsers)
-    for (let i = 0; i < length; i++) {
-      array[i] = Math.floor(Math.random() * 256);
-    }
-  }
+  // Use Web Crypto API for secure random generation
+  crypto.getRandomValues(array);
 
   let result = '';
   for (let i = 0; i < length; i++) {

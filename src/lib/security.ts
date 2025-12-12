@@ -426,14 +426,8 @@ export class PasswordSecurity {
     const allChars = Object.values(charTypes).join('');
     const array = new Uint8Array(length);
 
-    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-      crypto.getRandomValues(array);
-    } else {
-      // Fallback to Math.random for environments without crypto
-      for (let i = 0; i < length; i++) {
-        array[i] = Math.floor(Math.random() * 256);
-      }
-    }
+    // Use Web Crypto API for secure random generation
+    crypto.getRandomValues(array);
 
     let result = '';
     for (let i = 0; i < length; i++) {

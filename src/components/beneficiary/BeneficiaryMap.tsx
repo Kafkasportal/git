@@ -174,17 +174,17 @@ export function BeneficiaryMap({
   });
 
   // Process markers
-  const markers: MapMarker[] = externalMarkers || (apiData?.data || []).map((b: Record<string, unknown>) => {
+  const markers: MapMarker[] = externalMarkers || (apiData?.data || []).map((b: Record<string, unknown>, index: number) => {
     const city = b.city as string || 'İstanbul';
     const cityCoords = TURKEY_CITIES[city] || TURKEY_CENTER;
     
-    // Add some random offset to prevent marker overlap
-    const offset = () => (Math.random() - 0.5) * 0.1;
+    // Use deterministic offset based on index to prevent marker overlap (visual only, not security-related)
+    const offset = (seed: number) => ((seed * 9301 + 49297) % 233280) / 233280 * 0.1 - 0.05;
     
     return {
       id: b.$id as string || b.id as string,
-      lat: cityCoords.lat + offset(),
-      lng: cityCoords.lng + offset(),
+      lat: cityCoords.lat + offset(index * 2),
+      lng: cityCoords.lng + offset(index * 2 + 1),
       name: `${b.firstName || ''} ${b.lastName || ''}`.trim() || b.name as string || 'İsimsiz',
       city,
       district: b.district as string,
@@ -259,7 +259,7 @@ export function BeneficiaryMap({
       }
     };
 
-    initMap();
+    void initMap();
 
     return () => {
       if (mapInstanceRef.current) {
@@ -429,7 +429,7 @@ export function BeneficiaryMap({
                   className="flex items-center justify-between p-2 rounded-lg border hover:bg-muted/50 cursor-pointer"
                   onClick={() => {
                     setShowList(false);
-                    if (marker.city) handleGoToCity(marker.city);
+                    if (marker.city) void handleGoToCity(marker.city);
                     onMarkerClick?.(marker);
                   }}
                 >
@@ -530,7 +530,7 @@ export function BeneficiaryMap({
                   className="cursor-pointer hover:bg-muted"
                   onClick={() => {
                     setSelectedCity(city);
-                    handleGoToCity(city);
+                    void handleGoToCity(city);
                   }}
                 >
                   {city}: {count}

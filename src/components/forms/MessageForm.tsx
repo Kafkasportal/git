@@ -627,7 +627,7 @@ export function MessageForm({
                 type="button"
                 onClick={() => {
                   const data = watch() as MessageFormData;
-                  handleSend(data);
+                  void handleSend(data);
                 }}
                 disabled={isSubmitting || selectedRecipients.length === 0}
                 className="flex-1 sm:flex-none"

@@ -75,8 +75,8 @@ export default function AidApplicationDetailPage({ params }: { params: Promise<{
       aidApplications.update(id, { stage }),
     onSuccess: () => {
       toast.success('Aşama güncellendi');
-      queryClient.invalidateQueries({ queryKey: ['aid-application', id] });
-      queryClient.invalidateQueries({ queryKey: ['aid-applications'] });
+      void queryClient.invalidateQueries({ queryKey: ['aid-application', id] });
+      void queryClient.invalidateQueries({ queryKey: ['aid-applications'] });
     },
     onError: (error: unknown) => {
       const message = error instanceof Error ? error.message : 'Bilinmeyen hata';

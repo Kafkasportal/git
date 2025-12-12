@@ -287,33 +287,44 @@ export function CorporateLoginForm({
           className="absolute top-[30%] left-[40%] w-[50vw] h-[50vw] bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.1),transparent_70%)] blur-[100px] z-0"
         />
 
-        {/* Floating Particles */}
+        {/* Floating Particles - Using deterministic pseudo-random values for visual effect only */}
         <div className="absolute inset-0 z-0 opacity-30">
-          {[...Array(20)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute bg-white rounded-full"
-              initial={{
-                x: `${Math.random() * 100}vw`,
-                y: `${Math.random() * 100}vh`,
-                scale: Math.random() * 0.5 + 0.5,
-                opacity: Math.random() * 0.3 + 0.1,
-              }}
-              animate={{
-                y: [null, Math.random() * -100],
-                opacity: [null, 0],
-              }}
-              transition={{
-                duration: Math.random() * 20 + 10,
-                repeat: Infinity,
-                ease: 'linear',
-              }}
-              style={{
-                width: `${Math.random() * 4 + 1}px`,
-                height: `${Math.random() * 4 + 1}px`,
-              }}
-            />
-          ))}
+          {[...Array(20)].map((_, i) => {
+            // Deterministic pseudo-random function for visual variety (not security-related)
+            const seededRandom = (seed: number) => ((seed * 9301 + 49297) % 233280) / 233280;
+            const r1 = seededRandom(i * 7 + 1);
+            const r2 = seededRandom(i * 7 + 2);
+            const r3 = seededRandom(i * 7 + 3);
+            const r4 = seededRandom(i * 7 + 4);
+            const r5 = seededRandom(i * 7 + 5);
+            const r6 = seededRandom(i * 7 + 6);
+            const r7 = seededRandom(i * 7 + 7);
+            return (
+              <motion.div
+                key={i}
+                className="absolute bg-white rounded-full"
+                initial={{
+                  x: `${r1 * 100}vw`,
+                  y: `${r2 * 100}vh`,
+                  scale: r3 * 0.5 + 0.5,
+                  opacity: r4 * 0.3 + 0.1,
+                }}
+                animate={{
+                  y: [null, r5 * -100],
+                  opacity: [null, 0],
+                }}
+                transition={{
+                  duration: r6 * 20 + 10,
+                  repeat: Infinity,
+                  ease: 'linear',
+                }}
+                style={{
+                  width: `${r7 * 4 + 1}px`,
+                  height: `${r7 * 4 + 1}px`,
+                }}
+              />
+            );
+          })}
         </div>
 
         {/* Grid Pattern Overlay */}
@@ -367,7 +378,7 @@ export function CorporateLoginForm({
               </motion.p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-6">
               {/* Email Input */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}

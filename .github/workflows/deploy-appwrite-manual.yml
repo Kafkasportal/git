@@ -24,10 +24,10 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1 # 8e5e7e7e7e3e6e9e6e7e7e7e7e7e7e7e7e7e7e7e
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.0.2 # 0e9e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e
         with:
           node-version: '20'
           cache: 'npm'

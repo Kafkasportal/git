@@ -223,7 +223,7 @@ export default function ThemeSettingsPage() {
 
                 {/* Dark Mode */}
                 <button
-                  onClick={() => handleThemeModeChange('dark')}
+                  onClick={() => { void handleThemeModeChange('dark'); }}
                   className={`relative p-6 rounded-lg border-2 transition-all ${
                     themeMode === 'dark'
                       ? 'border-primary bg-primary/5'
@@ -247,7 +247,7 @@ export default function ThemeSettingsPage() {
 
                 {/* Auto Mode */}
                 <button
-                  onClick={() => handleThemeModeChange('auto')}
+                  onClick={() => { void handleThemeModeChange('auto'); }}
                   className={`relative p-6 rounded-lg border-2 transition-all ${
                     themeMode === 'auto'
                       ? 'border-primary bg-primary/5'

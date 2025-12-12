@@ -86,7 +86,11 @@ export const useNotificationStore = create<NotificationState>()(
       isOpen: false,
 
       addNotification: (notification) => {
-        const id = `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        // Use crypto for unique ID generation
+        const randomBytes = new Uint8Array(6);
+        crypto.getRandomValues(randomBytes);
+        const randomPart = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+        const id = `notif-${Date.now()}-${randomPart}`;
         const createdAt = new Date().toISOString();
         const newNotification: Notification = {
           ...notification,

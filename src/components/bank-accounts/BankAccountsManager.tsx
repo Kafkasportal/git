@@ -93,7 +93,7 @@ export function BankAccountsManager({ beneficiaryId }: BankAccountsManagerProps)
       return await appwriteBankAccounts.remove(accountId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bank-accounts', beneficiaryId] });
+      void queryClient.invalidateQueries({ queryKey: ['bank-accounts', beneficiaryId] });
       toast.success('Banka hesabı silindi');
     },
     onError: () => toast.error('Silme işlemi başarısız'),
