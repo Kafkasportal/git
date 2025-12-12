@@ -47,6 +47,10 @@ vi.mock('@tanstack/react-query', async () => {
   };
 });
 
+// Mock Tooltip components to avoid Radix UI issues in tests if necessary
+// But jsdom usually handles it fine. Let's try without mocking first.
+// If it fails, we can mock @/components/ui/tooltip.
+
 describe('NotificationCenter', () => {
   const mockNotifications = [
     {
@@ -76,9 +80,10 @@ describe('NotificationCenter', () => {
     });
   });
 
-  it('renders notification center', () => {
+  it('renders notification center with accessible label', () => {
     render(<NotificationCenter userId="test-user" />);
-    expect(screen.getByRole('button')).toBeInTheDocument();
+    // Check for aria-label
+    expect(screen.getByRole('button', { name: /bildirimler/i })).toBeInTheDocument();
   });
 
   it('shows unread count badge', () => {
@@ -89,22 +94,30 @@ describe('NotificationCenter', () => {
 
   it('opens popover when clicked', async () => {
     render(<NotificationCenter userId="test-user" />);
-    const button = screen.getByRole('button');
+    const button = screen.getByRole('button', { name: /bildirimler/i });
     fireEvent.click(button);
 
+    // Wait for popover content
     await waitFor(() => {
-      expect(screen.getByText(/bildirimler/i)).toBeInTheDocument();
+      // The header "Bildirimler"
+      expect(screen.getByRole('heading', { name: /bildirimler/i })).toBeInTheDocument();
     });
   });
 
-  it('displays notifications', async () => {
+  it('displays notifications with accessible actions', async () => {
     render(<NotificationCenter userId="test-user" />);
-    const button = screen.getByRole('button');
+    const button = screen.getByRole('button', { name: /bildirimler/i });
     fireEvent.click(button);
 
     await waitFor(() => {
       expect(screen.getByText('Test Notification')).toBeInTheDocument();
+      // Check for action buttons by aria-label
+      // Since it's a list, getAllByRole
+      const markReadButtons = screen.getAllByRole('button', { name: /okundu olarak işaretle/i });
+      expect(markReadButtons.length).toBeGreaterThan(0);
+
+      const deleteButtons = screen.getAllByRole('button', { name: /bildirimi sil/i });
+      expect(deleteButtons.length).toBeGreaterThan(0);
     });
   });
 });
-
