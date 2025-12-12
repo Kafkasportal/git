@@ -1,25 +1,33 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
 import type { PieLabelRenderProps } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency } from '@/lib/utils/format';
+
+type RechartsModule = typeof import('recharts');
+
+function useRecharts() {
+  const [mod, setMod] = useState<RechartsModule | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    import('recharts')
+      .then((m) => {
+        if (!cancelled) setMod(m);
+      })
+      .catch(() => {
+        // Ignore chart load errors; UI will keep fallback
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return mod;
+}
 
 interface MonthlyData {
   month: string;
@@ -62,6 +70,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
 };
 
 export function KumbaraCharts() {
+  const recharts = useRecharts();
   const { data: monthlyData, isLoading: monthlyLoading } = useQuery<MonthlyData[]>({
     queryKey: ['kumbara-monthly-stats'],
     queryFn: async () => {
@@ -97,7 +106,7 @@ export function KumbaraCharts() {
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
-  if (monthlyLoading || locationLoading || paymentLoading) {
+  if (monthlyLoading || locationLoading || paymentLoading || !recharts) {
     return (
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
@@ -121,6 +130,22 @@ export function KumbaraCharts() {
       </div>
     );
   }
+
+  const {
+    AreaChart,
+    Area,
+    BarChart,
+    Bar,
+    PieChart,
+    Pie,
+    Cell,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
+    ResponsiveContainer,
+  } = recharts;
 
   return (
     <div className="grid gap-4 md:grid-cols-2">

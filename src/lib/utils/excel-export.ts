@@ -1,4 +1,3 @@
-import ExcelJS from "exceljs";
 import { format } from "date-fns";
 import type { FinanceRecord } from "@/lib/financial/calculations";
 
@@ -6,8 +5,12 @@ export const exportToExcel = async (
   records: FinanceRecord[],
   title: string = "Finansal Rapor",
 ) => {
+  // Lazy-load heavy dependency to keep initial JS small
+  const mod = await import("exceljs");
+  const ExcelJS = (mod as unknown as { default?: unknown }).default || mod;
+
   // Workbook oluştur
-  const workbook = new ExcelJS.Workbook();
+  const workbook = new (ExcelJS as unknown as { Workbook: new () => any }).Workbook();
   workbook.creator = "Kafkasder Panel";
   workbook.lastModifiedBy = "Kafkasder Panel";
   workbook.created = new Date();
