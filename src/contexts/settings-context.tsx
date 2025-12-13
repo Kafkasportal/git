@@ -4,6 +4,8 @@
  * Settings Context
  * Provides global access to system settings throughout the application
  * Handles theme, branding, and configuration management
+ * 
+ * Refactored: Theme application logic extracted to helper functions
  */
 
 import React, {
@@ -111,27 +113,86 @@ export interface SettingsContextValue {
   refreshSettings: () => void;
 }
 
+// --- Helper Functions for Theme Application ---
+
+/**
+ * Convert camelCase to kebab-case CSS variable name
+ */
+function toKebabCase(str: string): string {
+  return str.replace(/([A-Z])/g, "-$1").toLowerCase();
+}
+
+/**
+ * Apply theme colors to document root
+ */
+function applyThemeColors(root: HTMLElement, colors: ThemeColors): void {
+  Object.entries(colors).forEach(([key, value]) => {
+    if (value) {
+      const cssVar = `--color-${toKebabCase(key)}`;
+      root.style.setProperty(cssVar, value);
+    }
+  });
+}
+
+/**
+ * Apply theme typography to document root
+ */
+function applyThemeTypography(root: HTMLElement, typography: ThemeTypography): void {
+  const { fontFamily, baseSize, headingScale, lineHeight } = typography;
+  
+  if (fontFamily) root.style.setProperty("--font-family", fontFamily);
+  if (baseSize) root.style.setProperty("--font-base-size", `${baseSize}px`);
+  if (headingScale) root.style.setProperty("--font-heading-scale", headingScale.toString());
+  if (lineHeight) root.style.setProperty("--line-height", lineHeight.toString());
+}
+
+/**
+ * Apply theme layout to document root
+ */
+function applyThemeLayout(root: HTMLElement, layout: ThemeLayout): void {
+  const { sidebarWidth, containerMaxWidth, borderRadius } = layout;
+  
+  if (sidebarWidth) root.style.setProperty("--sidebar-width", `${sidebarWidth}px`);
+  if (containerMaxWidth) root.style.setProperty("--container-max-width", `${containerMaxWidth}px`);
+  if (borderRadius) root.style.setProperty("--border-radius", `${borderRadius}px`);
+}
+
+/**
+ * Apply full theme to document
+ */
+function applyThemeToDocument(theme: ThemePreset, resolvedMode: "light" | "dark"): void {
+  const root = document.documentElement;
+  
+  if (theme.colors) applyThemeColors(root, theme.colors);
+  if (theme.typography) applyThemeTypography(root, theme.typography);
+  if (theme.layout) applyThemeLayout(root, theme.layout);
+  
+  // Apply theme mode class
+  root.classList.remove("light", "dark");
+  root.classList.add(resolvedMode);
+}
+
+/**
+ * Initialize theme mode from localStorage
+ */
+function getInitialThemeMode(): "light" | "dark" | "auto" {
+  if (typeof window === "undefined") return "light";
+  
+  const saved = localStorage.getItem("theme-mode");
+  if (saved === "light" || saved === "dark" || saved === "auto") {
+    return saved;
+  }
+  return "light";
+}
+
 const SettingsContext = createContext<SettingsContextValue | undefined>(
   undefined,
 );
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [currentTheme, setCurrentTheme] = useState<ThemePreset | null>(null);
-  const [themeMode, setThemeModeState] = useState<"light" | "dark" | "auto">(
-    () => {
-      // Initialize from localStorage
-      if (typeof window !== "undefined") {
-        const saved = localStorage.getItem("theme-mode");
-        if (saved === "light" || saved === "dark" || saved === "auto") {
-          return saved;
-        }
-      }
-      return "light";
-    },
-  );
-  const [resolvedThemeMode, setResolvedThemeMode] = useState<"light" | "dark">(
-    "light",
-  );
+  const [themeMode, setThemeModeState] = useState<"light" | "dark" | "auto">(getInitialThemeMode);
+  const [resolvedThemeMode, setResolvedThemeMode] = useState<"light" | "dark">("light");
 
   // Fetch all settings from Appwrite API
   const { data: allSettingsData } = useQuery({
@@ -216,55 +277,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [themeMode]);
 
-  // Apply theme to document
+  // Apply theme to document using helper function
   useEffect(() => {
     if (!currentTheme) return;
-
-    const root = document.documentElement;
-
-    // Apply colors
-    if (currentTheme.colors) {
-      Object.entries(currentTheme.colors).forEach(([key, value]) => {
-        if (value) {
-          const cssVar = `--color-${key.replace(/([A-Z])/g, "-$1").toLowerCase()}`;
-          root.style.setProperty(cssVar, value);
-        }
-      });
-    }
-
-    // Apply typography
-    if (currentTheme.typography) {
-      const typo = currentTheme.typography;
-      if (typo.fontFamily)
-        root.style.setProperty("--font-family", typo.fontFamily);
-      if (typo.baseSize)
-        root.style.setProperty("--font-base-size", `${typo.baseSize}px`);
-      if (typo.headingScale)
-        root.style.setProperty(
-          "--font-heading-scale",
-          typo.headingScale.toString(),
-        );
-      if (typo.lineHeight)
-        root.style.setProperty("--line-height", typo.lineHeight.toString());
-    }
-
-    // Apply layout
-    if (currentTheme.layout) {
-      const layout = currentTheme.layout;
-      if (layout.sidebarWidth)
-        root.style.setProperty("--sidebar-width", `${layout.sidebarWidth}px`);
-      if (layout.containerMaxWidth)
-        root.style.setProperty(
-          "--container-max-width",
-          `${layout.containerMaxWidth}px`,
-        );
-      if (layout.borderRadius)
-        root.style.setProperty("--border-radius", `${layout.borderRadius}px`);
-    }
-
-    // Apply theme mode class
-    root.classList.remove("light", "dark");
-    root.classList.add(resolvedThemeMode);
+    applyThemeToDocument(currentTheme, resolvedThemeMode);
   }, [currentTheme, resolvedThemeMode]);
 
   // Get setting helper
