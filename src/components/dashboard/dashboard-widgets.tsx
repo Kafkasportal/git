@@ -292,12 +292,6 @@ export function useDashboardWidgets({ onToggleWidget, isEditMode }: DashboardWid
         }
     };
 
-    // #region agent log
-    React.useEffect(() => {
-        fetch('http://127.0.0.1:7243/ingest/8badabf4-954a-4dea-98a3-61025b9c897b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard-widgets.tsx:useDashboardWidgets',message:'Dashboard data state',data:{enhancedKPIs,dashboardStats,chartData:chartData?.donationTrend?.length,currencyRates:currencyData?.rates?.length,auditLogs:auditLogsData?.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
-    }, [enhancedKPIs, dashboardStats, chartData, currencyData, auditLogsData]);
-    // #endregion
-
     // Render full widget with container (wrapped in error boundary)
     const renderWidget = (widget: WidgetConfig): ReactNode => {
         return (

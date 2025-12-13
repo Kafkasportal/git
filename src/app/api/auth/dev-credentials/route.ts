@@ -33,10 +33,18 @@ export async function GET() {
 
     // Get test password from SERVER-SIDE environment variable (not NEXT_PUBLIC_)
     // This is ONLY used for development testing and is never exposed to client bundle
+    // SECURITY: Never use hardcoded fallback passwords in production
     const testPassword =
       process.env.ADMIN_TEST_PASSWORD ||
-      process.env.MCP_TEST_PASSWORD ||
-      "Admin123!";
+      process.env.MCP_TEST_PASSWORD;
+    
+    if (!testPassword) {
+      logger.warn('Test password not configured in environment variables');
+      return NextResponse.json(
+        { error: "Test password not configured", success: false },
+        { status: 500 },
+      );
+    }
 
     // Return admin info WITH test password (development only)
     return NextResponse.json({

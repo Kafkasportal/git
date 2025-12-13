@@ -38,6 +38,11 @@ export function GoogleAnalytics() {
       <Script
         id="google-analytics"
         strategy="afterInteractive"
+        // SECURITY: dangerouslySetInnerHTML is safe here because:
+        // 1. sanitizedId is validated against /^(G|UA|AW|DC)-[A-Z0-9-]+$/i regex
+        // 2. All non-alphanumeric characters (except hyphen) are stripped
+        // 3. Single quotes are escaped to prevent JS injection
+        // 4. This is a static Google Analytics initialization script
         dangerouslySetInnerHTML={{
           __html: `
             window.dataLayer = window.dataLayer || [];

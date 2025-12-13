@@ -37,7 +37,7 @@ import {
   Download,
   FileDown,
 } from 'lucide-react';
-import { generateAidListPDF } from '@/lib/utils/pdf-export';
+import { exportToPDF } from '@/lib/export/export-service';
 import { aidApplications } from '@/lib/api/crud-factory';
 import type { AidApplicationDocument } from '@/types/database';
 
@@ -180,9 +180,38 @@ export default function AidListPage() {
     toast.success('Yardım listesi Excel formatında indirildi');
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     try {
-      generateAidListPDF(applications);
+      const exportData = applications.map((app) => ({
+        'Başvuran': app.applicant_name || '',
+        'Başvuru Türü': app.applicant_type || '',
+        'Tek Seferlik Yardım': app.one_time_aid || 0,
+        'Düzenli Yardım': app.regular_financial_aid || 0,
+        'Düzenli Gıda': app.regular_food_aid || 0,
+        'Ayni Yardım': app.in_kind_aid || 0,
+        'Hizmet Sevk': app.service_referral || 0,
+        'Aşama': app.stage || '',
+        'Durum': app.status || '',
+        'Tarih': app.application_date ? new Date(app.application_date).toLocaleDateString('tr-TR') : (app.$createdAt ? new Date(app.$createdAt).toLocaleDateString('tr-TR') : ''),
+      }));
+
+      await exportToPDF({
+        title: 'Yardım Listesi',
+        filename: `yardim-listesi-${new Date().toISOString().split('T')[0]}`,
+        columns: [
+          { header: 'Başvuran', key: 'Başvuran' as keyof typeof exportData[0] },
+          { header: 'Başvuru Türü', key: 'Başvuru Türü' as keyof typeof exportData[0] },
+          { header: 'Tek Seferlik Yardım', key: 'Tek Seferlik Yardım' as keyof typeof exportData[0] },
+          { header: 'Düzenli Yardım', key: 'Düzenli Yardım' as keyof typeof exportData[0] },
+          { header: 'Düzenli Gıda', key: 'Düzenli Gıda' as keyof typeof exportData[0] },
+          { header: 'Ayni Yardım', key: 'Ayni Yardım' as keyof typeof exportData[0] },
+          { header: 'Hizmet Sevk', key: 'Hizmet Sevk' as keyof typeof exportData[0] },
+          { header: 'Aşama', key: 'Aşama' as keyof typeof exportData[0] },
+          { header: 'Durum', key: 'Durum' as keyof typeof exportData[0] },
+          { header: 'Tarih', key: 'Tarih' as keyof typeof exportData[0] },
+        ],
+        data: exportData,
+      });
       toast.success('Yardım listesi PDF formatında indirildi');
     } catch (error) {
       logger.error('PDF export failed', { error });

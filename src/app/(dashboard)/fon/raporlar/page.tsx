@@ -44,7 +44,7 @@ import {
   FileDown,
   Filter,
 } from 'lucide-react';
-import { generateFinancialReportPDF } from '@/lib/utils/pdf-export';
+import { exportToPDF } from '@/lib/export/export-service';
 
 interface ReportData {
   totalIncome: number;
@@ -210,10 +210,44 @@ export default function FundReportsPage() {
     toast.success('Finans raporu Excel formatında indirildi');
   }, [reportData, reportType, dateRange, customStartDate, customEndDate]);
 
-  const handleExportPDF = useCallback(() => {
+  const handleExportPDF = useCallback(async () => {
     if (!reportData) return;
     try {
-      generateFinancialReportPDF(reportData);
+      // Convert report data to export format
+      const exportData = [
+        {
+          'Kategori': 'Gelir',
+          'Tutar': reportData.totalIncome,
+          'Adet': reportData.categoryBreakdown.filter(c => c.type === 'income').reduce((sum, c) => sum + c.count, 0),
+        },
+        {
+          'Kategori': 'Gider',
+          'Tutar': reportData.totalExpense,
+          'Adet': reportData.categoryBreakdown.filter(c => c.type === 'expense').reduce((sum, c) => sum + c.count, 0),
+        },
+        {
+          'Kategori': 'Net Bakiye',
+          'Tutar': reportData.netIncome,
+          'Adet': '',
+        },
+        ...reportData.categoryBreakdown.map(c => ({
+          'Kategori': c.category,
+          'Tutar': c.amount,
+          'Adet': c.count,
+        })),
+      ];
+
+      await exportToPDF({
+        title: 'Finans Raporu',
+        subtitle: `Net Bakiye: ${reportData.netIncome.toLocaleString('tr-TR')} ₺`,
+        filename: `finans-raporu-${new Date().toISOString().split('T')[0]}`,
+        columns: [
+          { header: 'Kategori', key: 'Kategori' as keyof typeof exportData[0] },
+          { header: 'Tutar', key: 'Tutar' as keyof typeof exportData[0], formatter: (val) => typeof val === 'number' ? `${val.toLocaleString('tr-TR')} ₺` : String(val) },
+          { header: 'Adet', key: 'Adet' as keyof typeof exportData[0] },
+        ],
+        data: exportData,
+      });
       toast.success('Finans raporu PDF formatında indirildi');
     } catch (error) {
       logger.error('Fund report PDF export failed', { error });

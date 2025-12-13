@@ -37,6 +37,8 @@ interface ValidationResult {
 
 /**
  * Validate beneficiary data
+ * NOTE: This function duplicates validation logic from beneficiarySchema in @/lib/validations/beneficiary
+ * Consider refactoring to use Zod schema validation instead
  */
 function validateBeneficiaryData(data: BeneficiaryData): ValidationResult {
   const errors: string[] = [];

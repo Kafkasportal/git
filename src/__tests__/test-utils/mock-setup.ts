@@ -42,7 +42,7 @@ export function setupAuthMocks(options?: {
   moduleAccess?: string[];
 }) {
   const mockUser = createMockSessionUser({
-    permissions: options?.permissions || ['workflow:read'],
+    permissions: options?.permissions || ['workflow:access'],
     ...options?.user,
   });
 

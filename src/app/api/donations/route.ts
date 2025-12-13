@@ -12,6 +12,11 @@ import type { PaymentMethod } from '@/lib/api/types';
 /**
  * Validate donation payload
  */
+/**
+ * Validate donation data
+ * NOTE: This function duplicates validation logic from donationSchema in @/lib/validations/forms
+ * Consider refactoring to use Zod schema validation instead for consistency
+ */
 function validateDonation(data: Partial<DonationDocument>): {
   isValid: boolean;
   errors: string[];
@@ -31,7 +36,7 @@ function validateDonation(data: Partial<DonationDocument>): {
   if (data.donor_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.donor_email)) {
     errors.push('Geçersiz e-posta');
   }
-  if (Boolean(data.donor_phone)) {
+  if (data.donor_phone) {
     const sanitized = sanitizePhone(data.donor_phone);
     if (!sanitized || !phoneSchema.safeParse(sanitized).success) {
       errors.push('Geçersiz telefon numarası (5XXXXXXXXX formatında olmalıdır)');

@@ -27,11 +27,22 @@ export async function POST(request: NextRequest) {
       const authSessionCookie = cookieStore.get('auth-session')?.value;
       if (authSessionCookie) {
         const session = parseAuthSession(authSessionCookie);
-        if (Boolean((session?.sessionId))) {
+        if (session?.sessionId) {
           // Delete Appwrite session
+          const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT;
+          const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
+          
+          if (!endpoint || !projectId) {
+            logger.warn('Appwrite configuration missing, skipping session deletion', {
+              hasEndpoint: !!endpoint,
+              hasProjectId: !!projectId,
+            });
+            return;
+          }
+          
           const client = new Client()
-            .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
-            .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!);
+            .setEndpoint(endpoint)
+            .setProject(projectId);
 
           const account = new Account(client);
 

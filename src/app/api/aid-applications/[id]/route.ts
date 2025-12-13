@@ -14,7 +14,7 @@ function validateApplicationUpdate(data: Record<string, unknown>): {
   ) {
     errors.push('Geçersiz aşama');
   }
-  if ((Boolean(data.status)) && !['open', 'closed'].includes(data.status as string)) {
+  if (data.status && !['open', 'closed'].includes(data.status as string)) {
     errors.push('Geçersiz durum');
   }
   return { isValid: errors.length === 0, errors };
@@ -42,7 +42,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       method: 'GET',
       applicationId: id,
     });
-    return NextResponse.json({ success: false, _error: 'Veri alınamadı' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Veri alınamadı' }, { status: 500 });
   }
 }
 
@@ -107,7 +107,7 @@ async function _updateApplicationHandler(
     });
 
     const errorMessage = _error instanceof Error ? _error.message : '';
-    if (errorMessage.includes('not found')) {
+    if (errorMessage?.includes('not found')) {
       return NextResponse.json({ success: false, error: 'Başvuru bulunamadı' }, { status: 404 });
     }
 

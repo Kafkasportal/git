@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, Suspense, useEffect } from 'react';
+import { memo, Suspense } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { PageLayout } from '@/components/layouts/PageLayout';
 import { DemoBanner } from '@/components/ui/demo-banner';
@@ -36,12 +36,6 @@ function DashboardPageComponent() {
     onToggleWidget: toggleWidget,
     isEditMode,
   });
-
-  // #region agent log
-  useEffect(() => {
-    fetch('http://127.0.0.1:7243/ingest/8badabf4-954a-4dea-98a3-61025b9c897b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'genel/page.tsx:useEffect',message:'Dashboard layout state',data:{widgetsCount:widgets?.length,visibleWidgetsCount:visibleWidgets?.length,layoutItemsCount:layoutItems?.length,isEditMode,firstWidget:widgets?.[0],firstLayoutItem:layoutItems?.[0]},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
-  }, [widgets, visibleWidgets, layoutItems, isEditMode]);
-  // #endregion
 
   // Show loading if still loading auth
   if (authLoading) {

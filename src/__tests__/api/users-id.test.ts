@@ -4,8 +4,6 @@ import { GET, PATCH, DELETE } from '@/app/api/users/[id]/route';
 import * as authUtils from '@/lib/api/auth-utils';
 import {
   runGetByIdTests,
-  runUpdateTests,
-  runDeleteTests,
 } from '../test-utils/test-patterns';
 import {
   createTestRequest,
@@ -15,7 +13,6 @@ import {
   expectSuccessResponse,
   expectErrorResponse,
 } from '../test-utils/api-test-helpers';
-import { NextResponse } from 'next/server';
 
 // Mock Appwrite server
 const mockUsersInstance = {
@@ -129,7 +126,7 @@ describe('GET /api/users/[id] - Additional tests', () => {
     const request = createTestRequest('http://localhost/api/users/test-id');
     const params = createTestParams({ id: 'test-id' });
     const response = await GET(request, { params });
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
     expectStatus(response, 403);
     expectErrorResponse(data, 403);
@@ -158,7 +155,7 @@ describe('PATCH /api/users/[id]', () => {
     });
     const params = createTestParams({ id: 'test-id' });
     const response = await PATCH(request, { params });
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; data?: unknown; message?: string }>(response);
 
     expectStatus(response, 200);
     expectSuccessResponse(data);
@@ -174,7 +171,7 @@ describe('PATCH /api/users/[id]', () => {
     });
     const params = createTestParams({ id: 'test-id' });
     const response = await PATCH(request, { params });
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
     expectStatus(response, 500);
     expectErrorResponse(data, 500, 'Güncelleme işlemi başarısız');
@@ -199,7 +196,7 @@ describe('DELETE /api/users/[id]', () => {
     });
     const params = createTestParams({ id: 'test-id' });
     const response = await DELETE(request, { params });
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; data?: unknown; message?: string }>(response);
 
     expectStatus(response, 200);
     expectSuccessResponse(data);
@@ -214,7 +211,7 @@ describe('DELETE /api/users/[id]', () => {
     });
     const params = createTestParams({ id: 'test-id' });
     const response = await DELETE(request, { params });
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
     expectStatus(response, 500);
     expectErrorResponse(data, 500, 'Silme işlemi başarısız');

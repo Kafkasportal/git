@@ -22,8 +22,15 @@ if (!ENDPOINT || !PROJECT_ID || !API_KEY) {
 const client = new Client().setEndpoint(ENDPOINT).setProject(PROJECT_ID).setKey(API_KEY);
 const users = new Users(client);
 
-// Standard password for all test accounts
-const STANDARD_PASSWORD = 'Test123!@#';
+// SECURITY: Get password from environment variable, never hardcode
+// This script is for development/testing only
+const STANDARD_PASSWORD = process.env.TEST_USER_PASSWORD || process.env.STANDARD_TEST_PASSWORD;
+
+if (!STANDARD_PASSWORD) {
+  console.error('❌ TEST_USER_PASSWORD or STANDARD_TEST_PASSWORD environment variable is required');
+  console.error('   Set it in .env.local file for development');
+  process.exit(1);
+}
 
 async function resetPasswords() {
   try {
@@ -73,6 +80,8 @@ async function resetPasswords() {
 }
 
 resetPasswords();
+
+
 
 
 

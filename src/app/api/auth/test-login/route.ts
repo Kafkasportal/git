@@ -19,9 +19,18 @@ export async function GET() {
   }
 
   try {
-    // Test credential'ları environment'tan veya varsayılan değerlerden al
-    const email = process.env.MCP_TEST_EMAIL || "mcp-login@example.com";
-    const password = process.env.MCP_TEST_PASSWORD || "SecurePass123!";
+    // Test credential'ları environment'tan al
+    // SECURITY: Never use hardcoded fallback credentials
+    const email = process.env.MCP_TEST_EMAIL;
+    const password = process.env.MCP_TEST_PASSWORD;
+    
+    if (!email || !password) {
+      logger.warn('Test credentials not configured in environment variables');
+      return NextResponse.json(
+        { error: "Test credentials not configured" },
+        { status: 500 },
+      );
+    }
 
     // Get user from Appwrite
     const user = await appwriteUsers.getByEmail(email.toLowerCase());

@@ -12,7 +12,6 @@ import {
   createTestRequest,
   parseJsonResponse,
   expectStatus,
-  expectSuccessResponse,
   expectErrorResponse,
 } from '../test-utils/api-test-helpers';
 
@@ -122,7 +121,7 @@ describe('GET /api/users - Additional tests', () => {
 
     const request = createTestRequest('http://localhost/api/users');
     const response = await GET(request);
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
     expectStatus(response, 403);
     expectErrorResponse(data, 403);
@@ -166,7 +165,7 @@ describe('POST /api/users - Validation', () => {
       body: invalidUser,
     });
     const response = await POST(request);
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
     expectStatus(response, 400);
     expectErrorResponse(data, 400);
@@ -184,7 +183,7 @@ describe('POST /api/users - Validation', () => {
       body: invalidUser,
     });
     const response = await POST(request);
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
     expectStatus(response, 400);
     expectErrorResponse(data, 400);
@@ -203,7 +202,7 @@ describe('POST /api/users - Validation', () => {
       body: invalidUser,
     });
     const response = await POST(request);
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
     expectStatus(response, 400);
     expectErrorResponse(data, 400);
@@ -223,7 +222,7 @@ describe('POST /api/users - Validation', () => {
       body: invalidUser,
     });
     const response = await POST(request);
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
     expectStatus(response, 400);
     expectErrorResponse(data, 400);
@@ -242,7 +241,7 @@ describe('POST /api/users - Validation', () => {
       body: invalidUser,
     });
     const response = await POST(request);
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
     expectStatus(response, 400);
     expectErrorResponse(data, 400);
@@ -261,7 +260,7 @@ describe('POST /api/users - Validation', () => {
     const passwordUtils = await import('@/lib/auth/password');
     vi.mocked(passwordUtils.validatePasswordStrength).mockReturnValueOnce({
       valid: false,
-      errors: ['Şifre çok zayıf'],
+      error: 'Şifre çok zayıf',
     });
 
     const request = createTestRequest('http://localhost/api/users', {
@@ -269,7 +268,7 @@ describe('POST /api/users - Validation', () => {
       body: invalidUser,
     });
     const response = await POST(request);
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
     expectStatus(response, 400);
     expectErrorResponse(data, 400);
@@ -293,7 +292,7 @@ describe('POST /api/users - Validation', () => {
       body: validUser,
     });
     const response = await POST(request);
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
     expectStatus(response, 403);
     expectErrorResponse(data, 403);

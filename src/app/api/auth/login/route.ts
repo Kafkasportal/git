@@ -129,11 +129,19 @@ export const POST = authRateLimit(async (request: NextRequest) => {
       // Şifre doğrulaması için Appwrite REST API'yi kullanarak session oluştur
       // Bu, şifre doğru ise session oluşturur, yanlış ise hata verir
       try {
-        const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!;
-        const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!;
-
-        // DEBUG: Buraya breakpoint koyarak email ve password'u kontrol edebilirsiniz
-        // debugger; // Breakpoint için: Bu satırın başındaki // işaretini kaldırın
+        const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT;
+        const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
+        
+        if (!endpoint || !projectId) {
+          logger.error('Appwrite configuration missing', {
+            hasEndpoint: !!endpoint,
+            hasProjectId: !!projectId,
+          });
+          return NextResponse.json(
+            { success: false, error: 'Sunucu yapılandırma hatası' },
+            { status: 500 }
+          );
+        }
 
         // Appwrite REST API ile session oluştur (şifre doğrulaması için)
         const sessionResponse = await fetch(`${endpoint}/account/sessions/email`, {
@@ -173,10 +181,7 @@ export const POST = authRateLimit(async (request: NextRequest) => {
 
         // Session oluşturuldu, şifre doğru demektir
         const sessionData = await sessionResponse.json();
-        
-        // DEBUG: Session oluşturma başarılı - buraya breakpoint koyabilirsiniz
-        // debugger; // Breakpoint için: Bu satırın başındaki // işaretini kaldırın
-        
+
         // Oluşturulan session'ı hemen silelim (sadece doğrulama için kullandık)
         try {
           await fetch(`${endpoint}/account/sessions/${sessionData.$id}`, {

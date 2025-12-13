@@ -53,7 +53,7 @@ export function runGetByIdTests(
       const request = createTestRequest(`${baseUrl}/test-id`);
       const params = createTestParams({ id: 'test-id' });
       const response = await route.GET(request, { params });
-      const data = await parseJsonResponse(response);
+      const data = await parseJsonResponse<{ success?: boolean; data?: unknown; message?: string }>(response);
 
       expectStatus(response, 200);
       expectSuccessResponse(data);
@@ -66,7 +66,7 @@ export function runGetByIdTests(
       const request = createTestRequest(`${baseUrl}/non-existent`);
       const params = createTestParams({ id: 'non-existent' });
       const response = await route.GET(request, { params });
-      const data = await parseJsonResponse(response);
+      const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
       expectStatus(response, 404);
       expectErrorResponse(data, 404, notFoundError);
@@ -78,7 +78,7 @@ export function runGetByIdTests(
       const request = createTestRequest(`${baseUrl}/test-id`);
       const params = createTestParams({ id: 'test-id' });
       const response = await route.GET(request, { params });
-      const data = await parseJsonResponse(response);
+      const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
       expectStatus(response, 500);
       expectErrorResponse(data, 500, errorMessage);
@@ -115,7 +115,7 @@ export function getGetByIdTests(
           const request = createTestRequest(`${baseUrl}/test-id`);
           const params = createTestParams({ id: 'test-id' });
           const response = await route.GET(request, { params });
-          const data = await parseJsonResponse(response);
+          const data = await parseJsonResponse<{ success?: boolean; data?: unknown; message?: string }>(response);
 
           expectStatus(response, 200);
           expectSuccessResponse(data);
@@ -130,7 +130,7 @@ export function getGetByIdTests(
           const request = createTestRequest(`${baseUrl}/non-existent`);
           const params = createTestParams({ id: 'non-existent' });
           const response = await route.GET(request, { params });
-          const data = await parseJsonResponse(response);
+          const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
           expectStatus(response, 404);
           expectErrorResponse(data, 404, notFoundError);
@@ -144,7 +144,7 @@ export function getGetByIdTests(
           const request = createTestRequest(`${baseUrl}/test-id`);
           const params = createTestParams({ id: 'test-id' });
           const response = await route.GET(request, { params });
-          const data = await parseJsonResponse(response);
+          const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
           expectStatus(response, 500);
           expectErrorResponse(data, 500, errorMessage);
@@ -184,11 +184,11 @@ export function runGetListTests(
 
       const request = createTestRequest(baseUrl);
       const response = await route.GET(request);
-      const data = await parseJsonResponse(response);
+      const data = await parseJsonResponse<{ success?: boolean; data?: unknown; message?: string }>(response);
 
       expectStatus(response, 200);
       expectSuccessResponse(data);
-      expect(data.data.documents || data.data).toEqual(mockDocuments);
+      expect(data.data && typeof data.data === 'object' && 'documents' in data.data ? (data.data as { documents: unknown[] }).documents : data.data).toEqual(mockDocuments);
     });
 
     it('handles empty list', async () => {
@@ -196,11 +196,11 @@ export function runGetListTests(
 
       const request = createTestRequest(baseUrl);
       const response = await route.GET(request);
-      const data = await parseJsonResponse(response);
+      const data = await parseJsonResponse<{ success?: boolean; data?: unknown; message?: string }>(response);
 
       expectStatus(response, 200);
       expectSuccessResponse(data);
-      expect(data.data.documents || data.data).toEqual([]);
+      expect(data.data && typeof data.data === 'object' && 'documents' in data.data ? (data.data as { documents: unknown[] }).documents : data.data).toEqual([]);
     });
 
     it('handles errors gracefully', async () => {
@@ -208,7 +208,7 @@ export function runGetListTests(
 
       const request = createTestRequest(baseUrl);
       const response = await route.GET(request);
-      const data = await parseJsonResponse(response);
+      const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
       expectStatus(response, 500);
       expectErrorResponse(data, 500, errorMessage);
@@ -250,7 +250,7 @@ export function runCreateTests(
         body: validData,
       });
       const response = await route.POST(request);
-      const data = await parseJsonResponse(response);
+      const data = await parseJsonResponse<{ success?: boolean; data?: unknown; message?: string }>(response);
 
       expectStatus(response, expectedStatus);
       expectSuccessResponse(data, expectedStatus);
@@ -268,7 +268,7 @@ export function runCreateTests(
         body: validData,
       });
       const response = await route.POST(request);
-      const data = await parseJsonResponse(response);
+      const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
       expectStatus(response, 500);
       expectErrorResponse(data, 500, errorMessage);
@@ -316,7 +316,7 @@ export function runUpdateTests(
       });
       const params = createTestParams({ id: 'test-id' });
       const response = await handler(request, { params });
-      const data = await parseJsonResponse(response);
+      const data = await parseJsonResponse<{ success?: boolean; data?: unknown; message?: string }>(response);
 
       expectStatus(response, 200);
       expectSuccessResponse(data);
@@ -334,7 +334,7 @@ export function runUpdateTests(
       });
       const params = createTestParams({ id: 'test-id' });
       const response = await handler(request, { params });
-      const data = await parseJsonResponse(response);
+      const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
       expectStatus(response, 500);
       expectErrorResponse(data, 500, errorMessage);
@@ -372,7 +372,7 @@ export function runDeleteTests(
       });
       const params = createTestParams({ id: 'test-id' });
       const response = await route.DELETE(request, { params });
-      const data = await parseJsonResponse(response);
+      const data = await parseJsonResponse<{ success?: boolean; data?: unknown; message?: string }>(response);
 
       expectStatus(response, 200);
       expectSuccessResponse(data);
@@ -389,7 +389,7 @@ export function runDeleteTests(
       });
       const params = createTestParams({ id: 'test-id' });
       const response = await route.DELETE(request, { params });
-      const data = await parseJsonResponse(response);
+      const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
       expectStatus(response, 500);
       expectErrorResponse(data, 500, errorMessage);
@@ -422,7 +422,7 @@ export function runFilteringTests(
 
     filterTests.forEach(({ name, queryParams, expectedFilter }) => {
       it(`filters by ${name}`, async () => {
-        const mockData = [{ _id: '1', ...expectedFilter }];
+        const mockData = [{ _id: '1', ...(typeof expectedFilter === 'object' && expectedFilter !== null ? expectedFilter as Record<string, unknown> : {}) }];
         const mockDocuments = createMockDocuments(mockData);
         vi.mocked(mockList).mockResolvedValue(createMockListResponse(mockDocuments, 1));
 

@@ -331,14 +331,27 @@ export class AuditLogger {
           ? 'error'
           : 'info';
 
+    // SECURITY: Using explicit method calls instead of dynamic property access
+    // to prevent object injection attacks
+    const logPayload = {
+      action: logData.action,
+      resource: logData.resource,
+      userId: logData.userId,
+      status: logData.status,
+      ipAddress: logData.ipAddress,
+    };
+
     if (process.env.NODE_ENV === 'production') {
-      logger[level]('Audit log', {
-        action: logData.action,
-        resource: logData.resource,
-        userId: logData.userId,
-        status: logData.status,
-        ipAddress: logData.ipAddress,
-      });
+      switch (level) {
+        case 'error':
+          logger.error('Audit log', logPayload);
+          break;
+        case 'warn':
+          logger.warn('Audit log', logPayload);
+          break;
+        default:
+          logger.info('Audit log', logPayload);
+      }
     } else {
       logger.debug('Audit log', { ...auditLog });
     }

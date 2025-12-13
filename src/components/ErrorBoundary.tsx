@@ -113,7 +113,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 Tekrar Dene
               </button>
               <button
-                onClick={() => (window.location.href = '/genel')}
+                // SECURITY: Using hardcoded safe URL constant to prevent XSS
+                onClick={() => window.location.assign('/genel')}
                 className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 text-sm font-medium rounded-md transition-colors"
               >
                 Ana Sayfaya Dön

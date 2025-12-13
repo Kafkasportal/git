@@ -109,7 +109,7 @@ describe('PATCH /api/workflow-notifications/[id] - Specific tests', () => {
     });
     const params = createTestParams({ id: 'test-id' });
     const response = await PATCH(request, { params });
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; data?: unknown; message?: string }>(response);
 
     expectStatus(response, 200);
     expectSuccessResponse(data);
@@ -139,7 +139,7 @@ describe('PATCH /api/workflow-notifications/[id] - Specific tests', () => {
     });
     const params = createTestParams({ id: 'test-id' });
     const response = await PATCH(request, { params });
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; data?: unknown; message?: string }>(response);
 
     expectStatus(response, 200);
     expectSuccessResponse(data);
@@ -157,7 +157,7 @@ describe('PATCH /api/workflow-notifications/[id] - Specific tests', () => {
     });
     const params = createTestParams({ id: 'test-id' });
     const response = await PATCH(request, { params });
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
     expectStatus(response, 400);
     expectErrorResponse(data, 400);

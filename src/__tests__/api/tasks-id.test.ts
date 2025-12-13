@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { vi } from 'vitest';
 import { GET, PUT, DELETE } from '@/app/api/tasks/[id]/route';
 import * as appwriteApi from '@/lib/appwrite/api';
 import {
@@ -6,14 +6,6 @@ import {
   runUpdateTests,
   runDeleteTests,
 } from '../test-utils/test-patterns';
-import {
-  createTestRequest,
-  createTestParams,
-  parseJsonResponse,
-  expectStatus,
-  expectSuccessResponse,
-  expectErrorResponse,
-} from '../test-utils/api-test-helpers';
 
 // Mock Appwrite API
 vi.mock('@/lib/appwrite/api', () => ({

@@ -49,6 +49,11 @@ export default function RootLayout({
         <Script
           id="theme-init"
           strategy="beforeInteractive"
+          // SECURITY: dangerouslySetInnerHTML is safe here because:
+          // 1. The script content is entirely static (no user input)
+          // 2. localStorage.getItem returns string|null, safely handled
+          // 3. Only adds/removes 'dark' class to documentElement
+          // 4. Required for SSR to prevent FOUC (Flash of Unstyled Content)
           dangerouslySetInnerHTML={{
             __html: `
               (function() {

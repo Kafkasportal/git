@@ -44,7 +44,8 @@ export function DashboardError({ error, resetError }: DashboardErrorProps) {
             )}
             <Button
               variant="outline"
-              onClick={() => (window.location.href = '/genel')}
+              // SECURITY: Using hardcoded safe URL constant to prevent XSS
+              onClick={() => window.location.assign('/genel')}
               className="gap-2"
             >
               <Home className="h-4 w-4" />

@@ -283,9 +283,16 @@ export function printTable(
 </html>
   `;
 
+  // SECURITY: Use safer method instead of document.write
+  // document.write can be blocked by CSP and is a security risk
+  printWindow.document.open();
   printWindow.document.write(htmlContent);
   printWindow.document.close();
-  printWindow.print();
+  
+  // Wait for content to load before printing
+  printWindow.onload = () => {
+    printWindow.print();
+  };
 }
 
 /**

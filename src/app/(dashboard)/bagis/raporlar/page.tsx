@@ -45,7 +45,7 @@ import {
   FileSpreadsheet,
   FileDown,
 } from 'lucide-react';
-import { generateDonationPDF } from '@/lib/utils/pdf-export';
+import { exportToPDF } from '@/lib/export/export-service';
 import { donations as donationsApi } from '@/lib/api/crud-factory';
 
 interface DonationReport {
@@ -263,16 +263,43 @@ export default function DonationReportsPage() {
     toast.success('Rapor Excel formatında indirildi');
   }, [reportData]);
 
-  const handleExportPDF = useCallback(() => {
+  const handleExportPDF = useCallback(async () => {
     if (!reportData) return;
     try {
-      generateDonationPDF(reportData);
+      // Convert report data to export format
+      const exportData = donations.map((donation) => ({
+        'Bağışçı Adı': donation.donor_name,
+        'E-posta': donation.donor_email || '',
+        'Miktar': donation.amount,
+        'Para Birimi': donation.currency,
+        'Bağış Türü': donation.donation_type,
+        'Ödeme Yöntemi': donation.payment_method,
+        'Durum': donation.status,
+        'Tarih': new Date(donation._creationTime).toLocaleDateString('tr-TR'),
+      }));
+
+      await exportToPDF({
+        title: 'Bağış Raporu',
+        subtitle: `Toplam: ${reportData.totalAmount.toLocaleString('tr-TR')} ${donations[0]?.currency || 'TRY'}`,
+        filename: `bagis-raporu-${new Date().toISOString().split('T')[0]}`,
+        columns: [
+          { header: 'Bağışçı Adı', key: 'Bağışçı Adı' as keyof typeof exportData[0] },
+          { header: 'E-posta', key: 'E-posta' as keyof typeof exportData[0] },
+          { header: 'Miktar', key: 'Miktar' as keyof typeof exportData[0] },
+          { header: 'Para Birimi', key: 'Para Birimi' as keyof typeof exportData[0] },
+          { header: 'Bağış Türü', key: 'Bağış Türü' as keyof typeof exportData[0] },
+          { header: 'Ödeme Yöntemi', key: 'Ödeme Yöntemi' as keyof typeof exportData[0] },
+          { header: 'Durum', key: 'Durum' as keyof typeof exportData[0] },
+          { header: 'Tarih', key: 'Tarih' as keyof typeof exportData[0] },
+        ],
+        data: exportData,
+      });
       toast.success('Rapor PDF formatında indirildi');
     } catch (error) {
       logger.error('Donation report PDF export failed', { error });
       toast.error('PDF oluşturulurken hata oluştu');
     }
-  }, [reportData]);
+  }, [reportData, donations]);
 
   if (isLoading) {
     return (

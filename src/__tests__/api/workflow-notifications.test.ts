@@ -115,7 +115,7 @@ describe('POST /api/workflow-notifications - Validation', () => {
       body: invalidNotification,
     });
     const response = await POST(request);
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
     expectStatus(response, 400);
     expectErrorResponse(data, 400, 'Doğrulama hatası');
@@ -133,7 +133,7 @@ describe('POST /api/workflow-notifications - Validation', () => {
       body: invalidNotification,
     });
     const response = await POST(request);
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
     expectStatus(response, 400);
     expectErrorResponse(data, 400);
@@ -152,7 +152,7 @@ describe('POST /api/workflow-notifications - Validation', () => {
       body: invalidNotification,
     });
     const response = await POST(request);
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
     expectStatus(response, 400);
     expectErrorResponse(data, 400);
@@ -171,7 +171,7 @@ describe('POST /api/workflow-notifications - Validation', () => {
       body: invalidNotification,
     });
     const response = await POST(request);
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
     expectStatus(response, 400);
     expectErrorResponse(data, 400);
@@ -200,7 +200,7 @@ describe('POST /api/workflow-notifications - Validation', () => {
       body: newNotification,
     });
     const response = await POST(request);
-    const data = await parseJsonResponse(response);
+    const data = await parseJsonResponse<{ success?: boolean; data?: unknown; message?: string }>(response);
 
     expectStatus(response, 201);
     expectSuccessResponse(data, 201);
