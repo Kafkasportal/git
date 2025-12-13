@@ -5,6 +5,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 type RechartsModule = typeof import('recharts');
 
+// Brand colors consistent with design system
+const CHART_COLORS = {
+  primary: '#6366f1',     // Indigo-500 - Primary
+  secondary: '#8b5cf6',   // Violet-500
+  success: '#10b981',     // Emerald-500
+  warning: '#f59e0b',     // Amber-500
+  error: '#ef4444',       // Red-500
+  info: '#06b6d4',        // Cyan-500
+};
+
 function useRecharts() {
   const [mod, setMod] = useState<RechartsModule | null>(null);
 
@@ -40,26 +50,28 @@ export function DonationTrendChart({ data }: DonationTrendChartProps) {
     <ResponsiveContainer width="100%" height={256}>
       <AreaChart data={data}>
         <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-        <XAxis dataKey="month" className="text-xs" />
-        <YAxis className="text-xs" />
+        <XAxis dataKey="month" className="text-xs" tick={{ fill: 'currentColor', fontSize: 12 }} />
+        <YAxis className="text-xs" tick={{ fill: 'currentColor', fontSize: 12 }} />
         <Tooltip
           contentStyle={{
             backgroundColor: 'hsl(var(--background))',
             border: '1px solid hsl(var(--border))',
             borderRadius: '8px',
+            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
           }}
+          labelStyle={{ color: 'hsl(var(--foreground))' }}
         />
         <Area
           type="monotone"
           dataKey="amount"
-          stroke="#8884d8"
+          stroke={CHART_COLORS.primary}
           fill="url(#colorAmount)"
           strokeWidth={2}
         />
         <defs>
           <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
-            <stop offset="95%" stopColor="#8884d8" stopOpacity={0.1} />
+            <stop offset="5%" stopColor={CHART_COLORS.primary} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={CHART_COLORS.primary} stopOpacity={0.05} />
           </linearGradient>
         </defs>
       </AreaChart>

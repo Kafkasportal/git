@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useCallback, memo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { User, Calendar, AlertCircle, Clock, GripVertical } from 'lucide-react';
 import type { TaskDocument } from '@/types/database';
@@ -152,8 +151,8 @@ const TaskCard = memo(({ task, onTaskClick }: TaskCardProps) => {
               <span className={cn(
                 'text-xs',
                 isOverdue ? 'text-red-600 dark:text-red-400 font-medium' :
-                isDueSoon ? 'text-amber-600 dark:text-amber-400 font-medium' :
-                'text-slate-500 dark:text-slate-400'
+                  isDueSoon ? 'text-amber-600 dark:text-amber-400 font-medium' :
+                    'text-slate-500 dark:text-slate-400'
               )}>
                 {new Date(task.due_date).toLocaleDateString('tr-TR')}
               </span>
@@ -264,7 +263,7 @@ export function KanbanBoard({ tasks, onTaskMove, onTaskClick }: KanbanBoardProps
     <div className="relative">
       {/* Mobile Scroll Hint */}
       <div className="lg:hidden absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-900 to-transparent pointer-events-none z-10" />
-      
+
       {/* Kanban Container - Horizontal scroll on mobile */}
       <div className="flex gap-4 overflow-x-auto pb-4 lg:grid lg:grid-cols-4 lg:overflow-visible scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
         {COLUMNS.map((column) => (

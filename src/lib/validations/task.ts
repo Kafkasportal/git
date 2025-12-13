@@ -2,20 +2,9 @@
 // Zod ile form validasyonu
 
 import { z } from 'zod';
+import { futureDateSchema } from './shared-validators';
 
 // === HELPER VALIDATORS ===
-
-// Future date validation (due date should be today or future)
-const futureDateSchema = z
-  .string()
-  .refine((dateStr) => {
-    if (!dateStr) return true; // Optional field
-    const date = new Date(dateStr);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time to start of day
-    return date >= today;
-  }, 'Son tarih bugün veya gelecek bir tarih olmalıdır')
-  .optional();
 
 // Tag validation (alphanumeric with hyphens/underscores, max 30 chars)
 const tagSchema = z

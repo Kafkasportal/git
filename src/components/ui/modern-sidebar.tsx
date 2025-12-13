@@ -3,7 +3,7 @@
 import { useState, useEffect, memo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronRight, Settings, ChevronDown } from 'lucide-react';
+import { Settings, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -41,7 +41,7 @@ function ModernSidebarComponent({
 
   // Auto-expand active module
   useEffect(() => {
-    const activeModule = navigationModules.find(m => 
+    const activeModule = navigationModules.find(m =>
       m.subPages.some(sp => pathname.startsWith(sp.href))
     );
     if (activeModule && !expandedModules.includes(activeModule.id)) {
@@ -62,8 +62,8 @@ function ModernSidebarComponent({
 
   const toggleModule = (moduleId: string) => {
     setExpandedModules(prev =>
-      prev.includes(moduleId) 
-        ? prev.filter(id => id !== moduleId) 
+      prev.includes(moduleId)
+        ? prev.filter(id => id !== moduleId)
         : [...prev, moduleId]
     );
   };

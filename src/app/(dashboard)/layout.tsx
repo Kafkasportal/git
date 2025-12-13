@@ -39,13 +39,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { useQueryClient } from '@tanstack/react-query';
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 
 function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const queryClient = useQueryClient();
   const { isAuthenticated, isInitialized, user, logout, initializeAuth } = useAuthStore();
   const { open: isSearchOpen, setOpen: setSearchOpen } = useCommandPalette();
   const deviceInfo = useDeviceDetection();
@@ -161,8 +159,8 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
       <header
         className={cn(
           'sticky top-0 z-50 h-16 bg-white dark:bg-slate-900 border-b transition-all duration-200',
-          isScrolled 
-            ? 'border-slate-200 dark:border-slate-800 shadow-sm' 
+          isScrolled
+            ? 'border-slate-200 dark:border-slate-800 shadow-sm'
             : 'border-transparent'
         )}
       >
@@ -344,7 +342,7 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
             'max-w-[1600px]'
           )}>
             <BreadcrumbNav />
-            
+
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={pathname}
@@ -363,7 +361,7 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
 
         {/* Command Palette */}
         <CommandPalette open={isSearchOpen} onOpenChange={setSearchOpen} />
-        
+
         {/* Offline Indicator */}
         <OfflineSyncIndicator />
       </div>

@@ -31,83 +31,25 @@ import {
   Disease,
   Label,
 } from '@/types/beneficiary';
-import { phoneSchema } from './shared-validators';
-
-// === HELPER VALIDATORS ===
-
-// TC Kimlik No validasyonu (11 hane, algoritma kontrolü)
-const tcKimlikNoSchema = z
-  .string()
-  .length(11, 'TC Kimlik No 11 haneli olmalıdır')
-  .regex(/^\d{11}$/, 'TC Kimlik No sadece rakam içermelidir')
-  .refine((value) => {
-    // İlk hane 0 olamaz
-    if (value[0] === '0') return false;
-
-    // TC Kimlik No algoritma kontrolü
-    const digits = value.split('').map(Number);
-
-    // 10. hane kontrolü: (1,3,5,7,9. hanelerin toplamı * 7 - 2,4,6,8. hanelerin toplamı) % 10
-    const oddSum = digits[0] + digits[2] + digits[4] + digits[6] + digits[8];
-    const evenSum = digits[1] + digits[3] + digits[5] + digits[7];
-    const check10 = (oddSum * 7 - evenSum) % 10;
-
-    if (digits[9] !== check10) return false;
-
-    // 11. hane kontrolü: (İlk 10 hanenin toplamı) % 10
-    const sum10 = digits.slice(0, 10).reduce((sum, digit) => sum + digit, 0);
-    const check11 = sum10 % 10;
-
-    return digits[10] === check11;
-  }, 'Geçersiz TC Kimlik No');
-
-// phoneSchema is now imported from shared-validators
-
-// Email validasyonu
-const emailSchema = z
-  .string()
-  .email('Geçerli bir email adresi giriniz')
-  .optional()
-  .or(z.literal(''));
-
-// Tarih validasyonu (geçmiş tarih kontrolü)
-const pastDateSchema = z
-  .date()
-  .refine((date) => date <= new Date(), 'Geçmiş bir tarih seçiniz')
-  .optional();
-
-// Yaş hesaplama (doğum tarihinden)
-const calculateAge = (birthDate: Date): number => {
-  const today = new Date();
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-
-  return age;
-};
+import {
+  phoneSchema,
+  tcKimlikNoSchema,
+  emailSchema,
+  pastDateSchema,
+  calculateAge,
+  turkishNameSchema,
+  nationalitySchema,
+  fileNumberSchema,
+} from './shared-validators';
 
 // === HIZLI KAYIT SCHEMA ===
 export const quickAddBeneficiarySchema = z.object({
   category: z.nativeEnum(BeneficiaryCategory, {
     message: 'Kategori seçiniz',
   }),
-  firstName: z
-    .string()
-    .min(2, 'Ad en az 2 karakter olmalıdır')
-    .max(50, 'Ad en fazla 50 karakter olmalıdır')
-    .regex(/^[a-zA-ZçğıöşüÇĞIİÖŞÜ\s]+$/, 'Ad sadece harf içerebilir'),
-  lastName: z
-    .string()
-    .min(2, 'Soyad en az 2 karakter olmalıdır')
-    .max(50, 'Soyad en fazla 50 karakter olmalıdır')
-    .regex(/^[a-zA-ZçğıöşüÇĞIİÖŞÜ\s]+$/, 'Soyad sadece harf içerebilir'),
-  nationality: z
-    .string()
-    .min(2, 'Uyruk en az 2 karakter olmalıdır')
-    .max(50, 'Uyruk en fazla 50 karakter olmalıdır'),
+  firstName: turkishNameSchema,
+  lastName: turkishNameSchema,
+  nationality: nationalitySchema,
   birthDate: pastDateSchema,
   identityNumber: tcKimlikNoSchema.optional(),
   mernisCheck: z.boolean().default(false),
@@ -117,11 +59,7 @@ export const quickAddBeneficiarySchema = z.object({
   fileConnection: z.nativeEnum(FileConnection, {
     message: 'Dosya bağlantısı seçiniz',
   }),
-  fileNumber: z
-    .string()
-    .min(1, 'Dosya numarası zorunludur')
-    .max(20, 'Dosya numarası en fazla 20 karakter olmalıdır')
-    .regex(/^[A-Z0-9]+$/, 'Dosya numarası sadece büyük harf ve rakam içerebilir'),
+  fileNumber: fileNumberSchema,
 });
 
 // === DETAYLI FORM SCHEMA ===
@@ -131,20 +69,9 @@ export const beneficiarySchema = z
     id: z.string().optional(),
     photo: z.string().optional(),
     sponsorType: z.nativeEnum(SponsorType).optional(),
-    firstName: z
-      .string()
-      .min(2, 'Ad en az 2 karakter olmalıdır')
-      .max(50, 'Ad en fazla 50 karakter olmalıdır')
-      .regex(/^[a-zA-ZçğıöşüÇĞIİÖŞÜ\s]+$/, 'Ad sadece harf içerebilir'),
-    lastName: z
-      .string()
-      .min(2, 'Soyad en az 2 karakter olmalıdır')
-      .max(50, 'Soyad en fazla 50 karakter olmalıdır')
-      .regex(/^[a-zA-ZçğıöşüÇĞIİÖŞÜ\s]+$/, 'Soyad sadece harf içerebilir'),
-    nationality: z
-      .string()
-      .min(2, 'Uyruk en az 2 karakter olmalıdır')
-      .max(50, 'Uyruk en fazla 50 karakter olmalıdır'),
+    firstName: turkishNameSchema,
+    lastName: turkishNameSchema,
+    nationality: nationalitySchema,
     identityNumber: tcKimlikNoSchema.optional(),
     mernisCheck: z.boolean(),
     category: z.nativeEnum(BeneficiaryCategory, {
@@ -156,11 +83,7 @@ export const beneficiarySchema = z
     fileConnection: z.nativeEnum(FileConnection, {
       message: 'Dosya bağlantısı seçiniz',
     }),
-    fileNumber: z
-      .string()
-      .min(1, 'Dosya numarası zorunludur')
-      .max(20, 'Dosya numarası en fazla 20 karakter olmalıdır')
-      .regex(/^[A-Z0-9]+$/, 'Dosya numarası sadece büyük harf ve rakam içerebilir'),
+    fileNumber: fileNumberSchema,
 
     // İletişim Bilgileri
     mobilePhone: phoneSchema,

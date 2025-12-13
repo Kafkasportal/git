@@ -2,6 +2,7 @@
 // Zod ile form validasyonu
 
 import { z } from "zod";
+import { tcKimlikNoSchema, turkishNameSchema } from "./shared-validators";
 
 // === SCHOLARSHIP TYPE ENUM ===
 
@@ -19,36 +20,9 @@ export const scholarshipStatusValues = [
  * Base scholarship schema
  */
 export const scholarshipBaseSchema = z.object({
-  student_name: z
-    .string()
-    .min(2, "Öğrenci adı en az 2 karakter olmalıdır")
-    .max(100, "Öğrenci adı en fazla 100 karakter olabilir")
-    .trim(),
+  student_name: turkishNameSchema,
 
-  tc_no: z
-    .string()
-    .length(11, "TC Kimlik No 11 haneli olmalıdır")
-    .regex(/^\d{11}$/, "TC Kimlik No sadece rakam içermelidir")
-    .refine((value) => {
-      // İlk hane 0 olamaz
-      if (value[0] === "0") return false;
-
-      // TC Kimlik No algoritma kontrolü
-      const digits = value.split("").map(Number);
-
-      // 10. hane kontrolü
-      const oddSum = digits[0] + digits[2] + digits[4] + digits[6] + digits[8];
-      const evenSum = digits[1] + digits[3] + digits[5] + digits[7];
-      const check10 = (oddSum * 7 - evenSum) % 10;
-
-      if (digits[9] !== check10) return false;
-
-      // 11. hane kontrolü
-      const sum10 = digits.slice(0, 10).reduce((sum, digit) => sum + digit, 0);
-      const check11 = sum10 % 10;
-
-      return digits[10] === check11;
-    }, "Geçersiz TC Kimlik No"),
+  tc_no: tcKimlikNoSchema,
 
   school_name: z
     .string()
