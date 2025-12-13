@@ -54,7 +54,7 @@ async function fetchBeneficiariesDirectly(params?: {
 
     return await response.json();
   } catch (error) {
-    logger.error('Direct API call failed', { error });
+    logger.error('Direct API call failed', error);
     throw error;
   }
 }

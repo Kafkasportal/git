@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { authRateLimit } from "@/lib/rate-limit";
 import logger from "@/lib/logger";
 import { serializeSessionCookie } from "@/lib/auth/session";
-import { Client, Account, Users, Query } from "node-appwrite";
+import { Users, Query } from "node-appwrite";
 import { getServerClient } from "@/lib/appwrite/server";
 import {
   isAccountLocked,
@@ -69,26 +69,17 @@ export const POST = authRateLimit(async (request: NextRequest) => {
     }
 
     // Verify Credentials using Appwrite Auth
-    // Note: We need to use client SDK for password verification since Appwrite
-    // doesn't expose password verification in server-side Users API
-    // We'll create a temporary session to verify password, then create our own session
-    const client = new Client()
-      .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
-      .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!);
-
-    const account = new Account(client);
+    // Note: Appwrite doesn't expose password verification in server-side Users API
+    // We'll use the REST API directly to verify credentials via session creation
     const serverClient = getServerClient();
     const serverUsers = new Users(serverClient);
     
     let appwriteUser;
+    const emailLower = email.toLowerCase().trim();
 
     // Önce kullanıcının Appwrite Auth'da kayıtlı olduğunu kontrol et
     try {
       // Email ile kullanıcıyı bul (Appwrite Users API'sinde email ile arama)
-      const emailLower = email.toLowerCase().trim();
-      
-      // Appwrite Users API'sinde email ile arama yap
-      // Not: Appwrite Users API'sinde email field'ı direkt query edilebilir
       const usersList = await serverUsers.list(
         [Query.equal("email", emailLower), Query.limit(1)]
       );
@@ -134,35 +125,79 @@ export const POST = authRateLimit(async (request: NextRequest) => {
         );
       }
 
-      // Şifre doğrulaması için geçici bir session oluştur
-      // NOT: Client-side Account SDK server-side'da cookie set edemez,
-      // ama session oluşturma işlemi şifre doğrulaması yapar
-      // Session oluşturulamazsa şifre yanlış demektir
+      // Şifre doğrulaması için Appwrite REST API'yi kullanarak session oluştur
+      // Bu, şifre doğru ise session oluşturur, yanlış ise hata verir
       try {
-        // Create a new client instance without cookies for password verification
-        // This will fail if password is wrong, but won't set cookies server-side
-        const tempSession = await account.createEmailPasswordSession(email, password);
-        
-        // Session oluşturuldu, şifre doğru demektir
-        // User bilgilerini server-side Users API'den al (zaten bulduk)
-        appwriteUser = foundUser;
-        
-        // Geçici session'ı silmeye çalış (opsiyonel, session zaten cookie olmadan oluşturuldu)
-        try {
-          if (tempSession.$id) {
-            await account.deleteSession(tempSession.$id);
-          }
-        } catch {
-          // Session silme hatası önemli değil (cookie yoksa zaten çalışmaz)
+        const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!;
+        const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!;
+
+        // DEBUG: Buraya breakpoint koyarak email ve password'u kontrol edebilirsiniz
+        // debugger; // Breakpoint için: Bu satırın başındaki // işaretini kaldırın
+
+        // Appwrite REST API ile session oluştur (şifre doğrulaması için)
+        const sessionResponse = await fetch(`${endpoint}/account/sessions/email`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Appwrite-Project": projectId,
+          },
+          body: JSON.stringify({
+            email: emailLower,
+            password: password,
+          }),
+        });
+
+        if (!sessionResponse.ok) {
+          // Session oluşturulamadı = şifre yanlış
+          const errorData = await sessionResponse.json().catch(() => ({}));
+          recordLoginAttempt(email, false);
+          const failedAttempts = getFailedAttemptCount(email);
+          const remainingAttempts = LOCKOUT_CONFIG.maxAttempts - failedAttempts;
+
+          logger.warn("Login failed - invalid password", {
+            email: `${email?.substring(0, 3)}***`,
+            failedAttempts,
+            error: errorData.message || "Invalid credentials",
+          });
+
+          return NextResponse.json(
+            {
+              success: false,
+              error: "Geçersiz email veya şifre",
+              remainingAttempts: Math.max(0, remainingAttempts),
+            },
+            { status: 401 },
+          );
         }
+
+        // Session oluşturuldu, şifre doğru demektir
+        const sessionData = await sessionResponse.json();
+        
+        // DEBUG: Session oluşturma başarılı - buraya breakpoint koyabilirsiniz
+        // debugger; // Breakpoint için: Bu satırın başındaki // işaretini kaldırın
+        
+        // Oluşturulan session'ı hemen silelim (sadece doğrulama için kullandık)
+        try {
+          await fetch(`${endpoint}/account/sessions/${sessionData.$id}`, {
+            method: "DELETE",
+            headers: {
+              "X-Appwrite-Project": projectId,
+              "X-Appwrite-Key": process.env.APPWRITE_API_KEY || "",
+            },
+          });
+        } catch {
+          // Session silme hatası önemli değil
+        }
+
+        appwriteUser = foundUser;
       } catch (sessionError) {
-        // Session oluşturulamadı = şifre yanlış
+        // Session oluşturma hatası
         recordLoginAttempt(email, false);
         const failedAttempts = getFailedAttemptCount(email);
         const remainingAttempts = LOCKOUT_CONFIG.maxAttempts - failedAttempts;
 
         const errorMessage = sessionError instanceof Error ? sessionError.message : "Unknown error";
-        logger.warn("Login failed - invalid password", {
+        logger.warn("Login failed - session creation error", {
           email: `${email?.substring(0, 3)}***`,
           failedAttempts,
           error: errorMessage,

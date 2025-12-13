@@ -148,7 +148,11 @@ class LoggerImpl implements Logger {
         console.log(JSON.stringify(safeContext, null, 2));
       }
       if (safeError) {
-        console.error(safeError);
+        if (safeError instanceof Error) {
+          console.error(safeError);
+        } else {
+          console.error('Error:', safeError);
+        }
       }
     } else {
       console.log(JSON.stringify(logEntry));
@@ -169,7 +173,33 @@ class LoggerImpl implements Logger {
   }
 
   error(message: string, error?: Error | unknown, context?: LogContext): void {
-    this.log('error', message, error, context);
+    // Handle case where error is passed as context object: logger.error('msg', { error })
+    // This is a common pattern in the codebase
+    if (
+      !error &&
+      context &&
+      typeof context === 'object' &&
+      !Array.isArray(context) &&
+      'error' in context &&
+      Object.keys(context).length === 1
+    ) {
+      // If context only contains 'error', treat it as error parameter
+      const contextError = (context as { error?: unknown }).error;
+      this.log('error', message, contextError, undefined);
+    } else if (
+      !error &&
+      context &&
+      typeof context === 'object' &&
+      !Array.isArray(context) &&
+      'error' in context
+    ) {
+      // If context contains 'error' and other fields, extract error and keep rest as context
+      const contextError = (context as { error?: unknown }).error;
+      const { error: _, ...restContext } = context as { error?: unknown } & LogContext;
+      this.log('error', message, contextError, restContext);
+    } else {
+      this.log('error', message, error, context);
+    }
   }
 
   fatal(message: string, error?: Error | unknown, context?: LogContext): void {
