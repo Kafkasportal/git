@@ -6,11 +6,6 @@ on:
   pull_request:
     branches: [main, develop]
 
-env:
-  CODACY_ORGANIZATION_PROVIDER: gh
-  CODACY_USERNAME: Kafkasportal
-  CODACY_PROJECT_NAME: git
-
 jobs:
   lint-and-typecheck:
     runs-on: ubuntu-latest
@@ -49,24 +44,3 @@ jobs:
       - name: Run tests with coverage
         run: npm run test:coverage
         continue-on-error: true
-
-      - name: Upload coverage to Codacy
-        if: always()
-        env:
-          CODACY_API_TOKEN: ${{ secrets.CODACY_API_TOKEN }}
-        run: |
-          bash <(curl -Ls https://coverage.codacy.com/get.sh) report \
-            -r coverage/lcov.info \
-            --commit-uuid ${{ github.sha }}
-
-  codacy-analysis:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Run Codacy Analysis CLI
-        uses: codacy/codacy-analysis-cli-action@master
-        with:
-          project-token: ${{ secrets.CODACY_API_TOKEN }}
-          upload: true
-          max-allowed-issues: 2147483647
