@@ -57,11 +57,33 @@ async function postErrorHandler(request: NextRequest) {
     // Client-side error tracking doesn't have auth tokens
     // Rate limiting (applied at export) prevents spam
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch (parseError) {
+      logger.error('Failed to parse error request body', { error: parseError });
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Invalid JSON in request body',
+        },
+        { status: 400 }
+      );
+    }
 
     // Validate request body
     const validationResult = createErrorSchema.safeParse(body);
     if (!validationResult.success) {
+      logger.warn('Error validation failed', {
+        issues: validationResult.error.issues,
+        receivedData: {
+          error_code: body.error_code,
+          title: body.title,
+          description: body.description?.substring(0, 100),
+          category: body.category,
+          severity: body.severity,
+        },
+      });
       return NextResponse.json(
         {
           success: false,

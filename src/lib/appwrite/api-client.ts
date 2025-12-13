@@ -32,9 +32,20 @@ function buildAppwriteQueries(params?: QueryParams): string[] {
     queries.push(Query.offset(offset));
   }
 
-  // Search (uses Appwrite's search functionality)
+  // Search (uses OR query to search across multiple fields)
   if (params.search) {
-    queries.push(Query.search('name', params.search));
+    const searchTerm = params.search.trim();
+    if (searchTerm) {
+      // Use OR query to search across multiple fields
+      // This works without requiring fulltext index on individual fields
+      queries.push(
+        Query.or([
+          Query.contains('name', searchTerm),
+          Query.equal('tc_no', searchTerm),
+          Query.contains('phone', searchTerm),
+        ])
+      );
+    }
   }
 
   // Filters

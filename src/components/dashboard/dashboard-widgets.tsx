@@ -1,6 +1,6 @@
 'use client';
 
-import React, { ReactNode, Suspense } from 'react';
+import { ReactNode, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { useQuery } from '@tanstack/react-query';
 import { WidgetConfig } from '@/types/dashboard';

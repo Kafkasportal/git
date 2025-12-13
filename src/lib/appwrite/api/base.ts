@@ -95,7 +95,18 @@ export function buildQueries(params?: AppwriteQueryParams): string[] {
   }
 
   if (params.search) {
-    queries.push(Query.search("name", params.search));
+    // Use OR query to search across multiple fields
+    // This works without requiring fulltext index on individual fields
+    const searchTerm = params.search.trim();
+    if (searchTerm) {
+      queries.push(
+        Query.or([
+          Query.contains("name", searchTerm),
+          Query.equal("tc_no", searchTerm),
+          Query.contains("phone", searchTerm),
+        ])
+      );
+    }
   }
 
   if (params.status) {

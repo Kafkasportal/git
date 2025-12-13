@@ -63,8 +63,10 @@ export class PersistentCache {
   private async initialize(): Promise<void> {
     // Check if we're in a browser environment
     if (typeof window === 'undefined' || !window.indexedDB) {
-      if (process.env.NODE_ENV === 'development') {
-        logger.warn('[Cache] IndexedDB not available, using memory-only cache');
+      // IndexedDB is not available in SSR/Node.js environments - this is expected
+      // Only log in development if we're actually in a browser context (not SSR)
+      if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+        logger.debug('[Cache] IndexedDB not available, using memory-only cache');
       }
       this.useMemoryOnly = true;
       return;

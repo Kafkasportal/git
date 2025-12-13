@@ -183,11 +183,13 @@ export async function captureError(options: CaptureErrorOptions): Promise<void> 
     context.function_name
   );
 
-  // Prepare error data
+  // Prepare error data - ensure all required fields are present and valid
+  const errorDescription = description || (error instanceof Error ? error.message : String(error || title)) || 'No description provided';
+  
   const errorData = {
     error_code: errorCode,
-    title,
-    description: description || (error instanceof Error ? error.message : String(error)),
+    title: title || 'Untitled Error',
+    description: errorDescription,
     category,
     severity,
     stack_trace: stackTrace,
@@ -197,18 +199,18 @@ export async function captureError(options: CaptureErrorOptions): Promise<void> 
       page: pageContext,
     },
     user_id: context.user_id,
-    session_id: context.session_id || sessionStorage.getItem('session_id'),
+    session_id: context.session_id || (typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('session_id') : undefined),
     device_info: deviceInfo,
-    url: context.url || window.location?.href,
+    url: context.url || (typeof window !== 'undefined' ? window.location?.href : undefined),
     component: context.component,
     function_name: context.function_name,
-    tags,
+    tags: Array.isArray(tags) ? tags : [],
     fingerprint,
     metadata: {
       user_action: context.user_action,
       request_id: context.request_id,
       ip_address: context.ip_address,
-      user_agent: context.user_agent || navigator.userAgent,
+      user_agent: context.user_agent || (typeof navigator !== 'undefined' ? navigator.userAgent : undefined),
     },
   };
 
@@ -228,6 +230,12 @@ export async function captureError(options: CaptureErrorOptions): Promise<void> 
   // Send to backend API
   if (autoReport) {
     try {
+      // Only send if we're in a browser environment
+      if (typeof window === 'undefined' || typeof fetch === 'undefined') {
+        logger.warn('Cannot report error - not in browser environment');
+        return;
+      }
+
       const response = await fetchWithCsrf('/api/errors', {
         method: 'POST',
         headers: {
@@ -238,7 +246,19 @@ export async function captureError(options: CaptureErrorOptions): Promise<void> 
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to report error: ${response.statusText}`);
+        // Try to get error details from response
+        let errorDetails = response.statusText;
+        try {
+          const errorBody = await response.json();
+          if (errorBody.details) {
+            errorDetails = JSON.stringify(errorBody.details);
+          } else if (errorBody.error) {
+            errorDetails = errorBody.error;
+          }
+        } catch {
+          // Ignore JSON parse errors
+        }
+        throw new Error(`Failed to report error: ${errorDetails}`);
       }
     } catch (reportError) {
       // Fallback: store in localStorage for retry

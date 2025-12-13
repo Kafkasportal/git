@@ -23,6 +23,7 @@ import { FilterPanel, FilterField } from '@/components/ui/filter-panel';
 import { useFPSMonitor } from '@/lib/performance-monitor';
 import { useCachedQuery, usePrefetchWithCache } from '@/lib/api-cache';
 import { useDebouncedValue } from '@/lib/performance/hooks';
+import { fetchWithCsrf } from '@/lib/csrf-client';
 
 // Unified skeleton with all features
 import { TableSkeleton } from '@/components/ui/skeleton';
@@ -42,14 +43,29 @@ async function fetchBeneficiariesDirectly(params?: {
     const queryString = searchParams.toString();
     const endpoint = `/api/beneficiaries${queryString ? `?${queryString}` : ''}`;
 
-    const response = await fetch(endpoint, {
+    // Use fetchWithCsrf to include CSRF token and credentials
+    const response = await fetchWithCsrf(endpoint, {
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
     });
 
     if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      // Try to get error details from response
+      let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+      try {
+        const errorBody = await response.json();
+        if (errorBody.error) {
+          errorMessage = errorBody.error;
+        } else if (errorBody.message) {
+          errorMessage = errorBody.message;
+        }
+      } catch {
+        // Ignore JSON parse errors
+      }
+      throw new Error(errorMessage);
     }
 
     return await response.json();
@@ -167,11 +183,12 @@ export default function BeneficiariesPage() {
   // Bulk operations mutations
   const bulkDeleteMutation = useMutation({
     mutationFn: async (ids: string[]) => {
-      const response = await fetch('/api/beneficiaries/bulk-delete', {
+      const response = await fetchWithCsrf('/api/beneficiaries/bulk-delete', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ ids }),
       });
 
@@ -197,11 +214,12 @@ export default function BeneficiariesPage() {
 
   const bulkStatusUpdateMutation = useMutation({
     mutationFn: async ({ ids, status }: { ids: string[]; status: string }) => {
-      const response = await fetch('/api/beneficiaries/bulk-update-status', {
+      const response = await fetchWithCsrf('/api/beneficiaries/bulk-update-status', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ ids, status }),
       });
 
@@ -306,15 +324,28 @@ export default function BeneficiariesPage() {
         key: 'category',
         label: 'Kategori',
         className: 'flex-none w-[140px] max-w-[140px] text-xs overflow-hidden',
-        render: (item) => (
-          <Badge variant="outline" className="text-xs">
-            {item.status === 'AKTIF'
-              ? 'Aktif'
-              : item.status === 'PASIF'
-                ? 'Pasif'
-                : item.status || '-'}
-          </Badge>
-        ),
+        render: (item) => {
+          const status = item.status;
+          if (status === 'AKTIF') {
+            return (
+              <Badge variant="outline" className="text-xs border-emerald-200 text-emerald-700 dark:border-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30">
+                Aktif
+              </Badge>
+            );
+          }
+          if (status === 'PASIF') {
+            return (
+              <Badge variant="outline" className="text-xs border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/30">
+                Pasif
+              </Badge>
+            );
+          }
+          return (
+            <Badge variant="outline" className="text-xs">
+              {status || '-'}
+            </Badge>
+          );
+        },
       },
       {
         key: 'age',
@@ -437,7 +468,7 @@ export default function BeneficiariesPage() {
         label: 'Yardım',
         className: 'flex-none w-[100px] max-w-[100px] text-xs overflow-hidden text-right',
         render: (item) => (
-          <span className="font-medium text-green-600">
+          <span className="font-medium text-emerald-700 dark:text-emerald-400">
             {item.totalAidAmount ? `${item.totalAidAmount.toLocaleString('tr-TR')} ₺` : '-'}
           </span>
         ),

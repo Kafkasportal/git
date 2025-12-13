@@ -4,6 +4,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useRef } from 'react';
 import logger from '@/lib/logger';
+import { fetchWithCsrf } from '@/lib/csrf-client';
 
 interface CacheConfig {
   ttl: number; // Time to live in milliseconds
@@ -225,12 +226,33 @@ export function useCachedQuery<T>({
         return cachedData;
       }
 
-      // Fetch fresh data
-      const response = await fetch(
-        `${endpoint}${params ? `?${new URLSearchParams(params).toString()}` : ''}`
+      // Fetch fresh data with CSRF token and credentials
+      const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
+      const response = await fetchWithCsrf(
+        `${endpoint}${queryString}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        }
       );
+      
       if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
+        // Try to get error details from response
+        let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+        try {
+          const errorBody = await response.json();
+          if (errorBody.error) {
+            errorMessage = errorBody.error;
+          } else if (errorBody.message) {
+            errorMessage = errorBody.message;
+          }
+        } catch {
+          // Ignore JSON parse errors
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
