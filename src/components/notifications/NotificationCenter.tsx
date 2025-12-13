@@ -10,6 +10,12 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Bell, Check, CheckCheck, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -185,138 +191,163 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
   const getCategoryColor = (category: string) => CATEGORY_COLORS[category] || DEFAULT_CATEGORY_COLOR;
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          {unreadCountValue > 0 ? (
-            <Badge
-              variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-            >
-              {unreadCountValue > 99 ? '99+' : unreadCountValue}
-            </Badge>
-          ) : null}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[400px] p-0" align="end">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h3 className="font-semibold text-lg">Bildirimler</h3>
-          <div className="flex items-center gap-2">
-            {unreadCountValue > 0 ? (
-              <Button variant="ghost" size="sm" onClick={handleMarkAllAsRead} className="text-xs">
-                <CheckCheck className="h-4 w-4 mr-1" />
-                Tümünü Okundu İşaretle
+    <TooltipProvider>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative" aria-label="Bildirimler">
+                <Bell className="h-5 w-5" />
+                {unreadCountValue > 0 ? (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                  >
+                    {unreadCountValue > 99 ? '99+' : unreadCountValue}
+                  </Badge>
+                ) : null}
               </Button>
-            ) : null}
-          </div>
-        </div>
-
-        <Tabs
-          value={activeTab}
-          onValueChange={(v) => setActiveTab(v as 'all' | 'unread')}
-          className="w-full"
-        >
-          <TabsList className="w-full grid grid-cols-2">
-            <TabsTrigger value="all">Tümü</TabsTrigger>
-            <TabsTrigger value="unread">
-              Okunmamış
+            </PopoverTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            <p>Bildirimler</p>
+          </TooltipContent>
+        </Tooltip>
+        <PopoverContent className="w-[400px] p-0" align="end">
+          <div className="flex items-center justify-between p-4 border-b">
+            <h3 className="font-semibold text-lg">Bildirimler</h3>
+            <div className="flex items-center gap-2">
               {unreadCountValue > 0 ? (
-                <Badge variant="secondary" className="ml-2">
-                  {unreadCountValue}
-                </Badge>
+                <Button variant="ghost" size="sm" onClick={handleMarkAllAsRead} className="text-xs">
+                  <CheckCheck className="h-4 w-4 mr-1" />
+                  Tümünü Okundu İşaretle
+                </Button>
               ) : null}
-            </TabsTrigger>
-          </TabsList>
+            </div>
+          </div>
 
-          <TabsContent value={activeTab} className="m-0">
-            <ScrollArea className="h-[500px]">
-              {filteredNotifications && filteredNotifications.length > 0 ? (
-                <div className="divide-y">
-                  {filteredNotifications.map((notification) => {
-                    const notificationId = notification.$id || notification._id || '';
-                    return (
-                      <div
-                        key={notificationId}
-                        className={cn(
-                          'p-4 hover:bg-muted/50 transition-colors',
-                          !notification.read && 'bg-blue-50/50'
-                        )}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="flex-shrink-0 mt-1">
-                            <span className="text-2xl">{getCategoryIcon(notification.category || '')}</span>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1">
-                                <p className="font-medium text-sm">{notification.title}</p>
-                                {notification.body && (
-                                  <p className="text-sm text-muted-foreground mt-1">
-                                    {notification.body}
-                                  </p>
-                                )}
-                                <div className="flex items-center gap-2 mt-2">
-                                  <Badge
-                                    variant="secondary"
-                                    className={cn('text-xs', getCategoryColor(notification.category || ''))}
-                                  >
-                                    {notification.category}
-                                  </Badge>
-                                  <span className="text-xs text-muted-foreground">
-                                    {notification.created_at || notification.$createdAt
-                                      ? format(
-                                          new Date(notification.created_at || notification.$createdAt || ''),
-                                          'dd MMM yyyy, HH:mm',
-                                          {
-                                            locale: tr,
-                                          }
-                                        )
-                                      : ''}
-                                  </span>
+          <Tabs
+            value={activeTab}
+            onValueChange={(v) => setActiveTab(v as 'all' | 'unread')}
+            className="w-full"
+          >
+            <TabsList className="w-full grid grid-cols-2">
+              <TabsTrigger value="all">Tümü</TabsTrigger>
+              <TabsTrigger value="unread">
+                Okunmamış
+                {unreadCountValue > 0 ? (
+                  <Badge variant="secondary" className="ml-2">
+                    {unreadCountValue}
+                  </Badge>
+                ) : null}
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value={activeTab} className="m-0">
+              <ScrollArea className="h-[500px]">
+                {filteredNotifications && filteredNotifications.length > 0 ? (
+                  <div className="divide-y">
+                    {filteredNotifications.map((notification) => {
+                      const notificationId = notification.$id || notification._id || '';
+                      return (
+                        <div
+                          key={notificationId}
+                          className={cn(
+                            'p-4 hover:bg-muted/50 transition-colors',
+                            !notification.read && 'bg-blue-50/50'
+                          )}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0 mt-1">
+                              <span className="text-2xl">{getCategoryIcon(notification.category || '')}</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1">
+                                  <p className="font-medium text-sm">{notification.title}</p>
+                                  {notification.body && (
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                      {notification.body}
+                                    </p>
+                                  )}
+                                  <div className="flex items-center gap-2 mt-2">
+                                    <Badge
+                                      variant="secondary"
+                                      className={cn('text-xs', getCategoryColor(notification.category || ''))}
+                                    >
+                                      {notification.category}
+                                    </Badge>
+                                    <span className="text-xs text-muted-foreground">
+                                      {notification.created_at || notification.$createdAt
+                                        ? format(
+                                            new Date(notification.created_at || notification.$createdAt || ''),
+                                            'dd MMM yyyy, HH:mm',
+                                            {
+                                              locale: tr,
+                                            }
+                                          )
+                                        : ''}
+                                    </span>
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="flex items-center gap-1 flex-shrink-0">
-                                {!notification.read && (
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7"
-                                    onClick={() => handleMarkAsRead(notificationId)}
-                                  >
-                                    <Check className="h-4 w-4" />
-                                  </Button>
-                                )}
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7 text-destructive hover:text-destructive"
-                                  onClick={() => handleDelete(notificationId)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
+                                <div className="flex items-center gap-1 flex-shrink-0">
+                                  {!notification.read && (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-7 w-7"
+                                          onClick={() => handleMarkAsRead(notificationId)}
+                                          aria-label="Okundu olarak işaretle"
+                                        >
+                                          <Check className="h-4 w-4" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Okundu olarak işaretle</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  )}
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7 text-destructive hover:text-destructive"
+                                        onClick={() => handleDelete(notificationId)}
+                                        aria-label="Bildirimi sil"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Bildirimi sil</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </div>
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-12 px-4">
-                  <Bell className="h-12 w-12 text-muted-foreground mb-3" />
-                  <p className="text-sm text-muted-foreground text-center">
-                    {activeTab === 'unread'
-                      ? 'Okunmamış bildiriminiz yok'
-                      : 'Henüz bildiriminiz yok'}
-                  </p>
-                </div>
-              )}
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
-      </PopoverContent>
-    </Popover>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 px-4">
+                    <Bell className="h-12 w-12 text-muted-foreground mb-3" />
+                    <p className="text-sm text-muted-foreground text-center">
+                      {activeTab === 'unread'
+                        ? 'Okunmamış bildiriminiz yok'
+                        : 'Henüz bildiriminiz yok'}
+                    </p>
+                  </div>
+                )}
+              </ScrollArea>
+            </TabsContent>
+          </Tabs>
+        </PopoverContent>
+      </Popover>
+    </TooltipProvider>
   );
 }
