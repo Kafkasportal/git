@@ -96,7 +96,7 @@ export function BulkActionsToolbar(props: BulkActionsToolbarProps) {
   const statusOptions = config.statusOptions ?? legacyStatusOptions;
   const editFields = config.editFields ?? legacyEditFields;
   const resourceName = config.resourceName ?? legacyResourceName ?? 'öğe';
-}: BulkActionsToolbarProps) {
+
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 

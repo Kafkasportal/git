@@ -12,18 +12,18 @@ import {
     PanelLeftOpen,
     Search,
     Bell,
-    User,
+    User as UserIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import type { UserDocument } from '@/types/database';
+import type { User } from '@/types/auth';
 
 // Types
 interface DashboardHeaderProps {
-    user: UserDocument | null;
+    user: User | null;
     userInitials: string;
     isScrolled: boolean;
     isSidebarCollapsed: boolean;
@@ -37,7 +37,7 @@ interface DashboardHeaderProps {
 }
 
 interface UserMenuProps {
-    user: UserDocument | null;
+    user: User | null;
     userInitials: string;
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
@@ -108,7 +108,7 @@ const UserMenu = memo(function UserMenu({
                         onClick={() => onOpenChange(false)}
                         className="flex items-center gap-3 w-full px-3 py-2 text-sm text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                     >
-                        <User className="h-4 w-4" />
+                        <UserIcon className="h-4 w-4" />
                         Profilim
                     </Link>
                     <Link

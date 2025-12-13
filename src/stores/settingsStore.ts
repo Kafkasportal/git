@@ -287,20 +287,6 @@ const defaultOrganizationSettings: OrganizationSettings = {
   fiscalYearStart: '01-01',
 };
 
-// Category to default settings mapping for resetToDefaults
-const categoryDefaultsMap = {
-  general: defaultGeneralSettings,
-  display: defaultDisplaySettings,
-  notifications: defaultNotificationPreferences,
-  privacy: defaultPrivacySettings,
-  accessibility: defaultAccessibilitySettings,
-  data: defaultDataSettings,
-  integrations: defaultIntegrationSettings,
-  organization: defaultOrganizationSettings,
-} as const;
-
-type SettingsCategory = keyof typeof categoryDefaultsMap;
-
 const initialState: SettingsState = {
   general: defaultGeneralSettings,
   display: defaultDisplaySettings,
@@ -573,9 +559,34 @@ export const useSettingsStore = create<SettingsStore>()(
             if (!category) {
               // Reset all categories
               Object.assign(state, initialState);
-            } else if (category in categoryDefaultsMap) {
-              // Reset specific category using the mapping
-              state[category] = { ...categoryDefaultsMap[category as SettingsCategory] } as typeof state[typeof category];
+            } else {
+              // Reset specific category
+              switch (category) {
+                case 'general':
+                  state.general = { ...defaultGeneralSettings };
+                  break;
+                case 'display':
+                  state.display = { ...defaultDisplaySettings };
+                  break;
+                case 'notifications':
+                  state.notifications = { ...defaultNotificationPreferences };
+                  break;
+                case 'privacy':
+                  state.privacy = { ...defaultPrivacySettings };
+                  break;
+                case 'accessibility':
+                  state.accessibility = { ...defaultAccessibilitySettings };
+                  break;
+                case 'data':
+                  state.data = { ...defaultDataSettings };
+                  break;
+                case 'integrations':
+                  state.integrations = { ...defaultIntegrationSettings };
+                  break;
+                case 'organization':
+                  state.organization = { ...defaultOrganizationSettings };
+                  break;
+              }
             }
             state.isDirty = true;
           }),

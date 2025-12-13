@@ -41,15 +41,17 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const rafIdRef = useRef<number | null>(null);
 
-  const getInitials = useCallback((name: string): string => {
+  // Helper function - extracted outside to avoid dependency issues
+  const getInitials = (name: string): string => {
     const parts = name.trim().split(' ');
     if (parts.length >= 2) {
       return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
-  }, []);
+  };
 
-  const userInitials = useMemo(() => user?.name ? getInitials(user.name) : 'U', [user?.name, getInitials]);
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- User is the stable reference
+  const userInitials = useMemo(() => user?.name ? getInitials(user.name) : 'U', [user]);
 
   // Initialize auth
   useEffect(() => {
@@ -113,17 +115,18 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
     }
   }, [isSidebarCollapsed]);
 
-  // Demo session check
-  const [hasDemoSession, setHasDemoSession] = useState(false);
-  useEffect(() => {
+  // Demo session check - use lazy initializer to avoid setState in effect
+  const [hasDemoSession] = useState(() => {
+    if (typeof window === 'undefined') return false;
     try {
       const stored = localStorage.getItem('auth-session');
       if (stored) {
         const data = JSON.parse(stored);
-        if (data.isDemo && data.isAuthenticated) setHasDemoSession(true);
+        return data.isDemo && data.isAuthenticated;
       }
     } catch { /* Invalid */ }
-  }, []);
+    return false;
+  });
 
   if ((!isInitialized || !isAuthenticated) && !hasDemoSession) {
     return <LoadingOverlay variant="pulse" fullscreen={true} text="Yükleniyor..." />;

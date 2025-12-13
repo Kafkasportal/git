@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Settings, ChevronDown } from 'lucide-react';
@@ -10,6 +10,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { navigationModules, type NavigationModule } from '@/config/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { MODULE_PERMISSIONS } from '@/types/permissions';
+
+// Helper function to find active module ID from pathname
+function getActiveModuleId(pathname: string): string | null {
+  const activeModule = navigationModules.find(m =>
+    m.subPages.some(sp => pathname.startsWith(sp.href))
+  );
+  return activeModule?.id ?? null;
+}
 
 interface ModernSidebarProps {
   isMobileOpen?: boolean;
@@ -31,7 +39,17 @@ function ModernSidebarComponent({
     ? Object.values(MODULE_PERMISSIONS)
     : userPermissions;
 
-  const [expandedModules, setExpandedModules] = useState<string[]>([]);
+  // Track the active module from pathname
+  const activeModuleId = getActiveModuleId(pathname);
+  const previousPathRef = useRef(pathname);
+
+  // Initialize with active module already expanded
+  const [expandedModules, setExpandedModules] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return [];
+    const activeId = getActiveModuleId(pathname);
+    return activeId ? [activeId] : [];
+  });
+
   const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('sidebar-collapsed') === 'true';
@@ -39,15 +57,18 @@ function ModernSidebarComponent({
     return false;
   });
 
-  // Auto-expand active module
+  // Auto-expand active module when navigating to a new path
+  // This responds to external navigation events from Next.js router
   useEffect(() => {
-    const activeModule = navigationModules.find(m =>
-      m.subPages.some(sp => pathname.startsWith(sp.href))
-    );
-    if (activeModule && !expandedModules.includes(activeModule.id)) {
-      setExpandedModules(prev => [...prev, activeModule.id]);
+    // Only expand when pathname actually changes (navigation event)
+    if (pathname !== previousPathRef.current) {
+      previousPathRef.current = pathname;
+      if (activeModuleId && !expandedModules.includes(activeModuleId)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Responding to router navigation
+        setExpandedModules(prev => [...prev, activeModuleId]);
+      }
     }
-  }, [pathname]);
+  }, [pathname, activeModuleId, expandedModules]);
 
   useEffect(() => {
     const handleStorageChange = () => {
