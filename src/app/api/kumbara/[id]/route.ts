@@ -5,6 +5,33 @@ import type { DonationDocument } from '@/types/database';
 import type { DonationUpdateInput, PaymentMethod } from '@/lib/api/types';
 
 /**
+ * Validate amount field
+ */
+function validateAmount(amount: unknown, errors: string[]): void {
+  if (amount !== undefined && (amount === null || Number(amount) <= 0)) {
+    errors.push('Bağış tutarı pozitif olmalıdır');
+  }
+}
+
+/**
+ * Validate location field
+ */
+function validateLocation(location: string | undefined, errors: string[]): void {
+  if (location && location.trim().length < 2) {
+    errors.push('Kumbara lokasyonu en az 2 karakter olmalıdır');
+  }
+}
+
+/**
+ * Validate institution field
+ */
+function validateInstitution(institution: string | undefined, errors: string[]): void {
+  if (institution && institution.trim().length < 2) {
+    errors.push('Kumbara kurum/adres bilgisi en az 2 karakter olmalıdır');
+  }
+}
+
+/**
  * Validate kumbara donation update payload
  */
 function validateKumbaraUpdate(data: Partial<DonationDocument>): {
@@ -14,16 +41,9 @@ function validateKumbaraUpdate(data: Partial<DonationDocument>): {
 } {
   const errors: string[] = [];
 
-  // Validate fields that can be updated
-  if (data.amount !== undefined && (data.amount === null || Number(data.amount) <= 0)) {
-    errors.push('Bağış tutarı pozitif olmalıdır');
-  }
-  if (data.kumbara_location && data.kumbara_location.trim().length < 2) {
-    errors.push('Kumbara lokasyonu en az 2 karakter olmalıdır');
-  }
-  if (data.kumbara_institution && data.kumbara_institution.trim().length < 2) {
-    errors.push('Kumbara kurum/adres bilgisi en az 2 karakter olmalıdır');
-  }
+  validateAmount(data.amount, errors);
+  validateLocation(data.kumbara_location, errors);
+  validateInstitution(data.kumbara_institution, errors);
 
   if (errors.length > 0) {
     return { isValid: false, errors };

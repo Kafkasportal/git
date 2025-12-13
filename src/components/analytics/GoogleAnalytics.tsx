@@ -25,11 +25,15 @@ export function GoogleAnalytics() {
     return null;
   }
 
+  // Sanitize measurement ID to prevent XSS
+  // Already validated above, but double-check for safety
+  const sanitizedId = gaMeasurementId.replace(/[^A-Z0-9-]/gi, '');
+
   return (
     <>
       <Script
         strategy="afterInteractive"
-        src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
+        src={`https://www.googletagmanager.com/gtag/js?id=${sanitizedId}`}
       />
       <Script
         id="google-analytics"
@@ -39,7 +43,7 @@ export function GoogleAnalytics() {
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', '${gaMeasurementId}', {
+            gtag('config', '${sanitizedId.replace(/'/g, "\\'")}', {
               page_path: window.location.pathname,
             });
           `,

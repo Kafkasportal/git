@@ -71,6 +71,25 @@ export const serializeSessionCookie = (session: AuthSession): string => {
 };
 
 /**
+ * Parse and verify signed session payload
+ */
+function parseSignedSession(payload: string, signature: string, secret: string): AuthSession | null {
+  try {
+    const expectedSig = signPayload(payload, secret);
+    if (!safeEqual(signature, expectedSig)) {
+      return null;
+    }
+    const parsed = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as AuthSession;
+    if (!parsed?.sessionId || !parsed?.userId) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Parse serialized session cookie safely with signature verification.
  * Falls back to legacy JSON sessions for existing cookies.
  */
@@ -84,19 +103,7 @@ export function parseAuthSession(cookieValue?: string): AuthSession | null {
   const secret = getSessionSecret();
 
   if (payload && signature && secret) {
-    try {
-      const expectedSig = signPayload(payload, secret);
-      if (!safeEqual(signature, expectedSig)) {
-        return null;
-      }
-      const parsed = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as AuthSession;
-      if (!parsed?.sessionId || !parsed?.userId) {
-        return null;
-      }
-      return parsed;
-    } catch {
-      return null;
-    }
+    return parseSignedSession(payload, signature, secret);
   }
 
   // Legacy JSON (unsigned) fallback

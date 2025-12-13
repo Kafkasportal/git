@@ -1,7 +1,7 @@
 'use client';
 
-import { ReactNode } from 'react';
-import { Card } from '@/components/ui/card';
+import React, { ReactNode } from 'react';
+import { DesktopTableView, TabletTableView, MobileTableView } from './responsive-table-parts';
 
 export interface ResponsiveColumn {
   key: string;
@@ -56,108 +56,27 @@ export function ResponsiveTable({
 
   return (
     <div className="space-y-4">
-      {/* Desktop View - Traditional Table */}
-      <div className="hidden lg:block overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-50 border-b">
-              {columns
-                .filter((col) => col.hidden !== 'desktop')
-                .map((col) => (
-                  <th
-                    key={col.key}
-                    className={`px-4 py-3 text-left text-sm font-medium text-gray-700 ${col.width || ''}`}
-                  >
-                    {col.label}
-                  </th>
-                ))}
-              {actions && (
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Aksiyon</th>
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((row, index) => (
-              <tr
-                key={String(row[rowKey])}
-                className={`border-b hover:bg-primary/5 transition-colors cursor-pointer ${
-                  index % 2 === 0 ? 'bg-card' : 'bg-muted/30'
-                }`}
-                onClick={() => onRowClick?.(row)}
-              >
-                {columns
-                  .filter((col) => col.hidden !== 'desktop')
-                  .map((col) => (
-                    <td
-                      key={`${String(row[rowKey])}-${col.key}`}
-                      className="px-4 py-3 text-sm text-gray-900"
-                    >
-                      {col.render ? col.render(row[col.key], row) : String(row[col.key] || '-')}
-                    </td>
-                  ))}
-                {actions && <td className="px-4 py-3 text-sm">{actions(row)}</td>}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Tablet View - Cards with Key Columns */}
-      <div className="hidden md:lg:grid gap-4 grid-cols-1 lg:hidden">
-        {data.map((row) => (
-          <Card
-            key={String(row[rowKey])}
-            className="p-4 hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => onRowClick?.(row)}
-          >
-            <div className="grid grid-cols-2 gap-3">
-              {columns
-                .filter((col) => col.hidden !== 'tablet' && col.hidden !== 'mobile-tablet')
-                .slice(0, 4)
-                .map((col) => (
-                  <div key={`${String(row[rowKey])}-${col.key}`}>
-                    <p className="text-xs font-medium text-gray-500 uppercase">{col.label}</p>
-                    <p className="text-sm text-gray-900 mt-1">
-                      {col.render ? col.render(row[col.key], row) : String(row[col.key] || '-')}
-                    </p>
-                  </div>
-                ))}
-            </div>
-            {actions && (
-              <div className="mt-4 pt-4 border-t">
-                <div className="flex gap-2">{actions(row)}</div>
-              </div>
-            )}
-          </Card>
-        ))}
-      </div>
-
-      {/* Mobile View - Stacked Cards */}
-      <div className="md:hidden space-y-4">
-        {data.map((row) => (
-          <Card
-            key={String(row[rowKey])}
-            className="p-4 space-y-3 hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => onRowClick?.(row)}
-          >
-            {columns
-              .filter((col) => col.hidden !== 'mobile' && col.hidden !== 'mobile-tablet')
-              .slice(0, 3)
-              .map((col) => (
-                <div
-                  key={`${String(row[rowKey])}-${col.key}`}
-                  className="flex justify-between items-start"
-                >
-                  <p className="text-xs font-medium text-gray-500 uppercase">{col.label}</p>
-                  <p className="text-sm text-gray-900 text-right max-w-[50%]">
-                    {col.render ? col.render(row[col.key], row) : String(row[col.key] || '-')}
-                  </p>
-                </div>
-              ))}
-            {actions && <div className="flex gap-2 pt-3 border-t">{actions(row)}</div>}
-          </Card>
-        ))}
-      </div>
+      <DesktopTableView
+        columns={columns}
+        data={data}
+        rowKey={rowKey}
+        onRowClick={onRowClick}
+        actions={actions}
+      />
+      <TabletTableView
+        columns={columns}
+        data={data}
+        rowKey={rowKey}
+        onRowClick={onRowClick}
+        actions={actions}
+      />
+      <MobileTableView
+        columns={columns}
+        data={data}
+        rowKey={rowKey}
+        onRowClick={onRowClick}
+        actions={actions}
+      />
     </div>
   );
 }

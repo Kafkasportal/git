@@ -1,9 +1,12 @@
-import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import './globals.css';
 import { Providers } from './providers';
 import { lazyLoadComponent } from '@/lib/performance';
 import { ServiceWorkerRegister } from '@/components/pwa/ServiceWorkerRegister';
 import { NetworkStatusIndicator } from '@/components/pwa/NetworkStatusIndicator';
+import { metadata, viewport } from './metadata';
+
+export { metadata, viewport };
 
 // Use system fonts as fallback when Google Fonts is unavailable
 // This prevents build failures in restricted network environments
@@ -30,38 +33,6 @@ const LazyWebVitalsTracker = lazyLoadComponent(
   () => <div>Loading performance tracker...</div>
 );
 
-export const metadata: Metadata = {
-  title: 'Dernek Yönetim Sistemi',
-  description: 'Modern dernek yönetim sistemi',
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'Kafkasder',
-  },
-  formatDetection: {
-    telephone: false,
-  },
-  icons: {
-    icon: [
-      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
-    ],
-    apple: [{ url: '/icons/icon-152x152.png', sizes: '152x152', type: 'image/png' }],
-  },
-};
-
-export const viewport: Viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#0f172a' },
-  ],
-  colorScheme: 'dark light',
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 5,
-  userScalable: true,
-};
 
 export default function RootLayout({
   children,
@@ -71,8 +42,13 @@ export default function RootLayout({
   return (
     <html lang="tr" suppressHydrationWarning>
       <head>
-        {/* FOUC Prevention - Dark Mode Flash Fix */}
-        <script
+        <LazyGoogleAnalytics />
+      </head>
+      <body style={fontVariables as React.CSSProperties} className="font-sans" suppressHydrationWarning>
+        {/* FOUC Prevention - Dark Mode Flash Fix - Using Next.js Script for security */}
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
@@ -89,9 +65,6 @@ export default function RootLayout({
             `,
           }}
         />
-        <LazyGoogleAnalytics />
-      </head>
-      <body style={fontVariables as React.CSSProperties} className="font-sans" suppressHydrationWarning>
         <Providers>
           <ServiceWorkerRegister />
           <LazyWebVitalsTracker />

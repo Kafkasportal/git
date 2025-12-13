@@ -461,6 +461,36 @@ function calculatePaymentStats(donations: Array<Record<string, unknown>>) {
 }
 
 /**
+ * Create kumbara donation and generate QR code
+ */
+async function createKumbaraDonation(body: Partial<DonationDocument>) {
+  const validation = validateKumbaraDonation(body);
+  if (!validation.isValid) {
+    return { success: false as const, errors: validation.errors };
+  }
+
+  const donationId = (await appwriteDonations.create((validation.normalizedData || {}) as DonationCreateInput)) as string;
+
+  const qrCode = await generateKumbaraQR({
+    id: donationId,
+    location: body.kumbara_location || '',
+    institution: body.kumbara_institution || '',
+    collection_date: body.collection_date || '',
+    location_coordinates: body.location_coordinates || null,
+    location_address: body.location_address || '',
+  });
+
+  logger.info('Created kumbara donation', {
+    donationId,
+    amount: body.amount,
+    location: body.kumbara_location,
+    institution: body.kumbara_institution,
+  });
+
+  return { success: true as const, donationId, qrCode };
+}
+
+/**
  * POST /api/kumbara
  * Create new kumbara donation
  */
@@ -471,45 +501,24 @@ export async function POST(request: NextRequest) {
 
     const body = (await request.json()) as Partial<DonationDocument>;
 
-    // Validate kumbara donation
-    const validation = validateKumbaraDonation(body);
-    if (!validation.isValid) {
+    const result = await createKumbaraDonation(body);
+    if (!result.success) {
       return NextResponse.json(
         {
           success: false,
           error: 'Doğrulama hatası',
-          details: validation.errors,
+          details: result.errors,
         },
         { status: 400 }
       );
     }
 
-    // Create donation in Appwrite
-    const donationId = (await appwriteDonations.create((validation.normalizedData || {}) as DonationCreateInput)) as string;
-
-    // Generate QR code for the kumbara
-    const qrCode = await generateKumbaraQR({
-      id: donationId,
-      location: body.kumbara_location || '',
-      institution: body.kumbara_institution || '',
-      collection_date: body.collection_date || '',
-      location_coordinates: body.location_coordinates || null,
-      location_address: body.location_address || '',
-    });
-
-    logger.info('Created kumbara donation', {
-      donationId,
-      amount: body.amount,
-      location: body.kumbara_location,
-      institution: body.kumbara_institution,
-    });
-
     return NextResponse.json(
       {
         success: true,
         data: {
-          id: donationId,
-          qr_code: qrCode,
+          id: result.donationId,
+          qr_code: result.qrCode,
         },
         message: 'Kumbara bağışı başarıyla kaydedildi ve QR kod oluşturuldu',
       },
