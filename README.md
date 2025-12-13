@@ -1,5 +1,6 @@
 # Codacy CLI v2
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/4ba387e004bf443e9950cc109228f209)](https://app.codacy.com/gh/Kafkasportal/git?utm_source=github.com&utm_medium=referral&utm_content=Kafkasportal/git&utm_campaign=Badge_Grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/8cae070168cf488db82478ba6505a005)](https://app.codacy.com/gh/codacy/codacy-cli-v2/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade) [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/8cae070168cf488db82478ba6505a005)](https://app.codacy.com/gh/codacy/codacy-cli-v2/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
 
 
