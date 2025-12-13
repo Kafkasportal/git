@@ -20,7 +20,13 @@ vi.mock('@/lib/api/auth-utils', () => ({
     user: { id: 'test-user', email: 'test@example.com', name: 'Test User', isActive: true, permissions: ['users:manage'] },
   }),
   verifyCsrfToken: vi.fn().mockResolvedValue(undefined),
-  buildErrorResponse: vi.fn().mockReturnValue(null),
+  buildErrorResponse: vi.fn((error: unknown) => {
+    // Return a proper error response structure
+    if (error instanceof Error && error.message === 'User not found') {
+      return { status: 404, body: { success: false, error: 'Kullanıcı bulunamadı' } };
+    }
+    return { status: 500, body: { success: false, error: 'İç sunucu hatası' } };
+  }),
 }));
 
 // Mock password utilities

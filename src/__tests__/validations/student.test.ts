@@ -4,7 +4,7 @@ import { studentFormSchema } from '@/lib/validations/student';
 describe('Student Form Validation', () => {
     it('validates required fields', () => {
         const validData = {
-            applicant_name: 'John Doe',
+            applicant_name: 'Test Name',
             applicant_tc_no: '12345678901',
             applicant_phone: '05551234567',
             university: 'Test University',
@@ -21,7 +21,7 @@ describe('Student Form Validation', () => {
 
     it('rejects invalid TC number length', () => {
         const invalidData = {
-            applicant_name: 'John Doe',
+            applicant_name: 'Test Name',
             applicant_tc_no: '123', // Too short
             applicant_phone: '05551234567',
             university: 'Test University',
@@ -38,10 +38,10 @@ describe('Student Form Validation', () => {
 
     it('validates optional email field', () => {
         const dataWithEmail = {
-            applicant_name: 'John Doe',
+            applicant_name: 'Test Name',
             applicant_tc_no: '12345678901',
             applicant_phone: '05551234567',
-            applicant_email: 'john@example.com',
+            applicant_email: 'ahmet@example.com',
             university: 'Test University',
             department: 'Computer Science',
             grade_level: '2',
@@ -56,7 +56,7 @@ describe('Student Form Validation', () => {
 
     it('rejects invalid email format', () => {
         const invalidData = {
-            applicant_name: 'John Doe',
+            applicant_name: 'Test Name',
             applicant_tc_no: '12345678901',
             applicant_phone: '05551234567',
             applicant_email: 'invalid-email',
@@ -74,7 +74,7 @@ describe('Student Form Validation', () => {
 
     it('validates GPA range', () => {
         const validGPA = {
-            applicant_name: 'John Doe',
+            applicant_name: 'Test Name',
             applicant_tc_no: '12345678901',
             applicant_phone: '05551234567',
             university: 'Test University',
@@ -92,7 +92,7 @@ describe('Student Form Validation', () => {
 
     it('accepts optional fields as undefined', () => {
         const minimalData = {
-            applicant_name: 'John Doe',
+            applicant_name: 'Test Name',
             applicant_tc_no: '12345678901',
             applicant_phone: '05551234567',
             university: 'Test University',
