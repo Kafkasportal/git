@@ -1,7 +1,5 @@
 // Corporate Login Form Component
-// Premium Glassmorphism Design
-// "From Scratch" Redesign
-
+// Premium Professional Design - Brand Consistent
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -12,8 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, Sparkles } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, Building2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 interface CorporateLoginFormProps {
@@ -24,7 +22,6 @@ interface CorporateLoginFormProps {
 
 export function CorporateLoginForm({
   className = '',
-  // showCorporateBranding is not used in the new design
   redirectTo = '/genel',
 }: CorporateLoginFormProps) {
   const router = useRouter();
@@ -36,16 +33,13 @@ export function CorporateLoginForm({
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isHoveringSubmit, setIsHoveringSubmit] = useState(false);
 
   const initRef = useRef(false);
   const emailInputRef = useRef<HTMLInputElement>(null);
-  const passwordInputRef = useRef<HTMLInputElement>(null);
 
   const { login, isAuthenticated, initializeAuth } = useAuthStore();
 
   useEffect(() => {
-    // Only run once on mount
     const init = async () => {
       if (typeof window !== 'undefined') {
         const rememberData = localStorage.getItem('rememberMe');
@@ -143,7 +137,6 @@ export function CorporateLoginForm({
         description: 'Yönlendiriliyorsunuz...',
         duration: 2000,
       });
-      // Small delay to show success state
       await new Promise(resolve => setTimeout(resolve, 500));
     } catch (err: unknown) {
       const errorMessage =
@@ -159,168 +152,160 @@ export function CorporateLoginForm({
   }
 
   return (
-    <div className={`min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-slate-950 ${className}`}>
-      
-      {/* Animated Mesh Gradient Background */}
+    <div className={cn(
+      'min-h-screen w-full flex items-center justify-center relative overflow-hidden',
+      'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900',
+      className
+    )}>
+      {/* Background Pattern */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-emerald-500/20 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[60%] bg-indigo-500/20 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '10s' }} />
-        <div className="absolute top-[40%] left-[40%] w-[30%] h-[30%] bg-teal-500/10 rounded-full blur-[80px] animate-pulse" style={{ animationDuration: '12s' }} />
+        {/* Gradient Orbs */}
+        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-indigo-500/20 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-violet-500/15 rounded-full blur-[100px] translate-x-1/3 translate-y-1/3" />
+        <div className="absolute top-1/2 left-1/2 w-[300px] h-[300px] bg-blue-500/10 rounded-full blur-[80px] -translate-x-1/2 -translate-y-1/2" />
         
-        {/* Grid Overlay */}
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" style={{ opacity: 0.1 }} />
+        {/* Grid Pattern */}
+        <div 
+          className="absolute inset-0 opacity-[0.02]"
+          style={{
+            backgroundImage: `linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)`,
+            backgroundSize: '60px 60px'
+          }}
+        />
       </div>
 
-      {/* Main Container */}
+      {/* Login Card */}
       <motion.div 
-        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="w-full max-w-md z-10 px-4"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        className="w-full max-w-[420px] z-10 px-4"
       >
-        {/* Glass Card */}
-        <div className="relative group">
-          {/* Card Glow Effect */}
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-indigo-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
+        <div className="relative">
+          {/* Card Glow */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500 rounded-2xl blur-lg opacity-20" />
           
-          <div className="relative bg-slate-900/40 backdrop-blur-xl border border-white/10 p-8 sm:p-10 rounded-2xl shadow-2xl">
+          {/* Card Content */}
+          <div className="relative bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
             
-            {/* Header */}
-            <div className="text-center mb-10">
+            {/* Logo & Header */}
+            <div className="text-center mb-8">
               <motion.div 
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.2 }}
-                className="w-16 h-16 bg-gradient-to-tr from-emerald-400 to-teal-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/20 mb-6"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
+                className="w-16 h-16 mx-auto mb-5 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/25"
               >
-                <Sparkles className="w-8 h-8 text-white" />
+                <Building2 className="w-8 h-8 text-white" />
               </motion.div>
               
               <motion.h1 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="text-3xl font-bold text-white tracking-tight mb-2"
+                transition={{ delay: 0.2 }}
+                className="text-2xl font-bold text-white tracking-tight"
               >
-                KAFKASDER
+                Dernek Yönetim Sistemi
               </motion.h1>
               <motion.p 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="text-slate-400 text-sm"
+                transition={{ delay: 0.3 }}
+                className="text-slate-400 text-sm mt-2"
               >
-                Yönetim Paneli Girişi
+                Yönetim paneline giriş yapın
               </motion.p>
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
               
-              {/* Email Input */}
+              {/* Email Field */}
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-xs font-medium text-slate-300 uppercase tracking-wider ml-1">
-                  Email
+                <Label htmlFor="email" className="text-sm font-medium text-slate-300">
+                  E-posta Adresi
                 </Label>
-                <div className="relative group/input">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Mail className={`h-5 w-5 transition-colors duration-200 ${emailError ? 'text-red-400' : 'text-slate-500 group-focus-within/input:text-emerald-400'}`} />
-                  </div>
+                <div className="relative">
+                  <Mail className={cn(
+                    'absolute left-3.5 top-1/2 -translate-y-1/2 h-[18px] w-[18px] transition-colors',
+                    emailError ? 'text-red-400' : 'text-slate-500'
+                  )} />
                   <Input
                     ref={emailInputRef}
                     id="email"
                     type="email"
                     value={email}
                     onChange={handleEmailChange}
-                    placeholder="ornek@mail.com"
+                    placeholder="ornek@email.com"
                     className={cn(
-                      "pl-11 h-12 bg-slate-950/50 border-slate-800 text-slate-200 placeholder:text-slate-600 focus:bg-slate-950/80 focus:border-emerald-500/50 focus:ring-emerald-500/20 rounded-xl transition-all",
-                      emailError && "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20"
+                      'h-11 pl-10 bg-white/5 border-white/10 text-white placeholder:text-slate-500',
+                      'focus:bg-white/10 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20',
+                      'rounded-lg transition-all',
+                      emailError && 'border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20'
                     )}
                   />
-                  <AnimatePresence>
-                    {emailError && (
-                      <motion.div
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        className="absolute right-0 top-0 bottom-0 pr-4 flex items-center pointer-events-none"
-                      >
-                        <span className="text-xs text-red-400 bg-red-400/10 px-2 py-1 rounded-md border border-red-400/20">
-                          !
-                        </span>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                 </div>
                 {emailError && (
-                  <motion.p 
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    className="text-xs text-red-400 ml-1"
-                  >
-                    {emailError}
-                  </motion.p>
+                  <p className="text-xs text-red-400 mt-1">{emailError}</p>
                 )}
               </div>
 
-              {/* Password Input */}
+              {/* Password Field */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-xs font-medium text-slate-300 uppercase tracking-wider ml-1">
+                  <Label htmlFor="password" className="text-sm font-medium text-slate-300">
                     Şifre
                   </Label>
-                  <a href="#" className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors">
-                    Unuttunuz mu?
-                  </a>
+                  <button 
+                    type="button"
+                    className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                  >
+                    Şifremi unuttum
+                  </button>
                 </div>
-                
-                <div className="relative group/input">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Lock className={`h-5 w-5 transition-colors duration-200 ${passwordError ? 'text-red-400' : 'text-slate-500 group-focus-within/input:text-emerald-400'}`} />
-                  </div>
+                <div className="relative">
+                  <Lock className={cn(
+                    'absolute left-3.5 top-1/2 -translate-y-1/2 h-[18px] w-[18px] transition-colors',
+                    passwordError ? 'text-red-400' : 'text-slate-500'
+                  )} />
                   <Input
-                    ref={passwordInputRef}
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={handlePasswordChange}
                     placeholder="••••••••"
                     className={cn(
-                      "pl-11 pr-11 h-12 bg-slate-950/50 border-slate-800 text-slate-200 placeholder:text-slate-600 focus:bg-slate-950/80 focus:border-emerald-500/50 focus:ring-emerald-500/20 rounded-xl transition-all",
-                      passwordError && "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20"
+                      'h-11 pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-slate-500',
+                      'focus:bg-white/10 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20',
+                      'rounded-lg transition-all',
+                      passwordError && 'border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20'
                     )}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
                   </button>
                 </div>
                 {passwordError && (
-                  <motion.p 
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    className="text-xs text-red-400 ml-1"
-                  >
-                    {passwordError}
-                  </motion.p>
+                  <p className="text-xs text-red-400 mt-1">{passwordError}</p>
                 )}
               </div>
 
               {/* Remember Me */}
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
                 <Checkbox 
                   id="remember" 
                   checked={rememberMe}
                   onCheckedChange={(c) => setRememberMe(c === true)}
-                  className="border-slate-700 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
+                  className="border-slate-600 data-[state=checked]:bg-indigo-500 data-[state=checked]:border-indigo-500"
                 />
                 <label
                   htmlFor="remember"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-slate-400 cursor-pointer select-none"
+                  className="text-sm text-slate-400 cursor-pointer select-none"
                 >
                   Beni hatırla
                 </label>
@@ -330,33 +315,35 @@ export function CorporateLoginForm({
               <Button
                 type="submit"
                 disabled={isLoading}
-                onMouseEnter={() => setIsHoveringSubmit(true)}
-                onMouseLeave={() => setIsHoveringSubmit(false)}
-                className="w-full h-12 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-emerald-900/20 border border-emerald-500/20 relative overflow-hidden"
+                className={cn(
+                  'w-full h-11 font-semibold rounded-lg transition-all duration-200',
+                  'bg-gradient-to-r from-indigo-500 to-violet-500',
+                  'hover:from-indigo-600 hover:to-violet-600',
+                  'shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40',
+                  'disabled:opacity-50 disabled:cursor-not-allowed'
+                )}
               >
-                {/* Button Shine Effect */}
-                <div className={`absolute inset-0 bg-white/20 skew-x-12 transition-transform duration-700 ${isHoveringSubmit ? 'translate-x-full' : '-translate-x-full'}`} />
-                
                 {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Giriş Yapılıyor...</span>
-                  </div>
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Giriş yapılıyor...
+                  </span>
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <span>Giriş Yap</span>
-                    <ArrowRight className={`w-5 h-5 transition-transform duration-300 ${isHoveringSubmit ? 'translate-x-1' : ''}`} />
-                  </div>
+                  <span className="flex items-center gap-2">
+                    Giriş Yap
+                    <ArrowRight className="w-4 h-4" />
+                  </span>
                 )}
               </Button>
             </form>
 
             {/* Footer */}
-            <div className="mt-8 text-center">
+            <div className="mt-8 pt-6 border-t border-white/5 text-center">
               <p className="text-xs text-slate-500">
-                © {new Date().getFullYear()} Kafkasder Yönetim Sistemi.
-                <br />
-                Güvenli ve Modern Altyapı
+                © {new Date().getFullYear()} Dernek Yönetim Sistemi
+              </p>
+              <p className="text-xs text-slate-600 mt-1">
+                Güvenli bağlantı ile korunmaktadır
               </p>
             </div>
           </div>

@@ -6,12 +6,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
 import { ModernSidebar } from '@/components/ui/modern-sidebar';
 import { BreadcrumbNav } from '@/components/ui/breadcrumb-nav';
-// Lazy load heavy components for better performance
 import dynamic from 'next/dynamic';
-const AnalyticsTrackerComponent = dynamic(() => import('@/components/ui/analytics-tracker').then(mod => ({ default: mod.AnalyticsTrackerComponent })), { ssr: false });
-const KeyboardShortcuts = dynamic(() => import('@/components/ui/keyboard-shortcuts').then(mod => ({ default: mod.KeyboardShortcuts })), { ssr: false });
-const CommandPalette = dynamic(() => import('@/components/ui/command-palette').then(mod => ({ default: mod.CommandPalette })), { ssr: false });
-const OfflineSyncIndicator = dynamic(() => import('@/components/pwa/offline-sync-indicator').then(mod => ({ default: mod.OfflineSyncIndicator })), { ssr: false });
+
+const CommandPalette = dynamic(
+  () => import('@/components/ui/command-palette').then((mod) => ({ default: mod.CommandPalette })),
+  { ssr: false }
+);
+const OfflineSyncIndicator = dynamic(
+  () => import('@/components/pwa/offline-sync-indicator').then((mod) => ({ default: mod.OfflineSyncIndicator })),
+  { ssr: false }
+);
+
 import { useCommandPalette } from '@/components/ui/command-palette';
 import {
   LogOut,
@@ -22,6 +27,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Search,
+  Bell,
+  User,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -32,12 +39,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import logger from '@/lib/logger';
 import { useQueryClient } from '@tanstack/react-query';
-import { prefetchData } from '@/lib/cache-config';
-import { CACHE_KEYS } from '@/lib/cache-config';
-import { beneficiaries, donations } from '@/lib/api/crud-factory';
-import { PerformanceMonitor } from '@/lib/performance-monitor';
 import { useDeviceDetection } from '@/hooks/useDeviceDetection';
 
 function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
@@ -48,36 +50,6 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
   const { open: isSearchOpen, setOpen: setSearchOpen } = useCommandPalette();
   const deviceInfo = useDeviceDetection();
 
-  // Keyboard shortcuts
-  const keyboardShortcuts = [
-    {
-      key: 's',
-      ctrl: true,
-      description: 'Ayarlar',
-      callback: () => {
-        router.push('/settings');
-      },
-    },
-  ];
-
-  // Performance monitoring
-  const handlePerformanceMetrics = useCallback(
-    (metrics: unknown) => {
-      // Log performance metrics in development
-      if (process.env.NODE_ENV === 'development') {
-        logger.debug('Performance metrics', {
-          route: pathname,
-          ...(metrics as Record<string, unknown>),
-        });
-      }
-
-      // You can send metrics to analytics service here
-      // Example: sendToAnalytics(metrics);
-    },
-    [pathname]
-  );
-
-  // Memoized state management to prevent unnecessary re-renders
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -85,10 +57,8 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
   });
   const [isScrolled, setIsScrolled] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const prevPathnameRef = useRef<string | null>(null);
   const rafIdRef = useRef<number | null>(null);
 
-  // Memoized helper functions to prevent recreation on each render
   const getInitials = useCallback((name: string): string => {
     const parts = name.trim().split(' ');
     if (parts.length >= 2) {
@@ -97,129 +67,51 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
     return name.substring(0, 2).toUpperCase();
   }, []);
 
-  const getRoleBadgeVariant = useCallback(
-    (role?: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
-      const normalized = (role || '').toLowerCase();
-      if (normalized.includes('başkan')) return 'destructive';
-      if (normalized.includes('yönetici') || normalized.includes('muhasebe')) return 'default';
-      if (normalized.includes('gönüllü') || normalized.includes('üye')) return 'secondary';
-      if (normalized.includes('izleyici') || normalized.includes('görüntüleyici')) return 'outline';
-      return 'default';
-    },
-    []
-  );
+  const userInitials = useMemo(() => user?.name ? getInitials(user.name) : 'U', [user?.name, getInitials]);
 
-  // Memoize user initials to prevent recalculation
-  const userInitials = useMemo(() => {
-    return user?.name ? getInitials(user.name) : 'U';
-  }, [user?.name, getInitials]);
-
-  // Memoize role badge variant
-  const roleBadgeVariant = useMemo(() => {
-    return getRoleBadgeVariant(user?.role);
-  }, [user?.role, getRoleBadgeVariant]);
-
-  // Initialize auth on mount (only once)
+  // Initialize auth
   useEffect(() => {
-    // Check if demo session exists - no need to call initializeAuth
     const storedSession = localStorage.getItem('auth-session');
     if (storedSession) {
       try {
         const sessionData = JSON.parse(storedSession);
         if (sessionData.isDemo && sessionData.isAuthenticated) {
-          if (process.env.NODE_ENV === 'development') {
-            logger.debug('Dashboard: Demo session detected, skipping API auth');
-          }
-          // Demo session - state should already be set by demoLogin
-          // If not, initializeAuth will handle it
-          if (isAuthenticated && isInitialized) {
-            return;
-          }
+          if (isAuthenticated && isInitialized) return;
         }
-      } catch {
-        // Invalid session data
-      }
+      } catch { /* Invalid session */ }
     }
-
-    if (isInitialized) {
-      // Already initialized, skip
-      return;
-    }
-
-    if (process.env.NODE_ENV === 'development') {
-      logger.debug('Dashboard: Initializing auth', { isInitialized, isAuthenticated });
-      logger.debug('Dashboard: LocalStorage check', {
-        hasSession: !!localStorage.getItem('auth-session'),
-      });
-      logger.debug('Dashboard: Hydration status', {
-        hydrated: useAuthStore.persist?.hasHydrated?.(),
-      });
-    }
-
-    initializeAuth();
-
-    if (process.env.NODE_ENV === 'development') {
-      logger.debug('Dashboard: Auth initialization called');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, isInitialized]); // Re-check when auth state changes
+    if (!isInitialized) initializeAuth();
+  }, [isAuthenticated, isInitialized, initializeAuth]);
 
   useEffect(() => {
     if (isInitialized && !isAuthenticated) {
-      if (process.env.NODE_ENV === 'development') {
-        logger.debug('Dashboard: Redirecting to login', { isInitialized, isAuthenticated });
-      }
       router.push('/login');
     }
   }, [isAuthenticated, isInitialized, router]);
 
-  // Sync sidebar collapsed state across tabs
+  // Sync sidebar state
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
+    if (typeof window === 'undefined') return;
     const handleStorageChange = () => {
-      const stored = window.localStorage.getItem('sidebar-collapsed');
-      setIsSidebarCollapsed(stored === 'true');
-
-      if (process.env.NODE_ENV === 'development') {
-        logger.debug('Dashboard: Sidebar state changed', { collapsed: stored === 'true' });
-      }
+      setIsSidebarCollapsed(window.localStorage.getItem('sidebar-collapsed') === 'true');
     };
-
     window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  // Detect scroll for header shadow effect - OPTIMIZED
+  // Scroll detection
   useEffect(() => {
     const handleScroll = () => {
-      // Cache the DOM queries
-      const scrollY = window.scrollY;
-      const threshold = 20;
-
-      // Batch updates using requestAnimationFrame
-      if (rafIdRef.current) {
-        cancelAnimationFrame(rafIdRef.current);
-      }
-
+      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
       rafIdRef.current = requestAnimationFrame(() => {
-        const shouldShowShadow = scrollY > threshold;
-        setIsScrolled(shouldShowShadow);
+        setIsScrolled(window.scrollY > 10);
         rafIdRef.current = null;
       });
     };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      if (rafIdRef.current) {
-        cancelAnimationFrame(rafIdRef.current);
-        rafIdRef.current = null;
-      }
+      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
     };
   }, []);
 
@@ -230,274 +122,191 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
     });
   }, [logout, router]);
 
-  // Memoize callbacks to prevent infinite loops
-  const handlePageSuspend = useCallback(() => {
-    if (process.env.NODE_ENV === 'development') {
-      logger.debug('Dashboard: Page suspended', { pathname });
+  const toggleSidebar = useCallback(() => {
+    const newState = !isSidebarCollapsed;
+    setIsSidebarCollapsed(newState);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('sidebar-collapsed', String(newState));
+      window.dispatchEvent(new Event('storage'));
     }
-  }, [pathname]);
+  }, [isSidebarCollapsed]);
 
-  const handlePageResume = useCallback(() => {
-    if (process.env.NODE_ENV === 'development') {
-      logger.debug('Dashboard: Page resumed', { pathname });
-    }
-  }, [pathname]);
-
-  // Prefetch data based on route - OPTIMIZED
-  useEffect(() => {
-    if (!isAuthenticated || !isInitialized || pathname === prevPathnameRef.current) {
-      return;
-    }
-
-    prevPathnameRef.current = pathname;
-
-    // Prefetch data based on current route
-    const prefetchRouteData = async () => {
-      try {
-        if (pathname.startsWith('/yardim/ihtiyac-sahipleri')) {
-          await prefetchData(
-            queryClient,
-            [CACHE_KEYS.BENEFICIARIES],
-            () => beneficiaries.getAll({ limit: 20 }),
-            'BENEFICIARIES'
-          );
-        } else if (pathname.startsWith('/bagis/liste') || pathname.startsWith('/bagis')) {
-          await prefetchData(
-            queryClient,
-            [CACHE_KEYS.DONATIONS],
-            () => donations.getAll({ limit: 20 }),
-            'DONATIONS'
-          );
-        } else if (pathname.startsWith('/yardim/basvurular')) {
-          // Prefetch aid applications if endpoint exists
-          await prefetchData(
-            queryClient,
-            [CACHE_KEYS.AID_APPLICATIONS],
-            async () => {
-              const response = await fetch('/api/aid-applications?limit=20');
-              return response.json();
-            },
-            'AID_REQUESTS'
-          );
-        } else if (pathname.startsWith('/is/gorevler')) {
-          await prefetchData(
-            queryClient,
-            [CACHE_KEYS.TASKS],
-            async () => {
-              const response = await fetch('/api/tasks?limit=20');
-              return response.json();
-            },
-            'TASKS'
-          );
-        } else if (pathname.startsWith('/is/toplantilar')) {
-          await prefetchData(
-            queryClient,
-            [CACHE_KEYS.MEETINGS],
-            async () => {
-              const response = await fetch('/api/meetings?limit=20');
-              return response.json();
-            },
-            'MEETINGS'
-          );
-        } else if (pathname.startsWith('/is/yonetim')) {
-          await Promise.allSettled([
-            prefetchData(
-              queryClient,
-              [CACHE_KEYS.MEETINGS],
-              async () => {
-                const response = await fetch('/api/meetings?limit=10');
-                return response.json();
-              },
-              'MEETINGS'
-            ),
-            prefetchData(
-              queryClient,
-              [CACHE_KEYS.MEETING_DECISIONS],
-              async () => {
-                const response = await fetch('/api/meeting-decisions?limit=10');
-                return response.json();
-              },
-              'MEETING_DECISIONS'
-            ),
-            prefetchData(
-              queryClient,
-              [CACHE_KEYS.MEETING_ACTION_ITEMS],
-              async () => {
-                const response = await fetch('/api/meeting-action-items?limit=20');
-                return response.json();
-              },
-              'MEETING_ACTION_ITEMS'
-            ),
-          ]);
-        }
-      } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          logger.debug('Dashboard: Prefetch error', { pathname, error });
-        }
-      }
-    };
-
-    // Debounce prefetch to avoid too many requests
-    const timeoutId = setTimeout(prefetchRouteData, 100);
-    return () => clearTimeout(timeoutId);
-  }, [pathname, isAuthenticated, isInitialized, queryClient]);
-
-  // Check for demo session
+  // Demo session check
   const [hasDemoSession, setHasDemoSession] = useState(false);
-
   useEffect(() => {
     try {
       const stored = localStorage.getItem('auth-session');
       if (stored) {
         const data = JSON.parse(stored);
-        if (data.isDemo && data.isAuthenticated) {
-          setHasDemoSession(true);
-        }
+        if (data.isDemo && data.isAuthenticated) setHasDemoSession(true);
       }
-    } catch {
-      // Invalid data
-    }
+    } catch { /* Invalid */ }
   }, []);
 
-  // Show loading only if not authenticated AND not a demo session
   if ((!isInitialized || !isAuthenticated) && !hasDemoSession) {
-    if (process.env.NODE_ENV === 'development') {
-      logger.debug('Dashboard: Loading state', { isInitialized, isAuthenticated, hasDemoSession });
-    }
     return <LoadingOverlay variant="pulse" fullscreen={true} text="Yükleniyor..." />;
   }
 
-  const newLocal = 'bg-linear-to-br from-blue-600 to-blue-700 text-white';
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-50/50 dark:from-stone-900 dark:via-stone-900 dark:to-stone-950">
-      {/* Skip to main content link for keyboard navigation */}
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      {/* Skip Link */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-60 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[60] focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg focus:outline-none"
       >
         Ana içeriğe atla
       </a>
 
-      {/* Premium Header */}
+      {/* Header */}
       <header
         className={cn(
-          'sticky top-0 z-50 h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/60',
-          'transition-all duration-300 ease-out',
-          isScrolled && 'shadow-lg shadow-slate-200/50 bg-white/98'
+          'sticky top-0 z-50 h-16 bg-white dark:bg-slate-900 border-b transition-all duration-200',
+          isScrolled 
+            ? 'border-slate-200 dark:border-slate-800 shadow-sm' 
+            : 'border-transparent'
         )}
       >
         <div className="flex h-full items-center justify-between px-4 lg:px-6">
+          {/* Left Section */}
           <div className="flex items-center gap-3">
+            {/* Mobile Menu */}
             <button
-              className="lg:hidden p-2 rounded-lg hover:bg-slate-100/80 transition-all duration-200 active:scale-95"
+              className="lg:hidden p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors"
               onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-              aria-label="Toggle menu"
+              aria-label="Menüyü aç"
             >
-              <Menu className="h-5 w-5 text-slate-600" />
+              <Menu className="h-5 w-5" />
             </button>
+
+            {/* Desktop Sidebar Toggle */}
             <button
-              className="hidden lg:flex p-2 rounded-lg hover:bg-slate-100/80 transition-all duration-200 active:scale-95"
-              onClick={() => {
-                const newState = !isSidebarCollapsed;
-                setIsSidebarCollapsed(newState);
-                if (typeof window !== 'undefined') {
-                  window.localStorage.setItem('sidebar-collapsed', String(newState));
-                  window.dispatchEvent(new Event('storage'));
-                }
-              }}
-              aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              className="hidden lg:flex p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors"
+              onClick={toggleSidebar}
+              aria-label={isSidebarCollapsed ? 'Menüyü genişlet' : 'Menüyü daralt'}
             >
               {isSidebarCollapsed ? (
-                <PanelLeftOpen className="h-5 w-5 text-slate-600" />
+                <PanelLeftOpen className="h-5 w-5" />
               ) : (
-                <PanelLeftClose className="h-5 w-5 text-slate-600" />
+                <PanelLeftClose className="h-5 w-5" />
               )}
             </button>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-linear-to-br from-blue-600 via-blue-600 to-blue-700 flex items-center justify-center shadow-md shadow-blue-500/20">
-                <Building2 className="w-4.5 h-4.5 text-white" />
+
+            {/* Logo */}
+            <Link href="/genel" className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md shadow-indigo-500/20">
+                <Building2 className="w-5 h-5 text-white" />
               </div>
-              <h1 className="hidden md:block text-lg font-semibold text-slate-800 tracking-tight">
-                Dernek Yönetim Sistemi
-              </h1>
-            </div>
+              <span className="hidden md:block text-lg font-semibold text-slate-800 dark:text-white">
+                Dernek Yönetim
+              </span>
+            </Link>
           </div>
 
-          {/* Search Bar - Opens Command Palette */}
-          <div className="hidden lg:flex flex-1 max-w-md mx-4">
+          {/* Search Bar - Desktop */}
+          <div className="hidden lg:flex flex-1 max-w-md mx-8">
             <button
               onClick={() => setSearchOpen(true)}
-              className="relative w-full h-9 pl-9 pr-3 text-sm bg-slate-100/80 border border-slate-200/60 rounded-lg text-slate-400 text-left hover:bg-slate-100 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
+              className={cn(
+                'w-full h-10 px-4 flex items-center gap-3 rounded-lg border transition-all',
+                'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700',
+                'text-slate-500 dark:text-slate-400 text-sm',
+                'hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+              )}
             >
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <span>Ara...</span>
-              <kbd className="absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-xs font-medium text-slate-400 bg-white border border-slate-200 rounded">
+              <Search className="h-4 w-4" />
+              <span className="flex-1 text-left">Hızlı arama...</span>
+              <kbd className="hidden sm:inline-flex px-2 py-0.5 text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded">
                 ⌘K
               </kbd>
             </button>
           </div>
 
+          {/* Right Section */}
           <div className="flex items-center gap-2">
+            {/* Mobile Search */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="lg:hidden p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors"
+            >
+              <Search className="h-5 w-5" />
+            </button>
+
+            {/* Notifications */}
+            <button className="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors relative">
+              <Bell className="h-5 w-5" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+            </button>
+
+            {/* User Menu */}
             <Popover open={isUserMenuOpen} onOpenChange={setIsUserMenuOpen}>
               <PopoverTrigger asChild>
-                <button
-                  className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-slate-100/80 transition-all duration-200 active:scale-95"
-                  aria-label="Kullanıcı menüsünü aç"
-                >
-                    <Avatar size="sm" className="h-8 w-8 ring-2 ring-slate-200">
-                      <AvatarImage src={user?.avatar ?? undefined} alt={user?.name} />
-                      <AvatarFallback className="bg-linear-to-br from-blue-600 to-blue-700 text-white text-xs font-semibold">
-                        {userInitials}
-                      </AvatarFallback>
-                    </Avatar>
-                  <ChevronDown
-                    className={cn(
-                      'h-4 w-4 text-slate-500 transition-transform duration-200',
-                      isUserMenuOpen && 'rotate-180'
-                    )}
-                  />
+                <button className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                  <Avatar className="h-8 w-8 ring-2 ring-slate-200 dark:ring-slate-700">
+                    <AvatarImage src={user?.avatar ?? undefined} alt={user?.name} />
+                    <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-xs font-semibold">
+                      {userInitials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <ChevronDown className={cn(
+                    'hidden sm:block h-4 w-4 text-slate-400 transition-transform duration-200',
+                    isUserMenuOpen && 'rotate-180'
+                  )} />
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-64 p-0 border-slate-200/60 shadow-xl" align="end">
-                <div className="p-4 border-b border-slate-100 bg-linear-to-br from-slate-50 to-white">
+              <PopoverContent className="w-64 p-0" align="end">
+                {/* User Info */}
+                <div className="p-4 border-b border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-11 w-11 ring-2 ring-slate-200">
+                    <Avatar className="h-10 w-10">
                       <AvatarImage src={user?.avatar ?? undefined} />
-                      <AvatarFallback className={newLocal}>
+                      <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-violet-600 text-white font-semibold">
                         {userInitials}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-slate-900 truncate">
+                      <p className="font-medium text-sm text-slate-900 dark:text-white truncate">
                         {user?.name || 'Kullanıcı'}
                       </p>
-                      <p className="text-xs text-slate-500 truncate mt-0.5">{user?.email || ''}</p>
-                      <Badge variant={roleBadgeVariant} className="text-xs mt-2">
-                        {user?.role || 'Viewer'}
-                      </Badge>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                        {user?.email || ''}
+                      </p>
                     </div>
                   </div>
+                  {user?.role && (
+                    <Badge variant="secondary" className="mt-3 text-xs">
+                      {user.role}
+                    </Badge>
+                  )}
                 </div>
-                <Separator />
-                <div className="p-1.5">
+
+                {/* Menu Items */}
+                <div className="p-2">
                   <Link
-                    href="/settings"
-                    prefetch={true}
+                    href="/ayarlar/profil"
                     onClick={() => setIsUserMenuOpen(false)}
-                    className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-slate-100/80 transition-colors duration-200 text-slate-700"
+                    className="flex items-center gap-3 w-full px-3 py-2 text-sm text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <User className="h-4 w-4" />
+                    Profilim
+                  </Link>
+                  <Link
+                    href="/ayarlar"
+                    onClick={() => setIsUserMenuOpen(false)}
+                    className="flex items-center gap-3 w-full px-3 py-2 text-sm text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   >
                     <Settings className="h-4 w-4" />
-                    <span>Ayarlar</span>
+                    Ayarlar
                   </Link>
+                  <Separator className="my-2" />
                   <button
                     onClick={() => {
                       setIsUserMenuOpen(false);
                       handleLogout();
                     }}
-                    className="flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-lg hover:bg-red-50/80 hover:text-red-600 transition-colors duration-200 text-left text-slate-700"
+                    className="flex items-center gap-3 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
                   >
                     <LogOut className="h-4 w-4" />
-                    <span>Çıkış Yap</span>
+                    Çıkış Yap
                   </button>
                 </div>
               </PopoverContent>
@@ -515,47 +324,36 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
           />
         </SuspenseBoundary>
 
-        {/* Spacer for fixed sidebar - Hidden on mobile */}
+        {/* Sidebar Spacer */}
         <div
           className={cn(
-            'hidden lg:block transition-all duration-300',
-            isSidebarCollapsed ? 'w-16' : 'w-64'
+            'hidden lg:block flex-shrink-0 transition-all duration-300',
+            isSidebarCollapsed ? 'w-[68px]' : 'w-64'
           )}
         />
 
-        {/* Main Content - OPTIMIZED PAGE TRANSITIONS */}
+        {/* Main Content */}
         <main
           id="main-content"
-          className="flex-1 w-full min-w-0 min-h-[calc(100vh-4rem)] overflow-x-hidden"
+          className="flex-1 min-w-0 min-h-[calc(100vh-4rem)]"
           tabIndex={-1}
-          data-device-type={deviceInfo.deviceType}
-          data-screen-size={deviceInfo.screenSize}
         >
-          <div
-            className={cn(
-              'max-w-[95%] lg:max-w-[98%] xl:max-w-[1600px] mx-auto w-full',
-              deviceInfo.isMobile ? 'p-3' : deviceInfo.isTablet ? 'p-4 md:p-6' : 'p-4 lg:p-6'
-            )}
-          >
+          <div className={cn(
+            'mx-auto w-full',
+            deviceInfo.isMobile ? 'p-4' : 'p-6 lg:p-8',
+            'max-w-[1600px]'
+          )}>
             <BreadcrumbNav />
+            
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={pathname}
-                initial={{ opacity: 0, y: 8, scale: 0.995 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -8, scale: 0.995 }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
-                style={{
-                  willChange: 'transform, opacity',
-                  backfaceVisibility: 'hidden',
-                }}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
               >
-                <SuspenseBoundary
-                  loadingVariant="pulse"
-                  loadingText=""
-                  onSuspend={handlePageSuspend}
-                  onResume={handlePageResume}
-                >
+                <SuspenseBoundary loadingVariant="pulse" loadingText="">
                   {children}
                 </SuspenseBoundary>
               </motion.div>
@@ -565,29 +363,12 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
 
         {/* Command Palette */}
         <CommandPalette open={isSearchOpen} onOpenChange={setSearchOpen} />
-
-        {/* Analytics & Performance Monitoring */}
-        <AnalyticsTrackerComponent
-          enabled={true}
-          trackCoreWebVitals={true}
-          trackUserInteractions={true}
-        />
-
-        <KeyboardShortcuts shortcuts={keyboardShortcuts} enabled={true} showHelpDialog={true} />
-
-        <PerformanceMonitor
-          enableWebVitals={true}
-          enableCustomMetrics={true}
-          onMetrics={handlePerformanceMetrics}
-          routeName={pathname}
-        />
-
-        {/* Offline Sync Indicator */}
+        
+        {/* Offline Indicator */}
         <OfflineSyncIndicator />
       </div>
     </div>
   );
 }
 
-// Memoized version for performance optimization
 export default memo(DashboardLayoutComponent);

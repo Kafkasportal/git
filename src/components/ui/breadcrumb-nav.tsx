@@ -40,29 +40,23 @@ const PATH_TRANSLATIONS: Record<string, string> = {
   ayarlar: 'Ayarlar',
   parametreler: 'Parametreler',
   settings: 'Ayarlar',
+  profil: 'Profil',
   'performance-monitoring': 'Performans İzleme',
 };
 
 function BreadcrumbNavComponent() {
   const pathname = usePathname();
 
-  // Generate breadcrumb items from pathname
   const generateBreadcrumbs = (): BreadcrumbItem[] => {
     const paths = pathname.split('/').filter((p) => p);
-
-    // Remove 'dashboard' or similar prefixes
     const relevantPaths = paths.filter((p) => p !== 'dashboard' && p !== '');
 
-    // If we're on the home/genel page, don't show breadcrumbs
     if (pathname === '/genel' || relevantPaths.length === 0) {
       return [];
     }
 
     const items: BreadcrumbItem[] = [
-      {
-        label: 'Anasayfa',
-        href: '/genel',
-      },
+      { label: 'Anasayfa', href: '/genel' },
     ];
 
     let currentPath = '';
@@ -70,18 +64,11 @@ function BreadcrumbNavComponent() {
       currentPath += `/${path}`;
       const label = PATH_TRANSLATIONS[path] || path.replace(/-/g, ' ');
 
-      if (index === relevantPaths.length - 1) {
-        items.push({
-          label: label.charAt(0).toUpperCase() + label.slice(1),
-          href: currentPath,
-          current: true,
-        });
-      } else {
-        items.push({
-          label: label.charAt(0).toUpperCase() + label.slice(1),
-          href: currentPath,
-        });
-      }
+      items.push({
+        label: label.charAt(0).toUpperCase() + label.slice(1),
+        href: currentPath,
+        current: index === relevantPaths.length - 1,
+      });
     });
 
     return items.length > 1 ? items : [];
@@ -94,42 +81,44 @@ function BreadcrumbNavComponent() {
   }
 
   return (
-    <nav aria-label="Breadcrumb" className="mb-4">
+    <nav aria-label="Breadcrumb" className="mb-6">
       <ol className="flex items-center gap-1 text-sm">
         {breadcrumbs.map((item, index) => (
-          <li key={`${item.href}-${index}`} className="flex items-center gap-1">
+          <li key={`${item.href}-${index}`} className="flex items-center">
+            {index > 0 && (
+              <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-600 mx-1" aria-hidden="true" />
+            )}
+            
             {index === 0 ? (
               <Link
                 href={item.href}
                 className={cn(
-                  'inline-flex items-center gap-1.5 px-2 py-1 rounded-md transition-colors duration-200',
-                  'hover:bg-slate-100/60 text-slate-600 hover:text-slate-900'
+                  'inline-flex items-center gap-1.5 px-2 py-1 rounded-md transition-colors',
+                  'text-slate-500 dark:text-slate-400',
+                  'hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200'
                 )}
                 aria-label="Anasayfa"
               >
                 <Home className="h-4 w-4" />
               </Link>
             ) : item.current ? (
-              <span className="px-2 py-1 text-slate-900 font-medium" aria-current="page">
+              <span 
+                className="px-2 py-1 text-slate-900 dark:text-white font-medium" 
+                aria-current="page"
+              >
                 {item.label}
               </span>
             ) : (
-              <>
-                <ChevronRight className="h-4 w-4 text-slate-400" aria-hidden="true" />
-                <Link
-                  href={item.href}
-                  className={cn(
-                    'px-2 py-1 rounded-md transition-colors duration-200',
-                    'hover:bg-slate-100/60 text-slate-600 hover:text-slate-900'
-                  )}
-                >
-                  {item.label}
-                </Link>
-              </>
-            )}
-
-            {index === breadcrumbs.length - 1 && index !== 0 && (
-              <ChevronRight className="h-4 w-4 text-slate-400 ml-1" aria-hidden="true" />
+              <Link
+                href={item.href}
+                className={cn(
+                  'px-2 py-1 rounded-md transition-colors',
+                  'text-slate-500 dark:text-slate-400',
+                  'hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200'
+                )}
+              >
+                {item.label}
+              </Link>
             )}
           </li>
         ))}
@@ -138,5 +127,4 @@ function BreadcrumbNavComponent() {
   );
 }
 
-// Memoized version for performance optimization
 export const BreadcrumbNav = memo(BreadcrumbNavComponent);
