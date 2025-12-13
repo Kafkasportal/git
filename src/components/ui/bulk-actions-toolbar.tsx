@@ -34,30 +34,68 @@ import {
 } from 'lucide-react';
 import { BulkEditModal, BulkEditField } from './bulk-edit-modal';
 
-interface BulkActionsToolbarProps {
-  selectedCount: number;
-  onClearSelection: () => void;
+// Group handlers for better organization and reduced parameter count
+export interface BulkActionHandlers {
   onDelete?: () => void;
   onBulkEdit?: (values: Record<string, unknown>) => Promise<void>;
   onStatusChange?: (status: string) => void;
   onExport?: (format: 'csv' | 'excel' | 'pdf') => void;
+}
+
+export interface BulkActionsConfig {
   statusOptions?: Array<{ value: string; label: string }>;
   editFields?: BulkEditField[];
-  isLoading?: boolean;
   resourceName?: string;
 }
 
-export function BulkActionsToolbar({
-  selectedCount,
-  onClearSelection,
-  onDelete,
-  onBulkEdit,
-  onStatusChange,
-  onExport,
-  statusOptions,
-  editFields,
-  isLoading,
-  resourceName = 'öğe',
+export interface BulkActionsToolbarProps {
+  selectedCount: number;
+  onClearSelection: () => void;
+  handlers?: BulkActionHandlers;
+  config?: BulkActionsConfig;
+  isLoading?: boolean;
+  // Legacy support - individual props still work
+  /** @deprecated Use handlers.onDelete instead */
+  onDelete?: () => void;
+  /** @deprecated Use handlers.onBulkEdit instead */
+  onBulkEdit?: (values: Record<string, unknown>) => Promise<void>;
+  /** @deprecated Use handlers.onStatusChange instead */
+  onStatusChange?: (status: string) => void;
+  /** @deprecated Use handlers.onExport instead */
+  onExport?: (format: 'csv' | 'excel' | 'pdf') => void;
+  /** @deprecated Use config.statusOptions instead */
+  statusOptions?: Array<{ value: string; label: string }>;
+  /** @deprecated Use config.editFields instead */
+  editFields?: BulkEditField[];
+  /** @deprecated Use config.resourceName instead */
+  resourceName?: string;
+}
+
+export function BulkActionsToolbar(props: BulkActionsToolbarProps) {
+  const {
+    selectedCount,
+    onClearSelection,
+    handlers = {},
+    config = {},
+    isLoading,
+    // Legacy props fallback
+    onDelete: legacyOnDelete,
+    onBulkEdit: legacyOnBulkEdit,
+    onStatusChange: legacyOnStatusChange,
+    onExport: legacyOnExport,
+    statusOptions: legacyStatusOptions,
+    editFields: legacyEditFields,
+    resourceName: legacyResourceName,
+  } = props;
+
+  // Merge legacy and new props (new props take precedence)
+  const onDelete = handlers.onDelete ?? legacyOnDelete;
+  const onBulkEdit = handlers.onBulkEdit ?? legacyOnBulkEdit;
+  const onStatusChange = handlers.onStatusChange ?? legacyOnStatusChange;
+  const onExport = handlers.onExport ?? legacyOnExport;
+  const statusOptions = config.statusOptions ?? legacyStatusOptions;
+  const editFields = config.editFields ?? legacyEditFields;
+  const resourceName = config.resourceName ?? legacyResourceName ?? 'öğe';
 }: BulkActionsToolbarProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -117,9 +155,9 @@ export function BulkActionsToolbar({
                     className="gap-2 cursor-pointer"
                   >
                     {option.value === 'AKTIF' ||
-                    option.value === 'active' ||
-                    option.value === 'approved' ||
-                    option.value === 'completed' ? (
+                      option.value === 'active' ||
+                      option.value === 'approved' ||
+                      option.value === 'completed' ? (
                       <CheckCircle2 className="h-4 w-4 text-green-600" />
                     ) : (
                       <XCircle className="h-4 w-4 text-red-600" />

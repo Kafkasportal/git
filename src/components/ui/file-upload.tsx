@@ -10,16 +10,38 @@ import NextImage from 'next/image';
 import { cn } from '@/lib/utils';
 import { validateFile } from '@/lib/sanitization';
 
-interface FileUploadProps {
-  onFileSelect: (file: File | null, sanitizedFilename?: string) => void;
-  accept?: string;
+// Grouped configuration for file validation
+export interface FileValidationConfig {
   maxSize?: number; // in MB
-  placeholder?: string;
-  className?: string;
-  disabled?: boolean;
   allowedTypes?: string[]; // MIME types
   allowedExtensions?: string[];
+}
+
+// Display options
+export interface FileUploadDisplayOptions {
+  placeholder?: string;
   compact?: boolean; // Compact mode for smaller forms
+}
+
+export interface FileUploadProps {
+  onFileSelect: (file: File | null, sanitizedFilename?: string) => void;
+  accept?: string;
+  className?: string;
+  disabled?: boolean;
+  // New grouped props
+  validation?: FileValidationConfig;
+  display?: FileUploadDisplayOptions;
+  // Legacy support - individual props still work
+  /** @deprecated Use validation.maxSize instead */
+  maxSize?: number;
+  /** @deprecated Use display.placeholder instead */
+  placeholder?: string;
+  /** @deprecated Use validation.allowedTypes instead */
+  allowedTypes?: string[];
+  /** @deprecated Use validation.allowedExtensions instead */
+  allowedExtensions?: string[];
+  /** @deprecated Use display.compact instead */
+  compact?: boolean;
 }
 
 interface PreviewModalProps {
@@ -84,17 +106,28 @@ function PreviewModal({ isOpen, onClose, fileName, preview }: PreviewModalProps)
   );
 }
 
-export function FileUpload({
-  onFileSelect,
-  accept = '*',
-  maxSize = 10,
-  placeholder = 'Dosya seçin veya sürükleyin',
-  className,
-  disabled = false,
-  allowedTypes,
-  allowedExtensions,
-  compact = false,
-}: FileUploadProps) {
+export function FileUpload(props: FileUploadProps) {
+  const {
+    onFileSelect,
+    accept = '*',
+    className,
+    disabled = false,
+    validation = {},
+    display = {},
+    // Legacy props fallback
+    maxSize: legacyMaxSize,
+    placeholder: legacyPlaceholder,
+    allowedTypes: legacyAllowedTypes,
+    allowedExtensions: legacyAllowedExtensions,
+    compact: legacyCompact,
+  } = props;
+
+  // Merge legacy and new props (new props take precedence)
+  const maxSize = validation.maxSize ?? legacyMaxSize ?? 10;
+  const placeholder = display.placeholder ?? legacyPlaceholder ?? 'Dosya seçin veya sürükleyin';
+  const allowedTypes = validation.allowedTypes ?? legacyAllowedTypes;
+  const allowedExtensions = validation.allowedExtensions ?? legacyAllowedExtensions;
+  const compact = display.compact ?? legacyCompact ?? false;
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);

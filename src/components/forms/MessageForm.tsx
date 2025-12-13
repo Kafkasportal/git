@@ -187,60 +187,92 @@ export function MessageForm({
     },
   });
 
-  const handleAddRecipient = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== 'Enter') return;
-
-    const rawInput = recipientInput.trim();
-    if (!rawInput) {
-      return;
-    }
-
-    e.preventDefault();
-
-    let recipientValue = rawInput;
-
-    if (messageType === 'internal') {
-      if (isLoadingUsers) {
-        toast.info('Kullanıcı listesi yükleniyor, lütfen bekleyin.');
-        return;
-      }
-
-      const matchedUser = userList.find((u) => {
+  // Helper functions for handleAddRecipient to reduce complexity
+  const findMatchedUser = useCallback(
+    (rawInput: string): UserDocument | undefined => {
+      return userList.find((u) => {
         const email = u.email?.toLowerCase();
         const name = u.name?.toLowerCase();
         const normalized = rawInput.toLowerCase();
         return email === normalized || name === normalized;
       });
+    },
+    [userList]
+  );
 
+  const resolveRecipientValue = useCallback(
+    (rawInput: string): { value: string | null; error: string | null } => {
+      if (messageType !== 'internal') {
+        return { value: rawInput, error: null };
+      }
+
+      if (isLoadingUsers) {
+        return { value: null, error: 'Kullanıcı listesi yükleniyor, lütfen bekleyin.' };
+      }
+
+      const matchedUser = findMatchedUser(rawInput);
       if (!matchedUser) {
-        toast.error('Kullanıcı bulunamadı. Lütfen kullanıcı adı veya e-postasını doğru girin.');
+        return {
+          value: null,
+          error: 'Kullanıcı bulunamadı. Lütfen kullanıcı adı veya e-postasını doğru girin.',
+        };
+      }
+
+      return { value: matchedUser._id || matchedUser.$id || '', error: null };
+    },
+    [messageType, isLoadingUsers, findMatchedUser]
+  );
+
+  const validateAndAddRecipient = useCallback(
+    (recipientValue: string): string | null => {
+      const validationErrors = validateRecipients([recipientValue], messageType);
+      if (validationErrors.length > 0) {
+        return validationErrors[0];
+      }
+
+      if (selectedRecipients.includes(recipientValue)) {
+        return 'Bu alıcı zaten eklenmiş.';
+      }
+
+      if (selectedRecipients.length >= 100) {
+        return 'En fazla 100 alıcı ekleyebilirsiniz.';
+      }
+
+      return null;
+    },
+    [messageType, selectedRecipients]
+  );
+
+  const handleAddRecipient = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key !== 'Enter') return;
+
+      const rawInput = recipientInput.trim();
+      if (!rawInput) return;
+
+      e.preventDefault();
+
+      const resolved = resolveRecipientValue(rawInput);
+      if (resolved.error) {
+        toast.info(resolved.error);
         return;
       }
 
-      recipientValue = matchedUser._id || matchedUser.$id || '';
-    }
+      if (!resolved.value) return;
 
-    const validationErrors = validateRecipients([recipientValue], messageType);
-    if (validationErrors.length > 0) {
-      toast.error(validationErrors[0]);
-      return;
-    }
+      const validationError = validateAndAddRecipient(resolved.value);
+      if (validationError) {
+        toast.warning(validationError);
+        return;
+      }
 
-    if (selectedRecipients.includes(recipientValue)) {
-      toast.warning('Bu alıcı zaten eklenmiş.');
-      return;
-    }
-
-    if (selectedRecipients.length >= 100) {
-      toast.warning('En fazla 100 alıcı ekleyebilirsiniz.');
-      return;
-    }
-
-    const updatedRecipients = [...selectedRecipients, recipientValue];
-    setSelectedRecipients(updatedRecipients);
-    setValue('recipients', updatedRecipients);
-    setRecipientInput('');
-  }, [messageType, recipientInput, selectedRecipients, userList, isLoadingUsers, setValue]);
+      const updatedRecipients = [...selectedRecipients, resolved.value];
+      setSelectedRecipients(updatedRecipients);
+      setValue('recipients', updatedRecipients);
+      setRecipientInput('');
+    },
+    [recipientInput, selectedRecipients, resolveRecipientValue, validateAndAddRecipient, setValue]
+  );
 
   const handleRemoveRecipient = useCallback((recipientToRemove: string) => {
     const updatedRecipients = selectedRecipients.filter(

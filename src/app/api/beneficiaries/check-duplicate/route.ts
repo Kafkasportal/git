@@ -5,7 +5,7 @@ import { requireAuthenticatedUser } from '@/lib/api/auth-utils';
 import { checkDuplicates, checkTcNoDuplicate } from '@/lib/beneficiary/duplicate-detection';
 import { z } from 'zod';
 
-// Validation schema
+// Validation schemas
 const duplicateCheckSchema = z.object({
   tc_no: z.string().length(11).optional(),
   firstName: z.string().min(2).optional(),
@@ -19,6 +19,46 @@ const tcCheckSchema = z.object({
   tc_no: z.string().length(11, 'TC Kimlik No 11 haneli olmalıdır'),
   excludeId: z.string().optional(),
 });
+
+type DuplicateCheckData = z.infer<typeof duplicateCheckSchema>;
+
+// Helper functions to reduce cyclomatic complexity
+function hasRequiredFields(data: DuplicateCheckData): boolean {
+  const { tc_no, firstName, lastName, phone, address } = data;
+  return Boolean(tc_no || firstName || lastName || phone || address);
+}
+
+async function handleTcOnlyCheck(data: unknown) {
+  const validation = tcCheckSchema.safeParse(data);
+  if (!validation.success) {
+    return { error: validation.error.issues[0].message };
+  }
+
+  const result = await checkTcNoDuplicate(
+    validation.data.tc_no,
+    validation.data.excludeId
+  );
+
+  return { result };
+}
+
+async function handleFullDuplicateCheck(data: unknown) {
+  const validation = duplicateCheckSchema.safeParse(data);
+  if (!validation.success) {
+    return { error: validation.error.issues[0].message };
+  }
+
+  if (!hasRequiredFields(validation.data)) {
+    return { error: 'En az bir kontrol alanı gereklidir' };
+  }
+
+  const result = await checkDuplicates(validation.data);
+  const message = result.hasDuplicates
+    ? 'Olası mükerrer kayıt bulundu'
+    : 'Mükerrer kayıt bulunamadı';
+
+  return { result, message };
+}
 
 /**
  * POST /api/beneficiaries/check-duplicate
@@ -37,41 +77,23 @@ export const POST = buildApiRoute({
     return errorResponse(error, 400);
   }
 
-  // Hangi tip kontrol yapılacağını belirle
   const url = new URL(request.url);
   const checkType = url.searchParams.get('type') || 'full';
 
   try {
     if (checkType === 'tc_only') {
-      // Sadece TC Kimlik kontrolü
-      const validation = tcCheckSchema.safeParse(data);
-      if (!validation.success) {
-        return errorResponse(validation.error.issues[0].message, 400);
+      const response = await handleTcOnlyCheck(data);
+      if (response.error) {
+        return errorResponse(response.error, 400);
       }
-
-      const result = await checkTcNoDuplicate(
-        validation.data.tc_no,
-        validation.data.excludeId
-      );
-
-      return successResponse(result);
+      return successResponse(response.result);
     }
 
-    // Tam mükerrer kontrolü
-    const validation = duplicateCheckSchema.safeParse(data);
-    if (!validation.success) {
-      return errorResponse(validation.error.issues[0].message, 400);
+    const response = await handleFullDuplicateCheck(data);
+    if (response.error) {
+      return errorResponse(response.error, 400);
     }
-
-    // En az bir alan gerekli
-    const { tc_no, firstName, lastName, phone, address } = validation.data;
-    if (!tc_no && !firstName && !lastName && !phone && !address) {
-      return errorResponse('En az bir kontrol alanı gereklidir', 400);
-    }
-
-    const result = await checkDuplicates(validation.data);
-
-    return successResponse(result, result.hasDuplicates ? 'Olası mükerrer kayıt bulundu' : 'Mükerrer kayıt bulunamadı');
+    return successResponse(response.result, response.message);
   } catch (_err) {
     return errorResponse('Mükerrer kontrol sırasında bir hata oluştu', 500);
   }
