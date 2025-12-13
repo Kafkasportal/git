@@ -2,10 +2,8 @@
  * todo Tests
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it } from "vitest";
 
 describe("todo", () => {
-  it("should pass - placeholder test", () => {
-    expect(true).toBe(true);
-  });
+  it.todo("should implement todo validation tests");
 });

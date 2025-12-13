@@ -2,10 +2,8 @@
  * csrf Tests
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it } from "vitest";
 
 describe("csrf", () => {
-  it("should pass - placeholder test", () => {
-    expect(true).toBe(true);
-  });
+  it.todo("should implement CSRF security tests");
 });

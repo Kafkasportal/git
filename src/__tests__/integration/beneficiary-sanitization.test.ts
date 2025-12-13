@@ -2,10 +2,8 @@
  * beneficiary-sanitization Tests
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it } from "vitest";
 
 describe("beneficiary-sanitization", () => {
-  it("should pass - placeholder test", () => {
-    expect(true).toBe(true);
-  });
+  it.todo("should implement beneficiary-sanitization integration tests");
 });

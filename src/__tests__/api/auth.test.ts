@@ -2,10 +2,8 @@
  * auth Tests
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it } from "vitest";
 
 describe("auth", () => {
-  it("should pass - placeholder test", () => {
-    expect(true).toBe(true);
-  });
+  it.todo("should implement auth API tests");
 });

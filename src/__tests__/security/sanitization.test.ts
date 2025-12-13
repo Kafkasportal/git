@@ -2,10 +2,8 @@
  * sanitization Tests
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it } from "vitest";
 
 describe("sanitization", () => {
-  it("should pass - placeholder test", () => {
-    expect(true).toBe(true);
-  });
+  it.todo("should implement sanitization security tests");
 });
