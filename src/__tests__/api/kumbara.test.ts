@@ -1,10 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createMockDocuments } from '../test-utils';
 import { GET, POST, GET_STATS } from '@/app/api/kumbara/route';
 import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
 import * as authUtils from '@/lib/api/auth-utils';
-import logger from '@/lib/logger';
 
 // Mock Appwrite API
 vi.mock('@/lib/appwrite/api', () => ({
