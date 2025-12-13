@@ -12,9 +12,10 @@ export function extractUserRoleAndPermissions(
   let role = 'Personel';
   let permissions: string[] = [];
 
-  if (prefs) {
-    role = (prefs.role as string) || 'Personel';
-    const permissionsStr = prefs.permissions as string;
+  if (prefs && typeof prefs === 'object') {
+    const prefsObj = prefs as Record<string, unknown>;
+    role = (prefsObj.role as string) || 'Personel';
+    const permissionsStr = prefsObj.permissions as string;
     if (permissionsStr) {
       try {
         permissions = JSON.parse(permissionsStr);

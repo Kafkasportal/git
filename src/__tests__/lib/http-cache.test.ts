@@ -121,7 +121,7 @@ describe('HTTP Cache Utilities', () => {
     it('should handle combined directives correctly', () => {
       const response = new Response('test');
       const options: CacheHeadersOptions = {
-        cacheControl: ['public', 'no-transform'],
+        cacheControl: ['public', 'private'],
         maxAge: 86400000, // 1 day
         swr: 604800000, // 7 days
         etag: true,

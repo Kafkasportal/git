@@ -1,6 +1,6 @@
 'use client';
 
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { DesktopTableView, TabletTableView, MobileTableView } from './responsive-table-parts';
 
 export interface ResponsiveColumn {

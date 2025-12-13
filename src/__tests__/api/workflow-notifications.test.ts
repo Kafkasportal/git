@@ -1,8 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createMockDocuments } from '../test-utils';
 import { GET, POST } from '@/app/api/workflow-notifications/route';
-import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
+import {
+  runGetListTests,
+  runCreateTests,
+  runFilteringTests,
+} from '../test-utils/test-patterns';
+import {
+  createTestRequest,
+  parseJsonResponse,
+  expectStatus,
+  expectSuccessResponse,
+  expectErrorResponse,
+} from '../test-utils/api-test-helpers';
 
 // Mock Appwrite API
 vi.mock('@/lib/appwrite/api', () => ({
@@ -10,7 +20,7 @@ vi.mock('@/lib/appwrite/api', () => ({
     list: vi.fn(),
     create: vi.fn(),
   },
-  normalizeQueryParams: vi.fn((params) => ({
+  normalizeQueryParams: vi.fn((params: URLSearchParams) => ({
     page: params.get('page') ? parseInt(params.get('page')!) : 1,
     limit: params.get('limit') ? parseInt(params.get('limit')!) : 50,
     skip: 0,
@@ -34,229 +44,99 @@ vi.mock('@/lib/logger', () => ({
   },
 }));
 
-describe('GET /api/workflow-notifications', () => {
+// Use test pattern for GET list
+runGetListTests(
+  { GET },
+  appwriteApi.appwriteWorkflowNotifications.list as (params?: unknown) => Promise<{ documents: unknown[]; total: number }>,
+  'workflow-notifications',
+  {
+    baseUrl: 'http://localhost/api/workflow-notifications',
+    errorMessage: 'Bildirimler alınamadı',
+  }
+);
+
+// Test filtering
+runFilteringTests(
+  { GET },
+  appwriteApi.appwriteWorkflowNotifications.list as (params?: unknown) => Promise<{ documents: unknown[]; total: number }>,
+  'workflow-notifications',
+  [
+    {
+      name: 'recipient',
+      queryParams: { recipient: 'user1' },
+      expectedFilter: { recipient: 'user1' },
+    },
+    {
+      name: 'status',
+      queryParams: { status: 'okundu' },
+      expectedFilter: { status: 'okundu' },
+    },
+    {
+      name: 'category',
+      queryParams: { category: 'rapor' },
+      expectedFilter: { category: 'rapor' },
+    },
+  ],
+  {
+    baseUrl: 'http://localhost/api/workflow-notifications',
+  }
+);
+
+// Use test pattern for POST create
+runCreateTests(
+  { POST },
+  appwriteApi.appwriteWorkflowNotifications.create as (data: unknown) => Promise<unknown>,
+  'workflow-notifications',
+  {
+    recipient: 'user1',
+    title: 'New Notification',
+    category: 'meeting',
+  },
+  {
+    baseUrl: 'http://localhost/api/workflow-notifications',
+    successMessage: 'Bildirim oluşturuldu',
+    errorMessage: 'Bildirim oluşturulamadı',
+    expectedStatus: 201,
+  }
+);
+
+describe('POST /api/workflow-notifications - Validation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it('returns notifications list successfully', async () => {
-    const mockNotificationsData = [
-      {
-        _id: '1',
-        recipient: 'user1',
-        title: 'Notification 1',
-        category: 'meeting',
-        status: 'beklemede',
-      },
-      {
-        _id: '2',
-        recipient: 'user2',
-        title: 'Notification 2',
-        category: 'gorev',
-        status: 'gonderildi',
-      },
-    ];
-    const mockNotifications = createMockDocuments(mockNotificationsData);
-
-    vi.mocked(appwriteApi.appwriteWorkflowNotifications.list).mockResolvedValue({
-      documents: mockNotifications,
-      total: 2,
-    });
-
-    const request = new NextRequest('http://localhost/api/workflow-notifications');
-    const response = await GET(request);
-    const data = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(data.success).toBe(true);
-    expect(data.data.documents || data.data).toEqual(mockNotifications);
-  });
-
-  it('filters by recipient', async () => {
-    const mockNotifications = createMockDocuments([
-      {
-        _id: '1',
-        recipient: 'user1',
-        title: 'Notification',
-      },
-    ]);
-
-    vi.mocked(appwriteApi.appwriteWorkflowNotifications.list).mockResolvedValue({
-      documents: mockNotifications,
-      total: 1,
-    });
-
-    const request = new NextRequest('http://localhost/api/workflow-notifications?recipient=user1');
-    const response = await GET(request);
-
-    expect(response.status).toBe(200);
-    expect(vi.mocked(appwriteApi.appwriteWorkflowNotifications.list)).toHaveBeenCalledWith(
-      expect.objectContaining({
-        recipient: 'user1',
-      })
-    );
-  });
-
-  it('filters by status', async () => {
-    const mockNotifications = createMockDocuments([
-      {
-        _id: '1',
-        status: 'okundu',
-        title: 'Read Notification',
-      },
-    ]);
-
-    vi.mocked(appwriteApi.appwriteWorkflowNotifications.list).mockResolvedValue({
-      documents: mockNotifications,
-      total: 1,
-    });
-
-    const request = new NextRequest('http://localhost/api/workflow-notifications?status=okundu');
-    const response = await GET(request);
-
-    expect(response.status).toBe(200);
-    expect(vi.mocked(appwriteApi.appwriteWorkflowNotifications.list)).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: 'okundu',
-      })
-    );
-  });
-
-  it('filters by category', async () => {
-    const mockNotifications = createMockDocuments([
-      {
-        _id: '1',
-        category: 'rapor',
-        title: 'Report Notification',
-      },
-    ]);
-
-    vi.mocked(appwriteApi.appwriteWorkflowNotifications.list).mockResolvedValue({
-      documents: mockNotifications,
-      total: 1,
-    });
-
-    const request = new NextRequest('http://localhost/api/workflow-notifications?category=rapor');
-    const response = await GET(request);
-
-    expect(response.status).toBe(200);
-    expect(vi.mocked(appwriteApi.appwriteWorkflowNotifications.list)).toHaveBeenCalledWith(
-      expect.objectContaining({
-        category: 'rapor',
-      })
-    );
-  });
-
-  it('handles empty list', async () => {
-    vi.mocked(appwriteApi.appwriteWorkflowNotifications.list).mockResolvedValue({
-      documents: [],
-      total: 0,
-    });
-
-    const request = new NextRequest('http://localhost/api/workflow-notifications');
-    const response = await GET(request);
-    const data = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(data.data.documents || data.data).toEqual([]);
-  });
-
-  it('handles errors gracefully', async () => {
-    vi.mocked(appwriteApi.appwriteWorkflowNotifications.list).mockRejectedValue(
-      new Error('Database error')
-    );
-
-    const request = new NextRequest('http://localhost/api/workflow-notifications');
-    const response = await GET(request);
-    const data = await response.json();
-
-    expect(response.status).toBe(500);
-    expect(data.success).toBe(false);
-    expect(data.error).toBe('Bildirimler alınamadı');
-  });
-});
-
-describe('POST /api/workflow-notifications', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('creates notification successfully', async () => {
-    const newNotification = {
-      recipient: 'user1',
-      title: 'New Notification',
-      category: 'meeting',
-    };
-
-    const createdNotification = {
-      _id: 'new-id',
-      ...newNotification,
-      status: 'beklemede',
-    };
-
-    vi.mocked(appwriteApi.appwriteWorkflowNotifications.create).mockResolvedValue(
-      createdNotification as any
-    );
-
-    const request = new NextRequest('http://localhost/api/workflow-notifications', {
-      method: 'POST',
-      body: JSON.stringify(newNotification),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const response = await POST(request);
-    const data = await response.json();
-
-    expect(response.status).toBe(201);
-    expect(data.success).toBe(true);
-    expect(data.data).toEqual(createdNotification);
-    expect(data.message).toBe('Bildirim oluşturuldu');
   });
 
   it('validates recipient is required', async () => {
     const invalidNotification = {
       title: 'Notification',
-      // Missing recipient
     };
 
-    const request = new NextRequest('http://localhost/api/workflow-notifications', {
+    const request = createTestRequest('http://localhost/api/workflow-notifications', {
       method: 'POST',
-      body: JSON.stringify(invalidNotification),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      body: invalidNotification,
     });
-
     const response = await POST(request);
-    const data = await response.json();
+    const data = await parseJsonResponse(response);
 
-    expect(response.status).toBe(400);
-    expect(data.success).toBe(false);
-    expect(data.error).toBe('Doğrulama hatası');
+    expectStatus(response, 400);
+    expectErrorResponse(data, 400, 'Doğrulama hatası');
     expect(data.details).toContain('Alıcı zorunludur');
   });
 
   it('validates title is required and minimum length', async () => {
     const invalidNotification = {
       recipient: 'user1',
-      title: 'AB', // Too short
+      title: 'AB',
     };
 
-    const request = new NextRequest('http://localhost/api/workflow-notifications', {
+    const request = createTestRequest('http://localhost/api/workflow-notifications', {
       method: 'POST',
-      body: JSON.stringify(invalidNotification),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      body: invalidNotification,
     });
-
     const response = await POST(request);
-    const data = await response.json();
+    const data = await parseJsonResponse(response);
 
-    expect(response.status).toBe(400);
-    expect(data.success).toBe(false);
+    expectStatus(response, 400);
+    expectErrorResponse(data, 400);
     expect(data.details).toContain('Bildirim başlığı en az 3 karakter olmalıdır');
   });
 
@@ -264,22 +144,18 @@ describe('POST /api/workflow-notifications', () => {
     const invalidNotification = {
       recipient: 'user1',
       title: 'Notification',
-      category: 'INVALID', // Invalid category
+      category: 'INVALID',
     };
 
-    const request = new NextRequest('http://localhost/api/workflow-notifications', {
+    const request = createTestRequest('http://localhost/api/workflow-notifications', {
       method: 'POST',
-      body: JSON.stringify(invalidNotification),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      body: invalidNotification,
     });
-
     const response = await POST(request);
-    const data = await response.json();
+    const data = await parseJsonResponse(response);
 
-    expect(response.status).toBe(400);
-    expect(data.success).toBe(false);
+    expectStatus(response, 400);
+    expectErrorResponse(data, 400);
     expect(data.details).toContain('Geçersiz bildirim kategorisi');
   });
 
@@ -287,22 +163,18 @@ describe('POST /api/workflow-notifications', () => {
     const invalidNotification = {
       recipient: 'user1',
       title: 'Notification',
-      status: 'INVALID', // Invalid status
+      status: 'INVALID',
     };
 
-    const request = new NextRequest('http://localhost/api/workflow-notifications', {
+    const request = createTestRequest('http://localhost/api/workflow-notifications', {
       method: 'POST',
-      body: JSON.stringify(invalidNotification),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      body: invalidNotification,
     });
-
     const response = await POST(request);
-    const data = await response.json();
+    const data = await parseJsonResponse(response);
 
-    expect(response.status).toBe(400);
-    expect(data.success).toBe(false);
+    expectStatus(response, 400);
+    expectErrorResponse(data, 400);
     expect(data.details).toContain('Geçersiz bildirim durumu');
   });
 
@@ -310,13 +182,12 @@ describe('POST /api/workflow-notifications', () => {
     const newNotification = {
       recipient: 'user1',
       title: 'Notification',
-      // No category provided
     };
 
     const createdNotification = {
       _id: 'new-id',
       ...newNotification,
-      category: 'meeting', // Default value
+      category: 'meeting',
       status: 'beklemede',
     };
 
@@ -324,44 +195,14 @@ describe('POST /api/workflow-notifications', () => {
       createdNotification as any
     );
 
-    const request = new NextRequest('http://localhost/api/workflow-notifications', {
+    const request = createTestRequest('http://localhost/api/workflow-notifications', {
       method: 'POST',
-      body: JSON.stringify(newNotification),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      body: newNotification,
     });
-
     const response = await POST(request);
-    const data = await response.json();
+    const data = await parseJsonResponse(response);
 
-    expect(response.status).toBe(201);
-    expect(data.success).toBe(true);
-  });
-
-  it('handles creation errors gracefully', async () => {
-    vi.mocked(appwriteApi.appwriteWorkflowNotifications.create).mockRejectedValue(
-      new Error('Database error')
-    );
-
-    const validNotification = {
-      recipient: 'user1',
-      title: 'Notification',
-    };
-
-    const request = new NextRequest('http://localhost/api/workflow-notifications', {
-      method: 'POST',
-      body: JSON.stringify(validNotification),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const response = await POST(request);
-    const data = await response.json();
-
-    expect(response.status).toBe(500);
-    expect(data.success).toBe(false);
-    expect(data.error).toBe('Bildirim oluşturulamadı');
+    expectStatus(response, 201);
+    expectSuccessResponse(data, 201);
   });
 });

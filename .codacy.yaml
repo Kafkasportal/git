@@ -1,0 +1,64 @@
+# Codacy configuration file
+version: 1.0
+
+languages:
+  - name: TypeScript
+    patterns:
+      - pattern: '**/*.ts'
+      - pattern: '**/*.tsx'
+    exclude:
+      - 'node_modules'
+      - 'dist'
+      - 'build'
+      - 'coverage'
+      - '.next'
+
+  - name: JavaScript
+    patterns:
+      - pattern: '**/*.js'
+      - pattern: '**/*.jsx'
+    exclude:
+      - 'node_modules'
+      - 'dist'
+      - 'build'
+      - 'coverage'
+      - '.next'
+
+  - name: JSON
+    patterns:
+      - pattern: '**/*.json'
+    exclude:
+      - 'node_modules'
+      - 'package-lock.json'
+
+exclude-paths:
+  - 'node_modules'
+  - '.next'
+  - 'coverage'
+  - 'dist'
+  - 'build'
+  - '.git'
+  - '**/*.config.js'
+  - '**/*.config.ts'
+  - 'vitest.config.ts'
+  - 'jest.config.js'
+
+exclude-patterns:
+  - '(^|/)node_modules(/|$)'
+  - '(^|/)\..+(/|$)'
+  - '.*\.test\.(ts|js|tsx|jsx)$'
+  - '.*\.spec\.(ts|js|tsx|jsx)$'
+  - '(^|/)__tests__(/|$)'
+
+tools:
+  eslint:
+    enabled: true
+  pylint:
+    enabled: false
+  pmd:
+    enabled: false
+
+coverage:
+  enabled: true
+  target: 70
+  format: lcov

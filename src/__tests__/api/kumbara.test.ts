@@ -49,7 +49,10 @@ vi.mock('@/lib/logger', () => ({
 describe('GET /api/kumbara - List donations', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(authUtils.requireModuleAccess).mockResolvedValue(undefined);
+    vi.mocked(authUtils.requireModuleAccess).mockResolvedValue({
+      session: { userId: 'test-user-id', isValid: true } as any,
+      user: { id: 'test-user-id', role: 'admin', permissions: [] } as any,
+    });
   });
 
   it('returns kumbara donations list successfully', async () => {
@@ -572,7 +575,10 @@ describe('GET /api/kumbara - List donations', () => {
 describe('GET_STATS /api/kumbara/stats', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(authUtils.requireModuleAccess).mockResolvedValue(undefined);
+    vi.mocked(authUtils.requireModuleAccess).mockResolvedValue({
+      session: { userId: 'test-user-id', isValid: true } as any,
+      user: { id: 'test-user-id', role: 'admin', permissions: [] } as any,
+    });
   });
 
   it('returns overview stats by default', async () => {
@@ -792,7 +798,10 @@ describe('GET_STATS /api/kumbara/stats', () => {
 describe('POST /api/kumbara - Create donation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(authUtils.requireModuleAccess).mockResolvedValue(undefined);
+    vi.mocked(authUtils.requireModuleAccess).mockResolvedValue({
+      session: { userId: 'test-user-id', isValid: true } as any,
+      user: { id: 'test-user-id', role: 'admin', permissions: [] } as any,
+    });
     vi.mocked(authUtils.verifyCsrfToken).mockResolvedValue(undefined);
     vi.mocked(authUtils.buildErrorResponse).mockReturnValue(null);
   });

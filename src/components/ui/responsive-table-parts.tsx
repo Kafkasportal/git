@@ -1,6 +1,6 @@
 'use client';
 
-import React, { ReactNode, useCallback } from 'react';
+import { ReactNode, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import type { ResponsiveColumn } from './responsive-table';
 

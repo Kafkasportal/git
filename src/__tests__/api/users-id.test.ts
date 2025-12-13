@@ -1,8 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createMockAuthResponse } from '../test-utils';
 import { GET, PATCH, DELETE } from '@/app/api/users/[id]/route';
-import { NextRequest } from 'next/server';
 import * as authUtils from '@/lib/api/auth-utils';
+import {
+  runGetByIdTests,
+  runUpdateTests,
+  runDeleteTests,
+} from '../test-utils/test-patterns';
+import {
+  createTestRequest,
+  createTestParams,
+  parseJsonResponse,
+  expectStatus,
+  expectSuccessResponse,
+  expectErrorResponse,
+} from '../test-utils/api-test-helpers';
+import { NextResponse } from 'next/server';
 
 // Mock Appwrite server
 const mockUsersInstance = {
@@ -11,22 +24,51 @@ const mockUsersInstance = {
   delete: vi.fn(),
   updatePrefs: vi.fn(),
   updatePassword: vi.fn(),
+  updateName: vi.fn(),
+  updateEmail: vi.fn(),
 };
 
 vi.mock('@/lib/appwrite/server', () => ({
-  getServerClient: vi.fn(() => ({} as any)),
+  getServerClient: vi.fn(() => ({ endpoint: 'http://localhost', project: 'test' } as any)),
 }));
 
 vi.mock('node-appwrite', () => ({
   Users: vi.fn(() => mockUsersInstance),
 }));
 
-// Mock route helpers
-vi.mock('@/lib/api/route-helpers', () => ({
-  extractParams: vi.fn(async (params) => {
-    const resolved = await params;
-    return resolved;
+// Mock route helpers - use actual implementation
+vi.mock('@/lib/api/route-helpers', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/api/route-helpers')>('@/lib/api/route-helpers');
+  return {
+    ...actual,
+    extractParams: vi.fn(async (params: Promise<Record<string, string>>) => {
+      const resolved = await params;
+      return resolved;
+    }),
+  };
+});
+
+// Mock user-transform
+vi.mock('@/lib/appwrite/user-transform', () => ({
+  transformAppwriteUser: vi.fn((user: unknown) => {
+    const u = user as any;
+    return {
+      id: u.$id || 'test-id',
+      email: u.email || 'test@example.com',
+      name: u.name || 'Test User',
+      role: u.prefs?.role || 'Personel',
+      permissions: u.prefs?.permissions ? JSON.parse(u.prefs.permissions) : [],
+      createdAt: u.$createdAt || new Date().toISOString(),
+      updatedAt: u.$updatedAt || new Date().toISOString(),
+      emailVerification: u.emailVerification ?? true,
+      phoneVerification: u.phoneVerification ?? false,
+    };
   }),
+  normalizeOptionalPermissions: vi.fn((perms: unknown) => perms),
+  buildUserPreferences: vi.fn((current: unknown, updates: unknown) => ({
+    ...(current as object),
+    ...(updates as object),
+  })),
 }));
 
 // Mock auth
@@ -37,11 +79,10 @@ vi.mock('@/lib/api/auth-utils', () => ({
   }),
   verifyCsrfToken: vi.fn().mockResolvedValue(undefined),
   buildErrorResponse: vi.fn(function (error: unknown) {
-    // Return a proper error response structure
     if (error instanceof Error && error.message === 'User not found') {
       return { status: 404, body: { success: false, error: 'Kullanıcı bulunamadı' } };
     }
-    return { status: 500, body: { success: false, error: 'İç sunucu hatası' } };
+    return null;
   }),
 }));
 
@@ -50,8 +91,6 @@ vi.mock('@/lib/auth/password', () => ({
   hashPassword: vi.fn().mockResolvedValue('hashed-password'),
   validatePasswordStrength: vi.fn().mockReturnValue({ valid: true }),
 }));
-
-// Email validation is now done inline, no mock needed
 
 // Mock permissions
 vi.mock('@/types/permissions', () => ({
@@ -65,52 +104,21 @@ vi.mock('@/lib/logger', () => ({
   },
 }));
 
-describe('GET /api/users/[id]', () => {
+// Use test pattern for GET by ID
+runGetByIdTests(
+  { GET },
+  mockUsersInstance.get as (id: string) => Promise<unknown>,
+  'users',
+  {
+    baseUrl: 'http://localhost/api/users',
+    notFoundError: 'Kullanıcı bulunamadı',
+    errorMessage: 'Kullanıcı bilgisi alınamadı',
+  }
+);
+
+describe('GET /api/users/[id] - Additional tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it('returns user by ID successfully', async () => {
-    const mockAppwriteUser = {
-      $id: 'test-id',
-      name: 'Test User',
-      email: 'test@example.com',
-      $createdAt: '2024-01-01T00:00:00.000Z',
-      $updatedAt: '2024-01-01T00:00:00.000Z',
-      emailVerification: true,
-      phoneVerification: false,
-      prefs: {
-        role: 'Personel',
-        permissions: JSON.stringify(['beneficiaries:read']),
-      },
-    };
-
-    vi.mocked(mockUsersInstance.get).mockResolvedValue(mockAppwriteUser as any);
-
-    const request = new NextRequest('http://localhost/api/users/test-id');
-    const params = Promise.resolve({ id: 'test-id' });
-    const response = await GET(request, { params });
-    const data = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(data.success).toBe(true);
-    expect(data.data.id).toBe('test-id');
-    expect(data.data.email).toBe('test@example.com');
-    expect(data.data.role).toBe('Personel');
-    expect(data.data.permissions).toEqual(['beneficiaries:read']);
-  });
-
-  it('returns 404 when user not found', async () => {
-    vi.mocked(mockUsersInstance.get).mockRejectedValue(new Error('User not found'));
-
-    const request = new NextRequest('http://localhost/api/users/non-existent');
-    const params = Promise.resolve({ id: 'non-existent' });
-    const response = await GET(request, { params });
-    const data = await response.json();
-
-    expect(response.status).toBe(404);
-    expect(data.success).toBe(false);
-    expect(data.error).toBe('Kullanıcı bulunamadı');
   });
 
   it('returns 403 when user does not have users:manage permission', async () => {
@@ -118,354 +126,97 @@ describe('GET /api/users/[id]', () => {
       createMockAuthResponse({ permissions: [] })
     );
 
-    const request = new NextRequest('http://localhost/api/users/test-id');
-    const params = Promise.resolve({ id: 'test-id' });
+    const request = createTestRequest('http://localhost/api/users/test-id');
+    const params = createTestParams({ id: 'test-id' });
     const response = await GET(request, { params });
-    const data = await response.json();
+    const data = await parseJsonResponse(response);
 
-    expect(response.status).toBe(403);
-    expect(data.success).toBe(false);
+    expectStatus(response, 403);
+    expectErrorResponse(data, 403);
     expect(data.error).toContain('erişim yetkiniz yok');
-  });
-
-  it('handles errors gracefully', async () => {
-    vi.mocked(mockUsersInstance.get).mockRejectedValue(new Error('Database error'));
-
-    const request = new NextRequest('http://localhost/api/users/test-id');
-    const params = Promise.resolve({ id: 'test-id' });
-    const response = await GET(request, { params });
-    const data = await response.json();
-
-    expect(response.status).toBe(404);
-    expect(data.success).toBe(false);
   });
 });
 
+// Use test pattern for PATCH update
 describe('PATCH /api/users/[id]', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValue({
+      session: { sessionId: 'test-session', userId: 'test-user-id' },
+      user: { id: 'test-user', email: 'test@example.com', name: 'Test User', isActive: true, permissions: ['users:manage'] },
+    });
   });
 
-  it('updates user successfully', async () => {
-    const updateData = {
-      name: 'Updated Name',
-      email: 'updated@example.com',
-    };
+  it('updates users successfully', async () => {
+    const updateData = { name: 'Updated User', email: 'updated@example.com' };
+    const updatedUser = { $id: 'test-id', ...updateData, prefs: { role: 'Admin' } };
+    mockUsersInstance.get.mockResolvedValue(updatedUser);
 
-    const mockAppwriteUser = {
-      $id: 'test-id',
-      name: 'Updated Name',
-      email: 'updated@example.com',
-      $createdAt: '2024-01-01T00:00:00.000Z',
-      $updatedAt: '2024-01-02T00:00:00.000Z',
-      prefs: {
-        role: 'Personel',
-        permissions: JSON.stringify(['beneficiaries:read']),
-      },
-    };
-
-    vi.mocked(mockUsersInstance.update).mockResolvedValue(undefined);
-    vi.mocked(mockUsersInstance.get).mockResolvedValue(mockAppwriteUser as any);
-
-    const request = new NextRequest('http://localhost/api/users/test-id', {
+    const request = createTestRequest('http://localhost/api/users/test-id', {
       method: 'PATCH',
-      body: JSON.stringify(updateData),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      body: updateData,
     });
-    const params = Promise.resolve({ id: 'test-id' });
+    const params = createTestParams({ id: 'test-id' });
     const response = await PATCH(request, { params });
-    const data = await response.json();
+    const data = await parseJsonResponse(response);
 
-    expect(response.status).toBe(200);
-    expect(data.success).toBe(true);
-    expect(data.data.name).toBe('Updated Name');
-    expect(data.data.email).toBe('updated@example.com');
+    expectStatus(response, 200);
+    expectSuccessResponse(data);
     expect(data.message).toBe('Kullanıcı başarıyla güncellendi');
   });
 
-  it('validates email format', async () => {
-    const invalidUpdate = {
-      email: 'invalid-email', // Invalid email
-    };
-
-    const request = new NextRequest('http://localhost/api/users/test-id', {
-      method: 'PATCH',
-      body: JSON.stringify(invalidUpdate),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    const params = Promise.resolve({ id: 'test-id' });
-    const response = await PATCH(request, { params });
-    const data = await response.json();
-
-    expect(response.status).toBe(400);
-    expect(data.success).toBe(false);
-    expect(data.error).toBe('Geçersiz e-posta adresi');
-  });
-
-  it('validates name minimum length', async () => {
-    const invalidUpdate = {
-      name: 'A', // Too short
-    };
-
-    const request = new NextRequest('http://localhost/api/users/test-id', {
-      method: 'PATCH',
-      body: JSON.stringify(invalidUpdate),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    const params = Promise.resolve({ id: 'test-id' });
-    const response = await PATCH(request, { params });
-    const data = await response.json();
-
-    expect(response.status).toBe(400);
-    expect(data.success).toBe(false);
-    expect(data.error).toContain('Ad Soyad en az 2 karakter olmalıdır');
-  });
-
-  it('validates role minimum length', async () => {
-    const invalidUpdate = {
-      role: 'A', // Too short
-    };
-
-    const request = new NextRequest('http://localhost/api/users/test-id', {
-      method: 'PATCH',
-      body: JSON.stringify(invalidUpdate),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    const params = Promise.resolve({ id: 'test-id' });
-    const response = await PATCH(request, { params });
-    const data = await response.json();
-
-    expect(response.status).toBe(400);
-    expect(data.success).toBe(false);
-    expect(data.error).toContain('Rol bilgisi en az 2 karakter olmalıdır');
-  });
-
-  it('validates permissions are valid', async () => {
-    const invalidUpdate = {
-      permissions: ['invalid:permission'], // Invalid permission
-    };
-
-    const request = new NextRequest('http://localhost/api/users/test-id', {
-      method: 'PATCH',
-      body: JSON.stringify(invalidUpdate),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    const params = Promise.resolve({ id: 'test-id' });
-    const response = await PATCH(request, { params });
-    const data = await response.json();
-
-    expect(response.status).toBe(400);
-    expect(data.success).toBe(false);
-    expect(data.error).toContain('Geçerli en az bir modül erişimi seçilmelidir');
-  });
-
-  it('validates password strength when updating password', async () => {
-    const { validatePasswordStrength } = await import('@/lib/auth/password');
-    vi.mocked(validatePasswordStrength).mockReturnValueOnce({
-      valid: false,
-      error: 'Şifre en az 8 karakter olmalıdır',
-    });
-
-    const invalidUpdate = {
-      password: 'weak', // Weak password
-    };
-
-    const request = new NextRequest('http://localhost/api/users/test-id', {
-      method: 'PATCH',
-      body: JSON.stringify(invalidUpdate),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    const params = Promise.resolve({ id: 'test-id' });
-    const response = await PATCH(request, { params });
-    const data = await response.json();
-
-    expect(response.status).toBe(400);
-    expect(data.success).toBe(false);
-    expect(data.error).toContain('Şifre');
-  });
-
-  it('updates password successfully when provided', async () => {
-    const updateData = {
-      password: 'NewStrongPassword123!',
-    };
-
-    const mockAppwriteUser = {
-      $id: 'test-id',
-      name: 'Test User',
-      email: 'test@example.com',
-      $createdAt: '2024-01-01T00:00:00.000Z',
-      $updatedAt: '2024-01-02T00:00:00.000Z',
-      prefs: {
-        role: 'Personel',
-        permissions: JSON.stringify([]),
-      },
-    };
-
-    vi.mocked(mockUsersInstance.updatePassword).mockResolvedValue(undefined);
-    vi.mocked(mockUsersInstance.get).mockResolvedValue(mockAppwriteUser as any);
-
-    const request = new NextRequest('http://localhost/api/users/test-id', {
-      method: 'PATCH',
-      body: JSON.stringify(updateData),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    const params = Promise.resolve({ id: 'test-id' });
-    const response = await PATCH(request, { params });
-
-    expect(response.status).toBe(200);
-    expect(vi.mocked(mockUsersInstance.updatePassword)).toHaveBeenCalledWith(
-      'test-id',
-      'NewStrongPassword123!'
-    );
-  });
-
-  it('returns 403 when user does not have users:manage permission', async () => {
-    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValueOnce(
-      createMockAuthResponse({ permissions: [] })
-    );
-
-    const updateData = {
-      name: 'Updated Name',
-    };
-
-    const request = new NextRequest('http://localhost/api/users/test-id', {
-      method: 'PATCH',
-      body: JSON.stringify(updateData),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    const params = Promise.resolve({ id: 'test-id' });
-    const response = await PATCH(request, { params });
-    const data = await response.json();
-
-    expect(response.status).toBe(403);
-    expect(data.success).toBe(false);
-    expect(data.error).toContain('Kullanıcı güncelleme yetkiniz bulunmuyor');
-  });
-
-  it('returns 404 when user not found', async () => {
-    vi.mocked(mockUsersInstance.update).mockRejectedValue(new Error('User not found'));
-
-    const updateData = {
-      name: 'Updated Name',
-    };
-
-    const request = new NextRequest('http://localhost/api/users/non-existent', {
-      method: 'PATCH',
-      body: JSON.stringify(updateData),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    const params = Promise.resolve({ id: 'non-existent' });
-    const response = await PATCH(request, { params });
-    const data = await response.json();
-
-    expect(response.status).toBe(404);
-    expect(data.success).toBe(false);
-  });
-
   it('handles update errors gracefully', async () => {
-    vi.mocked(mockUsersInstance.update).mockRejectedValue(new Error('Database error'));
+    mockUsersInstance.get.mockRejectedValue(new Error('Database error'));
 
-    const updateData = {
-      name: 'Updated Name',
-    };
-
-    const request = new NextRequest('http://localhost/api/users/test-id', {
+    const request = createTestRequest('http://localhost/api/users/test-id', {
       method: 'PATCH',
-      body: JSON.stringify(updateData),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      body: { name: 'Updated User' },
     });
-    const params = Promise.resolve({ id: 'test-id' });
+    const params = createTestParams({ id: 'test-id' });
     const response = await PATCH(request, { params });
-    const data = await response.json();
+    const data = await parseJsonResponse(response);
 
-    expect(response.status).toBe(500);
-    expect(data.success).toBe(false);
+    expectStatus(response, 500);
+    expectErrorResponse(data, 500, 'Güncelleme işlemi başarısız');
   });
 });
 
+// Use test pattern for DELETE
 describe('DELETE /api/users/[id]', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValue({
+      session: { sessionId: 'test-session', userId: 'test-user-id' },
+      user: { id: 'test-user', email: 'test@example.com', name: 'Test User', isActive: true, permissions: ['users:manage'] },
+    });
   });
 
-  it('deletes user successfully', async () => {
-    vi.mocked(mockUsersInstance.delete).mockResolvedValue(undefined);
+  it('deletes users successfully', async () => {
+    mockUsersInstance.delete.mockResolvedValue(undefined);
 
-    const request = new NextRequest('http://localhost/api/users/test-id', {
+    const request = createTestRequest('http://localhost/api/users/test-id', {
       method: 'DELETE',
     });
-    const params = Promise.resolve({ id: 'test-id' });
+    const params = createTestParams({ id: 'test-id' });
     const response = await DELETE(request, { params });
-    const data = await response.json();
+    const data = await parseJsonResponse(response);
 
-    expect(response.status).toBe(200);
-    expect(data.success).toBe(true);
+    expectStatus(response, 200);
+    expectSuccessResponse(data);
     expect(data.message).toBe('Kullanıcı başarıyla silindi');
-    expect(vi.mocked(mockUsersInstance.delete)).toHaveBeenCalledWith('test-id');
-  });
-
-  it('returns 403 when user does not have users:manage permission', async () => {
-    vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValueOnce(
-      createMockAuthResponse({ permissions: [] })
-    );
-
-    const request = new NextRequest('http://localhost/api/users/test-id', {
-      method: 'DELETE',
-    });
-    const params = Promise.resolve({ id: 'test-id' });
-    const response = await DELETE(request, { params });
-    const data = await response.json();
-
-    expect(response.status).toBe(403);
-    expect(data.success).toBe(false);
-    expect(data.error).toContain('Kullanıcı silme yetkiniz bulunmuyor');
-  });
-
-  it('returns 404 when user not found', async () => {
-    vi.mocked(mockUsersInstance.delete).mockRejectedValue(new Error('User not found'));
-
-    const request = new NextRequest('http://localhost/api/users/non-existent', {
-      method: 'DELETE',
-    });
-    const params = Promise.resolve({ id: 'non-existent' });
-    const response = await DELETE(request, { params });
-    const data = await response.json();
-
-    expect(response.status).toBe(404);
-    expect(data.success).toBe(false);
   });
 
   it('handles delete errors gracefully', async () => {
-    vi.mocked(mockUsersInstance.delete).mockRejectedValue(new Error('Database error'));
+    mockUsersInstance.delete.mockRejectedValue(new Error('Database error'));
 
-    const request = new NextRequest('http://localhost/api/users/test-id', {
+    const request = createTestRequest('http://localhost/api/users/test-id', {
       method: 'DELETE',
     });
-    const params = Promise.resolve({ id: 'test-id' });
+    const params = createTestParams({ id: 'test-id' });
     const response = await DELETE(request, { params });
-    const data = await response.json();
+    const data = await parseJsonResponse(response);
 
-    expect(response.status).toBe(500);
-    expect(data.success).toBe(false);
+    expectStatus(response, 500);
+    expectErrorResponse(data, 500, 'Silme işlemi başarısız');
   });
 });

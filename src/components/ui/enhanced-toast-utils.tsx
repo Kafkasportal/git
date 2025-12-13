@@ -20,13 +20,13 @@ export interface EnhancedToastOptions {
 const getIcon = (type: ToastType) => {
   switch (type) {
     case 'success':
-      return <CheckCircle className="h-5 w-5 text-green-600" />;
+      return React.createElement(CheckCircle, { className: 'h-5 w-5 text-green-600' });
     case 'error':
-      return <AlertCircle className="h-5 w-5 text-red-600" />;
+      return React.createElement(AlertCircle, { className: 'h-5 w-5 text-red-600' });
     case 'warning':
-      return <AlertTriangle className="h-5 w-5 text-amber-600" />;
+      return React.createElement(AlertTriangle, { className: 'h-5 w-5 text-amber-600' });
     case 'info':
-      return <Info className="h-5 w-5 text-blue-600" />;
+      return React.createElement(Info, { className: 'h-5 w-5 text-blue-600' });
     default:
       return null;
   }

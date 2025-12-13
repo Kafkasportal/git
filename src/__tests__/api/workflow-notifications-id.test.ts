@@ -1,7 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET, PATCH, DELETE } from '@/app/api/workflow-notifications/[id]/route';
-import { NextRequest } from 'next/server';
 import * as appwriteApi from '@/lib/appwrite/api';
+import {
+  runGetByIdTests,
+  runUpdateTests,
+  runDeleteTests,
+} from '../test-utils/test-patterns';
+import {
+  createTestRequest,
+  createTestParams,
+  parseJsonResponse,
+  expectStatus,
+  expectSuccessResponse,
+  expectErrorResponse,
+} from '../test-utils/api-test-helpers';
 
 // Mock Appwrite API
 vi.mock('@/lib/appwrite/api', () => ({
@@ -29,61 +41,48 @@ vi.mock('@/lib/logger', () => ({
   },
 }));
 
-describe('GET /api/workflow-notifications/[id]', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+// Use test pattern for GET by ID
+runGetByIdTests(
+  { GET },
+  appwriteApi.appwriteWorkflowNotifications.get as (id: string) => Promise<unknown>,
+  'workflow-notifications',
+  {
+    baseUrl: 'http://localhost/api/workflow-notifications',
+    notFoundError: 'Bildirim bulunamadı',
+    errorMessage: 'Bildirim getirilemedi',
+  }
+);
 
-  it('returns notification by ID successfully', async () => {
-    const mockNotification = {
-      _id: 'test-id',
-      recipient: 'user1',
-      title: 'Test Notification',
-      category: 'meeting',
-      status: 'beklemede',
-    };
+// Use test pattern for PATCH update
+runUpdateTests(
+  { PATCH },
+  appwriteApi.appwriteWorkflowNotifications.markAsSent as (id: string, data: unknown) => Promise<unknown>,
+  'workflow-notifications',
+  {
+    status: 'gonderildi',
+    sent_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    method: 'PATCH',
+    baseUrl: 'http://localhost/api/workflow-notifications',
+    successMessage: 'Bildirim güncellendi',
+    errorMessage: 'Bildirim güncellenemedi',
+  }
+);
 
-    vi.mocked(appwriteApi.appwriteWorkflowNotifications.get).mockResolvedValue(mockNotification);
+// Use test pattern for DELETE
+runDeleteTests(
+  { DELETE },
+  appwriteApi.appwriteWorkflowNotifications.remove as (id: string) => Promise<void>,
+  'workflow-notifications',
+  {
+    baseUrl: 'http://localhost/api/workflow-notifications',
+    successMessage: 'Bildirim silindi',
+    errorMessage: 'Bildirim silinemedi',
+  }
+);
 
-    const request = new NextRequest('http://localhost/api/workflow-notifications/test-id');
-    const params = Promise.resolve({ id: 'test-id' });
-    const response = await GET(request, { params });
-    const data = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(data.success).toBe(true);
-    expect(data.data).toEqual(mockNotification);
-  });
-
-  it('returns 404 when notification not found', async () => {
-    vi.mocked(appwriteApi.appwriteWorkflowNotifications.get).mockResolvedValue(null);
-
-    const request = new NextRequest('http://localhost/api/workflow-notifications/non-existent');
-    const params = Promise.resolve({ id: 'non-existent' });
-    const response = await GET(request, { params });
-    const data = await response.json();
-
-    expect(response.status).toBe(404);
-    expect(data.success).toBe(false);
-    expect(data.error).toBe('Bildirim bulunamadı');
-  });
-
-  it('handles errors gracefully', async () => {
-    vi.mocked(appwriteApi.appwriteWorkflowNotifications.get).mockRejectedValue(
-      new Error('Database error')
-    );
-
-    const request = new NextRequest('http://localhost/api/workflow-notifications/test-id');
-    const params = Promise.resolve({ id: 'test-id' });
-    const response = await GET(request, { params });
-    const data = await response.json();
-
-    expect(response.status).toBe(500);
-    expect(data.success).toBe(false);
-  });
-});
-
-describe('PATCH /api/workflow-notifications/[id]', () => {
+describe('PATCH /api/workflow-notifications/[id] - Specific tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -104,19 +103,16 @@ describe('PATCH /api/workflow-notifications/[id]', () => {
       updatedNotification as any
     );
 
-    const request = new NextRequest('http://localhost/api/workflow-notifications/test-id', {
+    const request = createTestRequest('http://localhost/api/workflow-notifications/test-id', {
       method: 'PATCH',
-      body: JSON.stringify(updateData),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      body: updateData,
     });
-    const params = Promise.resolve({ id: 'test-id' });
+    const params = createTestParams({ id: 'test-id' });
     const response = await PATCH(request, { params });
-    const data = await response.json();
+    const data = await parseJsonResponse(response);
 
-    expect(response.status).toBe(200);
-    expect(data.success).toBe(true);
+    expectStatus(response, 200);
+    expectSuccessResponse(data);
     expect(data.data).toEqual(updatedNotification);
     expect(data.message).toBe('Bildirim güncellendi');
   });
@@ -137,104 +133,34 @@ describe('PATCH /api/workflow-notifications/[id]', () => {
       updatedNotification as any
     );
 
-    const request = new NextRequest('http://localhost/api/workflow-notifications/test-id', {
+    const request = createTestRequest('http://localhost/api/workflow-notifications/test-id', {
       method: 'PATCH',
-      body: JSON.stringify(updateData),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      body: updateData,
     });
-    const params = Promise.resolve({ id: 'test-id' });
+    const params = createTestParams({ id: 'test-id' });
     const response = await PATCH(request, { params });
-    const data = await response.json();
+    const data = await parseJsonResponse(response);
 
-    expect(response.status).toBe(200);
-    expect(data.success).toBe(true);
+    expectStatus(response, 200);
+    expectSuccessResponse(data);
     expect(data.data).toEqual(updatedNotification);
   });
 
   it('validates status values', async () => {
     const invalidUpdate = {
-      status: 'INVALID', // Invalid status
+      status: 'INVALID',
     };
 
-    const request = new NextRequest('http://localhost/api/workflow-notifications/test-id', {
+    const request = createTestRequest('http://localhost/api/workflow-notifications/test-id', {
       method: 'PATCH',
-      body: JSON.stringify(invalidUpdate),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      body: invalidUpdate,
     });
-    const params = Promise.resolve({ id: 'test-id' });
+    const params = createTestParams({ id: 'test-id' });
     const response = await PATCH(request, { params });
-    const data = await response.json();
+    const data = await parseJsonResponse(response);
 
-    expect(response.status).toBe(400);
-    expect(data.success).toBe(false);
+    expectStatus(response, 400);
+    expectErrorResponse(data, 400);
     expect(data.error).toBe('Geçersiz bildirim durumu');
-  });
-
-  it('handles update errors gracefully', async () => {
-    vi.mocked(appwriteApi.appwriteWorkflowNotifications.markAsSent).mockRejectedValue(
-      new Error('Database error')
-    );
-
-    const updateData = {
-      status: 'gonderildi',
-    };
-
-    const request = new NextRequest('http://localhost/api/workflow-notifications/test-id', {
-      method: 'PATCH',
-      body: JSON.stringify(updateData),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    const params = Promise.resolve({ id: 'test-id' });
-    const response = await PATCH(request, { params });
-    const data = await response.json();
-
-    expect(response.status).toBe(500);
-    expect(data.success).toBe(false);
-  });
-});
-
-describe('DELETE /api/workflow-notifications/[id]', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('deletes notification successfully', async () => {
-    vi.mocked(appwriteApi.appwriteWorkflowNotifications.remove).mockResolvedValue(undefined);
-
-    const request = new NextRequest('http://localhost/api/workflow-notifications/test-id', {
-      method: 'DELETE',
-    });
-    const params = Promise.resolve({ id: 'test-id' });
-    const response = await DELETE(request, { params });
-    const data = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(data.success).toBe(true);
-    expect(data.message).toBe('Bildirim silindi');
-    expect(vi.mocked(appwriteApi.appwriteWorkflowNotifications.remove)).toHaveBeenCalledWith(
-      'test-id'
-    );
-  });
-
-  it('handles delete errors gracefully', async () => {
-    vi.mocked(appwriteApi.appwriteWorkflowNotifications.remove).mockRejectedValue(
-      new Error('Database error')
-    );
-
-    const request = new NextRequest('http://localhost/api/workflow-notifications/test-id', {
-      method: 'DELETE',
-    });
-    const params = Promise.resolve({ id: 'test-id' });
-    const response = await DELETE(request, { params });
-    const data = await response.json();
-
-    expect(response.status).toBe(500);
-    expect(data.success).toBe(false);
   });
 });

@@ -75,7 +75,7 @@ describe('user-transform', () => {
 
   describe('transformAppwriteUser', () => {
     it('should transform Appwrite user to API format', () => {
-      const appwriteUser: Models.User<Models.Preferences> = {
+      const appwriteUser = {
         $id: 'user123',
         email: 'test@example.com',
         name: 'Test User',
@@ -87,7 +87,7 @@ describe('user-transform', () => {
           role: 'Admin',
           permissions: JSON.stringify(['users:manage']),
         },
-      };
+      } as unknown as Models.User<Models.Preferences>;
 
       const result = transformAppwriteUser(appwriteUser);
 
