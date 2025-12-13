@@ -11,7 +11,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
     const { id } = await params;
     const notification = await appwriteWorkflowNotifications.get(id as string);
-    if (!(Boolean(notification))) {
+    if (!notification) {
       return NextResponse.json({ success: false, error: 'Bildirim bulunamadı' }, { status: 404 });
     }
 

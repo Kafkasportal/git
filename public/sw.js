@@ -4,7 +4,7 @@
  */
 
 const CACHE_VERSION = "v1.0.0";
-const CACHE_NAME = "kafkasder-"+CACHE_VERSION;
+const CACHE_NAME = `kafkasder-${CACHE_VERSION}`;
 const OFFLINE_PAGE = "/offline.html";
 
 // Assets to cache on install
@@ -57,7 +57,7 @@ self.addEventListener("activate", (event) => {
       .then((cacheNames) => {
         return Promise.all(
           cacheNames
-            .filter(function(name) { return name !== CACHE_NAME })
+            .filter((name) => name !== CACHE_NAME)
             .map((name) => {
               console.warn("[SW] Deleting old cache:", name);
               return caches.delete(name);
@@ -89,11 +89,11 @@ self.addEventListener("fetch", (event) => {
   }
 
   // Determine caching strategy
-  if (CACHE_FIRST_PATTERNS.some(function(pattern) { return pattern.test(url.href) })) {
+  if (CACHE_FIRST_PATTERNS.some((pattern) => pattern.test(url.href))) {
     event.respondWith(cacheFirst(request));
-  } else if (NETWORK_FIRST_PATTERNS.some(function(pattern) { return pattern.test(url.href) })) {
+  } else if (NETWORK_FIRST_PATTERNS.some((pattern) => pattern.test(url.href))) {
     event.respondWith(networkFirst(request));
-  } else if (STALE_WHILE_REVALIDATE_PATTERNS.some(function(pattern) { return pattern.test(url.href) })) {
+  } else if (STALE_WHILE_REVALIDATE_PATTERNS.some((pattern) => pattern.test(url.href))) {
     event.respondWith(staleWhileRevalidate(request));
   } else {
     event.respondWith(networkFirst(request));

@@ -59,7 +59,7 @@ async function getKumbaraStatsHandler(request: NextRequest) {
     });
   } catch (_error: unknown) {
     const authError = buildErrorResponse(_error);
-    if (Boolean(authError)) {
+    if (authError) {
       return NextResponse.json(authError.body, { status: authError.status });
     }
 

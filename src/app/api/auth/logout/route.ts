@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       const authSessionCookie = cookieStore.get('auth-session')?.value;
       if (authSessionCookie) {
         const session = parseAuthSession(authSessionCookie);
-        if (Boolean((session?.sessionId))) {
+        if (session?.sessionId) {
           // Delete Appwrite session
           const client = new Client()
             .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
