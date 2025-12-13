@@ -16,7 +16,7 @@ import { z } from "zod";
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await extractParams(params);
   try {

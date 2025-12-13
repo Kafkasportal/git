@@ -105,7 +105,7 @@ export const GET = buildApiRoute({
   // Extract filters from query params
   const filters: PartnerFilters = {};
   if (searchParams.get("type"))
-    filters.type = searchParams.get("type") || undefined;
+    filters.type = searchParams.get("type") ?? undefined;
   if (searchParams.get("status"))
     filters.status = searchParams.get("status") || undefined;
   if (searchParams.get("partnership_type"))

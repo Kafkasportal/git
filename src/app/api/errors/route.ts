@@ -84,7 +84,7 @@ async function postErrorHandler(request: NextRequest) {
     // Create error using Appwrite
     const result = await appwriteErrors.create({
       ...data,
-      user_id: data.user_id || undefined,
+      user_id: data.user_id ?? undefined,
       reporter_id: data.reporter_id || undefined,
       occurrence_count: 1,
       first_seen: new Date().toISOString(),

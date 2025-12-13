@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 import { generateCsrfToken, validateCsrfToken } from "@/lib/csrf";
 import { cookies } from "next/headers";
 import { authRateLimit } from "@/lib/rate-limit";
@@ -28,7 +29,7 @@ export const POST = authRateLimit(async (request: NextRequest) => {
     const cookieStore = await cookies();
     const cookieToken = cookieStore.get("csrf-token")?.value || "";
 
-    if (!validateCsrfToken(headerToken, cookieToken)) {
+    if (!(Boolean(validateCsrfToken(headerToken, cookieToken)))) {
       return NextResponse.json(
         { success: false, error: "Güvenlik doğrulaması başarısız" },
         { status: 403 },
@@ -43,7 +44,7 @@ export const POST = authRateLimit(async (request: NextRequest) => {
     if (!email || !password) {
       return NextResponse.json(
         { success: false, error: "Email ve şifre gereklidir" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -304,7 +305,7 @@ export const POST = authRateLimit(async (request: NextRequest) => {
 
     // Create our own custom session (not Appwrite session)
     // We use Appwrite session ID format but manage it ourselves
-    const sessionId = `appwrite_session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    const sessionId = `appwrite_session_${Date.now()}_${randomBytes(8).toString('hex')}`;
     // Session expiry: 30 days if rememberMe, 24 hours otherwise
     const expireTime = new Date(Date.now() + (rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000));
     const signedSession = serializeSessionCookie({

@@ -80,7 +80,7 @@ export function useFormMutation<TData = unknown, TVariables = unknown>({
   const mutation = useMutation<TData, unknown, TVariables>({
     mutationFn: async (variables: TVariables) => {
       // Check if offline and offline queue is enabled (requires collection to be set)
-      if (isOffline && enableOfflineQueue && collection) {
+      if (isOffline && enableOfflineQueue && (collection != null)) {
         try {
           await queueOfflineMutation({
             type: mutationType,

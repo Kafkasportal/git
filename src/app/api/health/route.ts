@@ -9,8 +9,8 @@ export async function GET(request: Request) {
   const detailed = url.searchParams.get('detailed') === 'true';
 
   // Appwrite configuration checks
-  const appwriteEndpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || '';
-  const appwriteProjectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || '';
+  const appwriteEndpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT ?? '';
+  const appwriteProjectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID ?? '';
   const appwriteApiKey = process.env.APPWRITE_API_KEY || '';
   const appwriteDatabaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || '';
 

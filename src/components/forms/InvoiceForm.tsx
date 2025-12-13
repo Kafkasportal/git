@@ -69,7 +69,7 @@ export default function InvoiceForm({
       return {
         clientName: invoice.clientName,
         clientEmail: invoice.clientEmail,
-        clientAddress: invoice.clientAddress || '',
+        clientAddress: (Boolean(invoice.clientAddress)) || '',
         items: invoice.items.map((item) => ({
           description: item.description,
           quantity: item.quantity,

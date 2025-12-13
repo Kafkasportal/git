@@ -39,7 +39,7 @@ export function GradientText({
   as: Component = 'span',
   customGradient,
 }: GradientTextProps) {
-  const gradientClass = customGradient || gradients[variant];
+  const gradientClass = customGradient ?? gradients[variant];
   const directionClass = directions[direction];
 
   return (

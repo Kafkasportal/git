@@ -25,7 +25,7 @@ const client = new Client()
 
 const databases = new Databases(client);
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise((resolve) => {setTimeout(resolve, ms)});
 
 async function setupDatabase() {
   console.log("🚀 Starting Database Setup...");

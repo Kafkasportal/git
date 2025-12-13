@@ -26,7 +26,7 @@ export interface TextareaProps
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, variant, ...props }, ref) => {
     // Use aria-invalid for automatic error state if variant not specified
-    const effectiveVariant = variant || (props['aria-invalid'] ? 'error' : 'default');
+    const effectiveVariant = variant ?? (props['aria-invalid'] ? 'error' : 'default');
 
     return (
       <textarea

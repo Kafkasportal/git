@@ -79,7 +79,7 @@ export const GET = buildApiRoute({
       filtered = filtered.filter(b => b.category === category);
     }
     if (status) {
-      filtered = filtered.filter(b => b.status === status);
+      filtered = filtered.filter(function(b) { return b.status === status });
     }
 
     // Limit results

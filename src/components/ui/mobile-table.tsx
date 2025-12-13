@@ -75,7 +75,7 @@ export function MobileTable<T extends Record<string, unknown>>({
 
   // Filter columns by priority for mobile view
   const visibleColumns = useMemo(() => {
-    if (isMobile) {
+    if (Boolean(isMobile)) {
       return columns.filter((col) => col.priority === 'high');
     }
     if (isTablet) {

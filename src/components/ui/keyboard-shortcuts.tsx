@@ -50,7 +50,7 @@ export function KeyboardShortcuts({
     const ctrlMatch = shortcut.ctrl
       ? event.ctrlKey || event.metaKey
       : !event.ctrlKey && !event.metaKey;
-    const shiftMatch = shortcut.shift ? event.shiftKey : !event.shiftKey;
+    const shiftMatch = (shortcut.shift ?? false) ? event.shiftKey : !event.shiftKey;
     const altMatch = shortcut.alt ? event.altKey : !event.altKey;
 
     return keyMatch && ctrlMatch && shiftMatch && altMatch;

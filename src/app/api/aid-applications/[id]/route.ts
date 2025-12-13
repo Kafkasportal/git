@@ -14,7 +14,7 @@ function validateApplicationUpdate(data: Record<string, unknown>): {
   ) {
     errors.push('Geçersiz aşama');
   }
-  if (data.status && !['open', 'closed'].includes(data.status as string)) {
+  if ((Boolean(data.status)) && !['open', 'closed'].includes(data.status as string)) {
     errors.push('Geçersiz durum');
   }
   return { isValid: errors.length === 0, errors };

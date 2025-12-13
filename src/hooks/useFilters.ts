@@ -57,7 +57,7 @@ export function useFilters(options: UseFiltersOptions = {}) {
   const [presets, setPresets] = useState<FilterPreset[]>(() => {
     if (presetsKey && typeof window !== 'undefined') {
       const stored = localStorage.getItem(`filter-presets-${presetsKey}`);
-      if (stored) {
+      if (stored != null) {
         try {
           return JSON.parse(stored);
         } catch {

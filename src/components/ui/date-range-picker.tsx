@@ -27,7 +27,7 @@ interface DateRangePickerProps {
 const presets = [
   {
     label: 'Bugün',
-    getValue: () => ({ from: new Date(), to: new Date() }),
+    getValue() { return ({ from: new Date(), to: new Date() }) },
   },
   {
     label: 'Son 7 gün',

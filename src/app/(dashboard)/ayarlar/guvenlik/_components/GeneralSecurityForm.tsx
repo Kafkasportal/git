@@ -53,7 +53,7 @@ export function GeneralSecurityForm({ form, onChange, onSubmit, isPending }: Gen
               <Switch
                 id="audit-log"
                 checked={form.enableAuditLog}
-                onCheckedChange={(checked) => updateField('enableAuditLog', checked)}
+                onCheckedChange={function(checked) { return updateField('enableAuditLog', checked) }}
               />
             </div>
 

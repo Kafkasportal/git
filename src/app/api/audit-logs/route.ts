@@ -19,7 +19,7 @@ async function getAuditLogsHandler(request: NextRequest) {
       user.role?.toUpperCase() === 'ADMIN' || user.role?.toUpperCase() === 'SUPER_ADMIN';
     const hasAuditPermission = user.permissions.includes('audit:view');
 
-    if (!isAdmin && !hasAuditPermission) {
+    if (!isAdmin && !(Boolean(hasAuditPermission))) {
       return NextResponse.json(
         { success: false, error: 'Denetim kayıtlarını görüntülemek için yetkiniz yok' },
         { status: 403 }

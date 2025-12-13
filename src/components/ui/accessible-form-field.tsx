@@ -27,7 +27,7 @@ export const AccessibleFormField = forwardRef<HTMLDivElement, AccessibleFormFiel
     const ariaDescribedBy = [errorId, hintId].filter(Boolean).join(' ') || undefined;
 
     return (
-      <div ref={ref} className={cn('space-y-2', disabled && 'opacity-60', className)}>
+      <div ref={ref} className={cn('space-y-2', (disabled ?? false) && 'opacity-60', className)}>
         {label && (
           <label
             htmlFor={htmlFor}
@@ -49,7 +49,7 @@ export const AccessibleFormField = forwardRef<HTMLDivElement, AccessibleFormFiel
         <div
           role="group"
           aria-describedby={ariaDescribedBy}
-          aria-invalid={!!error}
+          aria-invalid={!(error == null)}
           aria-disabled={disabled}
         >
           {children}
@@ -61,7 +61,7 @@ export const AccessibleFormField = forwardRef<HTMLDivElement, AccessibleFormFiel
           </p>
         )}
 
-        {error && (
+        {(error != null) && (
           <p id={errorId} className="text-xs text-red-600 font-medium" role="alert">
             {error}
           </p>

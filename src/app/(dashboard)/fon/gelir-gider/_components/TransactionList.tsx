@@ -54,7 +54,7 @@ function TransactionListComponent({
       <CardHeader>
         <CardTitle>Gelir Gider Listesi</CardTitle>
         <CardDescription>
-          {total ? `Toplam ${total} kayıt bulundu` : 'Kayıt bulunamadı'}
+          {(total != null) ? `Toplam ${total} kayıt bulundu` : 'Kayıt bulunamadı'}
         </CardDescription>
       </CardHeader>
       <CardContent>

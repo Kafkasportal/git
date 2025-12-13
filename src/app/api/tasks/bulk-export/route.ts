@@ -14,7 +14,7 @@ function taskToPlainObject(task: TaskDocument): Record<string, unknown> {
     assigned_to: task.assigned_to,
     due_date: task.due_date,
     category: task.category,
-    created_at: task._creationTime || task.$createdAt,
+    created_at: task._creationTime ?? task.$createdAt,
   };
 }
 

@@ -35,7 +35,7 @@ export function AddressTab({ state, actions, readOnly }: AddressTabProps) {
                         <Input
                             id="city"
                             value={state.city}
-                            onChange={(e) => actions.setCity(e.target.value)}
+                            onChange={function(e) { return actions.setCity(e.target.value) }}
                             disabled={readOnly}
                         />
                     </div>

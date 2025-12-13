@@ -35,7 +35,7 @@ interface StatsData {
   thisMonth: number;
   lastMonth: number;
   byStage: Partial<Record<WorkflowStage, number>>;
-  byCategory: Array<{ category: string; count: number }>;
+  byCategory: { category: string; count: number }[];
 }
 
 /**

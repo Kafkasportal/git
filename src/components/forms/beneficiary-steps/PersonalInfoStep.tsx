@@ -55,7 +55,7 @@ export function PersonalInfoStep({ isUpdateMode: _isUpdateMode = false }: Person
               id="lastName"
               {...register('lastName')}
               placeholder="Soyad"
-              className={errors.lastName ? 'border-red-500' : ''}
+              className={(Boolean(errors.lastName)) ? 'border-red-500' : ''}
             />
             {errors.lastName && <p className="text-sm text-red-500">{errors.lastName.message}</p>}
           </div>

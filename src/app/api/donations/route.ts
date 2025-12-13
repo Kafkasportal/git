@@ -31,7 +31,7 @@ function validateDonation(data: Partial<DonationDocument>): {
   if (data.donor_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.donor_email)) {
     errors.push('Geçersiz e-posta');
   }
-  if (data.donor_phone) {
+  if (Boolean(data.donor_phone)) {
     const sanitized = sanitizePhone(data.donor_phone);
     if (!sanitized || !phoneSchema.safeParse(sanitized).success) {
       errors.push('Geçersiz telefon numarası (5XXXXXXXXX formatında olmalıdır)');

@@ -19,7 +19,7 @@ async function testAuth() {
 
   // Environment variables kontrolü
   console.log("📋 Environment Variables:");
-  console.log(`   Endpoint: ${projectEndpoint || "❌ EKSIK"}`);
+  console.log(`   Endpoint: ${projectEndpoint ?? "❌ EKSIK"}`);
   console.log(`   Project ID: ${projectId || "❌ EKSIK"}`);
   console.log(`   API Key: ${apiKey ? "✅ SET" : "❌ EKSIK"}\n`);
 

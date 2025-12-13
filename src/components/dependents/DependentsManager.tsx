@@ -60,7 +60,7 @@ export function DependentsManager({ beneficiaryId }: DependentsManagerProps) {
     placeholderData: [],
   });
 
-  const dependents = dependentsData || [];
+  const dependents = (Boolean(dependentsData)) || [];
 
   const createMutation = useMutation({
     mutationFn: async () => {

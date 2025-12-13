@@ -45,14 +45,14 @@ export function MobileFormField({
       {label && (
         <Label className="text-base font-medium flex items-center gap-1">
           {label}
-          {required && <span className="text-destructive">*</span>}
+          {(required ?? false) && <span className="text-destructive">*</span>}
         </Label>
       )}
       {description && (
         <p className="text-sm text-muted-foreground">{description}</p>
       )}
       {children}
-      {error && (
+      {(error != null) && (
         <p className="text-sm text-destructive flex items-center gap-1">
           <AlertCircle className="h-4 w-4" />
           {error}

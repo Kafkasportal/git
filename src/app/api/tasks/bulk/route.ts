@@ -58,7 +58,7 @@ export async function DELETE(request: NextRequest) {
 
     const results = await Promise.allSettled(deletePromises);
 
-    results.forEach((res) => {
+    for (const res of results) {
       if (res.status === 'fulfilled') {
         if (res.value.success) {
           result.success++;
@@ -69,7 +69,7 @@ export async function DELETE(request: NextRequest) {
       } else {
         result.failed++;
       }
-    });
+    }
 
     logger.info('Bulk delete tasks completed', {
       success: result.success,

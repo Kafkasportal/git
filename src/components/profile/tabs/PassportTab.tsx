@@ -50,7 +50,7 @@ export function PassportTab({ state, actions, passportValidation, readOnly }: Pa
                             id="passport_issue_date"
                             type="date"
                             value={state.passportIssueDate}
-                            onChange={(e) => actions.setPassportIssueDate(e.target.value)}
+                            onChange={function(e) { return actions.setPassportIssueDate(e.target.value) }}
                             disabled={readOnly}
                         />
                     </div>

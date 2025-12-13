@@ -39,7 +39,7 @@ function Card({ className, variant, size, animated, ...props }: CardProps) {
       data-variant={variant}
       className={cn(
         cardVariants({ variant, size }),
-        animated && 'hover:scale-[1.02] transition-transform duration-200',
+        (animated ?? false) && 'hover:scale-[1.02] transition-transform duration-200',
         className
       )}
       {...props}
