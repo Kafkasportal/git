@@ -27,14 +27,14 @@ export async function POST(request: NextRequest) {
       const authSessionCookie = cookieStore.get('auth-session')?.value;
       if (authSessionCookie) {
         const session = parseAuthSession(authSessionCookie);
-        if (session?.sessionId) {
+        if (Boolean((session?.sessionId))) {
           // Delete Appwrite session
           const client = new Client()
             .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
             .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!);
 
           const account = new Account(client);
-          
+
           // Try to delete the session (may fail if already expired, that's ok)
           try {
             await account.deleteSession(session.sessionId);

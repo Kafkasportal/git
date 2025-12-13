@@ -42,7 +42,7 @@ export function useKeyboardNavigation(options: KeyboardNavigationOptions) {
       const isTextInput =
         event.target instanceof HTMLInputElement ||
         event.target instanceof HTMLTextAreaElement ||
-        (event.target as HTMLElement)?.isContentEditable;
+        (event.target as HTMLElement).isContentEditable;
 
       switch (event.key) {
         case 'Escape':

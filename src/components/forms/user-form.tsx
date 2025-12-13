@@ -20,7 +20,7 @@ import { ALL_PERMISSIONS, type PermissionValue } from '@/types/permissions';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-const PHONE_REGEX = /^[0-9\s\-\+\(\)]{10,15}$/;
+const PHONE_REGEX = /^[0-9\s\-+\(\)]{10,15}$/;
 
 const PERMISSION_VALUES = ALL_PERMISSIONS as readonly [PermissionValue, ...PermissionValue[]];
 

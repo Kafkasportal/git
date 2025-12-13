@@ -43,7 +43,7 @@ export function AddressInfoStep() {
               placeholder="İl seçin"
               className={errors.city ? 'border-red-500' : ''}
             />
-            {errors.city && <p className="text-sm text-red-500">{errors.city.message}</p>}
+            {errors.city ? <p className="text-sm text-red-500">{errors.city.message}</p> : null}
           </div>
 
           <div className="space-y-2">

@@ -26,7 +26,7 @@ export function PlaceholderPage({
   return (
     <PageLayout
       title={title}
-      description={description || 'Bu sayfa geliştirme aşamasındadır'}
+      description={description ?? 'Bu sayfa geliştirme aşamasındadır'}
       badge={{ text: 'Geliştiriliyor', variant: 'secondary' }}
       showBackButton={true}
     >

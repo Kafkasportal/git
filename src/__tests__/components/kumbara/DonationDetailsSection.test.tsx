@@ -53,7 +53,7 @@ describe("DonationDetailsSection", () => {
             />
           );
         }}
-      </TestWrapper>,
+      </TestWrapper>
     );
 
     return { ...result, methods: methods! };

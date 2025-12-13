@@ -69,7 +69,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
                 key={index}
                 className="absolute inset-0 rounded-full border-2 border-brand-primary animate-ripple motion-reduce:animate-none"
                 style={{
-                  animationDelay: `${index * 0.5}s`,
+                  animationDelay: "" + index * 0.5 + "s",
                 }}
               />
             ))}

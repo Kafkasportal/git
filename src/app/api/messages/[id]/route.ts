@@ -45,7 +45,7 @@ export async function GET(
     if (!message) {
       return NextResponse.json(
         { success: false, error: "Mesaj bulunamadı" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 

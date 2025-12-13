@@ -31,7 +31,7 @@ async function getDonationStatsHandler(request: NextRequest) {
     await requireModuleAccess('donations');
 
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type') || 'overview';
+    const type = searchParams.get('type') ?? 'overview';
 
     // Fetch all donations for stats calculation
     const result = await appwriteDonations.list({

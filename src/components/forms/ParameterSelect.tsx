@@ -40,7 +40,7 @@ export function ParameterSelect({
   className,
 }: ParameterSelectProps) {
   const resolvedCategory = category ?? parameter ?? '';
-  const handleChange = onValueChange ?? onChange ?? (() => {});
+  const handleChange = onValueChange ?? onChange ?? (() => { });
 
   const { data, isLoading } = useQuery({
     queryKey: ['parameters', resolvedCategory],
@@ -59,7 +59,7 @@ export function ParameterSelect({
       )}
       <Select value={value} onValueChange={handleChange} disabled={disabled || isLoading}>
         <SelectTrigger id={resolvedCategory} className={className}>
-          <SelectValue placeholder={placeholder || (label ? `${label} seçin` : 'Seçin')} />
+          <SelectValue placeholder={placeholder || (label ? "" + label + " seçin" : 'Seçin')} />
         </SelectTrigger>
         <SelectContent>
           {isLoading ? (
