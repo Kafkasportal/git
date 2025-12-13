@@ -9,7 +9,7 @@
  * Original: 815 lines, CC: 50 → Refactored: ~260 lines, CC: ~10
  */
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -116,21 +116,44 @@ export default function SecuritySettingsPage() {
   // Memoize settings to prevent unnecessary re-renders
   const settings = useMemo(() => settingsData?.data || {}, [settingsData?.data]);
 
-  // Form states
+  // Compute initial form values from settings
+  const initialPasswordForm = useMemo(
+    () => syncFormWithSettings(settings, DEFAULT_PASSWORD_FORM),
+    [settings]
+  );
+  const initialSessionForm = useMemo(
+    () => syncFormWithSettings(settings, DEFAULT_SESSION_FORM),
+    [settings]
+  );
+  const initialTfaForm = useMemo(
+    () => syncFormWithSettings(settings, DEFAULT_TFA_FORM),
+    [settings]
+  );
+  const initialGeneralForm = useMemo(
+    () => syncFormWithSettings(settings, DEFAULT_GENERAL_FORM),
+    [settings]
+  );
+
+  // Form states - initialized with computed values
   const [passwordForm, setPasswordForm] = useState<PasswordFormData>(DEFAULT_PASSWORD_FORM);
   const [sessionForm, setSessionForm] = useState<SessionFormData>(DEFAULT_SESSION_FORM);
   const [tfaForm, setTfaForm] = useState<TfaFormData>(DEFAULT_TFA_FORM);
   const [generalForm, setGeneralForm] = useState<GeneralSecurityFormData>(DEFAULT_GENERAL_FORM);
 
-  // Sync forms with loaded settings
+  // Sync forms with loaded settings using a ref to track if we've synced
+  const hasSynced = useRef(false);
   useEffect(() => {
-    if (settings && Object.keys(settings).length > 0) {
-      setPasswordForm(syncFormWithSettings(settings, DEFAULT_PASSWORD_FORM));
-      setSessionForm(syncFormWithSettings(settings, DEFAULT_SESSION_FORM));
-      setTfaForm(syncFormWithSettings(settings, DEFAULT_TFA_FORM));
-      setGeneralForm(syncFormWithSettings(settings, DEFAULT_GENERAL_FORM));
+    if (settings && Object.keys(settings).length > 0 && !hasSynced.current) {
+      hasSynced.current = true;
+      // Use requestAnimationFrame to avoid synchronous setState in effect
+      requestAnimationFrame(() => {
+        setPasswordForm(initialPasswordForm);
+        setSessionForm(initialSessionForm);
+        setTfaForm(initialTfaForm);
+        setGeneralForm(initialGeneralForm);
+      });
     }
-  }, [settings]);
+  }, [settings, initialPasswordForm, initialSessionForm, initialTfaForm, initialGeneralForm]);
 
   // Update mutation
   const updateMutation = useMutation({

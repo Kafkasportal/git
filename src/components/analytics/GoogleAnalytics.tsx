@@ -21,7 +21,7 @@ export function GoogleAnalytics() {
   const isValidFormat = /^(G|UA|AW|DC)-[A-Z0-9-]+$/i.test(gaMeasurementId);
 
   if (!isValidFormat) {
-    logger.error('Invalid Google Analytics Measurement ID format', { gaMeasurementId: gaMeasurementId });
+    logger.error('Invalid Google Analytics Measurement ID format', { gaMeasurementId });
     return null;
   }
 
