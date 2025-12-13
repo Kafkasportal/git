@@ -143,7 +143,7 @@ export const POST = authRateLimit(async (request: NextRequest) => {
           },
           body: JSON.stringify({
             email: emailLower,
-            password: password,
+            password,
           }),
         });
 

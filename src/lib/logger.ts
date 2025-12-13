@@ -128,9 +128,13 @@ class LoggerImpl implements Logger {
 
     const safeContext = maskSensitive(fullContext);
     let safeError: Error | unknown = error;
+    
     if (error instanceof Error) {
-      safeError = shortenStackTrace(new Error(error.message));
-      (safeError as Error).stack = (error as Error).stack;
+      // Create a copy for safe logging (with shortened stack in production)
+      const errorCopy = new Error(error.message);
+      errorCopy.name = error.name;
+      errorCopy.stack = error.stack;
+      safeError = shortenStackTrace(errorCopy);
     }
 
     const logEntry = {
@@ -147,11 +151,20 @@ class LoggerImpl implements Logger {
       if (safeContext && typeof safeContext === 'object' && Object.keys(safeContext).length > 0) {
         console.log(JSON.stringify(safeContext, null, 2));
       }
-      if (safeError) {
-        if (safeError instanceof Error) {
-          console.error(safeError);
+      if (error) {
+        // Use original error for console.error to preserve full stack trace
+        if (error instanceof Error) {
+          console.error(error);
         } else {
-          console.error('Error:', safeError);
+          // For non-Error objects, try to stringify or convert to string
+          try {
+            const errorStr = typeof error === 'object' && error !== null
+              ? JSON.stringify(error, null, 2)
+              : String(error);
+            console.error('Error:', errorStr);
+          } catch {
+            console.error('Error:', error);
+          }
         }
       }
     } else {

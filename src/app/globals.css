@@ -1432,3 +1432,146 @@ html.disable-transitions,
 html.disable-transitions * {
   transition: none !important;
 }
+
+/* ========================================
+   TYPOGRAPHY ENHANCEMENTS
+   ======================================== */
+
+/* Font Loading Optimization */
+@supports (font-variation-settings: normal) {
+  html {
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Better typography for headings */
+h1, h2, h3, h4, h5, h6 {
+  -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.02);
+  text-rendering: optimizeLegibility;
+}
+
+/* Better text on small screens */
+@media (max-width: 640px) {
+  body {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+  }
+
+  p {
+    line-height: 1.6;
+  }
+}
+
+/* Text selection colors */
+::selection {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.dark ::selection {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* Link styles */
+a {
+  text-decoration-skip-ink: auto;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Code blocks */
+code {
+  font-family: "Fira Code", "Menlo", "Monaco", monospace;
+  font-size: 0.9em;
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.375rem;
+  background-color: var(--muted);
+  color: var(--foreground);
+}
+
+pre {
+  background-color: var(--muted);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+pre code {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* List improvements */
+ul, ol {
+  margin-left: 1.5rem;
+}
+
+li {
+  margin-bottom: 0.5rem;
+}
+
+/* Blockquote styles */
+blockquote {
+  border-left: 4px solid var(--primary);
+  padding-left: 1rem;
+  margin-left: 0;
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+
+@media print {
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  a,
+  a:visited {
+    text-decoration: underline;
+  }
+
+  a[href]:after {
+    content: " (" attr(href) ")";
+  }
+
+  img {
+    max-width: 100% !important;
+  }
+
+  @page {
+    margin: 0.5cm;
+  }
+
+  h1,
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+}

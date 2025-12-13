@@ -32,7 +32,7 @@ async function testSessionCreation(email: string, password: string) {
       },
       body: JSON.stringify({
         email: email.toLowerCase().trim(),
-        password: password,
+        password,
       }),
     });
 

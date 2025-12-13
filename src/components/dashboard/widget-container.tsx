@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -48,8 +48,19 @@ export function WidgetContainer({
   className,
   headerActions,
 }: WidgetContainerProps) {
+  // #region agent log
+  const cardRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      fetch('http://127.0.0.1:7243/ingest/8badabf4-954a-4dea-98a3-61025b9c897b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'widget-container.tsx:WidgetContainer',message:'Widget container dimensions',data:{widgetId:widget.id,widgetTitle:widget.title,width:rect.width,height:rect.height,top:rect.top,left:rect.left,isOverflowing:cardRef.current.scrollHeight>cardRef.current.clientHeight},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
+    }
+  }, [widget.id, widget.title]);
+  // #endregion
+
   return (
     <Card
+      ref={cardRef}
       className={cn(
         'h-full flex flex-col overflow-hidden transition-shadow',
         isEditMode && 'ring-2 ring-dashed ring-primary/30 cursor-move',

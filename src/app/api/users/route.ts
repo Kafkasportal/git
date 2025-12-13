@@ -123,7 +123,7 @@ async function createUserHandler(request: NextRequest) {
 
       // Set role and permissions in user preferences
       const preferences: Record<string, string> = {
-        role: role,
+        role,
         permissions: JSON.stringify(permissions),
       };
 

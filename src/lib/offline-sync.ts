@@ -32,7 +32,7 @@ const COLLECTION_ENDPOINT_MAP: Record<string, string> = {
 };
 
 const DB_NAME = 'kafkasder-offline';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = 'pending-mutations';
 
 /**

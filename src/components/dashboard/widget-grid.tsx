@@ -83,16 +83,6 @@ export function WidgetGrid({
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [layoutName, setLayoutName] = useState('');
 
-  const handleSaveLayout = useCallback(() => {
-    if (layoutName.trim()) {
-      onSaveLayout(layoutName.trim());
-      setLayoutName('');
-      setSaveDialogOpen(false);
-    }
-  }, [layoutName, onSaveLayout]);
-
-  const hiddenWidgetsCount = widgets.filter((w) => !w.visible).length;
-
   // Create responsive layouts object - mapping the single layout to all breakpoints
   // This ensures the layout adapts but starts from the user's defined positions
   const layouts = useMemo(() => ({
@@ -102,6 +92,16 @@ export function WidgetGrid({
     xs: layoutItems,
     xxs: layoutItems
   }), [layoutItems]);
+
+  const handleSaveLayout = useCallback(() => {
+    if (layoutName.trim()) {
+      onSaveLayout(layoutName.trim());
+      setLayoutName('');
+      setSaveDialogOpen(false);
+    }
+  }, [layoutName, onSaveLayout]);
+
+  const hiddenWidgetsCount = widgets.filter((w) => !w.visible).length;
 
   return (
     <div className={cn('relative w-full', className)}>
@@ -234,6 +234,7 @@ export function WidgetGrid({
       </div>
 
       {/* Responsive Grid */}
+
       {visibleWidgets.length === 0 ? (
         <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-lg bg-slate-50 dark:bg-slate-900/50">
           <div className="text-center text-muted-foreground">

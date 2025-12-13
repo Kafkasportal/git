@@ -3,7 +3,7 @@
  * Bu script Appwrite auth bağlantısını ve kullanıcı listesini kontrol eder
  */
 
-import { Client, Users, Account } from "node-appwrite";
+import { Client, Users } from "node-appwrite";
 import dotenv from "dotenv";
 import path from "path";
 
