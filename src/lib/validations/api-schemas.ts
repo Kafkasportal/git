@@ -7,19 +7,32 @@
  *
  * NOTE: These are specifically designed for API route validation and may differ
  * from form validation schemas which often have additional UI-specific requirements.
+ *
+ * DESIGN DECISIONS:
+ * 1. Phone validation differs by entity:
+ *    - Beneficiaries use flexible phone format (various formats allowed)
+ *    - Donations use strict Turkish mobile format (5XXXXXXXXX)
+ *    This matches the original implementation behavior.
+ *
+ * 2. We avoid using transforms from shared-validators.ts because Zod v4
+ *    has compatibility issues with transformed schemas in z.object().
+ *
+ * 3. TC ID validation uses simple format check (11 digits) rather than
+ *    algorithmic validation for API routes, as the original code did.
  */
 
 import { z } from 'zod';
 
 // ============================================================================
-// PHONE VALIDATION HELPER
+// PHONE VALIDATION HELPERS
 // ============================================================================
 
 /**
- * Simple phone validation schema for API routes
- * Accepts Turkish mobile format: 5XXXXXXXXX
+ * Strict Turkish mobile phone validation for donations
+ * Accepts: 5XXXXXXXXX (10 digits starting with 5)
+ * Note: Does not use transforms due to Zod v4 compatibility issues
  */
-const apiPhoneSchema = z
+const donorPhoneSchema = z
   .string()
   .optional()
   .refine(
@@ -32,6 +45,15 @@ const apiPhoneSchema = z
     },
     'Geçersiz telefon numarası (5XXXXXXXXX formatında olmalıdır)'
   );
+
+/**
+ * Flexible phone validation for beneficiaries
+ * Accepts various formats: mobile, landline, with/without country code
+ * Pattern: 10-15 digits with optional spaces, dashes, parentheses, +
+ */
+const beneficiaryPhoneSchema = z
+  .string()
+  .regex(/^[0-9\s\-\+\(\)]{10,15}$/, 'Geçerli bir telefon numarası giriniz');
 
 // ============================================================================
 // BENEFICIARY API SCHEMAS
@@ -54,9 +76,7 @@ export const beneficiaryApiCreateSchema = z.object({
   tc_no: z
     .string()
     .regex(/^\d{11}$/, 'TC Kimlik No 11 haneli olmalıdır'),
-  phone: z
-    .string()
-    .regex(/^[0-9\s\-\+\(\)]{10,15}$/, 'Geçerli bir telefon numarası giriniz'),
+  phone: beneficiaryPhoneSchema,
   address: z
     .string()
     .min(10, 'Adres en az 10 karakter olmalıdır')
@@ -127,10 +147,7 @@ export const beneficiaryApiUpdateSchema = z.object({
     .string()
     .regex(/^\d{11}$/, 'TC Kimlik No 11 haneli olmalıdır')
     .optional(),
-  phone: z
-    .string()
-    .regex(/^[0-9\s\-\+\(\)]{10,15}$/, 'Geçerli bir telefon numarası giriniz')
-    .optional(),
+  phone: beneficiaryPhoneSchema.optional(),
   address: z
     .string()
     .min(10, 'Adres en az 10 karakter olmalıdır')
@@ -179,7 +196,7 @@ export const donationApiCreateSchema = z.object({
     .email('Geçersiz e-posta')
     .optional()
     .or(z.literal('')),
-  donor_phone: apiPhoneSchema,
+  donor_phone: donorPhoneSchema,
   donation_type: z.string().min(1, 'Bağış türü').optional(),
   payment_method: z.string().optional().default('cash'),
   donation_purpose: z.string().min(1, 'Bağış amacı').optional(),
@@ -203,7 +220,7 @@ export const donationApiUpdateSchema = z.object({
     .email('Geçersiz e-posta')
     .optional()
     .or(z.literal('')),
-  donor_phone: apiPhoneSchema,
+  donor_phone: donorPhoneSchema,
   status: donationStatusEnum.optional(),
   notes: z.string().optional(),
 }).passthrough(); // Allow additional fields for partial updates
