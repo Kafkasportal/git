@@ -21,7 +21,7 @@ import {
  *
  * Verifies credentials using Appwrite Client SDK on server-side
  */
-export const POST = authRateLimit(async (request: NextRequest) => {
+const loginHandler = async (request: NextRequest) => {
   let email: string | undefined;
 
   try {
@@ -31,7 +31,7 @@ export const POST = authRateLimit(async (request: NextRequest) => {
 
     if (!(Boolean(validateCsrfToken(headerToken, cookieToken)))) {
       return NextResponse.json(
-        { success: false, error: "Güvenlik doğrulaması başarısız" },
+        { success: false, error: "Güvenlik doğrulaması başarısız", message: "Güvenlik doğrulaması başarısız" },
         { status: 403 },
       );
     }
@@ -43,7 +43,7 @@ export const POST = authRateLimit(async (request: NextRequest) => {
     // Validate input
     if (!email || !password) {
       return NextResponse.json(
-        { success: false, error: "Email ve şifre gereklidir" },
+        { success: false, error: "Email ve şifre gereklidir", message: "Email ve şifre gereklidir" },
         { status: 400 }
       );
     }
@@ -62,6 +62,7 @@ export const POST = authRateLimit(async (request: NextRequest) => {
         {
           success: false,
           error: `Hesap geçici olarak kilitlendi. ${minutes} dakika sonra tekrar deneyin.`,
+          message: `Hesap geçici olarak kilitlendi. ${minutes} dakika sonra tekrar deneyin.`,
           locked: true,
           remainingSeconds,
         },
@@ -100,6 +101,7 @@ export const POST = authRateLimit(async (request: NextRequest) => {
           {
             success: false,
             error: "Geçersiz email veya şifre",
+            message: "Geçersiz email veya şifre",
             remainingAttempts: Math.max(0, remainingAttempts),
           },
           { status: 401 },
@@ -121,6 +123,7 @@ export const POST = authRateLimit(async (request: NextRequest) => {
           {
             success: false,
             error: "Hesabınız devre dışı bırakılmış. Lütfen yönetici ile iletişime geçin.",
+            message: "Hesabınız devre dışı bırakılmış. Lütfen yönetici ile iletişime geçin.",
           },
           { status: 403 },
         );
@@ -138,7 +141,7 @@ export const POST = authRateLimit(async (request: NextRequest) => {
             hasProjectId: !!projectId,
           });
           return NextResponse.json(
-            { success: false, error: 'Sunucu yapılandırma hatası' },
+            { success: false, error: 'Sunucu yapılandırma hatası', message: 'Sunucu yapılandırma hatası' },
             { status: 500 }
           );
         }
@@ -213,6 +216,7 @@ export const POST = authRateLimit(async (request: NextRequest) => {
           {
             success: false,
             error: "Geçersiz email veya şifre",
+            message: "Geçersiz email veya şifre",
             remainingAttempts: Math.max(0, remainingAttempts),
           },
           { status: 401 },
@@ -284,6 +288,7 @@ export const POST = authRateLimit(async (request: NextRequest) => {
             success: false,
             requiresTwoFactor: true,
             error: "İki faktörlü kimlik doğrulama kodu gereklidir",
+            message: "İki faktörlü kimlik doğrulama kodu gereklidir",
           },
           { status: 200 }, // 200 because this is expected flow, not an error
         );
@@ -336,6 +341,7 @@ export const POST = authRateLimit(async (request: NextRequest) => {
           {
             success: false,
             error: "Sunucu yapılandırması eksik (SESSION_SECRET)",
+            message: "Sunucu yapılandırması eksik (SESSION_SECRET)",
           },
           { status: 500 },
         );
@@ -402,8 +408,10 @@ export const POST = authRateLimit(async (request: NextRequest) => {
     });
 
     return NextResponse.json(
-      { success: false, error: errorMessage },
+      { success: false, error: errorMessage, message: errorMessage },
       { status: 500 },
     );
   }
-});
+};
+
+export const POST = authRateLimit(loginHandler);

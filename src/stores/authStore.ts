@@ -119,9 +119,10 @@ export const useAuthStore = create<AuthStore>()(
           initializeAuth: () => {
             // Run async validation
             (async () => {
-              set((state) => {
-                state.isLoading = true;
-              });
+              try {
+                set((state) => {
+                  state.isLoading = true;
+                });
 
               // Check for demo session first (no API call needed)
               const stored = localStorage.getItem("auth-session");
@@ -237,14 +238,14 @@ export const useAuthStore = create<AuthStore>()(
                 }
               }
 
-              // No session in localStorage - user is not authenticated
-              set((state) => {
-                state.isAuthenticated = false;
-                state.user = null;
-                state.isInitialized = true;
-                state.isLoading = false;
-              });
-            } catch (_error) {
+                // No session in localStorage - user is not authenticated
+                set((state) => {
+                  state.isAuthenticated = false;
+                  state.user = null;
+                  state.isInitialized = true;
+                  state.isLoading = false;
+                });
+              } catch (_error) {
                 // Network error - try localStorage fallback
                 const storedFallback = localStorage.getItem("auth-session");
                 if (storedFallback) {
@@ -301,7 +302,9 @@ export const useAuthStore = create<AuthStore>()(
 
             try {
               // Get CSRF token first
-              const csrfResponse = await fetch("/api/csrf");
+              const csrfResponse = await fetch("/api/csrf", {
+                credentials: "include", // Required for cookies to be sent/received
+              });
 
               if (!csrfResponse.ok) {
                 throw new Error(
@@ -324,16 +327,36 @@ export const useAuthStore = create<AuthStore>()(
                   "Content-Type": "application/json",
                   "x-csrf-token": csrfData.token,
                 },
+                credentials: "include", // Required for cookies to be sent/received
                 body: JSON.stringify({ email, password, rememberMe, twoFactorCode }),
               });
 
-              const result = await response.json();
+              let result;
+              try {
+                result = await response.json();
+              } catch (jsonError) {
+                const text = await response.text().catch(() => 'Unable to read response');
+                throw new Error(`Sunucu yanıtı geçersiz: ${text.substring(0, 100)}`);
+              }
+
+              // Handle rate limiting (429) before checking success field
+              if (response.status === 429) {
+                const errorMsg = result?.error || result?.message || "Çok fazla deneme yapıldı. Lütfen biraz bekleyin.";
+                throw new Error(errorMsg);
+              }
+
+              // Ensure result has success field (default to false if missing)
+              if (result === null || result === undefined || result.success === undefined) {
+                throw new Error(
+                  result?.error || result?.message || "Sunucudan geçersiz yanıt alındı. Lütfen tekrar deneyin.",
+                );
+              }
 
               if (!result.success) {
                 // Check if 2FA is required
                 if (result.requiresTwoFactor) {
                   // Return special error to trigger 2FA prompt
-                  const error = new Error(result.error || "2FA kodu gereklidir") as Error & { requiresTwoFactor?: boolean };
+                  const error = new Error(result.error || result.message || "2FA kodu gereklidir") as Error & { requiresTwoFactor?: boolean };
                   error.requiresTwoFactor = true;
                   throw error;
                 }
@@ -341,17 +364,13 @@ export const useAuthStore = create<AuthStore>()(
                 // Handle specific error cases
                 if (response.status === 401) {
                   throw new Error(
-                    "E-posta veya şifre hatalı. Lütfen kontrol edin.",
-                  );
-                } else if (response.status === 429) {
-                  throw new Error(
-                    "Çok fazla deneme yapıldı. Lütfen 15 dakika sonra tekrar deneyin.",
+                    result.error || result.message || "E-posta veya şifre hatalı. Lütfen kontrol edin.",
                   );
                 } else if (response.status === 400) {
-                  throw new Error("E-posta ve şifre alanları zorunludur.");
+                  throw new Error(result.error || result.message || "E-posta ve şifre alanları zorunludur.");
                 } else {
                   throw new Error(
-                    result.error || "Giriş yapılamadı. Lütfen tekrar deneyin.",
+                    result.error || result.message || "Giriş yapılamadı. Lütfen tekrar deneyin.",
                   );
                 }
               }

@@ -8,9 +8,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { appwriteScholarshipApplications } from '@/lib/appwrite/api';
 import { createLogger } from '@/lib/logger';
-import { requireAuthenticatedUser, buildErrorResponse } from '@/lib/api/auth-utils';
+import { requireAuthenticatedUser, buildErrorResponse, verifyCsrfToken } from '@/lib/api/auth-utils';
 import { readOnlyRateLimit, dataModificationRateLimit } from '@/lib/rate-limit';
-import { verifyCsrfToken } from '@/lib/api/csrf';
 
 const logger = createLogger('api:scholarships:applications:id');
 

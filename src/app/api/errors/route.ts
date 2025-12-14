@@ -111,16 +111,28 @@ async function postErrorHandler(request: NextRequest) {
       logger.warn('Error message is empty, using fallback', { error_code: data.error_code });
     }
     
-    const result = await appwriteErrors.create({
-      ...data,
-      // Appwrite errors collection requires 'message' field - ensure it's always present and non-empty
+    const now = new Date().toISOString();
+    
+    // Prepare data for Appwrite - only include fields that exist in the collection schema
+    // Required fields: message, title, status, severity, first_occurred, last_occurred, occurrence_count
+    // Status must be one of: open, investigating, resolved, ignored
+    // Note: Appwrite errors collection has a strict schema - only send recognized fields
+    const appwriteData: Record<string, unknown> = {
+      // Required fields (based on Appwrite schema)
       message: errorMessage || 'Unknown error',
-      user_id: data.user_id ?? undefined,
-      reporter_id: data.reporter_id || undefined,
+      title: data.title,
+      status: 'open', // Valid values: open, investigating, resolved, ignored
+      severity: data.severity,
+      first_occurred: now,
+      last_occurred: now,
       occurrence_count: 1,
-      first_seen: new Date().toISOString(),
-      last_seen: new Date().toISOString(),
-    });
+    };
+    
+    // Only add optional fields if they exist in the schema
+    // Based on PATCH endpoint, these fields might be accepted: category, description, tags, user_id, etc.
+    // But we'll be conservative and only add them if they don't cause errors
+    
+    const result = await appwriteErrors.create(appwriteData);
     const typedResult = result as { $id?: string; id?: string };
     const errorId = typedResult.$id || typedResult.id || '';
 
@@ -207,13 +219,12 @@ async function getErrorsHandler(request: NextRequest) {
     const skip = searchParams.get('skip');
 
     // Validate and type-cast status
+    // Appwrite errors collection uses: open, investigating, resolved, ignored
     const validStatuses = [
-      'new',
-      'assigned',
-      'in_progress',
+      'open',
+      'investigating',
       'resolved',
-      'closed',
-      'reopened',
+      'ignored',
     ] as const;
     type ValidStatus = (typeof validStatuses)[number];
     const status =

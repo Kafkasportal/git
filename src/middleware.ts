@@ -142,6 +142,11 @@ const protectedRoutes: RouteRule[] = [
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Handle root path - redirect to login (page.tsx will handle the redirect)
+  if (pathname === "/") {
+    return NextResponse.next();
+  }
+
   // Allow public routes
   if (
     publicRoutes.some((route) => pathname.startsWith(route)) ||

@@ -49,7 +49,9 @@ export function withRateLimit(
 
       return new NextResponse(
         JSON.stringify({
+          success: false,
           error: 'Çok fazla istek gönderdiniz. Lütfen biraz bekleyin.',
+          message: 'Çok fazla istek gönderdiniz. Lütfen biraz bekleyin.',
           retryAfter: remainingTime,
           code: 'RATE_LIMIT_EXCEEDED',
         }),
@@ -89,7 +91,19 @@ export function withRateLimit(
         RateLimiter.reset(identifier);
       }
 
-      throw error;
+      // Return error response instead of throwing to prevent unhandled errors
+      const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+      return new NextResponse(
+        JSON.stringify({
+          success: false,
+          error: errorMessage,
+          message: errorMessage,
+        }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
   };
 }

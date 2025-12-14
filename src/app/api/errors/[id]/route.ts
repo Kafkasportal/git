@@ -70,7 +70,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       title: z.string().optional(),
       description: z.string().optional(),
       status: z
-        .enum(['new', 'assigned', 'in_progress', 'resolved', 'closed', 'reopened'])
+        .enum(['open', 'investigating', 'resolved', 'ignored'])
         .optional(),
       severity: z.enum(['critical', 'high', 'medium', 'low']).optional(),
       tags: z.array(z.string()).optional(),
