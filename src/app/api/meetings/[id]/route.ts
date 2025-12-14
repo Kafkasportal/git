@@ -3,23 +3,10 @@ import { appwriteMeetings } from '@/lib/appwrite/api';
 import { extractParams } from '@/lib/api/route-helpers';
 import logger from '@/lib/logger';
 import { verifyCsrfToken, buildErrorResponse, requireModuleAccess } from '@/lib/api/auth-utils';
-
-function validateMeetingUpdate(data: Record<string, unknown>): {
-  isValid: boolean;
-  errors: string[];
-} {
-  const errors: string[] = [];
-  if (data.title && typeof data.title === 'string' && data.title.trim().length < 3) {
-    errors.push('Toplantı başlığı en az 3 karakter olmalıdır');
-  }
-  if (
-    data.status &&
-    !['scheduled', 'ongoing', 'completed', 'cancelled'].includes(data.status as string)
-  ) {
-    errors.push('Geçersiz durum');
-  }
-  return { isValid: errors.length === 0, errors };
-}
+import {
+  meetingApiUpdateSchema,
+  validateWithSchema,
+} from '@/lib/validations/api-schemas';
 
 /**
  * GET /api/meetings/[id]
@@ -68,7 +55,8 @@ async function updateMeetingHandler(
 
     const body = (await request.json()) as Record<string, unknown>;
 
-    const validation = validateMeetingUpdate(body);
+    // Validate using centralized schema
+    const validation = validateWithSchema(meetingApiUpdateSchema, body);
     if (!validation.isValid) {
       return NextResponse.json(
         { success: false, error: 'Doğrulama hatası', details: validation.errors },

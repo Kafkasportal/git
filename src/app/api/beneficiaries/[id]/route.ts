@@ -4,68 +4,10 @@ import logger from '@/lib/logger';
 import { BeneficiaryFormData } from '@/types/beneficiary';
 import { extractParams } from '@/lib/api/route-helpers';
 import { verifyCsrfToken, buildErrorResponse, requireModuleAccess } from '@/lib/api/auth-utils';
-
-/**
- * Validate beneficiary data for updates
- */
-function validateBeneficiaryUpdate(data: unknown): { isValid: boolean; errors: string[] } {
-  const errors: string[] = [];
-  const beneficiaryData = data as Record<string, unknown>;
-
-  // Optional fields validation (only if provided)
-  if (
-    beneficiaryData.name &&
-    typeof beneficiaryData.name === 'string' &&
-    beneficiaryData.name.trim().length < 2
-  ) {
-    errors.push('Ad Soyad en az 2 karakter olmalıdır');
-  }
-
-  if (
-    beneficiaryData.tc_no &&
-    typeof beneficiaryData.tc_no === 'string' &&
-    !/^\d{11}$/.test(beneficiaryData.tc_no)
-  ) {
-    errors.push('TC Kimlik No 11 haneli olmalıdır');
-  }
-
-  if (
-    beneficiaryData.phone &&
-    typeof beneficiaryData.phone === 'string' &&
-    !/^[0-9\s\-\+\(\)]{10,15}$/.test(beneficiaryData.phone)
-  ) {
-    errors.push('Geçerli bir telefon numarası giriniz');
-  }
-
-  if (
-    beneficiaryData.address &&
-    typeof beneficiaryData.address === 'string' &&
-    beneficiaryData.address.trim().length < 10
-  ) {
-    errors.push('Adres en az 10 karakter olmalıdır');
-  }
-
-  if (
-    beneficiaryData.email &&
-    typeof beneficiaryData.email === 'string' &&
-    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(beneficiaryData.email)
-  ) {
-    errors.push('Geçerli bir email adresi giriniz');
-  }
-
-  if (
-    beneficiaryData.status &&
-    typeof beneficiaryData.status === 'string' &&
-    !['TASLAK', 'AKTIF', 'PASIF', 'SILINDI'].includes(beneficiaryData.status)
-  ) {
-    errors.push('Geçersiz durum değeri');
-  }
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-  };
-}
+import {
+  beneficiaryApiUpdateSchema,
+  validateWithSchema,
+} from '@/lib/validations/api-schemas';
 
 /**
  * GET /api/beneficiaries/[id]
@@ -125,7 +67,8 @@ async function updateBeneficiaryHandler(
 
     const body = (await request.json()) as Partial<BeneficiaryFormData>;
 
-    const validation = validateBeneficiaryUpdate(body);
+    // Validate using centralized schema
+    const validation = validateWithSchema(beneficiaryApiUpdateSchema, body);
     if (!validation.isValid) {
       return NextResponse.json(
         { success: false, error: 'Doğrulama hatası', details: validation.errors },

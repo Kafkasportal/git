@@ -13,6 +13,10 @@ import {
   verifyCsrfToken,
   requireAuthenticatedUser,
 } from "@/lib/api/auth-utils";
+import {
+  beneficiaryApiCreateSchema,
+  validateWithSchema,
+} from "@/lib/validations/api-schemas";
 
 // TypeScript interfaces
 
@@ -28,55 +32,6 @@ interface BeneficiaryData {
   neighborhood?: string;
   family_size?: number;
   [key: string]: unknown;
-}
-
-interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-}
-
-/**
- * Validate beneficiary data
- * NOTE: This function duplicates validation logic from beneficiarySchema in @/lib/validations/beneficiary
- * Consider refactoring to use Zod schema validation instead
- */
-function validateBeneficiaryData(data: BeneficiaryData): ValidationResult {
-  const errors: string[] = [];
-
-  // Required fields
-  if (!data.name || data.name.trim().length < 2) {
-    errors.push("Ad Soyad en az 2 karakter olmalıdır");
-  }
-
-  if (!data.tc_no || !/^\d{11}$/.test(data.tc_no)) {
-    errors.push("TC Kimlik No 11 haneli olmalıdır");
-  }
-
-  if (!data.phone || !/^[0-9\s\-\+\(\)]{10,15}$/.test(data.phone)) {
-    errors.push("Geçerli bir telefon numarası giriniz");
-  }
-
-  if (!data.address || data.address.trim().length < 10) {
-    errors.push("Adres en az 10 karakter olmalıdır");
-  }
-
-  // Email validation (optional but if provided must be valid)
-  if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-    errors.push("Geçerli bir email adresi giriniz");
-  }
-
-  // Status validation
-  if (
-    data.status &&
-    !["TASLAK", "AKTIF", "PASIF", "SILINDI"].includes(data.status)
-  ) {
-    errors.push("Geçersiz durum değeri");
-  }
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-  };
 }
 
 /**
@@ -121,70 +76,67 @@ export const POST = buildApiRoute({
     return errorResponse(parseError || "Veri bulunamadı", 400);
   }
 
-  // Validate beneficiary data
-  const validation = validateBeneficiaryData(body);
+  // Validate beneficiary data using centralized schema
+  const validation = validateWithSchema(beneficiaryApiCreateSchema, body);
   if (!validation.isValid) {
     return errorResponse("Doğrulama hatası", 400, validation.errors);
   }
 
+  // Use validated data (with defaults applied from schema)
+  const validatedData = validation.data!;
+
   // Prepare Appwrite mutation data
   const beneficiaryData = {
-    name: body.name || "",
-    tc_no: body.tc_no || "",
-    phone: body.phone || "",
-    address: body.address || "",
-    city: body.city || "",
-    district: body.district || "",
-    neighborhood: body.neighborhood || "",
-    family_size: body.family_size || 1,
-    status:
-      (body.status as "TASLAK" | "AKTIF" | "PASIF" | "SILINDI") ||
-      ("TASLAK" as const),
-    email: body.email as string | undefined,
-    birth_date: body.birth_date as string | undefined,
-    gender: body.gender as string | undefined,
-    nationality: body.nationality as string | undefined,
-    religion: body.religion as string | undefined,
-    marital_status: body.marital_status as string | undefined,
-    children_count: body.children_count as number | undefined,
-    orphan_children_count: body.orphan_children_count as number | undefined,
-    elderly_count: body.elderly_count as number | undefined,
-    disabled_count: body.disabled_count as number | undefined,
-    income_level: body.income_level as string | undefined,
-    income_source: body.income_source as string | undefined,
-    has_debt: body.has_debt as boolean | undefined,
-    housing_type: body.housing_type as string | undefined,
-    has_vehicle: body.has_vehicle as boolean | undefined,
-    health_status: body.health_status as string | undefined,
-    has_chronic_illness: body.has_chronic_illness as boolean | undefined,
-    chronic_illness_detail: body.chronic_illness_detail as string | undefined,
-    has_disability: body.has_disability as boolean | undefined,
-    disability_detail: body.disability_detail as string | undefined,
-    has_health_insurance: body.has_health_insurance as boolean | undefined,
-    regular_medication: body.regular_medication as string | undefined,
-    education_level: body.education_level as string | undefined,
-    occupation: body.occupation as string | undefined,
-    employment_status: body.employment_status as string | undefined,
-    aid_type: body.aid_type as string | undefined,
-    totalAidAmount: body.totalAidAmount as number | undefined,
-    aid_duration: body.aid_duration as string | undefined,
-    priority: body.priority as string | undefined,
-    reference_name: body.reference_name as string | undefined,
-    reference_phone: body.reference_phone as string | undefined,
-    reference_relation: body.reference_relation as string | undefined,
-    application_source: body.application_source as string | undefined,
-    notes: body.notes as string | undefined,
-    previous_aid: body.previous_aid as boolean | undefined,
-    other_organization_aid: body.other_organization_aid as string | undefined,
-    emergency: body.emergency as boolean | undefined,
-    contact_preference: body.contact_preference as string | undefined,
-    approval_status: body.approval_status as
-      | "pending"
-      | "approved"
-      | "rejected"
-      | undefined,
-    approved_by: body.approved_by as string | undefined,
-    approved_at: body.approved_at as string | undefined,
+    name: validatedData.name,
+    tc_no: validatedData.tc_no,
+    phone: validatedData.phone,
+    address: validatedData.address,
+    city: validatedData.city || "",
+    district: validatedData.district || "",
+    neighborhood: validatedData.neighborhood || "",
+    family_size: validatedData.family_size || 1,
+    status: validatedData.status || "TASLAK",
+    email: validatedData.email || undefined,
+    birth_date: validatedData.birth_date,
+    gender: validatedData.gender,
+    nationality: validatedData.nationality,
+    religion: validatedData.religion,
+    marital_status: validatedData.marital_status,
+    children_count: validatedData.children_count,
+    orphan_children_count: validatedData.orphan_children_count,
+    elderly_count: validatedData.elderly_count,
+    disabled_count: validatedData.disabled_count,
+    income_level: validatedData.income_level,
+    income_source: validatedData.income_source,
+    has_debt: validatedData.has_debt,
+    housing_type: validatedData.housing_type,
+    has_vehicle: validatedData.has_vehicle,
+    health_status: validatedData.health_status,
+    has_chronic_illness: validatedData.has_chronic_illness,
+    chronic_illness_detail: validatedData.chronic_illness_detail,
+    has_disability: validatedData.has_disability,
+    disability_detail: validatedData.disability_detail,
+    has_health_insurance: validatedData.has_health_insurance,
+    regular_medication: validatedData.regular_medication,
+    education_level: validatedData.education_level,
+    occupation: validatedData.occupation,
+    employment_status: validatedData.employment_status,
+    aid_type: validatedData.aid_type,
+    totalAidAmount: validatedData.totalAidAmount,
+    aid_duration: validatedData.aid_duration,
+    priority: validatedData.priority,
+    reference_name: validatedData.reference_name,
+    reference_phone: validatedData.reference_phone,
+    reference_relation: validatedData.reference_relation,
+    application_source: validatedData.application_source,
+    notes: validatedData.notes,
+    previous_aid: validatedData.previous_aid,
+    other_organization_aid: validatedData.other_organization_aid,
+    emergency: validatedData.emergency,
+    contact_preference: validatedData.contact_preference,
+    approval_status: validatedData.approval_status,
+    approved_by: validatedData.approved_by,
+    approved_at: validatedData.approved_at,
   };
 
   try {
