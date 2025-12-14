@@ -452,4 +452,213 @@ describe('useListPage', () => {
             expect(result.current.data[0].name).toBe('ITEM 1');
         });
     });
+
+    describe('Filter Query Params', () => {
+        it('should include array filters in query params', async () => {
+            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve({ data: [], total: 0 }),
+            });
+
+            const { result } = renderHook(
+                () => useListPage({
+                    queryKey: 'test-items',
+                    endpoint: '/api/test',
+                }),
+                { wrapper: createWrapper() }
+            );
+
+            act(() => {
+                result.current.setFilter('tags', ['tag1', 'tag2']);
+            });
+
+            await waitFor(() => {
+                expect(global.fetch).toHaveBeenCalledWith(
+                    expect.stringContaining('tags=tag1%2Ctag2'),
+                );
+            });
+        });
+
+        it('should include date range filters in query params', async () => {
+            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve({ data: [], total: 0 }),
+            });
+
+            const { result } = renderHook(
+                () => useListPage({
+                    queryKey: 'test-items',
+                    endpoint: '/api/test',
+                }),
+                { wrapper: createWrapper() }
+            );
+
+            const fromDate = new Date('2024-01-01');
+            const toDate = new Date('2024-12-31');
+
+            act(() => {
+                result.current.setFilter('dateRange', { from: fromDate, to: toDate });
+            });
+
+            await waitFor(() => {
+                expect(global.fetch).toHaveBeenCalledWith(
+                    expect.stringContaining('dateRange_from'),
+                );
+            });
+        });
+
+        it('should skip null and undefined filter values', async () => {
+            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve({ data: [], total: 0 }),
+            });
+
+            const { result } = renderHook(
+                () => useListPage({
+                    queryKey: 'test-items',
+                    endpoint: '/api/test',
+                    filterOptions: {
+                        initialFilters: { status: 'active', empty: undefined },
+                    },
+                }),
+                { wrapper: createWrapper() }
+            );
+
+            await waitFor(() => {
+                expect(result.current.isLoading).toBe(false);
+            });
+
+            const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0][0];
+            expect(fetchCall).toContain('status=active');
+            expect(fetchCall).not.toContain('empty=');
+        });
+    });
+
+    describe('Response Format Handling', () => {
+        it('should handle array response format', async () => {
+            const mockData = [
+                { id: '1', name: 'Item 1' },
+                { id: '2', name: 'Item 2' },
+            ];
+
+            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve(mockData),
+            });
+
+            const { result } = renderHook(
+                () => useListPage({
+                    queryKey: 'test-items',
+                    endpoint: '/api/test',
+                }),
+                { wrapper: createWrapper() }
+            );
+
+            await waitFor(() => {
+                expect(result.current.isLoading).toBe(false);
+            });
+
+            expect(result.current.data).toHaveLength(2);
+            expect(result.current.total).toBe(2);
+        });
+
+        it('should throw error for unexpected response format', async () => {
+            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve({ unexpected: 'format' }),
+            });
+
+            const { result } = renderHook(
+                () => useListPage({
+                    queryKey: 'test-items',
+                    endpoint: '/api/test',
+                }),
+                { wrapper: createWrapper() }
+            );
+
+            await waitFor(() => {
+                expect(result.current.isError).toBe(true);
+            });
+
+            expect(result.current.error?.message).toContain('Beklenmeyen API yanıt formatı');
+        });
+    });
+
+    describe('Actions', () => {
+        it('should refetch data', async () => {
+            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve({ data: [], total: 0 }),
+            });
+
+            const { result } = renderHook(
+                () => useListPage({
+                    queryKey: 'test-items',
+                    endpoint: '/api/test',
+                }),
+                { wrapper: createWrapper() }
+            );
+
+            await waitFor(() => {
+                expect(result.current.isLoading).toBe(false);
+            });
+
+            const initialCallCount = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.length;
+
+            act(() => {
+                result.current.refetch();
+            });
+
+            await waitFor(() => {
+                expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThan(initialCallCount);
+            });
+        });
+
+        it('should invalidate query', async () => {
+            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve({ data: [], total: 0 }),
+            });
+
+            const { result } = renderHook(
+                () => useListPage({
+                    queryKey: 'test-items',
+                    endpoint: '/api/test',
+                }),
+                { wrapper: createWrapper() }
+            );
+
+            await waitFor(() => {
+                expect(result.current.isLoading).toBe(false);
+            });
+
+            // Should not throw
+            act(() => {
+                result.current.invalidate();
+            });
+        });
+    });
+
+    describe('Disabled Query', () => {
+        it('should not fetch when disabled', async () => {
+            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve({ data: [], total: 0 }),
+            });
+
+            renderHook(
+                () => useListPage({
+                    queryKey: 'test-items',
+                    endpoint: '/api/test',
+                    enabled: false,
+                }),
+                { wrapper: createWrapper() }
+            );
+
+            // Wait a bit to ensure no fetch is made
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            expect(global.fetch).not.toHaveBeenCalled();
+        });
+    });
 });

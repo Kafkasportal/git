@@ -113,9 +113,11 @@ describe('AuthStore', () => {
             });
 
             const state = useAuthStore.getState();
+            // Demo user has access permissions
             expect(state.user?.permissions).toContain('donations:access');
+            expect(state.user?.permissions).toContain('beneficiaries:access');
             expect(state.user?.permissions).toContain('users:manage');
-            expect(state.user?.permissions).toContain('settings:write');
+            expect(state.user?.permissions).toContain('settings:manage');
         });
     });
 
@@ -201,6 +203,7 @@ describe('AuthStore', () => {
         it('should check hasPermission correctly', () => {
             const state = useAuthStore.getState();
 
+            // Demo user has access permissions
             expect(state.hasPermission('donations:access')).toBe(true);
             expect(state.hasPermission('nonexistent:permission')).toBe(false);
         });
@@ -302,6 +305,36 @@ describe('AuthStore', () => {
             expect(useAuthStore.getState().user).toEqual(testUser);
         });
 
+        it('should setUser to null', () => {
+            act(() => {
+                useAuthStore.getState().setUser(null);
+            });
+
+            expect(useAuthStore.getState().user).toBeNull();
+        });
+
+        it('should setSession', () => {
+            const testSession = {
+                userId: 'user-1',
+                accessToken: 'token-123',
+                expire: new Date(Date.now() + 3600000).toISOString(),
+            };
+
+            act(() => {
+                useAuthStore.getState().setSession(testSession);
+            });
+
+            expect(useAuthStore.getState().session).toEqual(testSession);
+        });
+
+        it('should setSession to null', () => {
+            act(() => {
+                useAuthStore.getState().setSession(null);
+            });
+
+            expect(useAuthStore.getState().session).toBeNull();
+        });
+
         it('should setLoading', () => {
             act(() => {
                 useAuthStore.getState().setLoading(true);
@@ -316,6 +349,65 @@ describe('AuthStore', () => {
             });
 
             expect(useAuthStore.getState().error).toBe('Test error message');
+        });
+
+        it('should setError to null', () => {
+            useAuthStore.setState({ error: 'existing error' });
+
+            act(() => {
+                useAuthStore.getState().setError(null);
+            });
+
+            expect(useAuthStore.getState().error).toBeNull();
+        });
+    });
+
+    describe('Permission Helpers Edge Cases', () => {
+        it('should return false for hasRole with empty role', () => {
+            act(() => {
+                useAuthStore.getState().demoLogin();
+            });
+
+            const state = useAuthStore.getState();
+            expect(state.hasRole('')).toBe(false);
+        });
+
+        it('should return false for hasRole when user has no role', () => {
+            const userWithoutRole = {
+                id: 'test-1',
+                email: 'test@test.com',
+                name: 'Test User',
+                avatar: null,
+                permissions: [],
+                isActive: true,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            };
+
+            useAuthStore.setState({ user: userWithoutRole, isAuthenticated: true });
+
+            const state = useAuthStore.getState();
+            expect(state.hasRole('admin')).toBe(false);
+        });
+
+        it('should handle user with no permissions array', () => {
+            const userWithoutPermissions = {
+                id: 'test-1',
+                email: 'test@test.com',
+                name: 'Test User',
+                role: 'user',
+                avatar: null,
+                isActive: true,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            };
+
+            useAuthStore.setState({ user: userWithoutPermissions as any, isAuthenticated: true });
+
+            const state = useAuthStore.getState();
+            expect(state.hasPermission('donations:access')).toBe(false);
+            expect(state.hasAnyPermission(['donations:access'])).toBe(false);
+            expect(state.hasAllPermissions(['donations:access'])).toBe(false);
         });
     });
 
@@ -374,5 +466,468 @@ describe('Auth Selectors', () => {
         expect(typeof authSelectors.role).toBe('function');
         expect(typeof authSelectors.session).toBe('function');
         expect(typeof authSelectors.hasHydrated).toBe('function');
+    });
+
+    it('should return correct values from selectors', async () => {
+        const testUser = {
+            id: 'test-1',
+            email: 'test@test.com',
+            name: 'Test User',
+            role: 'admin',
+            avatar: null,
+            permissions: ['donations:access' as const],
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        };
+
+        const testSession = {
+            userId: 'test-1',
+            accessToken: 'token',
+            expire: new Date().toISOString(),
+        };
+
+        useAuthStore.setState({
+            user: testUser,
+            session: testSession,
+            isAuthenticated: true,
+            isLoading: false,
+            error: 'test error',
+            _hasHydrated: true,
+        });
+
+        const { authSelectors } = await import('@/stores/authStore');
+        const state = useAuthStore.getState();
+
+        expect(authSelectors.user(state)).toEqual(testUser);
+        expect(authSelectors.isAuthenticated(state)).toBe(true);
+        expect(authSelectors.isLoading(state)).toBe(false);
+        expect(authSelectors.error(state)).toBe('test error');
+        expect(authSelectors.permissions(state)).toEqual(['donations:access']);
+        expect(authSelectors.role(state)).toBe('admin');
+        expect(authSelectors.session(state)).toEqual(testSession);
+        expect(authSelectors.hasHydrated(state)).toBe(true);
+    });
+
+    it('should return empty permissions when user is null', async () => {
+        useAuthStore.setState({ user: null });
+
+        const { authSelectors } = await import('@/stores/authStore');
+        const state = useAuthStore.getState();
+
+        expect(authSelectors.permissions(state)).toEqual([]);
+        expect(authSelectors.role(state)).toBeUndefined();
+    });
+});
+
+describe('Login Flow', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        global.fetch = vi.fn();
+
+        const localStorageMock = {
+            getItem: vi.fn(),
+            setItem: vi.fn(),
+            removeItem: vi.fn(),
+            clear: vi.fn(),
+        };
+        Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+
+        useAuthStore.setState({
+            user: null,
+            session: null,
+            isAuthenticated: false,
+            isLoading: false,
+            isInitialized: false,
+            error: null,
+            _hasHydrated: false,
+            showLoginModal: false,
+            rememberMe: false,
+        });
+    });
+
+    it('should handle successful login', async () => {
+        const mockUser = {
+            id: 'user-1',
+            email: 'test@example.com',
+            name: 'Test User',
+            role: 'admin',
+            permissions: ['donations:access'],
+        };
+
+        (global.fetch as ReturnType<typeof vi.fn>)
+            .mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
+            })
+            .mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                json: () => Promise.resolve({
+                    success: true,
+                    data: {
+                        user: mockUser,
+                        session: { expire: new Date(Date.now() + 3600000).toISOString() },
+                    },
+                }),
+            });
+
+        await act(async () => {
+            await useAuthStore.getState().login('test@example.com', 'password123', true);
+        });
+
+        const state = useAuthStore.getState();
+        expect(state.isAuthenticated).toBe(true);
+        expect(state.user?.email).toBe('test@example.com');
+        expect(state.rememberMe).toBe(true);
+    });
+
+    it('should handle 401 unauthorized error', async () => {
+        (global.fetch as ReturnType<typeof vi.fn>)
+            .mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
+            })
+            .mockResolvedValueOnce({
+                ok: false,
+                status: 401,
+                json: () => Promise.resolve({ success: false, error: 'Invalid credentials' }),
+            });
+
+        await expect(
+            act(async () => {
+                await useAuthStore.getState().login('test@example.com', 'wrongpassword');
+            })
+        ).rejects.toThrow('E-posta veya şifre hatalı');
+    });
+
+    it('should handle 429 rate limit error', async () => {
+        (global.fetch as ReturnType<typeof vi.fn>)
+            .mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
+            })
+            .mockResolvedValueOnce({
+                ok: false,
+                status: 429,
+                json: () => Promise.resolve({ success: false, error: 'Too many requests' }),
+            });
+
+        await expect(
+            act(async () => {
+                await useAuthStore.getState().login('test@example.com', 'password');
+            })
+        ).rejects.toThrow('Çok fazla deneme');
+    });
+
+    it('should handle 400 bad request error', async () => {
+        (global.fetch as ReturnType<typeof vi.fn>)
+            .mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
+            })
+            .mockResolvedValueOnce({
+                ok: false,
+                status: 400,
+                json: () => Promise.resolve({ success: false, error: 'Bad request' }),
+            });
+
+        await expect(
+            act(async () => {
+                await useAuthStore.getState().login('', '');
+            })
+        ).rejects.toThrow('E-posta ve şifre alanları zorunludur');
+    });
+
+    it('should handle generic error response', async () => {
+        (global.fetch as ReturnType<typeof vi.fn>)
+            .mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
+            })
+            .mockResolvedValueOnce({
+                ok: false,
+                status: 500,
+                json: () => Promise.resolve({ success: false, error: 'Server error' }),
+            });
+
+        await expect(
+            act(async () => {
+                await useAuthStore.getState().login('test@example.com', 'password');
+            })
+        ).rejects.toThrow('Server error');
+    });
+
+    it('should handle CSRF token fetch failure', async () => {
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+            ok: false,
+            json: () => Promise.resolve({ success: false }),
+        });
+
+        await expect(
+            act(async () => {
+                await useAuthStore.getState().login('test@example.com', 'password');
+            })
+        ).rejects.toThrow('Güvenlik doğrulaması başarısız');
+    });
+
+    it('should handle CSRF token response with success false', async () => {
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+            ok: true,
+            json: () => Promise.resolve({ success: false }),
+        });
+
+        await expect(
+            act(async () => {
+                await useAuthStore.getState().login('test@example.com', 'password');
+            })
+        ).rejects.toThrow('Güvenlik doğrulaması başarısız');
+    });
+
+    it('should handle network error', async () => {
+        (global.fetch as ReturnType<typeof vi.fn>)
+            .mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
+            })
+            .mockRejectedValueOnce(new Error('Failed to fetch'));
+
+        await expect(
+            act(async () => {
+                await useAuthStore.getState().login('test@example.com', 'password');
+            })
+        ).rejects.toThrow('İnternet bağlantınızı kontrol edin');
+    });
+
+    it('should handle string error', async () => {
+        (global.fetch as ReturnType<typeof vi.fn>)
+            .mockResolvedValueOnce({
+                ok: true,
+                json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
+            })
+            .mockRejectedValueOnce('String error message');
+
+        await expect(
+            act(async () => {
+                await useAuthStore.getState().login('test@example.com', 'password');
+            })
+        ).rejects.toThrow('String error message');
+    });
+});
+
+describe('InitializeAuth Flow', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        global.fetch = vi.fn();
+
+        const localStorageMock = {
+            getItem: vi.fn(),
+            setItem: vi.fn(),
+            removeItem: vi.fn(),
+            clear: vi.fn(),
+        };
+        Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+
+        useAuthStore.setState({
+            user: null,
+            session: null,
+            isAuthenticated: false,
+            isLoading: false,
+            isInitialized: false,
+            error: null,
+            _hasHydrated: false,
+            showLoginModal: false,
+            rememberMe: false,
+        });
+    });
+
+    it('should restore demo session from localStorage', async () => {
+        (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(
+            JSON.stringify({ isDemo: true, isAuthenticated: true })
+        );
+
+        await act(async () => {
+            useAuthStore.getState().initializeAuth();
+            // Wait for async operation
+            await new Promise(resolve => setTimeout(resolve, 50));
+        });
+
+        const state = useAuthStore.getState();
+        expect(state.isAuthenticated).toBe(true);
+        expect(state.user?.email).toBe('demo@dernek.org');
+    });
+
+    it('should fetch user from API when no demo session', async () => {
+        (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(null);
+
+        const mockUser = {
+            id: 'user-1',
+            email: 'test@example.com',
+            name: 'Test User',
+        };
+
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+            ok: true,
+            json: () => Promise.resolve({ success: true, data: mockUser }),
+        });
+
+        await act(async () => {
+            useAuthStore.getState().initializeAuth();
+            await new Promise(resolve => setTimeout(resolve, 50));
+        });
+
+        const state = useAuthStore.getState();
+        expect(state.isAuthenticated).toBe(true);
+        expect(state.user?.email).toBe('test@example.com');
+    });
+
+    it('should clear state when API returns no valid session', async () => {
+        (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(null);
+
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+            ok: false,
+            json: () => Promise.resolve({ success: false }),
+        });
+
+        await act(async () => {
+            useAuthStore.getState().initializeAuth();
+            await new Promise(resolve => setTimeout(resolve, 50));
+        });
+
+        const state = useAuthStore.getState();
+        expect(state.isAuthenticated).toBe(false);
+        expect(state.user).toBeNull();
+    });
+
+    it('should handle invalid localStorage JSON', async () => {
+        (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue('invalid-json');
+
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+            ok: false,
+            json: () => Promise.resolve({ success: false }),
+        });
+
+        await act(async () => {
+            useAuthStore.getState().initializeAuth();
+            await new Promise(resolve => setTimeout(resolve, 50));
+        });
+
+        const state = useAuthStore.getState();
+        expect(state.isInitialized).toBe(true);
+    });
+
+    it('should use localStorage fallback on network error with valid session', async () => {
+        (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(
+            JSON.stringify({
+                userId: 'user-1',
+                isAuthenticated: true,
+                lastVerified: Date.now(),
+            })
+        );
+
+        (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Network error'));
+
+        await act(async () => {
+            useAuthStore.getState().initializeAuth();
+            await new Promise(resolve => setTimeout(resolve, 50));
+        });
+
+        const state = useAuthStore.getState();
+        expect(state.isAuthenticated).toBe(true);
+        expect(state.isInitialized).toBe(true);
+    });
+
+    it('should reject stale localStorage session on network error', async () => {
+        (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(
+            JSON.stringify({
+                userId: 'user-1',
+                isAuthenticated: true,
+                lastVerified: Date.now() - 25 * 60 * 60 * 1000, // 25 hours ago (stale)
+            })
+        );
+
+        (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Network error'));
+
+        await act(async () => {
+            useAuthStore.getState().initializeAuth();
+            await new Promise(resolve => setTimeout(resolve, 50));
+        });
+
+        const state = useAuthStore.getState();
+        expect(state.isAuthenticated).toBe(false);
+    });
+
+    it('should clear state on network error with invalid localStorage', async () => {
+        (localStorage.getItem as ReturnType<typeof vi.fn>)
+            .mockReturnValueOnce(null) // First call for demo check
+            .mockReturnValueOnce('invalid-json'); // Second call for fallback
+
+        (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Network error'));
+
+        await act(async () => {
+            useAuthStore.getState().initializeAuth();
+            await new Promise(resolve => setTimeout(resolve, 50));
+        });
+
+        const state = useAuthStore.getState();
+        expect(state.isAuthenticated).toBe(false);
+        expect(state.isInitialized).toBe(true);
+    });
+});
+
+describe('Logout Edge Cases', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        global.fetch = vi.fn();
+
+        const localStorageMock = {
+            getItem: vi.fn(),
+            setItem: vi.fn(),
+            removeItem: vi.fn(),
+            clear: vi.fn(),
+        };
+        Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+    });
+
+    it('should redirect to login when no callback provided', async () => {
+        const originalLocation = window.location;
+        const replaceMock = vi.fn();
+        Object.defineProperty(window, 'location', {
+            value: { replace: replaceMock },
+            configurable: true,
+        });
+
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+            ok: true,
+            json: () => Promise.resolve({ success: true }),
+        });
+
+        await act(async () => {
+            await useAuthStore.getState().logout();
+        });
+
+        expect(replaceMock).toHaveBeenCalledWith('/login');
+
+        Object.defineProperty(window, 'location', { value: originalLocation, configurable: true });
+    });
+
+    it('should handle logout API error gracefully', async () => {
+        const originalLocation = window.location;
+        Object.defineProperty(window, 'location', {
+            value: { replace: vi.fn() },
+            configurable: true,
+        });
+
+        (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('API error'));
+
+        // Should not throw
+        await act(async () => {
+            await useAuthStore.getState().logout(() => { });
+        });
+
+        const state = useAuthStore.getState();
+        expect(state.isAuthenticated).toBe(false);
+
+        Object.defineProperty(window, 'location', { value: originalLocation, configurable: true });
     });
 });

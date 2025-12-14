@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "appwrite": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-appwrite"],
+      "env": {
+        "APPWRITE_ENDPOINT": "PLACEHOLDER_APPWRITE_ENDPOINT",
+        "APPWRITE_API_KEY": "PLACEHOLDER_APPWRITE_API_KEY"
+      }
+    }
+  }
+}

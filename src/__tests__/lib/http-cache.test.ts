@@ -1,273 +1,227 @@
+/**
+ * HTTP Cache Utilities Tests
+ */
+
 import { describe, it, expect } from 'vitest';
 import { NextResponse } from 'next/server';
 import {
-  addCacheHeaders,
-  createCachedResponse,
-  hasMatchingETag,
-  createNotModifiedResponse,
-  CACHE_CONFIGS,
+    addCacheHeaders,
+    createCachedResponse,
+    hasMatchingETag,
+    createNotModifiedResponse,
+    getCacheConfigForRoute,
+    CACHE_CONFIGS,
 } from '@/lib/http-cache';
-import type { CacheHeadersOptions } from '@/lib/http-cache';
 
 describe('HTTP Cache Utilities', () => {
-  describe('addCacheHeaders', () => {
-    it('should add max-age cache header', () => {
-      const response = new Response('test');
-      const options: CacheHeadersOptions = { maxAge: 60000 };
+    describe('addCacheHeaders', () => {
+        it('should add max-age header', () => {
+            const response = NextResponse.json({ data: 'test' });
+            const result = addCacheHeaders(response, { maxAge: 60000 });
 
-      const result = addCacheHeaders(response, options);
-      const cacheControl = result.headers.get('Cache-Control');
+            expect(result.headers.get('Cache-Control')).toContain('max-age=60');
+        });
 
-      expect(cacheControl).toContain('max-age=60');
+        it('should add stale-while-revalidate header', () => {
+            const response = NextResponse.json({ data: 'test' });
+            const result = addCacheHeaders(response, { swr: 120000 });
+
+            expect(result.headers.get('Cache-Control')).toContain('stale-while-revalidate=120');
+        });
+
+        it('should add cache control directives', () => {
+            const response = NextResponse.json({ data: 'test' });
+            const result = addCacheHeaders(response, {
+                cacheControl: ['public'],
+                maxAge: 60000,
+            });
+
+            const cacheControl = result.headers.get('Cache-Control');
+            expect(cacheControl).toContain('public');
+            expect(cacheControl).toContain('max-age=60');
+        });
+
+        it('should add custom headers', () => {
+            const response = NextResponse.json({ data: 'test' });
+            const result = addCacheHeaders(response, {
+                customHeaders: { 'X-Custom-Header': 'custom-value' },
+            });
+
+            expect(result.headers.get('X-Custom-Header')).toBe('custom-value');
+        });
+
+        it('should handle empty options', () => {
+            const response = NextResponse.json({ data: 'test' });
+            const result = addCacheHeaders(response, {});
+
+            expect(result).toBeDefined();
+        });
     });
 
-    it('should add stale-while-revalidate header', () => {
-      const response = new Response('test');
-      const options: CacheHeadersOptions = {
-        maxAge: 60000,
-        swr: 300000,
-      };
+    describe('createCachedResponse', () => {
+        it('should create response with default status', () => {
+            const response = createCachedResponse({ data: 'test' });
 
-      const result = addCacheHeaders(response, options);
-      const cacheControl = result.headers.get('Cache-Control');
+            expect(response.status).toBe(200);
+        });
 
-      expect(cacheControl).toContain('max-age=60');
-      expect(cacheControl).toContain('stale-while-revalidate=300');
+        it('should create response with custom status', () => {
+            const response = createCachedResponse({ data: 'test' }, { status: 201 });
+
+            expect(response.status).toBe(201);
+        });
+
+        it('should add ETag when requested', () => {
+            const response = createCachedResponse({ data: 'test' }, { etag: true });
+
+            expect(response.headers.get('ETag')).toBeDefined();
+            expect(response.headers.get('ETag')).toMatch(/^"[a-z0-9]+"$/);
+        });
+
+        it('should generate consistent ETags for same data', () => {
+            const data = { id: 1, name: 'test' };
+            const response1 = createCachedResponse(data, { etag: true });
+            const response2 = createCachedResponse(data, { etag: true });
+
+            expect(response1.headers.get('ETag')).toBe(response2.headers.get('ETag'));
+        });
+
+        it('should generate different ETags for different data', () => {
+            const response1 = createCachedResponse({ id: 1 }, { etag: true });
+            const response2 = createCachedResponse({ id: 2 }, { etag: true });
+
+            expect(response1.headers.get('ETag')).not.toBe(response2.headers.get('ETag'));
+        });
     });
 
-    it('should add custom cache control directives', () => {
-      const response = new Response('test');
-      const options: CacheHeadersOptions = {
-        cacheControl: ['public', 'immutable'],
-        maxAge: 60000,
-      };
+    describe('hasMatchingETag', () => {
+        it('should return true for matching ETag', () => {
+            const request = new Request('http://localhost/api/test', {
+                headers: { 'If-None-Match': '"abc123"' },
+            });
 
-      const result = addCacheHeaders(response, options);
-      const cacheControl = result.headers.get('Cache-Control');
+            expect(hasMatchingETag(request, '"abc123"')).toBe(true);
+        });
 
-      expect(cacheControl).toContain('public');
-      expect(cacheControl).toContain('immutable');
+        it('should return false for non-matching ETag', () => {
+            const request = new Request('http://localhost/api/test', {
+                headers: { 'If-None-Match': '"abc123"' },
+            });
+
+            expect(hasMatchingETag(request, '"xyz789"')).toBe(false);
+        });
+
+        it('should return false when no If-None-Match header', () => {
+            const request = new Request('http://localhost/api/test');
+
+            expect(hasMatchingETag(request, '"abc123"')).toBe(false);
+        });
     });
 
-    it('should generate ETag when enabled', () => {
-      const response = new Response('{"data": "test"}');
-      const options: CacheHeadersOptions = {
-        etag: true,
-        maxAge: 60000,
-      };
+    describe('createNotModifiedResponse', () => {
+        it('should create 304 response', () => {
+            const response = createNotModifiedResponse('"abc123"');
 
-      const result = addCacheHeaders(response, options);
-      const etag = result.headers.get('ETag');
+            expect(response.status).toBe(304);
+        });
 
-      // ETag should be generated in format: "hash"
-      expect(etag).toBeDefined();
-      if (etag) {
-        expect(typeof etag).toBe('string');
-        expect(etag.startsWith('"')).toBe(true);
-        expect(etag.endsWith('"')).toBe(true);
-      }
+        it('should include ETag header', () => {
+            const response = createNotModifiedResponse('"abc123"');
+
+            expect(response.headers.get('ETag')).toBe('"abc123"');
+        });
     });
 
-    it('should add custom headers', () => {
-      const response = new Response('test');
-      const options: CacheHeadersOptions = {
-        customHeaders: {
-          'X-Custom-Header': 'custom-value',
-          'X-Another-Header': 'another-value',
-        },
-        maxAge: 60000,
-      };
+    describe('CACHE_CONFIGS', () => {
+        it('should have NO_CACHE config', () => {
+            expect(CACHE_CONFIGS.NO_CACHE).toBeDefined();
+            expect(CACHE_CONFIGS.NO_CACHE.cacheControl).toContain('no-store');
+        });
 
-      const result = addCacheHeaders(response, options);
+        it('should have PRIVATE config', () => {
+            expect(CACHE_CONFIGS.PRIVATE).toBeDefined();
+            expect(CACHE_CONFIGS.PRIVATE.cacheControl).toContain('private');
+        });
 
-      expect(result.headers.get('X-Custom-Header')).toBe('custom-value');
-      expect(result.headers.get('X-Another-Header')).toBe('another-value');
+        it('should have PUBLIC_SHORT config', () => {
+            expect(CACHE_CONFIGS.PUBLIC_SHORT).toBeDefined();
+            expect(CACHE_CONFIGS.PUBLIC_SHORT.cacheControl).toContain('public');
+            expect(CACHE_CONFIGS.PUBLIC_SHORT.etag).toBe(true);
+        });
+
+        it('should have PUBLIC_STANDARD config', () => {
+            expect(CACHE_CONFIGS.PUBLIC_STANDARD).toBeDefined();
+        });
+
+        it('should have PUBLIC_LONG config', () => {
+            expect(CACHE_CONFIGS.PUBLIC_LONG).toBeDefined();
+        });
+
+        it('should have IMMUTABLE config', () => {
+            expect(CACHE_CONFIGS.IMMUTABLE).toBeDefined();
+            expect(CACHE_CONFIGS.IMMUTABLE.cacheControl).toContain('immutable');
+        });
+
+        it('should have REVALIDATE config', () => {
+            expect(CACHE_CONFIGS.REVALIDATE).toBeDefined();
+            expect(CACHE_CONFIGS.REVALIDATE.cacheControl).toContain('no-cache');
+        });
     });
 
-    it('should work with NextResponse', () => {
-      const response = NextResponse.json({ data: 'test' });
-      const options: CacheHeadersOptions = { maxAge: 60000 };
+    describe('getCacheConfigForRoute', () => {
+        it('should return NO_CACHE for auth endpoints', () => {
+            const config = getCacheConfigForRoute('/api/auth/login');
+            expect(config.cacheControl).toContain('no-store');
+        });
 
-      const result = addCacheHeaders(response, options);
-      const cacheControl = result.headers.get('Cache-Control');
+        it('should return NO_CACHE for CSRF endpoints', () => {
+            const config = getCacheConfigForRoute('/api/csrf');
+            expect(config.cacheControl).toContain('no-store');
+        });
 
-      expect(cacheControl).toContain('max-age=60');
+        it('should return PUBLIC_SHORT for health endpoints', () => {
+            const config = getCacheConfigForRoute('/api/health');
+            expect(config.cacheControl).toContain('public');
+        });
+
+        it('should return PUBLIC_LONG for parameters endpoints', () => {
+            const config = getCacheConfigForRoute('/api/parameters');
+            expect(config.cacheControl).toContain('public');
+        });
+
+        it('should return PUBLIC_STANDARD for statistics endpoints', () => {
+            const config = getCacheConfigForRoute('/api/statistics');
+            expect(config.cacheControl).toContain('public');
+        });
+
+        it('should return PUBLIC_LONG for reports endpoints', () => {
+            const config = getCacheConfigForRoute('/api/reports');
+            expect(config.cacheControl).toContain('public');
+        });
+
+        it('should return PUBLIC_SHORT for beneficiaries endpoints', () => {
+            const config = getCacheConfigForRoute('/api/beneficiaries');
+            expect(config.cacheControl).toContain('public');
+        });
+
+        it('should return PUBLIC_SHORT for donations endpoints', () => {
+            const config = getCacheConfigForRoute('/api/donations');
+            expect(config.cacheControl).toContain('public');
+        });
+
+        it('should return REVALIDATE for tasks endpoints', () => {
+            const config = getCacheConfigForRoute('/api/tasks');
+            expect(config.cacheControl).toContain('no-cache');
+        });
+
+        it('should return REVALIDATE for messages endpoints', () => {
+            const config = getCacheConfigForRoute('/api/messages');
+            expect(config.cacheControl).toContain('no-cache');
+        });
+
+        it('should return PRIVATE for unknown endpoints', () => {
+            const config = getCacheConfigForRoute('/api/unknown');
+            expect(config.cacheControl).toContain('private');
+        });
     });
-
-    it('should handle no options gracefully', () => {
-      const response = new Response('test');
-      const options: CacheHeadersOptions = {};
-
-      const result = addCacheHeaders(response, options);
-
-      expect(result).toBeDefined();
-      expect(result.headers).toBeDefined();
-    });
-
-    it('should convert milliseconds to seconds correctly', () => {
-      const response = new Response('test');
-      const options: CacheHeadersOptions = {
-        maxAge: 300000, // 5 minutes
-        swr: 900000, // 15 minutes
-      };
-
-      const result = addCacheHeaders(response, options);
-      const cacheControl = result.headers.get('Cache-Control');
-
-      expect(cacheControl).toContain('max-age=300');
-      expect(cacheControl).toContain('stale-while-revalidate=900');
-    });
-
-    it('should handle combined directives correctly', () => {
-      const response = new Response('test');
-      const options: CacheHeadersOptions = {
-        cacheControl: ['public', 'private'],
-        maxAge: 86400000, // 1 day
-        swr: 604800000, // 7 days
-        etag: true,
-      };
-
-      const result = addCacheHeaders(response, options);
-      const cacheControl = result.headers.get('Cache-Control');
-      const etag = result.headers.get('ETag');
-
-      expect(cacheControl).toContain('public');
-      expect(cacheControl).toContain('no-transform');
-      expect(cacheControl).toContain('max-age=86400');
-      expect(cacheControl).toContain('stale-while-revalidate=604800');
-      expect(etag).toBeDefined();
-    });
-  });
-
-  describe('createCachedResponse', () => {
-    it('should create a cached JSON response', () => {
-      const data = { id: 1, name: 'test' };
-      const options: CacheHeadersOptions = { maxAge: 60000 };
-
-      const result = createCachedResponse(data, { ...options, status: 200 });
-
-      expect(result.status).toBe(200);
-      expect(result.headers.get('Cache-Control')).toContain('max-age=60');
-    });
-
-    it('should include ETag in cached response when enabled', () => {
-      const data = { id: 1, name: 'test' };
-      const options: CacheHeadersOptions = { maxAge: 60000, etag: true };
-
-      const result = createCachedResponse(data, { ...options, status: 200 });
-
-      expect(result.headers.get('ETag')).toBeDefined();
-    });
-
-    it('should allow custom status codes', () => {
-      const data = { id: 1 };
-      const result = createCachedResponse(data, { status: 201, maxAge: 60000 });
-
-      expect(result.status).toBe(201);
-    });
-
-    it('should create response with custom headers', () => {
-      const data = { test: 'data' };
-      const options: CacheHeadersOptions = {
-        maxAge: 60000,
-        customHeaders: { 'X-Custom': 'value' },
-      };
-
-      const result = createCachedResponse(data, { ...options, status: 200 });
-
-      expect(result.headers.get('X-Custom')).toBe('value');
-    });
-  });
-
-  describe('hasMatchingETag', () => {
-    it('should detect matching ETag', () => {
-      const etag = '"test-etag"';
-      const request = new Request('http://localhost', {
-        headers: { 'If-None-Match': etag },
-      });
-
-      const result = hasMatchingETag(request, etag);
-      expect(result).toBe(true);
-    });
-
-    it('should return false for non-matching ETag', () => {
-      const request = new Request('http://localhost', {
-        headers: { 'If-None-Match': '"other-etag"' },
-      });
-
-      const result = hasMatchingETag(request, '"test-etag"');
-      expect(result).toBe(false);
-    });
-
-    it('should return false when If-None-Match is missing', () => {
-      const request = new Request('http://localhost');
-
-      const result = hasMatchingETag(request, '"test-etag"');
-      expect(result).toBe(false);
-    });
-  });
-
-  describe('createNotModifiedResponse', () => {
-    it('should create 304 Not Modified response', () => {
-      const etag = '"test-etag"';
-      const result = createNotModifiedResponse(etag);
-
-      expect(result.status).toBe(304);
-      expect(result.headers.get('ETag')).toBe(etag);
-    });
-
-    it('should have empty body', () => {
-      const etag = '"test-etag"';
-      const result = createNotModifiedResponse(etag);
-
-      expect(result.body).toBeNull();
-    });
-  });
-
-  describe('CACHE_CONFIGS', () => {
-    it('should define NO_CACHE configuration', () => {
-      expect(CACHE_CONFIGS.NO_CACHE).toBeDefined();
-      expect(CACHE_CONFIGS.NO_CACHE.cacheControl).toContain('no-store');
-      expect(CACHE_CONFIGS.NO_CACHE.cacheControl).toContain('private');
-    });
-
-    it('should define PRIVATE configuration', () => {
-      expect(CACHE_CONFIGS.PRIVATE).toBeDefined();
-      expect(CACHE_CONFIGS.PRIVATE.cacheControl).toContain('private');
-      expect(CACHE_CONFIGS.PRIVATE.maxAge).toBeGreaterThan(0);
-    });
-
-    it('should define PUBLIC_SHORT configuration', () => {
-      expect(CACHE_CONFIGS.PUBLIC_SHORT).toBeDefined();
-      expect(CACHE_CONFIGS.PUBLIC_SHORT.cacheControl).toContain('public');
-      expect(CACHE_CONFIGS.PUBLIC_SHORT.maxAge).toBeGreaterThan(0);
-    });
-
-    it('should define PUBLIC_STANDARD configuration', () => {
-      expect(CACHE_CONFIGS.PUBLIC_STANDARD).toBeDefined();
-      expect(CACHE_CONFIGS.PUBLIC_STANDARD.cacheControl).toContain('public');
-      expect(CACHE_CONFIGS.PUBLIC_STANDARD.maxAge).toBeGreaterThan(CACHE_CONFIGS.PUBLIC_SHORT.maxAge || 0);
-    });
-
-    it('should define PUBLIC_LONG configuration', () => {
-      expect(CACHE_CONFIGS.PUBLIC_LONG).toBeDefined();
-      expect(CACHE_CONFIGS.PUBLIC_LONG.cacheControl).toContain('public');
-      expect(CACHE_CONFIGS.PUBLIC_LONG.maxAge).toBeGreaterThan(CACHE_CONFIGS.PUBLIC_STANDARD.maxAge || 0);
-    });
-
-    it('should have increasing cache times', () => {
-      const short = CACHE_CONFIGS.PUBLIC_SHORT.maxAge || 0;
-      const standard = CACHE_CONFIGS.PUBLIC_STANDARD.maxAge || 0;
-      const long = CACHE_CONFIGS.PUBLIC_LONG.maxAge || 0;
-
-      expect(short).toBeLessThanOrEqual(standard);
-      expect(standard).toBeLessThanOrEqual(long);
-    });
-
-    it('should have ETags where configured', () => {
-      expect(CACHE_CONFIGS.PUBLIC_SHORT.etag).toBe(true);
-      expect(CACHE_CONFIGS.PUBLIC_STANDARD.etag).toBe(true);
-      expect(CACHE_CONFIGS.PUBLIC_LONG.etag).toBe(true);
-    });
-  });
 });

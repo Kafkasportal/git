@@ -249,5 +249,93 @@ describe('Query Configuration', () => {
       const keys = getInvalidationKeys('scholarships', 'update');
       expect(keys.length).toBeGreaterThan(0);
     });
+
+    it('should return related keys for messages', () => {
+      const keys = getInvalidationKeys('messages', 'create');
+      expect(keys.length).toBeGreaterThan(0);
+      expect(keys).toContainEqual(['messages']);
+    });
+
+    it('should return related keys for tasks', () => {
+      const keys = getInvalidationKeys('tasks', 'update');
+      expect(keys.length).toBeGreaterThan(0);
+    });
+
+    it('should return related keys for todos', () => {
+      const keys = getInvalidationKeys('todos', 'delete');
+      expect(keys.length).toBeGreaterThan(0);
+    });
+
+    it('should return related keys for partners', () => {
+      const keys = getInvalidationKeys('partners', 'create');
+      expect(keys.length).toBeGreaterThan(0);
+    });
+
+    it('should return related keys for aidApplications', () => {
+      const keys = getInvalidationKeys('aidApplications', 'update');
+      expect(keys.length).toBeGreaterThan(0);
+    });
+
+    it('should return related keys for notifications', () => {
+      const keys = getInvalidationKeys('notifications', 'delete');
+      expect(keys.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('getQueryOptions - gcTime calculation', () => {
+    it('should return short gcTime for realtime data', () => {
+      const options = getQueryOptions('realtime');
+      expect(options.gcTime).toBe(QUERY_GC_TIMES.short);
+    });
+
+    it('should return short gcTime for messages (staleTime <= 60s)', () => {
+      const options = getQueryOptions('messages');
+      expect(options.gcTime).toBe(QUERY_GC_TIMES.short);
+    });
+
+    it('should return medium gcTime for dashboard (staleTime <= 5min)', () => {
+      const options = getQueryOptions('dashboard');
+      expect(options.gcTime).toBe(QUERY_GC_TIMES.medium);
+    });
+
+    it('should return medium gcTime for donations (staleTime = 5min)', () => {
+      const options = getQueryOptions('donations');
+      expect(options.gcTime).toBe(QUERY_GC_TIMES.medium);
+    });
+
+    it('should return long gcTime for beneficiaries (staleTime = 10min)', () => {
+      const options = getQueryOptions('beneficiaries');
+      expect(options.gcTime).toBe(QUERY_GC_TIMES.long);
+    });
+
+    it('should return long gcTime for users (staleTime = 15min)', () => {
+      const options = getQueryOptions('users');
+      expect(options.gcTime).toBe(QUERY_GC_TIMES.long);
+    });
+
+    it('should return extended gcTime for settings (staleTime = 30min)', () => {
+      const options = getQueryOptions('settings');
+      expect(options.gcTime).toBe(QUERY_GC_TIMES.extended);
+    });
+
+    it('should return extended gcTime for constants (staleTime = 1hr)', () => {
+      const options = getQueryOptions('constants');
+      expect(options.gcTime).toBe(QUERY_GC_TIMES.extended);
+    });
+
+    it('should return extended gcTime for config (staleTime = 1hr)', () => {
+      const options = getQueryOptions('config');
+      expect(options.gcTime).toBe(QUERY_GC_TIMES.extended);
+    });
+
+    it('should return short gcTime for todos (staleTime = 1min)', () => {
+      const options = getQueryOptions('todos');
+      expect(options.gcTime).toBe(QUERY_GC_TIMES.short);
+    });
+
+    it('should return medium gcTime for tasks (staleTime = 2min)', () => {
+      const options = getQueryOptions('tasks');
+      expect(options.gcTime).toBe(QUERY_GC_TIMES.medium);
+    });
   });
 });

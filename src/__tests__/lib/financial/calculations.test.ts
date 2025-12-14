@@ -1,6 +1,6 @@
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { matchesDateFilter, calculateFinancialStats } from '@/lib/financial/calculations';
+import { matchesDateFilter, calculateFinancialStats, validateDateRange, formatTransactionDate } from '@/lib/financial/calculations';
 import type { FinanceRecord } from '@/lib/financial/calculations';
 
 describe('calculateFinancialStats', () => {
@@ -149,5 +149,120 @@ describe('matchesDateFilter', () => {
     // Record from next month (November 2023)
     const nextMonthRecord = new Date(2023, 10, 1, 0, 0, 1).toISOString();
     expect(matchesDateFilter(nextMonthRecord, 'thisMonth', '', '')).toBe(false);
+  });
+
+  it('should match "all" filter for any date', () => {
+    const anyRecord = new Date(2020, 0, 1).toISOString();
+    expect(matchesDateFilter(anyRecord, 'all', '', '')).toBe(true);
+  });
+
+  it('should match empty filter for any date', () => {
+    const anyRecord = new Date(2020, 0, 1).toISOString();
+    expect(matchesDateFilter(anyRecord, '', '', '')).toBe(true);
+  });
+
+  it('should correctly match "custom" filter with valid date range', () => {
+    const recordDate = '2024-06-15T12:00:00.000Z';
+    const startDate = '2024-06-01';
+    const endDate = '2024-06-30';
+
+    expect(matchesDateFilter(recordDate, 'custom', startDate, endDate)).toBe(true);
+  });
+
+  it('should not match "custom" filter when record is before range', () => {
+    const recordDate = '2024-05-15T12:00:00.000Z';
+    const startDate = '2024-06-01';
+    const endDate = '2024-06-30';
+
+    expect(matchesDateFilter(recordDate, 'custom', startDate, endDate)).toBe(false);
+  });
+
+  it('should not match "custom" filter when record is after range', () => {
+    const recordDate = '2024-07-15T12:00:00.000Z';
+    const startDate = '2024-06-01';
+    const endDate = '2024-06-30';
+
+    expect(matchesDateFilter(recordDate, 'custom', startDate, endDate)).toBe(false);
+  });
+
+  it('should return false for "custom" filter when start date is after end date', () => {
+    const recordDate = '2024-06-15T12:00:00.000Z';
+    const startDate = '2024-06-30';
+    const endDate = '2024-06-01';
+
+    expect(matchesDateFilter(recordDate, 'custom', startDate, endDate)).toBe(false);
+  });
+
+  it('should return false for "custom" filter when missing custom dates', () => {
+    const recordDate = '2024-06-15T12:00:00.000Z';
+
+    // Missing both dates - falls through to default return which is false for 'custom'
+    expect(matchesDateFilter(recordDate, 'custom', '', '')).toBe(false);
+  });
+
+  it('should match record on exact start date boundary', () => {
+    // Use local time format to avoid timezone issues
+    const recordDate = '2024-06-01T00:00:00';
+    const startDate = '2024-06-01';
+    const endDate = '2024-06-30';
+
+    expect(matchesDateFilter(recordDate, 'custom', startDate, endDate)).toBe(true);
+  });
+
+  it('should match record on exact end date boundary', () => {
+    // Use local time format to avoid timezone issues
+    const recordDate = '2024-06-30T23:59:59';
+    const startDate = '2024-06-01';
+    const endDate = '2024-06-30';
+
+    expect(matchesDateFilter(recordDate, 'custom', startDate, endDate)).toBe(true);
+  });
+});
+
+describe('validateDateRange', () => {
+
+  it('should return empty string for valid date range', () => {
+    const result = validateDateRange('2024-01-01', '2024-12-31');
+    expect(result).toBe('');
+  });
+
+  it('should return error message when start date is after end date', () => {
+    const result = validateDateRange('2024-12-31', '2024-01-01');
+    expect(result).toBe('Başlangıç tarihi bitiş tarihinden sonra olamaz');
+  });
+
+  it('should return empty string when start date is missing', () => {
+    const result = validateDateRange('', '2024-12-31');
+    expect(result).toBe('');
+  });
+
+  it('should return empty string when end date is missing', () => {
+    const result = validateDateRange('2024-01-01', '');
+    expect(result).toBe('');
+  });
+
+  it('should return empty string when both dates are missing', () => {
+    const result = validateDateRange('', '');
+    expect(result).toBe('');
+  });
+
+  it('should return empty string when dates are equal', () => {
+    const result = validateDateRange('2024-06-15', '2024-06-15');
+    expect(result).toBe('');
+  });
+});
+
+describe('formatTransactionDate', () => {
+
+  it('should format date in Turkish locale', () => {
+    const result = formatTransactionDate('2024-06-15T12:00:00.000Z');
+    // Format should be DD.MM.YYYY or similar Turkish format
+    expect(result).toMatch(/\d{2}[./]\d{2}[./]\d{4}/);
+  });
+
+  it('should handle ISO date string', () => {
+    const result = formatTransactionDate('2024-01-01T00:00:00.000Z');
+    expect(result).toBeDefined();
+    expect(typeof result).toBe('string');
   });
 });

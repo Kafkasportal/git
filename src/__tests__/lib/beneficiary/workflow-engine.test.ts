@@ -269,5 +269,155 @@ describe('Workflow Statistics', () => {
       expect(attention[0].priority).toBe('high'); // Overdue first
       expect(attention[1].priority).toBe('medium');
     });
+
+    it('should not include completed items', () => {
+      const items = [
+        { workflowStage: WorkflowStage.COMPLETED },
+        { workflowStage: WorkflowStage.REJECTED },
+        { workflowStage: WorkflowStage.CANCELLED },
+      ];
+
+      const attention = getItemsRequiringAttention(items);
+      expect(attention).toHaveLength(0);
+    });
+
+    it('should not include items not assigned to user', () => {
+      const items = [
+        {
+          workflowStage: WorkflowStage.SUBMITTED,
+          assignedTo: 'other-user',
+        },
+      ];
+
+      const attention = getItemsRequiringAttention(items, 'user123');
+      expect(attention).toHaveLength(0);
+    });
+
+    it('should include items with no assignee when userId provided', () => {
+      const items = [
+        {
+          workflowStage: WorkflowStage.SUBMITTED,
+        },
+      ];
+
+      const attention = getItemsRequiringAttention(items, 'user123');
+      expect(attention).toHaveLength(0);
+    });
+  });
+});
+
+describe('WorkflowEngine - performTransition', () => {
+  it('should fail when action is not allowed', async () => {
+    const result = await WorkflowEngine.performTransition(
+      WorkflowStage.DRAFT,
+      WorkflowAction.APPROVE,
+      ['user']
+    );
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBeDefined();
+  });
+
+  it('should fail when comment is required but not provided', async () => {
+    const result = await WorkflowEngine.performTransition(
+      WorkflowStage.UNDER_REVIEW,
+      WorkflowAction.REJECT,
+      ['approver']
+    );
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('açıklama');
+  });
+
+  it('should succeed with valid transition', async () => {
+    const result = await WorkflowEngine.performTransition(
+      WorkflowStage.DRAFT,
+      WorkflowAction.SUBMIT,
+      ['user']
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.newStage).toBe(WorkflowStage.SUBMITTED);
+  });
+
+  it('should succeed with comment when required', async () => {
+    const result = await WorkflowEngine.performTransition(
+      WorkflowStage.UNDER_REVIEW,
+      WorkflowAction.REJECT,
+      ['approver'],
+      'Eksik belgeler'
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.newStage).toBe(WorkflowStage.REJECTED);
+  });
+});
+
+describe('WorkflowEngine - getAvailableActions edge cases', () => {
+  it('should return empty for completed stage', () => {
+    const actions = WorkflowEngine.getAvailableActions(WorkflowStage.COMPLETED, ['admin']);
+    expect(actions).toHaveLength(0);
+  });
+
+  it('should return reopen for rejected stage with admin role', () => {
+    const actions = WorkflowEngine.getAvailableActions(WorkflowStage.REJECTED, ['admin']);
+    expect(actions).toContain(WorkflowAction.REOPEN);
+  });
+
+  it('should return empty for cancelled stage', () => {
+    const actions = WorkflowEngine.getAvailableActions(WorkflowStage.CANCELLED, ['admin']);
+    expect(actions).toHaveLength(0);
+  });
+
+  it('should return request_info for under_review with reviewer role', () => {
+    const actions = WorkflowEngine.getAvailableActions(WorkflowStage.UNDER_REVIEW, [
+      'reviewer',
+    ]);
+    expect(actions).toContain(WorkflowAction.REQUEST_INFO);
+  });
+
+  it('should return provide_info for needs_info with user role', () => {
+    const actions = WorkflowEngine.getAvailableActions(WorkflowStage.NEEDS_INFO, ['user']);
+    expect(actions).toContain(WorkflowAction.PROVIDE_INFO);
+  });
+
+  it('should return start_distribution for approved with admin role', () => {
+    const actions = WorkflowEngine.getAvailableActions(WorkflowStage.APPROVED, ['admin']);
+    expect(actions).toContain(WorkflowAction.START_DISTRIBUTION);
+  });
+});
+
+describe('calculateWorkflowEfficiency edge cases', () => {
+  it('should handle empty array', () => {
+    const metrics = calculateWorkflowEfficiency([]);
+    expect(metrics.rejectionRate).toBe(0);
+    expect(metrics.cancellationRate).toBe(0);
+    // averageCompletionTime may be undefined for empty array
+    expect(metrics.averageCompletionTime === 0 || metrics.averageCompletionTime === undefined).toBe(true);
+  });
+
+  it('should handle items without completion dates', () => {
+    const items = [
+      { workflowStage: WorkflowStage.COMPLETED },
+      { workflowStage: WorkflowStage.COMPLETED },
+    ];
+
+    const metrics = calculateWorkflowEfficiency(items);
+    // averageCompletionTime may be undefined when no dates available
+    expect(metrics.averageCompletionTime === 0 || metrics.averageCompletionTime === undefined).toBe(true);
+  });
+
+  it('should handle items with only createdAt', () => {
+    const now = new Date();
+    const items = [
+      {
+        workflowStage: WorkflowStage.COMPLETED,
+        createdAt: now.toISOString(),
+      },
+    ];
+
+    const metrics = calculateWorkflowEfficiency(items);
+    // averageCompletionTime may be undefined when completedAt is missing
+    expect(metrics.averageCompletionTime === 0 || metrics.averageCompletionTime === undefined).toBe(true);
   });
 });

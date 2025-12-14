@@ -208,4 +208,125 @@ describe('Session Utilities', () => {
             expect(signature).toBe(expectedSig);
         });
     });
+
+    describe('getUserFromSession', () => {
+        it('should return null for null session', async () => {
+            const { getUserFromSession } = await import('@/lib/auth/session');
+            const result = await getUserFromSession(null);
+            expect(result).toBeNull();
+        });
+
+        it('should return null for expired session', async () => {
+            const { getUserFromSession } = await import('@/lib/auth/session');
+            const expiredSession = {
+                sessionId: 'test',
+                userId: 'user',
+                expire: new Date(Date.now() - 1000).toISOString(),
+            };
+            const result = await getUserFromSession(expiredSession);
+            expect(result).toBeNull();
+        });
+
+        it('should return mock admin user for mock-admin-1', async () => {
+            const { getUserFromSession } = await import('@/lib/auth/session');
+            const session = {
+                sessionId: 'test',
+                userId: 'mock-admin-1',
+            };
+            const result = await getUserFromSession(session);
+            expect(result).not.toBeNull();
+            expect(result?.email).toBe('admin@test.com');
+            expect(result?.name).toBe('Dernek Başkanı');
+            expect(result?.role).toBe('Dernek Başkanı');
+            expect(result?.isActive).toBe(true);
+        });
+
+        it('should return mock admin user for mock-admin-2', async () => {
+            const { getUserFromSession } = await import('@/lib/auth/session');
+            const session = {
+                sessionId: 'test',
+                userId: 'mock-admin-2',
+            };
+            const result = await getUserFromSession(session);
+            expect(result).not.toBeNull();
+            expect(result?.email).toBe('admin@portal.com');
+        });
+
+        it('should return mock manager user for mock-manager-1', async () => {
+            const { getUserFromSession } = await import('@/lib/auth/session');
+            const session = {
+                sessionId: 'test',
+                userId: 'mock-manager-1',
+            };
+            const result = await getUserFromSession(session);
+            expect(result).not.toBeNull();
+            expect(result?.email).toBe('manager@test.com');
+            expect(result?.role).toBe('Yönetici');
+        });
+
+        it('should return mock member user for mock-member-1', async () => {
+            const { getUserFromSession } = await import('@/lib/auth/session');
+            const session = {
+                sessionId: 'test',
+                userId: 'mock-member-1',
+            };
+            const result = await getUserFromSession(session);
+            expect(result).not.toBeNull();
+            expect(result?.email).toBe('member@test.com');
+            expect(result?.role).toBe('Üye');
+        });
+
+        it('should return mock viewer user for mock-viewer-1', async () => {
+            const { getUserFromSession } = await import('@/lib/auth/session');
+            const session = {
+                sessionId: 'test',
+                userId: 'mock-viewer-1',
+            };
+            const result = await getUserFromSession(session);
+            expect(result).not.toBeNull();
+            expect(result?.email).toBe('viewer@test.com');
+            expect(result?.role).toBe('Görüntüleyici');
+        });
+
+        it('should return null for unknown mock user', async () => {
+            const { getUserFromSession } = await import('@/lib/auth/session');
+            const session = {
+                sessionId: 'test',
+                userId: 'mock-unknown-user',
+            };
+            const result = await getUserFromSession(session);
+            expect(result).toBeNull();
+        });
+    });
+
+    describe('parseAuthSession edge cases', () => {
+        it('should return null for invalid base64 payload', async () => {
+            const { parseAuthSession } = await import('@/lib/auth/session');
+            // Invalid base64 with valid-looking signature
+            const result = parseAuthSession('!!!invalid.signature');
+            expect(result).toBeNull();
+        });
+
+        it('should return null for session missing sessionId', async () => {
+            const { parseAuthSession } = await import('@/lib/auth/session');
+            // Create a valid-looking signed payload but with missing sessionId
+            const payload = Buffer.from(JSON.stringify({ userId: 'user' })).toString('base64url');
+            const signature = createHmac('sha256', 'test-secret-key-min-16-chars')
+                .update(payload)
+                .digest('hex');
+            const result = parseAuthSession(`${payload}.${signature}`);
+            expect(result).toBeNull();
+        });
+
+        it('should return null for session missing userId', async () => {
+            const { parseAuthSession } = await import('@/lib/auth/session');
+            // Create a valid-looking signed payload but with missing userId
+            const payload = Buffer.from(JSON.stringify({ sessionId: 'sess' })).toString('base64url');
+            const signature = createHmac('sha256', 'test-secret-key-min-16-chars')
+                .update(payload)
+                .digest('hex');
+            const result = parseAuthSession(`${payload}.${signature}`);
+            expect(result).toBeNull();
+        });
+    });
 });
