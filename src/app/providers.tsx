@@ -11,6 +11,7 @@ import { initErrorTracker } from "@/lib/error-tracker";
 import { SettingsProvider } from "@/contexts/settings-context";
 import { KeyboardNavigationProvider } from "@/contexts/keyboard-navigation-context";
 import { ThemeProvider } from "@/components/ui/theme-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { pingAppwrite } from "@/lib/appwrite";
 import logger from "@/lib/logger";
 
@@ -131,9 +132,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
         }}
       >
         <ThemeProvider defaultTheme="system" storageKey="theme" enableSystem>
-          <KeyboardNavigationProvider>
-            <SettingsProvider>{children}</SettingsProvider>
-          </KeyboardNavigationProvider>
+          <TooltipProvider>
+            <KeyboardNavigationProvider>
+              <SettingsProvider>{children}</SettingsProvider>
+            </KeyboardNavigationProvider>
+          </TooltipProvider>
         </ThemeProvider>
       </SuspenseBoundary>
       <Toaster position="top-right" richColors />
