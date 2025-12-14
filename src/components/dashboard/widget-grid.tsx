@@ -247,8 +247,8 @@ export function WidgetGrid({
         <ResponsiveGridLayout
           className="layout"
           layouts={layouts}
-          breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-          cols={{ lg: cols, md: 10, sm: 6, xs: 4, xxs: 2 }}
+          breakpoints={{ lg: 1200 }}
+          cols={{ lg: cols }}
           rowHeight={rowHeight}
           containerPadding={containerPadding}
           margin={margin}

@@ -86,7 +86,7 @@ function KPICardComponent({
   icon: Icon,
   colorTheme,
   description,
-  trend,
+  trend: _trend,
   onClick,
 }: KPICardProps) {
   const theme = colorThemes[colorTheme] || colorThemes.gray;
@@ -110,46 +110,30 @@ function KPICardComponent({
         )}
       />
 
-      <CardContent className="p-5 relative">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-muted-foreground mb-1 truncate" title={title}>
-              {title}
-            </p>
-            <div className="flex items-baseline gap-2">
-              <h3 className="text-2xl lg:text-3xl font-bold tracking-tight text-foreground truncate" title={String(value)}>
-                {value}
-              </h3>
-            </div>
-
-            {(description || trend) && (
-              <div className="mt-2 flex items-center gap-2 flex-wrap">
-                {trend && (
-                  <div className={cn(
-                    "flex items-center text-xs font-medium px-1.5 py-0.5 rounded-full",
-                    trend.direction === 'up'
-                      ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
-                      : "bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400"
-                  )}>
-                    {trend.value}
-                  </div>
-                )}
-                {description && (
-                  <p className="text-xs text-muted-foreground truncate max-w-full" title={description}>
-                    {description}
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-
+      <CardContent className="p-2 relative">
+        <div className="flex items-center gap-1.5">
           <div
             className={cn(
-              'p-2.5 rounded-lg shrink-0 transition-colors',
+              'p-1 rounded-md shrink-0 transition-colors',
               theme.iconBg
             )}
           >
-            <Icon className={cn('h-5 w-5', theme.iconColor)} />
+            <Icon className={cn('h-3 w-3', theme.iconColor)} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[9px] font-medium text-muted-foreground truncate" title={title}>
+              {title}
+            </p>
+            <div className="flex items-baseline gap-1">
+              <h3 className="text-sm font-bold tracking-tight text-foreground" title={String(value)}>
+                {value}
+              </h3>
+              {description && (
+                <span className="text-[9px] text-muted-foreground truncate" title={description}>
+                  {description}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>

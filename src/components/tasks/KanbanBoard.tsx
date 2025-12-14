@@ -261,11 +261,8 @@ KanbanColumn.displayName = 'KanbanColumn';
 export function KanbanBoard({ tasks, onTaskMove, onTaskClick }: KanbanBoardProps) {
   return (
     <div className="relative">
-      {/* Mobile Scroll Hint */}
-      <div className="lg:hidden absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-900 to-transparent pointer-events-none z-10" />
-
-      {/* Kanban Container - Horizontal scroll on mobile */}
-      <div className="flex gap-4 overflow-x-auto pb-4 lg:grid lg:grid-cols-4 lg:overflow-visible scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
+      {/* Kanban Container */}
+      <div className="grid grid-cols-4 gap-4">
         {COLUMNS.map((column) => (
           <KanbanColumn
             key={column.status}

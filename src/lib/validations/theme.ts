@@ -79,3 +79,21 @@ export const themePresetSchema = z.object({
  */
 export type ThemePresetFormData = z.infer<typeof themePresetSchema>;
 
+/**
+ * TypeScript types inferred from Zod schemas
+ */
+export type ThemeColors = z.infer<typeof themeColorsSchema>;
+export type ThemeTypography = z.infer<typeof themeTypographySchema>;
+export type ThemeLayout = z.infer<typeof themeLayoutSchema>;
+
+export interface ThemePreset {
+  _id?: string;
+  name: string;
+  description?: string;
+  colors: ThemeColors;
+  typography?: ThemeTypography;
+  layout?: ThemeLayout;
+  isDefault?: boolean;
+  isCustom?: boolean;
+}
+

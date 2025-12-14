@@ -42,16 +42,16 @@ interface DonationTrendChartProps {
 export function DonationTrendChart({ data }: DonationTrendChartProps) {
   const recharts = useRecharts();
   if (!recharts) {
-    return <Skeleton className="h-64 w-full" />;
+    return <Skeleton className="h-40 w-full" />;
   }
 
   const { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = recharts;
   return (
-    <ResponsiveContainer width="100%" height={256}>
+    <ResponsiveContainer width="100%" height={120}>
       <AreaChart data={data}>
         <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-        <XAxis dataKey="month" className="text-xs" tick={{ fill: 'currentColor', fontSize: 12 }} />
-        <YAxis className="text-xs" tick={{ fill: 'currentColor', fontSize: 12 }} />
+        <XAxis dataKey="month" className="text-xs" tick={{ fill: 'currentColor', fontSize: 9 }} />
+        <YAxis className="text-xs" tick={{ fill: 'currentColor', fontSize: 9 }} />
         <Tooltip
           contentStyle={{
             backgroundColor: 'hsl(var(--background))',
@@ -86,20 +86,20 @@ interface CategoryChartProps {
 export function CategoryChart({ data }: CategoryChartProps) {
   const recharts = useRecharts();
   if (!recharts) {
-    return <Skeleton className="h-64 w-full" />;
+    return <Skeleton className="h-40 w-full" />;
   }
 
   const { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } = recharts;
   return (
-    <ResponsiveContainer width="100%" height={256}>
+    <ResponsiveContainer width="100%" height={120}>
       <PieChart>
         <Pie
           data={data}
           cx="50%"
           cy="50%"
-          innerRadius={60}
-          outerRadius={100}
-          paddingAngle={5}
+          innerRadius={25}
+          outerRadius={45}
+          paddingAngle={2}
           dataKey="value"
         >
           {data.map((entry, index) => (

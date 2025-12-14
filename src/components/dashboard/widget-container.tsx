@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useRef } from 'react';
+import { type ReactNode, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -54,30 +54,30 @@ export function WidgetContainer({
     <Card
       ref={cardRef}
       className={cn(
-        'h-full flex flex-col overflow-hidden transition-shadow',
+        'h-full flex flex-col transition-shadow !gap-0 !py-0',
         isEditMode && 'ring-2 ring-dashed ring-primary/30 cursor-move',
         className
       )}
     >
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-3 px-4">
-        <div className="flex items-center gap-2">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 py-1 px-2">
+        <div className="flex items-center gap-1">
           {isEditMode && (
-            <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab active:cursor-grabbing" />
+            <GripVertical className="h-3 w-3 text-muted-foreground cursor-grab active:cursor-grabbing" />
           )}
-          <CardTitle className="text-sm font-medium">{widget.title}</CardTitle>
+          <CardTitle className="text-[10px] font-medium">{widget.title}</CardTitle>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           {headerActions}
 
           {isLoading && (
-            <RefreshCw className="h-4 w-4 text-muted-foreground animate-spin" />
+            <RefreshCw className="h-3 w-3 text-muted-foreground animate-spin" />
           )}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7">
-                <MoreVertical className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="h-6 w-6">
+                <MoreVertical className="h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -116,7 +116,7 @@ export function WidgetContainer({
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 overflow-auto px-4 pb-4 pt-0">
+      <CardContent className="flex-1 !px-2 !pb-2 pt-0">
         {error ? (
           <div className="flex items-center justify-center h-full text-center">
             <div className="text-muted-foreground">

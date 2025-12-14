@@ -126,7 +126,6 @@ const protectedRoutes: RouteRule[] = [
   { path: "/fon/raporlar", requiredPermission: MODULE_PERMISSIONS.REPORTS },
 
   // Settings (require admin role)
-  { path: "/settings", requiredPermission: MODULE_PERMISSIONS.SETTINGS },
   { path: "/ayarlar", requiredPermission: MODULE_PERMISSIONS.SETTINGS },
   {
     path: "/ayarlar/parametreler",

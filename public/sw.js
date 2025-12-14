@@ -290,8 +290,8 @@ self.addEventListener("push", (event) => {
 
   const options = {
     body: data.body || "Yeni bildirim",
-    icon: "/icons/icon-192x192.png",
-    badge: "/icons/icon-96x96.png",
+    icon: "/favicon.ico",
+    badge: "/favicon.ico",
     vibrate: [200, 100, 200],
     data: {
       url: data.url || "/genel",

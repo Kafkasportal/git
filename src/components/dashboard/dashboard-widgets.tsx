@@ -10,7 +10,6 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 import { KPICard } from '@/components/ui/kpi-card';
 import { CurrencyWidget } from '@/components/ui/currency-widget';
-import { StaggerChildren, StaggerItem } from '@/components/ui/motion/FadeIn';
 import { monitoringApi } from '@/lib/api/client';
 import {
     Users,
@@ -129,7 +128,7 @@ export function useDashboardWidgets({ onToggleWidget, isEditMode }: DashboardWid
         switch (widget.type) {
             case 'stats':
                 return (
-                    <StaggerChildren className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" staggerDelay={0.05} delay={0.1}>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5">
                         {[
                             {
                                 title: 'Bekleyen İşlemler',
@@ -174,18 +173,16 @@ export function useDashboardWidgets({ onToggleWidget, isEditMode }: DashboardWid
                                 description: `+${dashboardStats.donations.recent} bu ay`,
                             },
                         ].map((kpi) => (
-                            <StaggerItem key={kpi.title}>
-                                <KPICard {...kpi} />
-                            </StaggerItem>
+                            <KPICard key={kpi.title} {...kpi} />
                         ))}
-                    </StaggerChildren>
+                    </div>
                 );
 
             case 'chart':
                 if (widget.id === 'donation-chart') {
                     return (
                         <Suspense fallback={<WidgetSkeleton type="chart" />}>
-                            <div className="h-64 w-full">
+                            <div className="h-28 w-full">
                                 <DonationTrendChart data={chartData?.donationTrend || []} />
                             </div>
                         </Suspense>
@@ -194,7 +191,7 @@ export function useDashboardWidgets({ onToggleWidget, isEditMode }: DashboardWid
                 if (widget.id === 'beneficiary-chart') {
                     return (
                         <Suspense fallback={<WidgetSkeleton type="chart" />}>
-                            <div className="h-64 w-full">
+                            <div className="h-28 w-full">
                                 <CategoryChart data={chartData?.categoryData || []} />
                             </div>
                         </Suspense>

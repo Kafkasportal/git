@@ -23,16 +23,11 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { LoadingOverlay } from '@/components/ui/loading-overlay';
 import { SuspenseBoundary } from '@/components/ui/suspense-boundary';
-import { useDeviceDetection } from '@/hooks/useDeviceDetection';
-
 function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, isInitialized, user, logout, initializeAuth } = useAuthStore();
   const { open: isSearchOpen, setOpen: setSearchOpen } = useCommandPalette();
-  const deviceInfo = useDeviceDetection();
-
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     if (typeof window === 'undefined') return false;
     return window.localStorage.getItem('sidebar-collapsed') === 'true';
@@ -148,9 +143,7 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
         userInitials={userInitials}
         isScrolled={isScrolled}
         isSidebarCollapsed={isSidebarCollapsed}
-        isMobileSidebarOpen={isMobileSidebarOpen}
         isUserMenuOpen={isUserMenuOpen}
-        onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
         onToggleSidebar={toggleSidebar}
         onOpenSearch={() => setSearchOpen(true)}
         onUserMenuChange={setIsUserMenuOpen}
@@ -160,10 +153,7 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
       <div className="flex">
         {/* Sidebar */}
         <SuspenseBoundary loadingVariant="spinner">
-          <ModernSidebar
-            isMobileOpen={isMobileSidebarOpen}
-            onMobileToggle={() => setIsMobileSidebarOpen(false)}
-          />
+          <ModernSidebar />
         </SuspenseBoundary>
 
         {/* Sidebar Spacer */}
@@ -181,8 +171,7 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
           tabIndex={-1}
         >
           <div className={cn(
-            'mx-auto w-full',
-            deviceInfo.isMobile ? 'p-4' : 'p-6 lg:p-8',
+            'mx-auto w-full p-6 lg:p-8',
             'max-w-[1600px]'
           )}>
             <BreadcrumbNav />

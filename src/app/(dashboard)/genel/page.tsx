@@ -9,6 +9,7 @@ import { useDashboardWidgets } from '@/components/dashboard/dashboard-widgets';
 import WidgetGrid from '@/components/dashboard/widget-grid';
 import { WidgetSkeleton } from '@/components/ui/skeleton-variants';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { useDashboardRealtime } from '@/hooks/useDashboardRealtime';
 
 function DashboardPageComponent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
@@ -28,13 +29,19 @@ function DashboardPageComponent() {
     loadLayout,
     deleteLayout,
   } = useDashboardLayout({
-    storageKey: 'kafkasder-dashboard-layout',
+    storageKey: 'kafkasder-dashboard-layout-v2',
   });
 
   // Dashboard widgets hook
   const { renderWidget } = useDashboardWidgets({
     onToggleWidget: toggleWidget,
     isEditMode,
+  });
+
+  // Realtime updates hook - auto-refreshes dashboard data
+  const { isConnected: isRealtimeConnected } = useDashboardRealtime({
+    enabled: isAuthenticated,
+    showNotifications: false, // Disable toast spam, data updates silently
   });
 
   // Show loading if still loading auth
@@ -63,7 +70,10 @@ function DashboardPageComponent() {
       <PageLayout
         title={`Hoş geldiniz, ${user?.name || 'Kullanıcı'}!`}
         description="Sistemin genel durumunu buradan takip edebilirsiniz"
-        badge={{ text: 'Sistem Aktif', variant: 'default' }}
+        badge={{
+          text: isRealtimeConnected ? '● Canlı' : 'Sistem Aktif',
+          variant: isRealtimeConnected ? 'default' : 'secondary'
+        }}
       >
         {/* Demo Mode Banner */}
         <DemoBanner />
@@ -111,8 +121,8 @@ function DashboardPageComponent() {
               onEditModeChange={setIsEditMode}
               renderWidget={renderWidget}
               cols={12}
-              rowHeight={80}
-              margin={[16, 16]}
+              rowHeight={40}
+              margin={[6, 6]}
               className="mb-6"
             />
           </Suspense>

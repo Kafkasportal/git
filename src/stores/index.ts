@@ -27,13 +27,11 @@ export {
   useTheme,
   useLayout,
   useNavigation,
-  useDevice,
   useModal,
   selectSidebarState,
   selectThemeState,
   selectLayoutState,
   selectNavigationState,
-  selectDeviceState,
 } from './uiStore';
 export type {
   ThemeMode,

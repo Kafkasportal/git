@@ -15,8 +15,8 @@ import type {
   ThemeColors,
   ThemeTypography,
   ThemeLayout,
-} from "@/contexts/settings-context";
-import type { ThemePreset } from "@/contexts/settings-context";
+  ThemePreset,
+} from "@/lib/validations/theme";
 
 /**
  * GET - Get default theme preset

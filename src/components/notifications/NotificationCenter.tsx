@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { useNotificationStream } from '@/hooks/useNotificationStream';
+import { useAppwriteRealtime } from '@/hooks/useAppwriteRealtime';
 
 interface NotificationCenterProps {
   userId: string;
@@ -99,6 +100,15 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
 
   // Use SSE stream for real-time updates
   useNotificationStream(userId);
+
+  // Use Appwrite Realtime for notifications collection (backup/additional source)
+  useAppwriteRealtime('workflow-notifications', {
+    enabled: !!userId,
+    onChange: () => {
+      // Invalidate query to refetch on any notification change
+      queryClient.invalidateQueries({ queryKey: ['workflow-notifications', userId] });
+    },
+  });
 
   const allNotifications = notifications;
 
@@ -280,12 +290,12 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
                                     <span className="text-xs text-muted-foreground">
                                       {notification.created_at || notification.$createdAt
                                         ? format(
-                                            new Date(notification.created_at || notification.$createdAt || ''),
-                                            'dd MMM yyyy, HH:mm',
-                                            {
-                                              locale: tr,
-                                            }
-                                          )
+                                          new Date(notification.created_at || notification.$createdAt || ''),
+                                          'dd MMM yyyy, HH:mm',
+                                          {
+                                            locale: tr,
+                                          }
+                                        )
                                         : ''}
                                     </span>
                                   </div>

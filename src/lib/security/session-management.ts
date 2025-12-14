@@ -125,7 +125,7 @@ export class SessionActivityTracker {
   }
 
   private setupActivityListeners(): void {
-    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'click'];
 
     events.forEach((event) => {
       window.addEventListener(event, this.updateActivity.bind(this), { passive: true });

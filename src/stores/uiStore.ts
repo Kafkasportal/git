@@ -83,11 +83,6 @@ export interface UIState {
   globalLoading: boolean;
   loadingMessage: string;
   
-  // Mobile
-  isMobileMenuOpen: boolean;
-  isMobile: boolean;
-  isTablet: boolean;
-  
   // Focus Management
   focusTrapEnabled: boolean;
   lastFocusedElement: string | null;
@@ -147,11 +142,6 @@ export interface UIActions {
   
   // Loading Actions
   setGlobalLoading: (loading: boolean, message?: string) => void;
-  
-  // Mobile Actions
-  toggleMobileMenu: () => void;
-  setMobileMenuOpen: (open: boolean) => void;
-  setDeviceType: (isMobile: boolean, isTablet: boolean) => void;
   
   // Focus Actions
   setFocusTrap: (enabled: boolean) => void;
@@ -217,11 +207,6 @@ const initialState: UIState = {
   // Loading
   globalLoading: false,
   loadingMessage: '',
-  
-  // Mobile
-  isMobileMenuOpen: false,
-  isMobile: false,
-  isTablet: false,
   
   // Focus
   focusTrapEnabled: false,
@@ -382,20 +367,6 @@ export const useUIStore = create<UIStore>()(
             state.loadingMessage = message || '';
           }),
           
-          // ====== Mobile Actions ======
-          toggleMobileMenu: () => set((state) => {
-            state.isMobileMenuOpen = !state.isMobileMenuOpen;
-          }),
-          
-          setMobileMenuOpen: (open) => set((state) => {
-            state.isMobileMenuOpen = open;
-          }),
-          
-          setDeviceType: (isMobile, isTablet) => set((state) => {
-            state.isMobile = isMobile;
-            state.isTablet = isTablet;
-          }),
-          
           // ====== Focus Actions ======
           setFocusTrap: (enabled) => set((state) => {
             state.focusTrapEnabled = enabled;
@@ -497,11 +468,7 @@ export const selectNavigationState = (state: UIStore) => ({
   pageDescription: state.pageDescription,
 });
 
-export const selectDeviceState = (state: UIStore) => ({
-  isMobile: state.isMobile,
-  isTablet: state.isTablet,
-  isMobileMenuOpen: state.isMobileMenuOpen,
-});
+// Removed mobile device detection
 
 // ========================================
 // HOOKS
@@ -511,7 +478,6 @@ export const useSidebar = () => useUIStore(selectSidebarState);
 export const useTheme = () => useUIStore(selectThemeState);
 export const useLayout = () => useUIStore(selectLayoutState);
 export const useNavigation = () => useUIStore(selectNavigationState);
-export const useDevice = () => useUIStore(selectDeviceState);
 
 // Modal hook with type safety
 export function useModal<T = Record<string, unknown>>(id: string) {

@@ -110,19 +110,19 @@
   --popover: #ffffff;
   --popover-foreground: #020617;
 
-  /* Primary - Indigo */
-  --primary: #4f46e5;
+  /* Primary - Teal (KAFKASDER Corporate) */
+  --primary: #0d9488;
   --primary-foreground: #ffffff;
-  --primary-50: #eef2ff;
-  --primary-100: #e0e7ff;
-  --primary-200: #c7d2fe;
-  --primary-300: #a5b4fc;
-  --primary-400: #818cf8;
-  --primary-500: #6366f1;
-  --primary-600: #4f46e5;
-  --primary-700: #4338ca;
-  --primary-800: #3730a3;
-  --primary-900: #312e81;
+  --primary-50: #f0fdfa;
+  --primary-100: #ccfbf1;
+  --primary-200: #99f6e4;
+  --primary-300: #5eead4;
+  --primary-400: #2dd4bf;
+  --primary-500: #14b8a6;
+  --primary-600: #0d9488;
+  --primary-700: #0f766e;
+  --primary-800: #115e59;
+  --primary-900: #134e4a;
 
   /* Secondary */
   --secondary: #f1f5f9;
@@ -133,8 +133,8 @@
   --muted-foreground: #64748b;
 
   /* Accent */
-  --accent: #eef2ff;
-  --accent-foreground: #4338ca;
+  --accent: #f0fdfa;
+  --accent-foreground: #0f766e;
 
   /* Destructive */
   --destructive: #ef4444;
@@ -181,24 +181,24 @@
   /* ==========  INTERACTIVE  ========== */
   --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: #6366f1;
+  --ring: #14b8a6;
 
   /* ==========  CHART COLORS  ========== */
-  --chart-1: #6366f1;
-  --chart-2: #8b5cf6;
-  --chart-3: #ec4899;
+  --chart-1: #0d9488;
+  --chart-2: #14b8a6;
+  --chart-3: #2dd4bf;
   --chart-4: #06b6d4;
   --chart-5: #10b981;
 
   /* ==========  SIDEBAR - DARK THEME  ========== */
   --sidebar: #020617;
   --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #818cf8;
+  --sidebar-primary: #2dd4bf;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #1e293b;
   --sidebar-accent-foreground: #f8fafc;
   --sidebar-border: #1e293b;
-  --sidebar-ring: #6366f1;
+  --sidebar-ring: #14b8a6;
 
   /* ==========  SHADOWS  ========== */
   --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -227,9 +227,9 @@
   --popover: #0f172a;
   --popover-foreground: #f8fafc;
 
-  /* Primary */
-  --primary: #818cf8;
-  --primary-foreground: #020617;
+  /* Primary - Teal (KAFKASDER Dark Mode) */
+  --primary: #2dd4bf;
+  --primary-foreground: #042f2e;
 
   /* Secondary */
   --secondary: #1e293b;
@@ -260,24 +260,24 @@
   /* Interactive */
   --border: #1e293b;
   --input: #1e293b;
-  --ring: #818cf8;
+  --ring: #2dd4bf;
 
   /* Chart Colors - Brighter for dark mode */
-  --chart-1: #818cf8;
-  --chart-2: #a78bfa;
-  --chart-3: #f472b6;
+  --chart-1: #2dd4bf;
+  --chart-2: #5eead4;
+  --chart-3: #99f6e4;
   --chart-4: #22d3ee;
   --chart-5: #34d399;
 
   /* Sidebar */
   --sidebar: #020617;
   --sidebar-foreground: #94a3b8;
-  --sidebar-primary: #818cf8;
-  --sidebar-primary-foreground: #020617;
+  --sidebar-primary: #2dd4bf;
+  --sidebar-primary-foreground: #042f2e;
   --sidebar-accent: #1e293b;
   --sidebar-accent-foreground: #f8fafc;
   --sidebar-border: #1e293b;
-  --sidebar-ring: #818cf8;
+  --sidebar-ring: #2dd4bf;
 
   /* Shadows - Darker */
   --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.5);
@@ -649,60 +649,8 @@
 }
 
 /* ========================================
-   MOBILE OPTIMIZATIONS
+   MOBILE OPTIMIZATIONS - REMOVED
    ======================================== */
-
-/* Safe Area Insets */
-.safe-area-top { padding-top: env(safe-area-inset-top, 0); }
-.safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 0); }
-.safe-area-left { padding-left: env(safe-area-inset-left, 0); }
-.safe-area-right { padding-right: env(safe-area-inset-right, 0); }
-
-/* Touch-friendly Tap Targets */
-@media (hover: none) and (pointer: coarse) {
-  button,
-  a,
-  [role="button"],
-  input[type="checkbox"],
-  input[type="radio"] {
-    min-height: 44px;
-    min-width: 44px;
-  }
-}
-
-/* Prevent Text Zoom on iOS */
-@media (max-width: 640px) {
-  body {
-    font-size: 16px;
-    -webkit-tap-highlight-color: transparent;
-  }
-}
-
-/* Bottom Sheet */
-.bottom-sheet {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--background);
-  border-radius: 16px 16px 0 0;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
-  transform: translateY(100%);
-  transition: transform 0.3s ease-out;
-}
-
-.bottom-sheet.open {
-  transform: translateY(0);
-}
-
-.bottom-sheet-handle {
-  width: 40px;
-  height: 4px;
-  background: var(--muted-foreground);
-  border-radius: 2px;
-  margin: 12px auto;
-  opacity: 0.5;
-}
 
 /* ========================================
    DARK MODE ENHANCEMENTS
@@ -841,4 +789,39 @@ a:focus-visible {
     orphans: 3;
     widows: 3;
   }
+}
+
+/* ========================================
+   REACT-GRID-LAYOUT OVERRIDES
+   ======================================== */
+
+.react-grid-layout {
+  position: relative;
+}
+
+.react-grid-item {
+  transition: all 200ms ease;
+  transition-property: left, top, width, height;
+}
+
+.react-grid-item > * {
+  width: 100%;
+  height: 100%;
+  overflow: visible !important;
+}
+
+.react-grid-item.cssTransforms {
+  transition-property: transform, width, height;
+}
+
+.react-grid-item.resizing {
+  transition: none;
+  z-index: 1;
+  will-change: width, height;
+}
+
+.react-grid-item.react-draggable-dragging {
+  transition: none;
+  z-index: 3;
+  will-change: transform;
 }

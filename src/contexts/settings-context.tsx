@@ -32,59 +32,9 @@ export interface AllSettings {
   [category: string]: CategorySettings;
 }
 
-// Theme configuration
-export interface ThemeColors {
-  primary: string;
-  primaryHover?: string;
-  primaryActive?: string;
-  secondary?: string;
-  secondaryHover?: string;
-  accent?: string;
-  success?: string;
-  warning?: string;
-  error?: string;
-  info?: string;
-  background?: string;
-  backgroundSecondary?: string;
-  backgroundTertiary?: string;
-  textPrimary?: string;
-  textSecondary?: string;
-  textMuted?: string;
-  border?: string;
-  borderHover?: string;
-  sidebarBg?: string;
-  sidebarText?: string;
-  sidebarActive?: string;
-}
-
-export interface ThemeTypography {
-  fontFamily?: string;
-  baseSize?: number;
-  headingScale?: number;
-  lineHeight?: number;
-  fontWeightRegular?: number;
-  fontWeightMedium?: number;
-  fontWeightBold?: number;
-}
-
-export interface ThemeLayout {
-  sidebarWidth?: number;
-  containerMaxWidth?: number;
-  borderRadius?: number;
-  spacingScale?: "tight" | "normal" | "relaxed";
-  cardElevation?: "flat" | "subtle" | "medium" | "high";
-}
-
-export interface ThemePreset {
-  _id?: string;
-  name: string;
-  description?: string;
-  colors: ThemeColors;
-  typography?: ThemeTypography;
-  layout?: ThemeLayout;
-  isDefault?: boolean;
-  isCustom?: boolean;
-}
+// Theme configuration - Imported from validations to avoid duplication
+import type { ThemeColors, ThemeTypography, ThemeLayout, ThemePreset } from '@/lib/validations/theme';
+export type { ThemeColors, ThemeTypography, ThemeLayout, ThemePreset };
 
 // Settings Context interface
 export interface SettingsContextValue {

@@ -4,7 +4,6 @@ import { memo, useCallback } from 'react';
 import Link from 'next/link';
 import {
     LogOut,
-    Menu,
     ChevronDown,
     Settings,
     Building2,
@@ -27,9 +26,7 @@ interface DashboardHeaderProps {
     userInitials: string;
     isScrolled: boolean;
     isSidebarCollapsed: boolean;
-    isMobileSidebarOpen: boolean;
     isUserMenuOpen: boolean;
-    onToggleMobileSidebar: () => void;
     onToggleSidebar: () => void;
     onOpenSearch: () => void;
     onUserMenuChange: (open: boolean) => void;
@@ -139,9 +136,7 @@ export const DashboardHeader = memo(function DashboardHeader({
     userInitials,
     isScrolled,
     isSidebarCollapsed,
-    isMobileSidebarOpen: _isMobileSidebarOpen,
     isUserMenuOpen,
-    onToggleMobileSidebar,
     onToggleSidebar,
     onOpenSearch,
     onUserMenuChange,
@@ -157,18 +152,9 @@ export const DashboardHeader = memo(function DashboardHeader({
             <div className="flex h-full items-center justify-between px-4 lg:px-6">
                 {/* Left Section */}
                 <div className="flex items-center gap-3">
-                    {/* Mobile Menu */}
+                    {/* Sidebar Toggle */}
                     <button
-                        className="lg:hidden p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors"
-                        onClick={onToggleMobileSidebar}
-                        aria-label="Menüyü aç"
-                    >
-                        <Menu className="h-5 w-5" />
-                    </button>
-
-                    {/* Desktop Sidebar Toggle */}
-                    <button
-                        className="hidden lg:flex p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors"
+                        className="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors"
                         onClick={onToggleSidebar}
                         aria-label={isSidebarCollapsed ? 'Menüyü genişlet' : 'Menüyü daralt'}
                     >

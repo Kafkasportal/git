@@ -20,14 +20,10 @@ function getActiveModuleId(pathname: string): string | null {
 }
 
 interface ModernSidebarProps {
-  isMobileOpen?: boolean;
-  onMobileToggle?: () => void;
   className?: string;
 }
 
 function ModernSidebarComponent({
-  isMobileOpen = false,
-  onMobileToggle,
   className,
 }: ModernSidebarProps) {
   const pathname = usePathname();
@@ -95,19 +91,6 @@ function ModernSidebarComponent({
 
   return (
     <TooltipProvider delayDuration={100}>
-      {/* Mobile Backdrop */}
-      <AnimatePresence>
-        {isMobileOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
-            onClick={onMobileToggle}
-          />
-        )}
-      </AnimatePresence>
-
       {/* Sidebar */}
       <aside
         className={cn(
@@ -115,7 +98,6 @@ function ModernSidebarComponent({
           'bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800',
           'transition-all duration-300 ease-out flex flex-col',
           isCollapsed ? 'w-[68px]' : 'w-64',
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
           className
         )}
       >
@@ -150,7 +132,7 @@ function ModernSidebarComponent({
                             'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium',
                             'transition-all duration-200',
                             moduleActive
-                              ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
+                              ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400'
                               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200',
                             isCollapsed && 'justify-center px-2'
                           )}
@@ -158,7 +140,7 @@ function ModernSidebarComponent({
                           <Icon className={cn(
                             'flex-shrink-0 transition-colors',
                             isCollapsed ? 'w-5 h-5' : 'w-[18px] h-[18px]',
-                            moduleActive && 'text-indigo-500 dark:text-indigo-400'
+                            moduleActive && 'text-teal-500 dark:text-teal-400'
                           )} />
                           {!isCollapsed && (
                             <>
@@ -183,12 +165,11 @@ function ModernSidebarComponent({
                         <Link
                           href={visibleSubPages[0].href}
                           prefetch={true}
-                          onClick={onMobileToggle}
                           className={cn(
                             'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium',
                             'transition-all duration-200',
                             isActive(visibleSubPages[0].href)
-                              ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
+                              ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400'
                               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200',
                             isCollapsed && 'justify-center px-2'
                           )}
@@ -225,11 +206,10 @@ function ModernSidebarComponent({
                                 key={subPage.href}
                                 href={subPage.href}
                                 prefetch={true}
-                                onClick={onMobileToggle}
                                 className={cn(
                                   'block px-3 py-2 rounded-md text-sm transition-all duration-150',
                                   isActive(subPage.href)
-                                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-medium'
+                                    ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 font-medium'
                                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                                 )}
                               >
@@ -259,7 +239,7 @@ function ModernSidebarComponent({
                     'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium',
                     'transition-all duration-200',
                     pathname.startsWith('/ayarlar')
-                      ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
+                      ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400'
                       : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200',
                     isCollapsed && 'justify-center px-2'
                   )}

@@ -46,7 +46,7 @@ const navigationItems: SearchResult[] = [
   { id: 'nav-7', type: 'page', title: 'Mali Dashboard', subtitle: 'Finansal raporlar', href: '/financial-dashboard', icon: <DollarSign className="h-4 w-4" /> },
   { id: 'nav-8', type: 'page', title: 'Gelir-Gider', subtitle: 'Finansal işlemler', href: '/fon/gelir-gider', icon: <FileText className="h-4 w-4" /> },
   { id: 'nav-9', type: 'page', title: 'Burs Öğrencileri', subtitle: 'Burs yönetimi', href: '/burs/ogrenciler', icon: <GraduationCap className="h-4 w-4" /> },
-  { id: 'nav-10', type: 'page', title: 'Ayarlar', subtitle: 'Sistem ayarları', href: '/settings', icon: <Settings className="h-4 w-4" /> },
+  { id: 'nav-10', type: 'page', title: 'Ayarlar', subtitle: 'Sistem ayarları', href: '/ayarlar', icon: <Settings className="h-4 w-4" /> },
   { id: 'nav-11', type: 'page', title: 'Analitik', subtitle: 'İstatistikler', href: '/analitik', icon: <FileText className="h-4 w-4" /> },
   { id: 'nav-12', type: 'page', title: 'Denetim Kayıtları', subtitle: 'Audit logs', href: '/denetim-kayitlari', icon: <FileText className="h-4 w-4" /> },
 ];

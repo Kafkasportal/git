@@ -41,7 +41,6 @@ const PATH_TRANSLATIONS: Record<string, string> = {
   parametreler: 'Parametreler',
   settings: 'Ayarlar',
   profil: 'Profil',
-  'performance-monitoring': 'Performans İzleme',
 };
 
 function BreadcrumbNavComponent() {

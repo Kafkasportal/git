@@ -125,7 +125,7 @@ const defaultSearchItems: SearchResult[] = [
     title: 'Ayarlar',
     description: 'Sistem ayarlarını düzenle',
     category: 'Sistem',
-    href: '/settings',
+    href: '/ayarlar',
   },
 ];
 

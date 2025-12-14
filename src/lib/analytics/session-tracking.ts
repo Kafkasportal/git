@@ -253,7 +253,7 @@ export function initSessionTracking(): () => void {
   };
   
   // Add event listeners
-  const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
+  const events = ['mousedown', 'mousemove', 'keydown', 'scroll'];
   events.forEach((event) => {
     window.addEventListener(event, handleActivity, { passive: true });
   });

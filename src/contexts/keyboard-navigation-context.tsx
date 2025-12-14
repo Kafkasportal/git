@@ -33,9 +33,9 @@ interface KeyboardNavigationProviderProps {
   enabled?: boolean;
 }
 
-export function KeyboardNavigationProvider({ 
-  children, 
-  enabled: initialEnabled = true 
+export function KeyboardNavigationProvider({
+  children,
+  enabled: initialEnabled = true
 }: KeyboardNavigationProviderProps) {
   const router = useRouter();
   const [shortcuts, setShortcuts] = useState<Map<string, Shortcut>>(new Map());
@@ -112,15 +112,20 @@ export function KeyboardNavigationProvider({
     const handleKeyDown = (event: KeyboardEvent) => {
       // Skip if typing in input/textarea
       const target = event.target as HTMLElement;
-      const isEditable = 
-        target.tagName === 'INPUT' || 
-        target.tagName === 'TEXTAREA' || 
+      const isEditable =
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
         target.isContentEditable;
 
       // Check each shortcut
       for (const [, shortcut] of shortcuts) {
         // Skip non-global shortcuts when in editable
         if (isEditable && !shortcut.global && shortcut.key !== 'Escape') {
+          continue;
+        }
+
+        // Safety check for event.key
+        if (!event.key || !shortcut.key) {
           continue;
         }
 
@@ -189,13 +194,13 @@ export function useRegisterShortcut(
  */
 export function formatShortcutKey(shortcut: Shortcut): string {
   const keys: string[] = [];
-  
+
   if (shortcut.ctrl) keys.push('Ctrl');
   if (shortcut.alt) keys.push('Alt');
   if (shortcut.shift) keys.push('Shift');
-  
-  const keyDisplay = shortcut.key.length === 1 
-    ? shortcut.key.toUpperCase() 
+
+  const keyDisplay = shortcut.key.length === 1
+    ? shortcut.key.toUpperCase()
     : shortcut.key;
   keys.push(keyDisplay);
 
