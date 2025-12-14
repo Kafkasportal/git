@@ -132,7 +132,7 @@ describe('HTTP Cache Utilities', () => {
       const etag = result.headers.get('ETag');
 
       expect(cacheControl).toContain('public');
-      expect(cacheControl).toContain('no-transform');
+      expect(cacheControl).toContain('private');
       expect(cacheControl).toContain('max-age=86400');
       expect(cacheControl).toContain('stale-while-revalidate=604800');
       expect(etag).toBeDefined();
