@@ -18,7 +18,7 @@ const logger = createLogger('api:errors');
 const createErrorSchema = z.object({
   error_code: z.string(),
   title: z.string().min(1).max(500),
-  description: z.string(),
+  description: z.string().default(''),
   category: z.enum([
     'runtime',
     'ui_ux',
@@ -104,10 +104,17 @@ async function postErrorHandler(request: NextRequest) {
 
     // Create error using unified backend
     // Create error using Appwrite
+    // Ensure message field is always present (required by Appwrite errors collection)
+    // Use title first, then description, then fallback - ensure it's never empty
+    const errorMessage = (data.title?.trim() || data.description?.trim() || 'Unknown error').substring(0, 500);
+    if (!errorMessage || errorMessage.trim() === '') {
+      logger.warn('Error message is empty, using fallback', { error_code: data.error_code });
+    }
+    
     const result = await appwriteErrors.create({
       ...data,
-      // Appwrite errors collection requires 'message' field
-      message: data.title || data.description || 'Unknown error',
+      // Appwrite errors collection requires 'message' field - ensure it's always present and non-empty
+      message: errorMessage || 'Unknown error',
       user_id: data.user_id ?? undefined,
       reporter_id: data.reporter_id || undefined,
       occurrence_count: 1,

@@ -38,7 +38,7 @@ export const POST = authRateLimit(async (request: NextRequest) => {
 
     const body = await request.json();
     email = body.email;
-    const { password, rememberMe = false } = body;
+    const { password, rememberMe = false, twoFactorCode } = body;
 
     // Validate input
     if (!email || !password) {
@@ -249,6 +249,7 @@ export const POST = authRateLimit(async (request: NextRequest) => {
     // appwriteUser zaten foundUser'dan geldi, preferences'ları oku
     let role = "Personel";
     let permissions: string[] = [];
+    let twoFactorEnabled = false;
 
     try {
       // Read role and permissions from preferences
@@ -262,11 +263,46 @@ export const POST = authRateLimit(async (request: NextRequest) => {
             permissions = [];
           }
         }
+        
+        // Check if 2FA is enabled for this user
+        // TODO: When 2FA storage is implemented, check for twoFactorSecret or twoFactorEnabled flag
+        twoFactorEnabled = (appwriteUser.prefs.twoFactorEnabled as boolean) || false;
       }
     } catch (prefsError) {
       logger.warn("Failed to read user preferences, using defaults", {
         userId: appwriteUser.$id,
         error: prefsError,
+      });
+    }
+
+    // If 2FA is enabled, require 2FA code before completing login
+    if (twoFactorEnabled) {
+      // If 2FA is enabled but no code provided, request it
+      if (!twoFactorCode) {
+        return NextResponse.json(
+          {
+            success: false,
+            requiresTwoFactor: true,
+            error: "İki faktörlü kimlik doğrulama kodu gereklidir",
+          },
+          { status: 200 }, // 200 because this is expected flow, not an error
+        );
+      }
+
+      // TODO: Verify 2FA code using stored secret
+      // For now, since storage is not implemented, we'll skip verification
+      // When 2FA storage is implemented, verify the code here:
+      // const isValid = authenticator.verify({ token: twoFactorCode, secret: storedSecret });
+      // if (!isValid) {
+      //   return NextResponse.json(
+      //     { success: false, error: "Geçersiz 2FA kodu" },
+      //     { status: 401 }
+      //   );
+      // }
+      
+      logger.info("2FA code provided (verification skipped - storage not implemented)", {
+        userId: appwriteUser.$id,
+        email: `${email?.substring(0, 3)}***`,
       });
     }
 

@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, Building2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { OAuthButton } from '@/components/auth/OAuthButton';
 
 interface CorporateLoginFormProps {
   className?: string;
@@ -33,9 +34,13 @@ export function CorporateLoginForm({
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [twoFactorError, setTwoFactorError] = useState('');
 
   const initRef = useRef(false);
   const emailInputRef = useRef<HTMLInputElement>(null);
+  const twoFactorInputRef = useRef<HTMLInputElement>(null);
 
   const { login, isAuthenticated, initializeAuth } = useAuthStore();
 
@@ -114,13 +119,56 @@ export function CorporateLoginForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // If 2FA is required, validate and submit 2FA code
+    if (requiresTwoFactor) {
+      if (!twoFactorCode || twoFactorCode.length !== 6) {
+        setTwoFactorError('2FA kodu 6 haneli olmalıdır');
+        twoFactorInputRef.current?.focus();
+        return;
+      }
+      setTwoFactorError('');
+      setIsLoading(true);
+      try {
+        await login(email, password, rememberMe, twoFactorCode);
+        if (typeof window !== 'undefined') {
+          if (rememberMe) {
+            const rememberData = {
+              email,
+              timestamp: Date.now(),
+              expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
+            };
+            localStorage.setItem('rememberMe', JSON.stringify(rememberData));
+          } else {
+            localStorage.removeItem('rememberMe');
+          }
+        }
+        // Login successful - state will be updated by authStore
+        setIsLoading(false);
+        toast.success('Başarıyla giriş yaptınız', {
+          description: 'Yönlendiriliyorsunuz...',
+          duration: 2000,
+        });
+        await new Promise(resolve => setTimeout(resolve, 500));
+        router.push(redirectTo);
+      } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error ? err.message : typeof err === 'string' ? err : '2FA kodu hatalı';
+        setTwoFactorError(errorMessage);
+        twoFactorInputRef.current?.focus();
+        setIsLoading(false);
+      }
+      return;
+    }
+    
+    // Normal login flow
     const isEmailValid = validateEmail(email);
     const isPasswordValid = validatePassword(password);
     if (!isEmailValid || !isPasswordValid) return;
 
     setIsLoading(true);
     try {
-      await login(email, password);
+      await login(email, password, rememberMe);
       if (typeof window !== 'undefined') {
         if (rememberMe) {
           const rememberData = {
@@ -133,17 +181,34 @@ export function CorporateLoginForm({
           localStorage.removeItem('rememberMe');
         }
       }
+      // Login successful - state will be updated by authStore
+      setIsLoading(false);
       toast.success('Başarıyla giriş yaptınız', {
         description: 'Yönlendiriliyorsunuz...',
         duration: 2000,
       });
+      // Wait a bit for state to update, then redirect
       await new Promise(resolve => setTimeout(resolve, 500));
+      router.push(redirectTo);
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : typeof err === 'string' ? err : 'Giriş başarısız';
-      toast.error('Giriş hatası', { description: errorMessage });
-      emailInputRef.current?.focus();
-      setIsLoading(false);
+      const error = err as Error & { requiresTwoFactor?: boolean };
+      if (error.requiresTwoFactor) {
+        // 2FA is required - show 2FA input
+        setRequiresTwoFactor(true);
+        setIsLoading(false);
+        setTimeout(() => {
+          twoFactorInputRef.current?.focus();
+        }, 100);
+        toast.info('2FA kodu gereklidir', {
+          description: 'Lütfen authenticator uygulamanızdan kodu girin',
+        });
+      } else {
+        const errorMessage =
+          err instanceof Error ? err.message : typeof err === 'string' ? err : 'Giriş başarısız';
+        toast.error('Giriş hatası', { description: errorMessage });
+        emailInputRef.current?.focus();
+        setIsLoading(false);
+      }
     }
   };
 
@@ -295,6 +360,42 @@ export function CorporateLoginForm({
                 )}
               </div>
 
+              {/* 2FA Code Field - Only shown when 2FA is required */}
+              {requiresTwoFactor && (
+                <div className="space-y-2">
+                  <Label htmlFor="twoFactorCode" className="text-sm font-medium text-slate-300">
+                    2FA Kodu
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      ref={twoFactorInputRef}
+                      id="twoFactorCode"
+                      type="text"
+                      value={twoFactorCode}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                        setTwoFactorCode(value);
+                        if (twoFactorError) setTwoFactorError('');
+                      }}
+                      placeholder="000000"
+                      maxLength={6}
+                      className={cn(
+                        'h-11 bg-white/5 border-white/10 text-white placeholder:text-slate-500',
+                        'focus:bg-white/10 focus:border-teal-500/50 focus:ring-2 focus:ring-teal-500/20',
+                        'rounded-lg transition-all text-center text-lg tracking-widest',
+                        twoFactorError && 'border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20'
+                      )}
+                    />
+                  </div>
+                  {twoFactorError && (
+                    <p className="text-xs text-red-400 mt-1">{twoFactorError}</p>
+                  )}
+                  <p className="text-xs text-slate-400 mt-1">
+                    Authenticator uygulamanızdan 6 haneli kodu girin
+                  </p>
+                </div>
+              )}
+
               {/* Remember Me */}
               <div className="flex items-center gap-2">
                 <Checkbox
@@ -326,15 +427,47 @@ export function CorporateLoginForm({
                 {isLoading ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Giriş yapılıyor...
+                    {requiresTwoFactor ? 'Doğrulanıyor...' : 'Giriş yapılıyor...'}
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">
-                    Giriş Yap
+                    {requiresTwoFactor ? 'Doğrula' : 'Giriş Yap'}
                     <ArrowRight className="w-4 h-4" />
                   </span>
                 )}
               </Button>
+
+              {/* OAuth Divider */}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/10"></div>
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white/[0.03] px-2 text-slate-500">veya</span>
+                </div>
+              </div>
+
+              {/* OAuth Buttons */}
+              <div className="space-y-3">
+                <OAuthButton
+                  provider="google"
+                  redirectUrl={redirectTo}
+                  variant="outline"
+                  className="w-full h-11 bg-white/5 border-white/10 text-white hover:bg-white/10 hover:border-teal-500/50"
+                />
+                <OAuthButton
+                  provider="github"
+                  redirectUrl={redirectTo}
+                  variant="outline"
+                  className="w-full h-11 bg-white/5 border-white/10 text-white hover:bg-white/10 hover:border-teal-500/50"
+                />
+                <OAuthButton
+                  provider="microsoft"
+                  redirectUrl={redirectTo}
+                  variant="outline"
+                  className="w-full h-11 bg-white/5 border-white/10 text-white hover:bg-white/10 hover:border-teal-500/50"
+                />
+              </div>
             </form>
 
             {/* Footer */}

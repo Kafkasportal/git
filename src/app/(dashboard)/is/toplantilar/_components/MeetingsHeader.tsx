@@ -42,9 +42,13 @@ export function MeetingsHeader({
           </Button>
         </div>
 
-        <Button onClick={onCreateMeeting} className="gap-2">
+        <Button 
+          onClick={onCreateMeeting} 
+          className="gap-2"
+          data-testid="create-meeting-button"
+        >
           <Plus className="h-4 w-4" />
-          Yeni Toplantı
+          Yeni Toplantı Oluştur
         </Button>
       </div>
     </div>

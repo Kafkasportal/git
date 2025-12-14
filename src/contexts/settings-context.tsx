@@ -19,6 +19,8 @@ import React, {
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import logger from "@/lib/logger";
+import { useAuthStore } from "@/stores/authStore";
+import { usePathname } from "next/navigation";
 
 // Setting value types
 export type SettingValue = string | number | boolean | object | null;
@@ -143,15 +145,30 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [currentTheme, setCurrentTheme] = useState<ThemePreset | null>(null);
   const [themeMode, setThemeModeState] = useState<"light" | "dark" | "auto">(getInitialThemeMode);
   const [resolvedThemeMode, setResolvedThemeMode] = useState<"light" | "dark">("light");
+  
+  // Check if user is authenticated - only fetch settings for authenticated users
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  
+  // Check if we're on login page - disable all queries on login page
+  const pathname = usePathname();
+  const isLoginPage = pathname === "/login" || pathname?.startsWith("/login");
+  
+  // Only fetch settings if authenticated AND not on login page
+  const shouldFetchSettings = isAuthenticated && !isLoginPage;
 
-  // Fetch all settings from Appwrite API
+  // Fetch all settings from Appwrite API - only for authenticated users
   const { data: allSettingsData } = useQuery({
     queryKey: ["settings", "all"],
     queryFn: async () => {
       const response = await fetch("/api/settings/all");
+      if (!response.ok) {
+        throw new Error("Failed to fetch settings");
+      }
       const json = await response.json();
       return json.data || {};
     },
+    enabled: shouldFetchSettings, // Only fetch when authenticated and not on login page
+    retry: false, // Don't retry on 401 errors
   });
 
   const { data: themePresetsData } = useQuery({
@@ -159,14 +176,22 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     queryFn: async () => {
       try {
         const response = await fetch("/api/settings/theme-presets");
+        if (!response.ok) {
+          throw new Error("Failed to fetch theme presets");
+        }
         const json = await response.json();
         return json.data || [];
       } catch (error) {
         logger.error("Failed to fetch theme presets", error);
-        toast.error("Tema ayarları yüklenemedi");
+        // Don't show toast for unauthenticated users
+        if (shouldFetchSettings) {
+          toast.error("Tema ayarları yüklenemedi");
+        }
         return [];
       }
     },
+    enabled: shouldFetchSettings, // Only fetch when authenticated and not on login page
+    retry: false, // Don't retry on 401 errors
   });
 
   const { data: defaultThemeData } = useQuery({
@@ -174,14 +199,22 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     queryFn: async () => {
       try {
         const response = await fetch("/api/settings/theme-presets/default");
+        if (!response.ok) {
+          throw new Error("Failed to fetch default theme");
+        }
         const json = await response.json();
         return json.data || null;
       } catch (error) {
         logger.error("Failed to fetch default theme", error);
-        toast.error("Varsayılan tema yüklenemedi");
+        // Don't show toast for unauthenticated users
+        if (shouldFetchSettings) {
+          toast.error("Varsayılan tema yüklenemedi");
+        }
         return null;
       }
     },
+    enabled: shouldFetchSettings, // Only fetch when authenticated and not on login page
+    retry: false, // Don't retry on 401 errors
   });
 
   const allSettings = allSettingsData;

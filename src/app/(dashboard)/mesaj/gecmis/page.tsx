@@ -40,6 +40,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
 } from '@/components/ui/dialog';
 
@@ -345,6 +346,7 @@ export default function CommunicationHistoryPage() {
                           <DialogContent className="max-w-2xl">
                             <DialogHeader>
                               <DialogTitle>İletişim Detayı</DialogTitle>
+                              <DialogDescription>İletişim kaydının detaylı bilgileri</DialogDescription>
                             </DialogHeader>
                             {selectedLog && (
                               <div className="space-y-4">

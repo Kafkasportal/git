@@ -42,6 +42,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
 } from '@/components/ui/dialog';
 
@@ -357,6 +358,7 @@ export default function AuditLogsPage() {
                           <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
                             <DialogHeader>
                               <DialogTitle>Denetim Kaydı Detayı</DialogTitle>
+                              <DialogDescription>Denetim kaydının detaylı bilgileri</DialogDescription>
                             </DialogHeader>
                             {selectedLog && (
                               <div className="space-y-4">

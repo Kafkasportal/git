@@ -9,8 +9,9 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
+  DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Plus, TrendingUp, Users, Banknote, Calendar, FileText, User, CreditCard, CheckCircle2, Clock } from 'lucide-react';
@@ -275,8 +276,10 @@ export default function DonationsPage() {
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-              <DialogTitle>Yeni Bağış Ekle</DialogTitle>
-              <DialogDescription>Bağış bilgilerini girerek yeni kayıt oluşturun</DialogDescription>
+              <DialogHeader>
+                <DialogTitle>Yeni Bağış Ekle</DialogTitle>
+                <DialogDescription>Bağış bilgilerini girerek yeni kayıt oluşturun</DialogDescription>
+              </DialogHeader>
               <DonationForm
                 onSuccess={() => setShowCreateForm(false)}
                 onCancel={() => setShowCreateForm(false)}

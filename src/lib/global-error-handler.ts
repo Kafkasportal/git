@@ -16,6 +16,13 @@ export function initGlobalErrorHandlers(): void {
   window.addEventListener('error', (event) => {
     const { error, message, filename, lineno, colno } = event;
 
+    // Suppress known harmless errors
+    // WebSocket CLOSING/CLOSED state errors are normal during cleanup
+    if (message?.includes('WebSocket is already in CLOSING or CLOSED state')) {
+      // This is a harmless error that occurs during WebSocket cleanup
+      return;
+    }
+
     captureError({
       title: `Unhandled Error: ${message}`,
       description: error?.stack || message,
@@ -39,6 +46,14 @@ export function initGlobalErrorHandlers(): void {
   // Handle unhandled promise rejections
   window.addEventListener('unhandledrejection', (event) => {
     const { reason, promise } = event;
+
+    // Suppress known harmless errors
+    const errorMessage = reason?.message || String(reason);
+    if (errorMessage?.includes('WebSocket is already in CLOSING or CLOSED state')) {
+      // This is a harmless error that occurs during WebSocket cleanup
+      event.preventDefault();
+      return;
+    }
 
     captureError({
       title: `Unhandled Promise Rejection`,

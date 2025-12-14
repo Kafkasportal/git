@@ -17,9 +17,11 @@ const lockedAccounts = new Map<string, number>(); // email -> unlock timestamp
  * Lockout configuration
  */
 export const LOCKOUT_CONFIG = {
-  maxAttempts: 5, // Max failed attempts before lockout
+  // More lenient lockout for testing - allow 10 attempts before lockout, shorter lockout duration
+  // In production, this should be stricter (e.g., 5 attempts, 30 minutes lockout)
+  maxAttempts: process.env.NODE_ENV === 'development' ? 10 : 5, // Max failed attempts before lockout
   attemptWindow: 15 * 60 * 1000, // 15 minutes window for attempts
-  lockoutDuration: 30 * 60 * 1000, // 30 minutes lockout
+  lockoutDuration: process.env.NODE_ENV === 'development' ? 5 * 60 * 1000 : 30 * 60 * 1000, // 5 minutes in dev, 30 minutes in prod
   cleanupInterval: 60 * 60 * 1000, // Clean old attempts every hour
 } as const;
 

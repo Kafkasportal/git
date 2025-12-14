@@ -99,8 +99,10 @@ export const authRateLimit = (
   handler: (req: NextRequest, context?: RouteContext) => Promise<NextResponse> | NextResponse
 ) =>
   withRateLimit(handler, {
-    maxRequests: parseInt(process.env.RATE_LIMIT_AUTH_MAX || '10'),
-    windowMs: parseInt(process.env.RATE_LIMIT_AUTH_WINDOW || '600000'), // 10 attempts per 10 minutes
+    // More lenient rate limiting for testing - allow 30 attempts per 15 minutes
+    // In production, this should be stricter (e.g., 10 per 10 minutes)
+    maxRequests: parseInt(process.env.RATE_LIMIT_AUTH_MAX || (process.env.NODE_ENV === 'development' ? '30' : '10')),
+    windowMs: parseInt(process.env.RATE_LIMIT_AUTH_WINDOW || (process.env.NODE_ENV === 'development' ? '900000' : '600000')), // 30 attempts per 15 minutes in dev, 10 per 10 minutes in prod
     skipSuccessfulRequests: true,
     skipFailedRequests: true, // Don't count failed login attempts
   });

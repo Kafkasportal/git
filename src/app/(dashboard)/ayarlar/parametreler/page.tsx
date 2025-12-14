@@ -12,6 +12,7 @@ import {
   DialogTrigger,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -132,6 +133,7 @@ export default function ParametersPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Yeni Parametre Ekle</DialogTitle>
+              <DialogDescription>Yeni bir sistem parametresi ekleyin</DialogDescription>
             </DialogHeader>
             <ParameterForm
               onSuccess={() => {

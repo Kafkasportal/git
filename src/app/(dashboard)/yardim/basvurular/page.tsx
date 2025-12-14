@@ -6,7 +6,7 @@ import { aidApplications } from '@/lib/api/crud-factory';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -120,6 +120,10 @@ export default function AidApplicationsPage() {
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Yeni Yardım Başvurusu</DialogTitle>
+              <DialogDescription>Yeni bir yardım başvurusu oluşturun</DialogDescription>
+            </DialogHeader>
             <AidApplicationForm
               onSuccess={() => {
                 setShowCreateForm(false);

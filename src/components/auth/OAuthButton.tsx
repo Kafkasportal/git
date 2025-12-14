@@ -67,6 +67,8 @@ export function OAuthButton({
       onClick={handleOAuth}
       disabled={isLoading}
       className={className}
+      data-testid={`oauth-button-${provider}`}
+      aria-label={labels[provider]}
     >
       {isLoading ? (
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

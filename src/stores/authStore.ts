@@ -172,54 +172,79 @@ export const useAuthStore = create<AuthStore>()(
                     });
                     return;
                   }
+                  
+                  // Check if we have a valid session indicator in localStorage
+                  // Only make API call if we have a session indicator
+                  if (localData.userId && localData.isAuthenticated) {
+                    // We have a session indicator, validate it with server
+                    try {
+                      // Fetch current user (this validates session on server)
+                      const userResp = await fetch("/api/auth/user", {
+                        method: "GET",
+                        cache: "no-store",
+                        credentials: "include",
+                      });
+
+                      if (userResp.ok) {
+                        const userData = await userResp.json();
+                        if (userData.success && userData.data) {
+                          const user = userData.data;
+
+                          // Update localStorage (minimal info for offline fallback)
+                          // SECURITY: Don't store sensitive data like email, role, permissions
+                          localStorage.setItem(
+                            "auth-session",
+                            JSON.stringify({
+                              userId: user.id,
+                              isAuthenticated: true,
+                              lastVerified: Date.now(),
+                            }),
+                          );
+
+                          set((state) => {
+                            state.user = user;
+                            state.isAuthenticated = true;
+                            state.isInitialized = true;
+                            state.isLoading = false;
+                          });
+                          return;
+                        }
+                      }
+
+                      // No valid session - clear localStorage
+                      localStorage.removeItem("auth-session");
+                      set((state) => {
+                        state.isAuthenticated = false;
+                        state.user = null;
+                        state.isInitialized = true;
+                        state.isLoading = false;
+                      });
+                      return;
+                    } catch (_apiError) {
+                      // API call failed - clear invalid session
+                      localStorage.removeItem("auth-session");
+                      set((state) => {
+                        state.isAuthenticated = false;
+                        state.user = null;
+                        state.isInitialized = true;
+                        state.isLoading = false;
+                      });
+                      return;
+                    }
+                  }
                 } catch {
                   // Invalid localStorage, continue with normal flow
                 }
               }
 
-              try {
-                // Fetch current user (this validates session on server)
-                const userResp = await fetch("/api/auth/user", {
-                  method: "GET",
-                  cache: "no-store",
-                  credentials: "include",
-                });
-
-                if (userResp.ok) {
-                  const userData = await userResp.json();
-                  if (userData.success && userData.data) {
-                    const user = userData.data;
-
-                    // Update localStorage (minimal info for offline fallback)
-                    // SECURITY: Don't store sensitive data like email, role, permissions
-                    localStorage.setItem(
-                      "auth-session",
-                      JSON.stringify({
-                        userId: user.id,
-                        isAuthenticated: true,
-                        lastVerified: Date.now(),
-                      }),
-                    );
-
-                    set((state) => {
-                      state.user = user;
-                      state.isAuthenticated = true;
-                      state.isInitialized = true;
-                      state.isLoading = false;
-                    });
-                    return;
-                  }
-                }
-
-                // No valid session - clear localStorage
-                localStorage.removeItem("auth-session");
-                set((state) => {
-                  state.isAuthenticated = false;
-                  state.user = null;
-                  state.isInitialized = true;
-                  state.isLoading = false;
-                });
-              } catch (_error) {
+              // No session in localStorage - user is not authenticated
+              set((state) => {
+                state.isAuthenticated = false;
+                state.user = null;
+                state.isInitialized = true;
+                state.isLoading = false;
+              });
+            } catch (_error) {
                 // Network error - try localStorage fallback
                 const storedFallback = localStorage.getItem("auth-session");
                 if (storedFallback) {
@@ -266,6 +291,7 @@ export const useAuthStore = create<AuthStore>()(
             email: string,
             password: string,
             rememberMe = false,
+            twoFactorCode?: string,
           ) => {
             set((state) => {
               state.isLoading = true;
@@ -298,12 +324,20 @@ export const useAuthStore = create<AuthStore>()(
                   "Content-Type": "application/json",
                   "x-csrf-token": csrfData.token,
                 },
-                body: JSON.stringify({ email, password, rememberMe }),
+                body: JSON.stringify({ email, password, rememberMe, twoFactorCode }),
               });
 
               const result = await response.json();
 
               if (!result.success) {
+                // Check if 2FA is required
+                if (result.requiresTwoFactor) {
+                  // Return special error to trigger 2FA prompt
+                  const error = new Error(result.error || "2FA kodu gereklidir") as Error & { requiresTwoFactor?: boolean };
+                  error.requiresTwoFactor = true;
+                  throw error;
+                }
+                
                 // Handle specific error cases
                 if (response.status === 401) {
                   throw new Error(

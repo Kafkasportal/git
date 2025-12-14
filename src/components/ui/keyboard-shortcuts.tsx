@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useCallback } from 'react';
 import { Command } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -100,6 +100,7 @@ export function KeyboardShortcuts({
             <Command className="h-5 w-5" />
             Klavye Kısayolları
           </DialogTitle>
+          <DialogDescription>Uygulamada kullanabileceğiniz klavye kısayolları</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">

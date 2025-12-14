@@ -282,7 +282,10 @@ export default function MeetingsPage() {
 
       {/* Create Meeting Modal */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent 
+          className="max-w-2xl max-h-[90vh] overflow-y-auto"
+          data-testid="meeting-create-dialog"
+        >
           <DialogHeader>
             <DialogTitle>Yeni Toplantı Oluştur</DialogTitle>
             <DialogDescription>

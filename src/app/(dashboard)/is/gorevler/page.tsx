@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
@@ -321,6 +322,7 @@ export default function TasksPage() {
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Yeni Görev Oluştur</DialogTitle>
+                <DialogDescription>Yeni bir görev oluşturmak için formu doldurun</DialogDescription>
               </DialogHeader>
               <TaskForm
                 onSuccess={() => {
@@ -656,6 +658,7 @@ export default function TasksPage() {
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Görevi Düzenle</DialogTitle>
+              <DialogDescription>Görev bilgilerini düzenleyin</DialogDescription>
             </DialogHeader>
             <TaskForm
               taskId={selectedTask._id}

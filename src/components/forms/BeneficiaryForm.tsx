@@ -209,6 +209,7 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
               >
                 <Input
                   id="name"
+                  data-testid="beneficiary-name-input"
                   value={name || ''}
                   placeholder="Ahmet Yılmaz"
                   onChange={(e) => {
@@ -287,6 +288,7 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
               <Label htmlFor="address">Adres *</Label>
               <Textarea
                 id="address"
+                data-testid="beneficiary-address-input"
                 value={address || ''}
                 placeholder="Mahalle, Cadde, Sokak, No"
                 rows={3}
@@ -450,6 +452,7 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
               <Label htmlFor="notes">Notlar</Label>
               <Textarea
                 id="notes"
+                data-testid="beneficiary-notes-input"
                 {...register("notes")}
                 placeholder="Ek bilgiler, özel durumlar..."
                 rows={3}
@@ -462,6 +465,7 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
             <div className="space-y-2">
               <Label>Durum</Label>
               <RadioGroup
+                data-testid="beneficiary-status-radio"
                 value={watch("status")}
                 onValueChange={(value) =>
                   setValue(

@@ -329,6 +329,7 @@ export default function PartnersPage() {
                     <Label htmlFor="create-name">Partner Adı *</Label>
                     <Input
                       id="create-name"
+                      data-testid="partner-name-input"
                       value={formData.name}
                       onChange={(e) =>
                         setFormData((prev) => ({
@@ -346,7 +347,7 @@ export default function PartnersPage() {
                         setFormData((prev) => ({ ...prev, type: value }))
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger data-testid="partner-type-select">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -369,7 +370,7 @@ export default function PartnersPage() {
                         }))
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger data-testid="partner-partnership-type-select">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -402,6 +403,7 @@ export default function PartnersPage() {
                     <Label htmlFor="create-email">E-posta</Label>
                     <Input
                       id="create-email"
+                      data-testid="partner-email-input"
                       type="email"
                       value={formData.email}
                       onChange={(e) =>
@@ -433,7 +435,7 @@ export default function PartnersPage() {
                         setFormData((prev) => ({ ...prev, status: value }))
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger data-testid="partner-status-select">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -447,6 +449,7 @@ export default function PartnersPage() {
                     <Label htmlFor="create-address">Adres</Label>
                     <Input
                       id="create-address"
+                      data-testid="partner-address-input"
                       value={formData.address}
                       onChange={(e) =>
                         setFormData((prev) => ({
@@ -460,6 +463,7 @@ export default function PartnersPage() {
                     <Label htmlFor="create-notes">Notlar</Label>
                     <Input
                       id="create-notes"
+                      data-testid="partner-notes-input"
                       value={formData.notes}
                       onChange={(e) =>
                         setFormData((prev) => ({

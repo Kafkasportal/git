@@ -257,8 +257,9 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
               <ScrollArea className="h-[500px]">
                 {filteredNotifications && filteredNotifications.length > 0 ? (
                   <div className="divide-y">
-                    {filteredNotifications.map((notification) => {
-                      const notificationId = notification.$id || notification._id || '';
+                    {filteredNotifications.map((notification, index) => {
+                      // Ensure unique key - use ID if available, otherwise use index with timestamp
+                      const notificationId = notification.$id || notification._id || `notification-${notification.created_at || Date.now()}-${index}`;
                       return (
                         <div
                           key={notificationId}

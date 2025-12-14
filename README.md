@@ -197,6 +197,43 @@ vercel
 
 Bu proje özel bir projedir.
 
+## 🔧 Sorun Giderme
+
+### Next.js Cache Sorunları
+
+Kod değişiklikleri yansımıyorsa veya beklenmedik hatalar alıyorsanız, Next.js cache'ini temizleyin:
+
+```bash
+# 1. Development server'ı durdurun (Ctrl+C)
+
+# 2. .next klasörünü temizleyin
+rm -rf .next
+
+# 3. Node modules cache'ini temizleyin (opsiyonel)
+npm run clean
+
+# 4. Development server'ı yeniden başlatın
+npm run dev
+```
+
+**Tam temizlik** (tüm cache ve node_modules):
+```bash
+npm run clean:all
+npm install
+npm run dev
+```
+
+**Tarayıcı cache'i**:
+- Hard refresh: `Ctrl+Shift+R` (Windows/Linux) veya `Cmd+Shift+R` (Mac)
+- Veya Developer Tools → Network → "Disable cache" seçeneğini işaretleyin
+
+### Yaygın Sorunlar
+
+- **401 Unauthorized hataları**: Session cookie'lerini temizleyin veya yeniden giriş yapın
+- **API route'ları çalışmıyor**: `.next` klasörünü temizleyip server'ı yeniden başlatın
+- **TypeScript hataları**: `npm run typecheck` çalıştırıp hataları kontrol edin
+- **Build hataları**: `npm run clean:all` ile tam temizlik yapın
+
 ## 🆘 Destek
 
 Sorun yaşıyorsanız:

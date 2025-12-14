@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -391,6 +392,7 @@ export function MessageTemplateSelector({
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Yeni Şablon Oluştur</DialogTitle>
+            <DialogDescription>Yeni bir mesaj şablonu oluşturun</DialogDescription>
           </DialogHeader>
           <SaveTemplateForm
             messageType={messageType}

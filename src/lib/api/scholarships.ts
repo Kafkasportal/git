@@ -9,11 +9,12 @@ import {
   appwriteScholarshipApplications,
   appwriteScholarshipPayments,
 } from '@/lib/appwrite/api';
+import { fetchWithCsrf } from '@/lib/csrf-client';
 import logger from '@/lib/logger';
 
 // Scholarship Programs API
 export const scholarshipsApi = {
-  // Get all scholarships
+  // Get all scholarships - use API route for client-side
   list: async (params?: {
     limit?: number;
     skip?: number;
@@ -21,12 +22,27 @@ export const scholarshipsApi = {
     isActive?: boolean;
   }) => {
     try {
-      const response = await appwriteScholarships.list(params);
+      // Use API route for client-side calls
+      const queryParams = new URLSearchParams();
+      if (params?.limit) queryParams.append('limit', params.limit.toString());
+      if (params?.skip) queryParams.append('skip', params.skip.toString());
+      if (params?.category) queryParams.append('category', params.category);
+      if (params?.isActive !== undefined) queryParams.append('isActive', params.isActive.toString());
+
+      const response = await fetch(`/api/scholarships?${queryParams.toString()}`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch scholarships: ${response.statusText}`);
+      }
+
+      const result = await response.json();
       return {
-        success: true,
-        data: response.documents,
-        total: response.total,
-        error: null,
+        success: result.success ?? true,
+        data: result.data ?? [],
+        total: result.total ?? 0,
+        error: result.error ?? null,
       };
     } catch (error) {
       logger.error('Error listing scholarships', error);
@@ -163,7 +179,7 @@ export const scholarshipsApi = {
 
 // Scholarship Applications API
 export const scholarshipApplicationsApi = {
-  // List applications
+  // List applications - use API route for client-side
   list: async (params?: {
     limit?: number;
     skip?: number;
@@ -172,12 +188,28 @@ export const scholarshipApplicationsApi = {
     tc_no?: string;
   }) => {
     try {
-      const response = await appwriteScholarshipApplications.list(params);
+      // Use API route for client-side calls
+      const queryParams = new URLSearchParams();
+      if (params?.limit) queryParams.append('limit', params.limit.toString());
+      if (params?.skip) queryParams.append('skip', params.skip.toString());
+      if (params?.scholarship_id) queryParams.append('scholarship_id', params.scholarship_id);
+      if (params?.status) queryParams.append('status', params.status);
+      if (params?.tc_no) queryParams.append('tc_no', params.tc_no);
+
+      const response = await fetch(`/api/scholarships/applications?${queryParams.toString()}`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch applications: ${response.statusText}`);
+      }
+
+      const result = await response.json();
       return {
-        success: true,
-        data: response.documents,
-        total: response.total,
-        error: null,
+        success: result.success ?? true,
+        data: result.data ?? [],
+        total: result.total ?? 0,
+        error: result.error ?? null,
       };
     } catch (error) {
       logger.error('Error listing applications', error);
@@ -190,14 +222,22 @@ export const scholarshipApplicationsApi = {
     }
   },
 
-  // Get single application
+  // Get single application - use API route for client-side
   get: async (id: string) => {
     try {
-      const data = await appwriteScholarshipApplications.get(id);
+      const response = await fetch(`/api/scholarships/applications/${id}`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch application: ${response.statusText}`);
+      }
+
+      const result = await response.json();
       return {
-        success: true,
-        data,
-        error: null,
+        success: result.success ?? true,
+        data: result.data ?? null,
+        error: result.error ?? null,
       };
     } catch (error) {
       logger.error('Error getting application', error);
@@ -209,7 +249,7 @@ export const scholarshipApplicationsApi = {
     }
   },
 
-  // Create application
+  // Create application - use API route for client-side
   create: async (data: {
     scholarship_id: string;
     student_id?: string;
@@ -233,11 +273,25 @@ export const scholarshipApplicationsApi = {
     documents?: string[];
   }) => {
     try {
-      const result = await appwriteScholarshipApplications.create(data) as { $id: string };
+      const response = await fetchWithCsrf('/api/scholarships/applications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to create application: ${response.statusText}`);
+      }
+
+      const result = await response.json();
       return {
-        success: true,
-        data: { _id: result.$id },
-        error: null,
+        success: result.success ?? true,
+        data: result.data ? { _id: result.data.$id || result.data._id } : null,
+        error: result.error ?? null,
       };
     } catch (error) {
       logger.error('Error creating application', error);
@@ -249,7 +303,7 @@ export const scholarshipApplicationsApi = {
     }
   },
 
-  // Update application
+  // Update application - use API route for client-side
   update: async (
     id: string,
     data: {
@@ -277,10 +331,24 @@ export const scholarshipApplicationsApi = {
     }
   ) => {
     try {
-      await appwriteScholarshipApplications.update(id, data);
+      const response = await fetchWithCsrf(`/api/scholarships/applications/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to update application: ${response.statusText}`);
+      }
+
+      const result = await response.json();
       return {
-        success: true,
-        error: null,
+        success: result.success ?? true,
+        error: result.error ?? null,
       };
     } catch (error) {
       logger.error('Error updating application', error);

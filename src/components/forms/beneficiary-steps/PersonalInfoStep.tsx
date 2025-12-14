@@ -166,6 +166,7 @@ export function PersonalInfoStep({ isUpdateMode: _isUpdateMode = false }: Person
             <Label htmlFor="email">E-posta</Label>
             <Input
               id="email"
+              data-testid="beneficiary-email-input"
               type="email"
               {...register('email')}
               placeholder="example@example.com"

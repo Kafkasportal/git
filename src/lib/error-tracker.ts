@@ -184,12 +184,15 @@ export async function captureError(options: CaptureErrorOptions): Promise<void> 
   );
 
   // Prepare error data - ensure all required fields are present and valid
-  const errorDescription = description || (error instanceof Error ? error.message : String(error || title)) || 'No description provided';
+  // Ensure description is never empty - Appwrite requires non-empty message field
+  const errorDescription = description?.trim() || 
+    (error instanceof Error ? error.message?.trim() : String(error || title)?.trim()) || 
+    'No description provided';
   
   const errorData = {
     error_code: errorCode,
     title: title || 'Untitled Error',
-    description: errorDescription,
+    description: errorDescription || 'No description provided',
     category,
     severity,
     stack_trace: stackTrace,

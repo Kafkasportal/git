@@ -76,6 +76,7 @@ export function AddressInfoStep() {
           <Label htmlFor="address">Açık Adres *</Label>
           <Textarea
             id="address"
+            data-testid="beneficiary-address-input"
             {...register('address')}
             placeholder="Sokak, cadde, apartman, daire no gibi detayları içeren açık adres..."
             rows={3}

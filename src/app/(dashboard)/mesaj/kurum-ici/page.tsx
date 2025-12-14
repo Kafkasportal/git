@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuthStore } from '@/stores/authStore';
@@ -228,6 +228,10 @@ export default function InternalMessagingPage() {
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Yeni Mesaj Oluştur</DialogTitle>
+              <DialogDescription>Kurum içi mesaj göndermek için formu doldurun</DialogDescription>
+            </DialogHeader>
             <MessageForm
               defaultMessageType="internal"
               onSuccess={() => {
@@ -591,6 +595,10 @@ export default function InternalMessagingPage() {
       {selectedMessage && (
         <Dialog open={showMessageDetail} onOpenChange={setShowMessageDetail}>
           <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Mesaj Detayı</DialogTitle>
+              <DialogDescription>Mesaj içeriği ve detayları</DialogDescription>
+            </DialogHeader>
             <div className="space-y-4">
               <div className="flex items-start justify-between">
                 <div>
@@ -670,8 +678,8 @@ export default function InternalMessagingPage() {
                 <div className="space-y-2">
                   <h4 className="font-medium">Alıcılar:</h4>
                   <div className="flex flex-wrap gap-2">
-                    {selectedMessage.recipients.map((recipientId, index) => (
-                      <Badge key={index} variant="secondary">
+                    {selectedMessage.recipients.map((recipientId) => (
+                      <Badge key={recipientId} variant="secondary">
                         {getUserName(recipientId)}
                       </Badge>
                     ))}

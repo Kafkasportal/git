@@ -453,6 +453,7 @@ export function AdvancedBeneficiaryForm({
                   <Label htmlFor="email">E-posta</Label>
                   <Input
                     id="email"
+                    data-testid="beneficiary-email-input"
                     type="email"
                     {...register('email')}
                     placeholder="ornek@email.com"
