@@ -106,6 +106,8 @@ async function postErrorHandler(request: NextRequest) {
     // Create error using Appwrite
     const result = await appwriteErrors.create({
       ...data,
+      // Appwrite errors collection requires 'message' field
+      message: data.title || data.description || 'Unknown error',
       user_id: data.user_id ?? undefined,
       reporter_id: data.reporter_id || undefined,
       occurrence_count: 1,
