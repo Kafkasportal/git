@@ -113,7 +113,7 @@ describe('AuthStore', () => {
             });
 
             const state = useAuthStore.getState();
-            expect(state.user?.permissions).toContain('donations:access');
+            expect(state.user?.permissions).toContain('donations:read');
             expect(state.user?.permissions).toContain('users:manage');
             expect(state.user?.permissions).toContain('settings:write');
         });
@@ -201,7 +201,7 @@ describe('AuthStore', () => {
         it('should check hasPermission correctly', () => {
             const state = useAuthStore.getState();
 
-            expect(state.hasPermission('donations:access')).toBe(true);
+            expect(state.hasPermission('donations:read')).toBe(true);
             expect(state.hasPermission('nonexistent:permission')).toBe(false);
         });
 
@@ -216,15 +216,15 @@ describe('AuthStore', () => {
         it('should check hasAnyPermission correctly', () => {
             const state = useAuthStore.getState();
 
-            expect(state.hasAnyPermission(['donations:access', 'nonexistent:perm'])).toBe(true);
+            expect(state.hasAnyPermission(['donations:read', 'nonexistent:perm'])).toBe(true);
             expect(state.hasAnyPermission(['nonexistent1', 'nonexistent2'])).toBe(false);
         });
 
         it('should check hasAllPermissions correctly', () => {
             const state = useAuthStore.getState();
 
-            expect(state.hasAllPermissions(['donations:access', 'beneficiaries:access'])).toBe(true);
-            expect(state.hasAllPermissions(['donations:access', 'nonexistent'])).toBe(false);
+            expect(state.hasAllPermissions(['donations:read', 'beneficiaries:read'])).toBe(true);
+            expect(state.hasAllPermissions(['donations:read', 'nonexistent'])).toBe(false);
         });
 
         it('should return false for unauthenticated users', () => {
