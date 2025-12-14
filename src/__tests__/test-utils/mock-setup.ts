@@ -105,7 +105,7 @@ export function setupPasswordUtilsMocks() {
  */
 export function setupPermissionsMocks() {
   vi.mock('@/types/permissions', () => ({
-    ALL_PERMISSIONS: ['users:manage', 'beneficiaries:read', 'donations:read', 'workflow:read'],
+    ALL_PERMISSIONS: ['users:manage', 'beneficiaries:access', 'donations:access', 'workflow:access'],
     MODULE_PERMISSIONS: {
       BENEFICIARIES: 'beneficiaries:access',
       DONATIONS: 'donations:access',

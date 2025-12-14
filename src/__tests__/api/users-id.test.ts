@@ -91,7 +91,7 @@ vi.mock('@/lib/auth/password', () => ({
 
 // Mock permissions
 vi.mock('@/types/permissions', () => ({
-  ALL_PERMISSIONS: ['users:manage', 'beneficiaries:read', 'donations:read'],
+  ALL_PERMISSIONS: ['users:manage', 'beneficiaries:access', 'donations:access'],
 }));
 
 // Mock logger

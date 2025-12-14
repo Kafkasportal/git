@@ -61,7 +61,7 @@ vi.mock('@/lib/rate-limit', () => ({
 
 // Mock permissions
 vi.mock('@/types/permissions', () => ({
-  ALL_PERMISSIONS: ['users:manage', 'beneficiaries:read', 'donations:read'],
+  ALL_PERMISSIONS: ['users:manage', 'beneficiaries:access', 'donations:access'],
 }));
 
 // Mock logger
@@ -138,7 +138,7 @@ runCreateTests(
     name: 'New User',
     email: 'newuser@example.com',
     role: 'Personel',
-    permissions: ['beneficiaries:read'],
+    permissions: ['beneficiaries:access'],
     password: 'SecurePassword123!',
   },
   {
@@ -233,7 +233,7 @@ describe('POST /api/users - Validation', () => {
       name: 'Test User',
       email: 'test@example.com',
       role: 'Personel',
-      permissions: ['beneficiaries:read'],
+      permissions: ['beneficiaries:access'],
     };
 
     const request = createTestRequest('http://localhost/api/users', {
@@ -253,7 +253,7 @@ describe('POST /api/users - Validation', () => {
       name: 'Test User',
       email: 'test@example.com',
       role: 'Personel',
-      permissions: ['beneficiaries:read'],
+      permissions: ['beneficiaries:access'],
       password: 'weak',
     };
 
@@ -283,7 +283,7 @@ describe('POST /api/users - Validation', () => {
       name: 'Test User',
       email: 'test@example.com',
       role: 'Personel',
-      permissions: ['beneficiaries:read'],
+      permissions: ['beneficiaries:access'],
       password: 'SecurePassword123!',
     };
 

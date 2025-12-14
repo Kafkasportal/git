@@ -124,8 +124,8 @@ export function KeyboardNavigationProvider({
           continue;
         }
 
-        // Safety check for event.key
-        if (!event.key || !shortcut.key) {
+        // Safety check for event.key and shortcut.key - ensure they are strings
+        if (!event.key || typeof event.key !== 'string' || !shortcut.key || typeof shortcut.key !== 'string') {
           continue;
         }
 

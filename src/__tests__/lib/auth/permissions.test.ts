@@ -16,20 +16,20 @@ import { MODULE_PERMISSIONS, SPECIAL_PERMISSIONS, type PermissionValue } from '@
 describe('normalizePermissions', () => {
     it('should remove duplicates', () => {
         const permissions: PermissionValue[] = [
-            'donations:read',
-            'donations:read',
-            'donations:write',
+            MODULE_PERMISSIONS.DONATIONS,
+            MODULE_PERMISSIONS.DONATIONS,
+            MODULE_PERMISSIONS.BENEFICIARIES,
         ];
 
         const result = normalizePermissions(permissions);
 
         expect(result).toHaveLength(2);
-        expect(result).toContain('donations:read');
-        expect(result).toContain('donations:write');
+        expect(result).toContain(MODULE_PERMISSIONS.DONATIONS);
+        expect(result).toContain(MODULE_PERMISSIONS.BENEFICIARIES);
     });
 
     it('should filter out wildcard permissions', () => {
-        const permissions = ['donations:read', '*', 'donations:write'] as PermissionValue[];
+        const permissions = [MODULE_PERMISSIONS.DONATIONS, '*', MODULE_PERMISSIONS.BENEFICIARIES] as PermissionValue[];
 
         const result = normalizePermissions(permissions);
 
@@ -38,7 +38,7 @@ describe('normalizePermissions', () => {
     });
 
     it('should filter out empty strings', () => {
-        const permissions = ['donations:read', '', 'donations:write'] as PermissionValue[];
+        const permissions = [MODULE_PERMISSIONS.DONATIONS, '', MODULE_PERMISSIONS.BENEFICIARIES] as PermissionValue[];
 
         const result = normalizePermissions(permissions);
 
@@ -59,17 +59,17 @@ describe('normalizePermissions', () => {
 
 describe('getEffectivePermissions', () => {
     it('should return normalized explicit permissions for regular roles', () => {
-        const permissions: PermissionValue[] = ['donations:read', 'donations:write'];
+        const permissions: PermissionValue[] = [MODULE_PERMISSIONS.DONATIONS, MODULE_PERMISSIONS.BENEFICIARIES];
 
         const result = getEffectivePermissions('Personel', permissions);
 
-        expect(result).toContain('donations:read');
-        expect(result).toContain('donations:write');
+        expect(result).toContain(MODULE_PERMISSIONS.DONATIONS);
+        expect(result).toContain(MODULE_PERMISSIONS.BENEFICIARIES);
         expect(result).not.toContain(SPECIAL_PERMISSIONS.USERS_MANAGE);
     });
 
     it('should grant full permissions for admin role', () => {
-        const permissions: PermissionValue[] = ['donations:read'];
+        const permissions: PermissionValue[] = [MODULE_PERMISSIONS.DONATIONS];
 
         const result = getEffectivePermissions('Admin', permissions);
 
@@ -107,42 +107,42 @@ describe('getEffectivePermissions', () => {
     });
 
     it('should handle null/undefined role', () => {
-        const result = getEffectivePermissions(null as unknown as string, ['donations:read']);
+        const result = getEffectivePermissions(null as unknown as string, [MODULE_PERMISSIONS.DONATIONS]);
 
-        expect(result).toContain('donations:read');
+        expect(result).toContain(MODULE_PERMISSIONS.DONATIONS);
         expect(result).not.toContain(SPECIAL_PERMISSIONS.USERS_MANAGE);
     });
 });
 
 describe('hasPermission', () => {
-    const userPermissions: PermissionValue[] = ['donations:read', 'donations:write', 'beneficiaries:read'];
+    const userPermissions: PermissionValue[] = [MODULE_PERMISSIONS.DONATIONS, MODULE_PERMISSIONS.BENEFICIARIES];
 
     it('should return true for existing permission', () => {
-        expect(hasPermission(userPermissions, 'donations:read')).toBe(true);
+        expect(hasPermission(userPermissions, MODULE_PERMISSIONS.DONATIONS)).toBe(true);
     });
 
     it('should return false for missing permission', () => {
-        expect(hasPermission(userPermissions, 'users:manage')).toBe(false);
+        expect(hasPermission(userPermissions, SPECIAL_PERMISSIONS.USERS_MANAGE)).toBe(false);
     });
 
     it('should handle empty permissions array', () => {
-        expect(hasPermission([], 'donations:read')).toBe(false);
+        expect(hasPermission([], MODULE_PERMISSIONS.DONATIONS)).toBe(false);
     });
 
     it('should handle non-array input', () => {
-        expect(hasPermission(null as unknown as PermissionValue[], 'donations:read')).toBe(false);
+        expect(hasPermission(null as unknown as PermissionValue[], MODULE_PERMISSIONS.DONATIONS)).toBe(false);
     });
 });
 
 describe('hasAnyPermission', () => {
-    const userPermissions: PermissionValue[] = ['donations:read', 'donations:write'];
+    const userPermissions: PermissionValue[] = [MODULE_PERMISSIONS.DONATIONS, MODULE_PERMISSIONS.BENEFICIARIES];
 
     it('should return true if user has at least one permission', () => {
-        expect(hasAnyPermission(userPermissions, ['donations:read', 'nonexistent'])).toBe(true);
+        expect(hasAnyPermission(userPermissions, [MODULE_PERMISSIONS.DONATIONS, 'nonexistent' as PermissionValue])).toBe(true);
     });
 
     it('should return false if user has none of the permissions', () => {
-        expect(hasAnyPermission(userPermissions, ['nonexistent1', 'nonexistent2'])).toBe(false);
+        expect(hasAnyPermission(userPermissions, ['nonexistent1' as PermissionValue, 'nonexistent2' as PermissionValue])).toBe(false);
     });
 
     it('should handle empty required permissions', () => {
@@ -150,20 +150,20 @@ describe('hasAnyPermission', () => {
     });
 
     it('should handle non-array inputs', () => {
-        expect(hasAnyPermission(null as unknown as PermissionValue[], ['donations:read'])).toBe(false);
+        expect(hasAnyPermission(null as unknown as PermissionValue[], [MODULE_PERMISSIONS.DONATIONS])).toBe(false);
         expect(hasAnyPermission(userPermissions, null as unknown as PermissionValue[])).toBe(false);
     });
 });
 
 describe('hasAllPermissions', () => {
-    const userPermissions: PermissionValue[] = ['donations:read', 'donations:write', 'beneficiaries:read'];
+    const userPermissions: PermissionValue[] = [MODULE_PERMISSIONS.DONATIONS, MODULE_PERMISSIONS.BENEFICIARIES];
 
     it('should return true if user has all permissions', () => {
-        expect(hasAllPermissions(userPermissions, ['donations:read', 'donations:write'])).toBe(true);
+        expect(hasAllPermissions(userPermissions, [MODULE_PERMISSIONS.DONATIONS, MODULE_PERMISSIONS.BENEFICIARIES])).toBe(true);
     });
 
     it('should return false if user is missing any permission', () => {
-        expect(hasAllPermissions(userPermissions, ['donations:read', 'nonexistent'])).toBe(false);
+        expect(hasAllPermissions(userPermissions, [MODULE_PERMISSIONS.DONATIONS, 'nonexistent' as PermissionValue])).toBe(false);
     });
 
     it('should return true for empty required permissions', () => {
@@ -171,7 +171,7 @@ describe('hasAllPermissions', () => {
     });
 
     it('should handle non-array inputs', () => {
-        expect(hasAllPermissions(null as unknown as PermissionValue[], ['donations:read'])).toBe(false);
+        expect(hasAllPermissions(null as unknown as PermissionValue[], [MODULE_PERMISSIONS.DONATIONS])).toBe(false);
         expect(hasAllPermissions(userPermissions, null as unknown as PermissionValue[])).toBe(false);
     });
 });

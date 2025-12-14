@@ -64,8 +64,6 @@ describe('Session Utilities', () => {
         });
 
         it('should parse legacy JSON session (backwards compatibility)', async () => {
-            const { parseAuthSession } = await import('@/lib/auth/session');
-
             // Legacy format was plain JSON
             const legacySession = JSON.stringify({
                 sessionId: 'legacy-session',
@@ -192,7 +190,7 @@ describe('Session Utilities', () => {
 
     describe('Signature Verification', () => {
         it('should create valid HMAC signature', async () => {
-            const { serializeSessionCookie, parseAuthSession } = await import('@/lib/auth/session');
+            const { serializeSessionCookie } = await import('@/lib/auth/session');
 
             const session = {
                 sessionId: 'sig-test',

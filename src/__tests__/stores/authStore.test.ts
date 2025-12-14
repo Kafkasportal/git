@@ -113,7 +113,7 @@ describe('AuthStore', () => {
             });
 
             const state = useAuthStore.getState();
-            expect(state.user?.permissions).toContain('donations:read');
+            expect(state.user?.permissions).toContain('donations:access');
             expect(state.user?.permissions).toContain('users:manage');
             expect(state.user?.permissions).toContain('settings:write');
         });
@@ -201,7 +201,7 @@ describe('AuthStore', () => {
         it('should check hasPermission correctly', () => {
             const state = useAuthStore.getState();
 
-            expect(state.hasPermission('donations:read')).toBe(true);
+            expect(state.hasPermission('donations:access')).toBe(true);
             expect(state.hasPermission('nonexistent:permission')).toBe(false);
         });
 
@@ -216,15 +216,15 @@ describe('AuthStore', () => {
         it('should check hasAnyPermission correctly', () => {
             const state = useAuthStore.getState();
 
-            expect(state.hasAnyPermission(['donations:read', 'nonexistent:perm'])).toBe(true);
+            expect(state.hasAnyPermission(['donations:access', 'nonexistent:perm'])).toBe(true);
             expect(state.hasAnyPermission(['nonexistent1', 'nonexistent2'])).toBe(false);
         });
 
         it('should check hasAllPermissions correctly', () => {
             const state = useAuthStore.getState();
 
-            expect(state.hasAllPermissions(['donations:read', 'donations:write'])).toBe(true);
-            expect(state.hasAllPermissions(['donations:read', 'nonexistent'])).toBe(false);
+            expect(state.hasAllPermissions(['donations:access', 'beneficiaries:access'])).toBe(true);
+            expect(state.hasAllPermissions(['donations:access', 'nonexistent'])).toBe(false);
         });
 
         it('should return false for unauthenticated users', () => {
@@ -232,10 +232,10 @@ describe('AuthStore', () => {
             useAuthStore.setState({ user: null, isAuthenticated: false });
 
             const state = useAuthStore.getState();
-            expect(state.hasPermission('donations:read')).toBe(false);
+            expect(state.hasPermission('donations:access')).toBe(false);
             expect(state.hasRole('admin')).toBe(false);
-            expect(state.hasAnyPermission(['donations:read'])).toBe(false);
-            expect(state.hasAllPermissions(['donations:read'])).toBe(false);
+            expect(state.hasAnyPermission(['donations:access'])).toBe(false);
+            expect(state.hasAllPermissions(['donations:access'])).toBe(false);
         });
     });
 
@@ -327,7 +327,7 @@ describe('AuthStore', () => {
                 name: 'Test User',
                 role: 'admin',
                 avatar: 'avatar.png',
-                permissions: ['donations:read' as const],
+                permissions: ['donations:access' as const],
                 isActive: true,
                 phone: '+905551234567',
                 labels: ['label1'],
@@ -342,7 +342,7 @@ describe('AuthStore', () => {
             expect(storeUser.name).toBe('Test User');
             expect(storeUser.role).toBe('admin');
             expect(storeUser.avatar).toBe('avatar.png');
-            expect(storeUser.permissions).toContain('donations:read');
+            expect(storeUser.permissions).toContain('donations:access');
             expect(storeUser.phone).toBe('+905551234567');
         });
 

@@ -111,7 +111,7 @@ export function useListPage<T extends Record<string, unknown>>(
         endpoint,
         filterOptions = {},
         bulkOptions = {},
-        enableSearch = true,
+        enableSearch: _enableSearch = true,
         searchDebounceMs = 300,
         defaultPageSize = 20,
         idField = 'id' as keyof T,
