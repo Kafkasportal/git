@@ -3,40 +3,10 @@ import { appwriteDonations } from '@/lib/appwrite/api';
 import { extractParams } from '@/lib/api/route-helpers';
 import logger from '@/lib/logger';
 import { verifyCsrfToken, buildErrorResponse, requireModuleAccess } from '@/lib/api/auth-utils';
-import { sanitizePhone } from '@/lib/sanitization';
-import { phoneSchema } from '@/lib/validations/shared-validators';
-
-function validateDonationUpdate(data: Record<string, unknown>): {
-  isValid: boolean;
-  errors: string[];
-} {
-  const errors: string[] = [];
-  if (data.amount !== undefined && Number(data.amount) <= 0) {
-    errors.push('Bağış tutarı pozitif olmalıdır');
-  }
-  if (data.currency && !['TRY', 'USD', 'EUR'].includes(data.currency as string)) {
-    errors.push('Geçersiz para birimi');
-  }
-  if (
-    data.donor_email &&
-    typeof data.donor_email === 'string' &&
-    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.donor_email)
-  ) {
-    errors.push('Geçersiz e-posta');
-  }
-  if (data.donor_phone && typeof data.donor_phone === 'string') {
-    const sanitized = sanitizePhone(data.donor_phone);
-    if (!sanitized || !phoneSchema.safeParse(sanitized).success) {
-      errors.push('Geçersiz telefon numarası (5XXXXXXXXX formatında olmalıdır)');
-    } else {
-      data.donor_phone = sanitized;
-    }
-  }
-  if (data.status && !['pending', 'completed', 'cancelled'].includes(data.status as string)) {
-    errors.push('Geçersiz durum');
-  }
-  return { isValid: errors.length === 0, errors };
-}
+import {
+  donationApiUpdateSchema,
+  validateWithSchema,
+} from '@/lib/validations/api-schemas';
 
 /**
  * GET /api/donations/[id]
@@ -94,7 +64,8 @@ async function updateDonationHandler(
 
     const body = (await request.json()) as Record<string, unknown>;
 
-    const validation = validateDonationUpdate(body);
+    // Validate using centralized schema
+    const validation = validateWithSchema(donationApiUpdateSchema, body);
     if (!validation.isValid) {
       return NextResponse.json(
         { success: false, error: 'Doğrulama hatası', details: validation.errors },

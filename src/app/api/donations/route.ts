@@ -3,60 +3,12 @@ import { appwriteDonations, normalizeQueryParams } from '@/lib/appwrite/api';
 import { buildApiRoute } from '@/lib/api/middleware';
 import { successResponse, errorResponse, parseBody } from '@/lib/api/route-helpers';
 import { verifyCsrfToken, requireAuthenticatedUser } from '@/lib/api/auth-utils';
-import { sanitizePhone } from '@/lib/sanitization';
-import { phoneSchema } from '@/lib/validations/shared-validators';
 import logger from '@/lib/logger';
-import type { DonationDocument, Document } from '@/types/database';
 import type { PaymentMethod } from '@/lib/api/types';
-
-/**
- * Validate donation payload
- */
-/**
- * Validate donation data
- * NOTE: This function duplicates validation logic from donationSchema in @/lib/validations/forms
- * Consider refactoring to use Zod schema validation instead for consistency
- */
-function validateDonation(data: Partial<DonationDocument>): {
-  isValid: boolean;
-  errors: string[];
-  normalizedData?: Omit<DonationDocument, keyof Document>;
-} {
-  const errors: string[] = [];
-
-  if (!data.donor_name || data.donor_name.trim().length < 2) {
-    errors.push('Bağışçı adı en az 2 karakter olmalıdır');
-  }
-  if (data.amount === undefined || data.amount === null || Number(data.amount) <= 0) {
-    errors.push('Bağış tutarı pozitif olmalıdır');
-  }
-  if (!data.currency || !['TRY', 'USD', 'EUR'].includes(data.currency)) {
-    errors.push('Geçersiz para birimi');
-  }
-  if (data.donor_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.donor_email)) {
-    errors.push('Geçersiz e-posta');
-  }
-  if (data.donor_phone) {
-    const sanitized = sanitizePhone(data.donor_phone);
-    if (!sanitized || !phoneSchema.safeParse(sanitized).success) {
-      errors.push('Geçersiz telefon numarası (5XXXXXXXXX formatında olmalıdır)');
-    } else {
-      data.donor_phone = sanitized; // Normalize edilmiş değeri kullan
-    }
-  }
-
-  if (errors.length > 0) {
-    return { isValid: false, errors };
-  }
-
-  // Normalize data with defaults
-  const normalizedData = {
-    ...data,
-    status: (data.status as 'pending' | 'completed' | 'cancelled') || 'pending',
-  } as Omit<DonationDocument, keyof Document>;
-
-  return { isValid: true, errors: [], normalizedData };
-}
+import {
+  donationApiCreateSchema,
+  validateWithSchema,
+} from '@/lib/validations/api-schemas';
 
 /**
  * GET /api/donations
@@ -96,20 +48,23 @@ export const POST = buildApiRoute({
     return errorResponse(parseError || 'Veri bulunamadı', 400);
   }
 
-  const validation = validateDonation(body as Partial<DonationDocument>);
-  if (!validation.isValid || !validation.normalizedData) {
+  // Validate using centralized schema
+  const validation = validateWithSchema(donationApiCreateSchema, body);
+  if (!validation.isValid || !validation.data) {
     return errorResponse('Doğrulama hatası', 400, validation.errors);
   }
 
+  const validatedData = validation.data;
+
   // Validate required fields before sending to Appwrite
   const missingFields: string[] = [];
-  if (!validation.normalizedData.donation_type?.trim()) {
+  if (!validatedData.donation_type?.trim()) {
     missingFields.push('Bağış türü');
   }
-  if (!validation.normalizedData.donation_purpose?.trim()) {
+  if (!validatedData.donation_purpose?.trim()) {
     missingFields.push('Bağış amacı');
   }
-  if (!validation.normalizedData.receipt_number?.trim()) {
+  if (!validatedData.receipt_number?.trim()) {
     missingFields.push('Makbuz numarası');
   }
   
@@ -118,21 +73,18 @@ export const POST = buildApiRoute({
   }
 
   const donationData = {
-    donor_name: validation.normalizedData.donor_name || '',
-    donor_phone: validation.normalizedData.donor_phone || '',
-    donor_email: validation.normalizedData.donor_email,
-    amount: validation.normalizedData.amount || 0,
-    currency: (validation.normalizedData.currency || 'TRY') as 'TRY' | 'USD' | 'EUR',
-    donation_type: validation.normalizedData.donation_type || '',
-    payment_method: (validation.normalizedData.payment_method || 'cash') as PaymentMethod,
-    donation_purpose: validation.normalizedData.donation_purpose || '',
-    notes: validation.normalizedData.notes,
-    receipt_number: validation.normalizedData.receipt_number || '',
-    receipt_file_id: validation.normalizedData.receipt_file_id,
-    status: (validation.normalizedData.status || 'pending') as
-      | 'pending'
-      | 'completed'
-      | 'cancelled',
+    donor_name: validatedData.donor_name,
+    donor_phone: validatedData.donor_phone || '',
+    donor_email: validatedData.donor_email || undefined,
+    amount: validatedData.amount,
+    currency: validatedData.currency as 'TRY' | 'USD' | 'EUR',
+    donation_type: validatedData.donation_type || '',
+    payment_method: (validatedData.payment_method || 'cash') as PaymentMethod,
+    donation_purpose: validatedData.donation_purpose || '',
+    notes: validatedData.notes,
+    receipt_number: validatedData.receipt_number || '',
+    receipt_file_id: validatedData.receipt_file_id,
+    status: validatedData.status as 'pending' | 'completed' | 'cancelled',
   };
 
   try {
