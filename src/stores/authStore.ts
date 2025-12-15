@@ -125,119 +125,119 @@ export const useAuthStore = create<AuthStore>()(
                   state.isLoading = true;
                 });
 
-              // Check for demo session first (no API call needed)
-              const stored = localStorage.getItem("auth-session");
-              if (stored) {
-                try {
-                  const localData = JSON.parse(stored);
-                  if (localData.isDemo && localData.isAuthenticated) {
-                    // Demo session - restore demo user without API call
-                    const demoUser: User = {
-                      id: "demo-user-001",
-                      email: "demo@dernek.org",
-                      name: "Demo Kullanici",
-                      role: "admin",
-                      avatar: null,
-                      permissions: [
-                        "donations:read",
-                        "donations:write",
-                        "beneficiaries:read",
-                        "beneficiaries:write",
-                        "scholarships:read",
-                        "scholarships:write",
-                        "finance:read",
-                        "finance:write",
-                        "messages:read",
-                        "messages:write",
-                        "workflow:read",
-                        "workflow:write",
-                        "partners:read",
-                        "partners:write",
-                        "reports:read",
-                        "reports:write",
-                        "settings:read",
-                        "settings:write",
-                        "users:manage",
-                        "aid_applications:read",
-                        "aid_applications:write",
-                      ] as PermissionValue[],
-                      isActive: true,
-                      createdAt: new Date().toISOString(),
-                      updatedAt: new Date().toISOString(),
-                    };
+                // Check for demo session first (no API call needed)
+                const stored = localStorage.getItem("auth-session");
+                if (stored) {
+                  try {
+                    const localData = JSON.parse(stored);
+                    if (localData.isDemo && localData.isAuthenticated) {
+                      // Demo session - restore demo user without API call
+                      const demoUser: User = {
+                        id: "demo-user-001",
+                        email: "demo@dernek.org",
+                        name: "Demo Kullanici",
+                        role: "admin",
+                        avatar: null,
+                        permissions: [
+                          "donations:read",
+                          "donations:write",
+                          "beneficiaries:read",
+                          "beneficiaries:write",
+                          "scholarships:read",
+                          "scholarships:write",
+                          "finance:read",
+                          "finance:write",
+                          "messages:read",
+                          "messages:write",
+                          "workflow:read",
+                          "workflow:write",
+                          "partners:read",
+                          "partners:write",
+                          "reports:read",
+                          "reports:write",
+                          "settings:read",
+                          "settings:write",
+                          "users:manage",
+                          "aid_applications:read",
+                          "aid_applications:write",
+                        ] as PermissionValue[],
+                        isActive: true,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                      };
 
-                    set((state) => {
-                      state.user = demoUser;
-                      state.isAuthenticated = true;
-                      state.isInitialized = true;
-                      state.isLoading = false;
-                    });
-                    return;
-                  }
-                  
-                  // Check if we have a valid session indicator in localStorage
-                  // Only make API call if we have a session indicator
-                  if (localData.userId && localData.isAuthenticated) {
-                    // We have a session indicator, validate it with server
-                    try {
-                      // Fetch current user (this validates session on server)
-                      const userResp = await fetch("/api/auth/user", {
-                        method: "GET",
-                        cache: "no-store",
-                        credentials: "include",
-                      });
-
-                      if (userResp.ok) {
-                        const userData = await userResp.json();
-                        if (userData.success && userData.data) {
-                          const user = userData.data;
-
-                          // Update localStorage (minimal info for offline fallback)
-                          // SECURITY: Don't store sensitive data like email, role, permissions
-                          localStorage.setItem(
-                            "auth-session",
-                            JSON.stringify({
-                              userId: user.id,
-                              isAuthenticated: true,
-                              lastVerified: Date.now(),
-                            }),
-                          );
-
-                          set((state) => {
-                            state.user = user;
-                            state.isAuthenticated = true;
-                            state.isInitialized = true;
-                            state.isLoading = false;
-                          });
-                          return;
-                        }
-                      }
-
-                      // No valid session - clear localStorage
-                      localStorage.removeItem("auth-session");
                       set((state) => {
-                        state.isAuthenticated = false;
-                        state.user = null;
-                        state.isInitialized = true;
-                        state.isLoading = false;
-                      });
-                      return;
-                    } catch (_apiError) {
-                      // API call failed - clear invalid session
-                      localStorage.removeItem("auth-session");
-                      set((state) => {
-                        state.isAuthenticated = false;
-                        state.user = null;
+                        state.user = demoUser;
+                        state.isAuthenticated = true;
                         state.isInitialized = true;
                         state.isLoading = false;
                       });
                       return;
                     }
+
+                    // Check if we have a valid session indicator in localStorage
+                    // Only make API call if we have a session indicator
+                    if (localData.userId && localData.isAuthenticated) {
+                      // We have a session indicator, validate it with server
+                      try {
+                        // Fetch current user (this validates session on server)
+                        const userResp = await fetch("/api/auth/user", {
+                          method: "GET",
+                          cache: "no-store",
+                          credentials: "include",
+                        });
+
+                        if (userResp.ok) {
+                          const userData = await userResp.json();
+                          if (userData.success && userData.data) {
+                            const user = userData.data;
+
+                            // Update localStorage (minimal info for offline fallback)
+                            // SECURITY: Don't store sensitive data like email, role, permissions
+                            localStorage.setItem(
+                              "auth-session",
+                              JSON.stringify({
+                                userId: user.id,
+                                isAuthenticated: true,
+                                lastVerified: Date.now(),
+                              }),
+                            );
+
+                            set((state) => {
+                              state.user = user;
+                              state.isAuthenticated = true;
+                              state.isInitialized = true;
+                              state.isLoading = false;
+                            });
+                            return;
+                          }
+                        }
+
+                        // No valid session - clear localStorage
+                        localStorage.removeItem("auth-session");
+                        set((state) => {
+                          state.isAuthenticated = false;
+                          state.user = null;
+                          state.isInitialized = true;
+                          state.isLoading = false;
+                        });
+                        return;
+                      } catch (_apiError) {
+                        // API call failed - clear invalid session
+                        localStorage.removeItem("auth-session");
+                        set((state) => {
+                          state.isAuthenticated = false;
+                          state.user = null;
+                          state.isInitialized = true;
+                          state.isLoading = false;
+                        });
+                        return;
+                      }
+                    }
+                  } catch {
+                    // Invalid localStorage, continue with normal flow
                   }
-                } catch {
-                  // Invalid localStorage, continue with normal flow
                 }
-              }
 
                 // No session in localStorage - user is not authenticated
                 set((state) => {
@@ -361,7 +361,7 @@ export const useAuthStore = create<AuthStore>()(
                   error.requiresTwoFactor = true;
                   throw error;
                 }
-                
+
                 // Handle specific error cases
                 if (response.status === 401) {
                   throw new Error(
@@ -630,17 +630,13 @@ export const useAuthStore = create<AuthStore>()(
             if (typeof window === "undefined") {
               return {
                 getItem: () => null,
-                setItem: () => {},
-                removeItem: () => {},
+                setItem: () => { },
+                removeItem: () => { },
               };
             }
             return localStorage;
           }),
           partialize: (state) => ({
-            user: state.user,
-            session: state.session,
-            isAuthenticated: state.isAuthenticated,
-            isInitialized: state.isInitialized,
             rememberMe: state.rememberMe,
           }),
           version: 1,

@@ -133,7 +133,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <SuspenseBoundary
-        loadingVariant="pulse"
+        loadingVariant="spinner"
         fullscreen={true}
         loadingText="Uygulama yükleniyor..."
         onSuspend={() => {

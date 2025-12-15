@@ -8,7 +8,12 @@ const config = {
   theme: {
     extend: {
       // Colors are defined in globals.css via CSS variables
-      colors: {},
+      colors: {
+        brand: {
+          primary: 'var(--primary)',
+          secondary: 'var(--secondary)',
+        }
+      },
       fontFamily: {
         sans: [
           'Inter',

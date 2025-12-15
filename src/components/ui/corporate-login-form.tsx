@@ -119,7 +119,7 @@ export function CorporateLoginForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // If 2FA is required, validate and submit 2FA code
     if (requiresTwoFactor) {
       if (!twoFactorCode || twoFactorCode.length !== 6) {
@@ -160,7 +160,7 @@ export function CorporateLoginForm({
       }
       return;
     }
-    
+
     // Normal login flow
     const isEmailValid = validateEmail(email);
     const isPasswordValid = validatePassword(password);
