@@ -420,4 +420,74 @@ describe('calculateWorkflowEfficiency edge cases', () => {
     // averageCompletionTime may be undefined when completedAt is missing
     expect(metrics.averageCompletionTime === 0 || metrics.averageCompletionTime === undefined).toBe(true);
   });
+
+  it('should calculate throughput rate with multiple completed items', () => {
+    const now = new Date();
+    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    const twoWeeksFromNow = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+
+    const items = [
+      {
+        workflowStage: WorkflowStage.COMPLETED,
+        createdAt: twoWeeksAgo.toISOString(),
+        completedAt: now.toISOString(),
+      },
+      {
+        workflowStage: WorkflowStage.COMPLETED,
+        createdAt: now.toISOString(),
+        completedAt: twoWeeksFromNow.toISOString(),
+      },
+    ];
+
+    const metrics = calculateWorkflowEfficiency(items);
+    // Should calculate throughput rate (items per week)
+    expect(metrics.throughputRate).toBeGreaterThan(0);
+  });
+
+  it('should handle all rejected items', () => {
+    const items = [
+      { workflowStage: WorkflowStage.REJECTED },
+      { workflowStage: WorkflowStage.REJECTED },
+      { workflowStage: WorkflowStage.REJECTED },
+    ];
+
+    const metrics = calculateWorkflowEfficiency(items);
+    expect(metrics.rejectionRate).toBe(100);
+    expect(metrics.cancellationRate).toBe(0);
+  });
+
+  it('should handle all cancelled items', () => {
+    const items = [
+      { workflowStage: WorkflowStage.CANCELLED },
+      { workflowStage: WorkflowStage.CANCELLED },
+    ];
+
+    const metrics = calculateWorkflowEfficiency(items);
+    expect(metrics.rejectionRate).toBe(0);
+    expect(metrics.cancellationRate).toBe(100);
+  });
+});
+
+describe('WorkflowEngine - getWorkflowSteps and stage ordering', () => {
+  it('should return correct order for draft stage', () => {
+    const order = WorkflowEngine.getStageOrder(WorkflowStage.DRAFT);
+    expect(order).toBe(1);
+  });
+
+  it('should return correct order for submitted stage', () => {
+    const order = WorkflowEngine.getStageOrder(WorkflowStage.SUBMITTED);
+    expect(order).toBe(2);
+  });
+
+  it('should return correct order for completed stage', () => {
+    const order = WorkflowEngine.getStageOrder(WorkflowStage.COMPLETED);
+    expect(order).toBeGreaterThan(0);
+  });
+
+  it('should return sequential orders for all stages', () => {
+    const steps = WorkflowEngine.getWorkflowSteps();
+    for (let i = 0; i < steps.length - 1; i++) {
+      expect(steps[i].order).toBeLessThan(steps[i + 1].order);
+    }
+  });
 });

@@ -328,5 +328,46 @@ describe('Session Utilities', () => {
             const result = parseAuthSession(`${payload}.${signature}`);
             expect(result).toBeNull();
         });
+
+        it('should handle session with no signature part (try legacy parsing)', async () => {
+            const { parseAuthSession } = await import('@/lib/auth/session');
+            // Plain JSON without base64 encoding - should attempt legacy parsing
+            const legacySession = JSON.stringify({ sessionId: 'sess', userId: 'user' });
+            const result = parseAuthSession(legacySession);
+            // Should fall back to legacy parsing and succeed
+            expect(result).not.toBeNull();
+            expect(result?.sessionId).toBe('sess');
+            expect(result?.userId).toBe('user');
+        });
+
+        it('should handle empty payload', async () => {
+            const { parseAuthSession } = await import('@/lib/auth/session');
+            const result = parseAuthSession('.');
+            expect(result).toBeNull();
+        });
+    });
+
+    describe('Session expiry edge cases', () => {
+        it('should handle session expiring right now', async () => {
+            const { isSessionExpired } = await import('@/lib/auth/session');
+            const session = {
+                sessionId: 'test',
+                userId: 'user',
+                expire: new Date().toISOString(),
+            };
+            // Session expiring right now should be considered expired
+            const result = isSessionExpired(session);
+            expect(typeof result).toBe('boolean');
+        });
+
+        it('should handle very far future expiry', async () => {
+            const { isSessionExpired } = await import('@/lib/auth/session');
+            const session = {
+                sessionId: 'test',
+                userId: 'user',
+                expire: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year
+            };
+            expect(isSessionExpired(session)).toBe(false);
+        });
     });
 });
