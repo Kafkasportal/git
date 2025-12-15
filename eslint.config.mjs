@@ -103,6 +103,7 @@ const eslintConfig = defineConfig([
     "src/lib/performance-monitor.tsx",
     "git/**", // Ignore git submodule
     "public/sw.js", // Service Worker has different runtime environment
+    ".amp/**", // Ignore Amp skills folder
   ]),
 ]);
 

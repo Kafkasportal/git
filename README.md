@@ -1,5 +1,7 @@
 # Dernek Yönetim Sistemi
 
+[![Covered by Argos Visual Testing](https://argos-ci.com/badge-large.svg)](https://app.argos-ci.com/kafkasportal/git/reference)
+
 Modern, güvenli ve ölçeklenebilir dernek (non-profit association) yönetim sistemi. Next.js 16, Appwrite, React 19 ve TypeScript ile geliştirilmiştir.
 
 ## 🚀 Özellikler

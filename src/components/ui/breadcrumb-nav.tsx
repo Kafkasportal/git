@@ -80,40 +80,54 @@ function BreadcrumbNavComponent() {
   }
 
   return (
-    <nav aria-label="Breadcrumb" className="mb-6">
-      <ol className="flex items-center gap-1 text-sm">
+    <nav
+      aria-label="Breadcrumb navigation"
+      className="mb-6 px-1"
+      role="navigation"
+    >
+      <ol className="flex items-center gap-0 text-sm">
         {breadcrumbs.map((item, index) => (
           <li key={`${item.href}-${index}`} className="flex items-center">
+            {/* Separator */}
             {index > 0 && (
-              <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-600 mx-1" aria-hidden="true" />
+              <ChevronRight
+                className="h-4 w-4 text-corporate-gray-400 mx-1 flex-shrink-0"
+                aria-hidden="true"
+              />
             )}
-            
+
+            {/* Home link */}
             {index === 0 ? (
               <Link
                 href={item.href}
                 className={cn(
-                  'inline-flex items-center gap-1.5 px-2 py-1 rounded-md transition-colors',
-                  'text-slate-500 dark:text-slate-400',
-                  'hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200'
+                  'inline-flex items-center gap-1.5 px-2 py-1.5 rounded-md transition-all duration-150',
+                  'text-corporate-gray-600 hover:text-corporate-primary-600',
+                  'hover:bg-corporate-primary-50',
+                  'focus:outline-none focus:ring-2 focus:ring-corporate-primary-300 focus:ring-offset-1'
                 )}
-                aria-label="Anasayfa"
+                aria-label="Anasayfa (Dashboard)"
               >
-                <Home className="h-4 w-4" />
+                <Home className="h-4 w-4 flex-shrink-0" />
+                <span className="sr-only">{item.label}</span>
               </Link>
             ) : item.current ? (
-              <span 
-                className="px-2 py-1 text-slate-900 dark:text-white font-medium" 
+              /* Current page */
+              <span
+                className="px-2 py-1.5 text-corporate-gray-900 font-semibold"
                 aria-current="page"
               >
                 {item.label}
               </span>
             ) : (
+              /* Middle links */
               <Link
                 href={item.href}
                 className={cn(
-                  'px-2 py-1 rounded-md transition-colors',
-                  'text-slate-500 dark:text-slate-400',
-                  'hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200'
+                  'px-2 py-1.5 rounded-md transition-all duration-150',
+                  'text-corporate-gray-600 hover:text-corporate-primary-600',
+                  'hover:bg-corporate-primary-50',
+                  'focus:outline-none focus:ring-2 focus:ring-corporate-primary-300 focus:ring-offset-1'
                 )}
               >
                 {item.label}

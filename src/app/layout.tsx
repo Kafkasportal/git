@@ -1,17 +1,29 @@
 import Script from 'next/script';
+import { Poppins, Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
 import { metadata, viewport } from './metadata';
 
 export { metadata, viewport };
 
-// Use system fonts as fallback when Google Fonts is unavailable
-// This prevents build failures in restricted network environments
-const fontVariables = {
-  '--font-body': 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-  '--font-heading': 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-  '--font-heading-alt': 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-} as const;
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-heading',
+  display: 'swap',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-body',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+});
 
 export default function RootLayout({
   children,
@@ -19,9 +31,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr" suppressHydrationWarning data-scroll-behavior="smooth">
+    <html lang="tr" suppressHydrationWarning data-scroll-behavior="smooth" className={`${poppins.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
       <head />
-      <body style={fontVariables as React.CSSProperties} className="font-sans" suppressHydrationWarning>
+      <body className="font-sans antialiased" suppressHydrationWarning>
         {/* FOUC Prevention - Dark Mode Flash Fix - Using Next.js Script for security */}
         <Script
           id="theme-init"
