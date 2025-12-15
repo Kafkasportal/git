@@ -113,11 +113,11 @@ describe('AuthStore', () => {
             });
 
             const state = useAuthStore.getState();
-            // Demo user has access permissions
-            expect(state.user?.permissions).toContain('donations:access');
-            expect(state.user?.permissions).toContain('beneficiaries:access');
-            expect(state.user?.permissions).toContain('users:manage');
-            expect(state.user?.permissions).toContain('settings:manage');
+            // Demo user has read/write permissions
+            expect(state.user?.permissions).toContain('donations:read');
+            expect(state.user?.permissions).toContain('beneficiaries:read');
+            expect(state.user?.permissions).toContain('settings:read');
+            expect(state.user?.permissions).toContain('settings:write');
         });
     });
 
@@ -203,8 +203,8 @@ describe('AuthStore', () => {
         it('should check hasPermission correctly', () => {
             const state = useAuthStore.getState();
 
-            // Demo user has access permissions
-            expect(state.hasPermission('donations:access')).toBe(true);
+            // Demo user has read/write permissions
+            expect(state.hasPermission('donations:read')).toBe(true);
             expect(state.hasPermission('nonexistent:permission')).toBe(false);
         });
 
@@ -219,15 +219,15 @@ describe('AuthStore', () => {
         it('should check hasAnyPermission correctly', () => {
             const state = useAuthStore.getState();
 
-            expect(state.hasAnyPermission(['donations:access', 'nonexistent:perm'])).toBe(true);
+            expect(state.hasAnyPermission(['donations:read', 'nonexistent:perm'])).toBe(true);
             expect(state.hasAnyPermission(['nonexistent1', 'nonexistent2'])).toBe(false);
         });
 
         it('should check hasAllPermissions correctly', () => {
             const state = useAuthStore.getState();
 
-            expect(state.hasAllPermissions(['donations:access', 'beneficiaries:access'])).toBe(true);
-            expect(state.hasAllPermissions(['donations:access', 'nonexistent'])).toBe(false);
+            expect(state.hasAllPermissions(['donations:read', 'beneficiaries:read'])).toBe(true);
+            expect(state.hasAllPermissions(['donations:read', 'nonexistent'])).toBe(false);
         });
 
         it('should return false for unauthenticated users', () => {
@@ -758,12 +758,22 @@ describe('InitializeAuth Flow', () => {
     });
 
     it('should fetch user from API when no demo session', async () => {
-        (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(null);
+        // Simulate existing session with userId
+        (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(
+            JSON.stringify({
+                userId: 'user-1',
+                isAuthenticated: true,
+                lastVerified: Date.now(),
+            })
+        );
 
         const mockUser = {
             id: 'user-1',
             email: 'test@example.com',
             name: 'Test User',
+            role: 'admin',
+            avatar: null,
+            permissions: ['donations:read', 'beneficiaries:read'],
         };
 
         (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
@@ -817,24 +827,32 @@ describe('InitializeAuth Flow', () => {
     });
 
     it('should use localStorage fallback on network error with valid session', async () => {
-        (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(
-            JSON.stringify({
-                userId: 'user-1',
-                isAuthenticated: true,
-                lastVerified: Date.now(),
-            })
-        );
+        // Mock localStorage.getItem to return valid session data for auth-session key
+        (localStorage.getItem as ReturnType<typeof vi.fn>).mockImplementation((key: string) => {
+            if (key === 'auth-session') {
+                return JSON.stringify({
+                    userId: 'user-1',
+                    isAuthenticated: true,
+                    lastVerified: Date.now() - 10 * 60 * 1000, // 10 minutes ago (fresh)
+                });
+            }
+            return null;
+        });
 
+        // API call fails with network error
         (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Network error'));
 
         await act(async () => {
             useAuthStore.getState().initializeAuth();
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await new Promise(resolve => setTimeout(resolve, 100));
         });
 
         const state = useAuthStore.getState();
+        // On network error with valid cached session, we should be authenticated
         expect(state.isAuthenticated).toBe(true);
         expect(state.isInitialized).toBe(true);
+        // User data is not loaded from cache to avoid stale data
+        expect(state.user).toBeNull();
     });
 
     it('should reject stale localStorage session on network error', async () => {

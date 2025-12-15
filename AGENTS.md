@@ -20,12 +20,17 @@
 **Core Structure**:
 - `src/app/` - Next.js routes (dashboard, auth, 87 API endpoints)
 - `src/components/` - React components (UI/Radix, forms, tables)
-- `src/lib/appwrite/` - Appwrite SDK wrappers & services
-- `src/lib/api/` - API utilities & validation (Zod schemas)
-- `src/lib/auth/` - Authentication utilities
+- `src/lib/` - Utilities & services
+  - `appwrite/` - Appwrite SDK wrappers
+  - `api/` - API utilities & validation (Zod schemas)
+  - `auth/` - Authentication utilities
+  - `config/` - Configuration (navigation, constants)
+  - `contexts/` - React Context providers
+  - `security/` - Security utilities
 - `src/stores/` - Zustand state (authStore, notificationStore)
 - `src/hooks/` - Custom hooks (useAppwriteQuery, useAppwriteMutation)
 - `src/types/` - TypeScript definitions
+- `src/styles/` - Global CSS (theme variables, animations)
 
 **Database**: Appwrite (MongoDB) with 10+ collections (users, beneficiaries, donations, scholarships, meetings, etc.)
 

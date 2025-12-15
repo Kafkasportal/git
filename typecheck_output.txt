@@ -1,5 +1,0 @@
-
-> dernek-nextjs@0.1.0 typecheck
-> tsc --noEmit
-
-src/components/dashboard/widget-container.tsx(3,8): error TS6133: 'React' is declared but its value is never read.
