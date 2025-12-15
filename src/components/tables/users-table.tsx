@@ -4,6 +4,11 @@ import React, { memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
   Table,
   TableBody,
   TableCell,
@@ -110,49 +115,64 @@ function UsersTableComponent({
             <TableCell>{formatDate(user.createdAt)}</TableCell>
             <TableCell className="space-x-2 text-right">
               {onToggleActive ? (
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className={cn('h-8 w-8', !user.isActive && 'opacity-70')}
-                  onClick={() => {
-                    onToggleActive?.(user);
-                  }}
-                >
-                  {user.isActive ? (
-                    <UserMinus className="h-4 w-4" />
-                  ) : (
-                    <UserPlus className="h-4 w-4" />
-                  )}
-                  <span className="sr-only">Durumu değiştir</span>
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className={cn('h-8 w-8', !user.isActive && 'opacity-70')}
+                      onClick={() => {
+                        onToggleActive?.(user);
+                      }}
+                    >
+                      {user.isActive ? (
+                        <UserMinus className="h-4 w-4" />
+                      ) : (
+                        <UserPlus className="h-4 w-4" />
+                      )}
+                      <span className="sr-only">Durumu değiştir</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Durumu değiştir</TooltipContent>
+                </Tooltip>
               ) : null}
 
               {onEdit ? (
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className="h-8 w-8"
-                  onClick={() => {
-                    onEdit(user);
-                  }}
-                >
-                  <Edit2 className="h-4 w-4" />
-                  <span className="sr-only">Düzenle</span>
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="h-8 w-8"
+                      onClick={() => {
+                        onEdit(user);
+                      }}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                      <span className="sr-only">Düzenle</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Düzenle</TooltipContent>
+                </Tooltip>
               ) : null}
 
               {onDelete ? (
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className="h-8 w-8"
-                  onClick={() => {
-                    onDelete(user);
-                  }}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  <span className="sr-only">Sil</span>
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="h-8 w-8"
+                      onClick={() => {
+                        onDelete(user);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Sil</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Sil</TooltipContent>
+                </Tooltip>
               ) : null}
             </TableCell>
           </TableRow>
