@@ -258,8 +258,8 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
                 {filteredNotifications && filteredNotifications.length > 0 ? (
                   <div className="divide-y">
                     {filteredNotifications.map((notification, index) => {
-                      // Ensure unique key - use ID if available, otherwise use index with timestamp
-                      const notificationId = notification.$id || notification._id || `notification-${notification.created_at || Date.now()}-${index}`;
+                      // Ensure unique key - use ID if available, otherwise use index
+                      const notificationId = notification.$id || notification._id || `notification-${notification.created_at || index}-${index}`;
                       return (
                         <div
                           key={notificationId}

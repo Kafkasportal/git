@@ -19,19 +19,18 @@ const ReactQueryDevtools = dynamic(
 );
 
 export function ReactQueryDevtoolsWrapper() {
-  // Only render in development
-  if (process.env.NODE_ENV !== "development") {
-    return null;
-  }
+  const isDevelopment = process.env.NODE_ENV === "development";
 
   // Suppress locale errors by catching and ignoring them
   useEffect(() => {
+    if (!isDevelopment) return;
+
     const originalError = console.error;
     console.error = (...args: unknown[]) => {
       // Filter out locale-related errors from React Query DevTools
       const errorMessage = args[0]?.toString() || '';
       if (errorMessage.includes('Incorrect locale information') || 
-          errorMessage.includes('RangeError') && errorMessage.includes('locale')) {
+          (errorMessage.includes('RangeError') && errorMessage.includes('locale'))) {
         // Suppress locale errors from React Query DevTools
         return;
       }
@@ -41,7 +40,12 @@ export function ReactQueryDevtoolsWrapper() {
     return () => {
       console.error = originalError;
     };
-  }, []);
+  }, [isDevelopment]);
+
+  // Only render in development
+  if (!isDevelopment) {
+    return null;
+  }
 
   // Fix locale error by ensuring proper locale is set
   // React Query DevTools expects a valid locale string

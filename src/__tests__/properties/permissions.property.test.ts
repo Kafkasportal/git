@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { test, fc } from '@fast-check/vitest';
+import { test } from '@fast-check/vitest';
 import { useAuthStore } from '@/stores/authStore';
 import { ALL_PERMISSIONS, type PermissionValue } from '@/types/permissions';
 import type { User } from '@/types/auth';

@@ -46,6 +46,7 @@ interface AuthActions {
     email: string,
     password: string,
     rememberMe?: boolean,
+    twoFactorCode?: string,
   ) => Promise<void>;
   demoLogin: () => void;
   logout: (callback?: () => void) => void;
@@ -334,7 +335,7 @@ export const useAuthStore = create<AuthStore>()(
               let result;
               try {
                 result = await response.json();
-              } catch (jsonError) {
+              } catch {
                 const text = await response.text().catch(() => 'Unable to read response');
                 throw new Error(`Sunucu yanıtı geçersiz: ${text.substring(0, 100)}`);
               }

@@ -3,7 +3,7 @@
  * Tests for Property 7: Memoization Idempotence
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { memoize, memoizeWeak, memoizeAsync, memoizeWithKey, clearAllMemoCaches } from '@/lib/utils/memoization';
 
 describe('Memoization Utilities', () => {
@@ -69,7 +69,7 @@ describe('Memoization Utilities', () => {
 
   describe('memoizeWeak', () => {
     it('caches results for object arguments', () => {
-      const fn = vi.fn((obj: { value: number }) => obj.value * 2);
+      const fn = vi.fn((obj: object) => (obj as { value: number }).value * 2);
       const memoized = memoizeWeak(fn);
       
       const obj = { value: 5 };
@@ -81,7 +81,7 @@ describe('Memoization Utilities', () => {
     });
 
     it('calls function for different objects', () => {
-      const fn = vi.fn((obj: { value: number }) => obj.value);
+      const fn = vi.fn((obj: object) => (obj as { value: number }).value);
       const memoized = memoizeWeak(fn);
       
       expect(memoized({ value: 1 })).toBe(1);

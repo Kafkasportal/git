@@ -92,7 +92,7 @@ describe('API Middleware', () => {
             const composed = compose(middleware1, middleware2)(handler);
 
             const request = createMockRequest();
-            const response = await composed(request);
+            await composed(request);
 
             expect(middleware1).toHaveBeenCalled();
             expect(middleware2).toHaveBeenCalled();

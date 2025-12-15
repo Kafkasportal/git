@@ -49,7 +49,7 @@ describe('analyticsApi', () => {
                     sessionId: 'session-456',
                 }),
             });
-            expect(result.success).toBe(true);
+            expect((result as unknown as { success: boolean }).success).toBe(true);
         });
 
         it('should track event with minimal parameters', async () => {
@@ -64,7 +64,7 @@ describe('analyticsApi', () => {
             expect(fetchWithCsrf).toHaveBeenCalledWith('/api/analytics', expect.objectContaining({
                 method: 'POST',
             }));
-            expect(result.success).toBe(true);
+            expect((result as unknown as { success: boolean }).success).toBe(true);
         });
     });
 
@@ -77,7 +77,7 @@ describe('analyticsApi', () => {
             const result = await analyticsApi.getStats();
 
             expect(fetchSpy).toHaveBeenCalledWith('/api/analytics?');
-            expect(result.success).toBe(true);
+            expect((result as unknown as { success: boolean }).success).toBe(true);
         });
 
         it('should get stats with limit parameter', async () => {
@@ -88,7 +88,7 @@ describe('analyticsApi', () => {
             const result = await analyticsApi.getStats({ limit: 10 });
 
             expect(fetchSpy).toHaveBeenCalledWith('/api/analytics?limit=10');
-            expect(result.success).toBe(true);
+            expect((result as unknown as { success: boolean }).success).toBe(true);
         });
     });
 });

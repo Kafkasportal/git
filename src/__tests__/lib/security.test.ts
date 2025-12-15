@@ -408,7 +408,7 @@ describe('Security Module', () => {
         });
 
         it('should sanitize very long file names', () => {
-            const longName = 'a'.repeat(300) + '.jpg';
+            const longName = `${'a'.repeat(300)}.jpg`;
             const sanitized = FileSecurity.sanitizeFileName(longName);
             // Current implementation doesn't truncate, just sanitizes characters
             expect(sanitized.length).toBe(304); // 300 + 4 (.jpg)

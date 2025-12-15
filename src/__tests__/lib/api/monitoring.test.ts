@@ -35,8 +35,9 @@ describe('monitoringApi', () => {
             const result = await monitoringApi.getEnhancedKPIs();
 
             expect(fetchSpy).toHaveBeenCalledWith('/api/monitoring/kpis');
-            expect(result.success).toBe(true);
-            expect(result.data.totalDonations).toBe(50000);
+            const typedResult = result as unknown as { success: boolean; data: { totalDonations: number } };
+            expect(typedResult.success).toBe(true);
+            expect(typedResult.data.totalDonations).toBe(50000);
         });
 
         it('should handle API errors', async () => {
@@ -46,7 +47,7 @@ describe('monitoringApi', () => {
 
             const result = await monitoringApi.getEnhancedKPIs();
 
-            expect(result.success).toBe(false);
+            expect((result as unknown as { success: boolean }).success).toBe(false);
         });
     });
 
@@ -68,7 +69,7 @@ describe('monitoringApi', () => {
             const result = await monitoringApi.getDashboardStats();
 
             expect(fetchSpy).toHaveBeenCalledWith('/api/monitoring/stats');
-            expect(result.success).toBe(true);
+            expect((result as unknown as { success: boolean }).success).toBe(true);
         });
     });
 
@@ -90,8 +91,9 @@ describe('monitoringApi', () => {
             const result = await monitoringApi.getCurrencyRates();
 
             expect(fetchSpy).toHaveBeenCalledWith('/api/monitoring/currency');
-            expect(result.success).toBe(true);
-            expect(result.data.USD).toBe(32.5);
+            const typedResult = result as unknown as { success: boolean; data: { USD: number } };
+            expect(typedResult.success).toBe(true);
+            expect(typedResult.data.USD).toBe(32.5);
         });
     });
 });

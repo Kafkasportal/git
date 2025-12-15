@@ -13,7 +13,6 @@ import {
   matchesDateFilter,
   type FinanceRecord,
 } from '@/lib/financial/calculations';
-import { validAmount, validCurrency } from '../test-utils/generators';
 
 // Safe date generator that avoids NaN
 const safeDate = fc.integer({ min: 1577836800000, max: Date.now() }) // 2020-01-01 to now

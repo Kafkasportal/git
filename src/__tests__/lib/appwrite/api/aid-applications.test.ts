@@ -166,12 +166,11 @@ describe('appwriteAidApplications', () => {
 
     describe('remove', () => {
         it('should delete aid application', async () => {
-            vi.mocked(baseModule.deleteDocument).mockResolvedValue({ success: true });
+            vi.mocked(baseModule.deleteDocument).mockResolvedValue(undefined);
 
-            const result = await appwriteAidApplications.remove('1');
+            await appwriteAidApplications.remove('1');
 
             expect(baseModule.deleteDocument).toHaveBeenCalledWith('aidApplications', '1');
-            expect(result).toEqual({ success: true });
         });
     });
 });

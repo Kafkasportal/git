@@ -139,8 +139,8 @@ describe('Middleware Property Tests', () => {
     it('should use constant-time comparison', () => {
       // This is a basic test - in production you'd use timing analysis
       const token = 'a'.repeat(64);
-      const wrongToken1 = 'b' + 'a'.repeat(63); // Wrong at start
-      const wrongToken2 = 'a'.repeat(63) + 'b'; // Wrong at end
+      const wrongToken1 = `b${'a'.repeat(63)}`; // Wrong at start
+      const wrongToken2 = `${'a'.repeat(63)}b`; // Wrong at end
       
       // Both should fail (we can't easily test timing, but we verify correctness)
       expect(validateCsrfToken(token, wrongToken1)).toBe(false);
@@ -246,10 +246,10 @@ describe('Middleware Property Tests', () => {
         { input: 'normal-file.txt', expected: 'normal-file.txt' },
       ];
       
-      testCases.forEach(({ input, expected }) => {
+      for (const { input, expected } of testCases) {
         const sanitized = FileSecurity.sanitizeFileName(input);
         expect(sanitized).toBe(expected);
-      });
+      }
     });
 
     it('should reject path traversal attempts', () => {
@@ -259,11 +259,11 @@ describe('Middleware Property Tests', () => {
         'folder/../secret.txt',
       ];
       
-      pathTraversalNames.forEach(name => {
+      for (const name of pathTraversalNames) {
         const mockFile = new File(['test'], name, { type: 'text/plain' });
         const result = FileSecurity.validateFile(mockFile);
         expect(result.valid).toBe(false);
-      });
+      }
     });
   });
 

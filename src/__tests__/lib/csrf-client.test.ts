@@ -99,7 +99,7 @@ describe('CSRF Client Utilities', () => {
         it('should decode URI encoded token', () => {
             Object.defineProperty(global, 'document', {
                 value: {
-                    cookie: 'csrf-token=' + encodeURIComponent('token/with+special=chars'),
+                    cookie: `csrf-token=${encodeURIComponent('token/with+special=chars')}`,
                 },
                 writable: true,
             });

@@ -13,18 +13,24 @@ import { readOnlyRateLimit, dataModificationRateLimit } from '@/lib/rate-limit';
 
 const logger = createLogger('api:scholarships:applications:id');
 
+// Next.js 16 route context type
+type RouteContext = {
+  params: Promise<Record<string, string | string[]>>;
+};
+
 /**
  * GET /api/scholarships/applications/[id]
  * Get single scholarship application
  */
 async function getApplicationHandler(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  _request: NextRequest,
+  context?: RouteContext
+): Promise<NextResponse> {
   try {
     await requireAuthenticatedUser();
 
-    const { id } = await params;
+    const params = await context?.params;
+    const id = params?.id as string;
     const data = await appwriteScholarshipApplications.get(id);
 
     return NextResponse.json({
@@ -55,13 +61,14 @@ async function getApplicationHandler(
  */
 async function updateApplicationHandler(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  context?: RouteContext
+): Promise<NextResponse> {
   try {
     await verifyCsrfToken(request);
     await requireAuthenticatedUser();
 
-    const { id } = await params;
+    const params = await context?.params;
+    const id = params?.id as string;
     const body = await request.json();
 
     const result = await appwriteScholarshipApplications.update(id, body);
@@ -95,13 +102,14 @@ async function updateApplicationHandler(
  */
 async function deleteApplicationHandler(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  context?: RouteContext
+): Promise<NextResponse> {
   try {
     await verifyCsrfToken(request);
     await requireAuthenticatedUser();
 
-    const { id } = await params;
+    const params = await context?.params;
+    const id = params?.id as string;
     await appwriteScholarshipApplications.remove(id);
 
     return NextResponse.json({

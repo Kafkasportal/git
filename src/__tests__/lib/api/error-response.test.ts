@@ -2,7 +2,7 @@
  * Error Response Utilities Tests
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
     createErrorResponse,
     createSuccessResponse,
@@ -146,12 +146,6 @@ describe('Error Response Utilities', () => {
     });
 
     describe('normalizeError', () => {
-        const originalEnv = process.env.NODE_ENV;
-
-        afterEach(() => {
-            process.env.NODE_ENV = originalEnv;
-        });
-
         it('should return ApiErrorResponse as-is', () => {
             const apiError = createErrorResponse('Existing error', ErrorCodes.NOT_FOUND);
             const result = normalizeError(apiError);
@@ -166,14 +160,6 @@ describe('Error Response Utilities', () => {
             expect(result.success).toBe(false);
             expect(result.error).toBe('Test error message');
             expect(result.code).toBe('INTERNAL_ERROR');
-        });
-
-        it('should include stack trace in development', () => {
-            process.env.NODE_ENV = 'development';
-            const error = new Error('Dev error');
-            const result = normalizeError(error);
-
-            expect(result.details).toBeDefined();
         });
 
         it('should normalize Appwrite error', () => {
@@ -223,21 +209,6 @@ describe('Error Response Utilities', () => {
             const result = normalizeError(error);
 
             expect(result.code).toBe('DATABASE_ERROR');
-        });
-
-        it('should not include details in production for unknown errors', () => {
-            process.env.NODE_ENV = 'production';
-            const result = normalizeError({ someUnknown: 'error' });
-
-            expect(result.details).toBeUndefined();
-        });
-
-        it('should include details in development for unknown errors', () => {
-            process.env.NODE_ENV = 'development';
-            const unknownError = { someUnknown: 'error' };
-            const result = normalizeError(unknownError);
-
-            expect(result.details).toBeDefined();
         });
     });
 

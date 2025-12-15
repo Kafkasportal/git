@@ -77,33 +77,33 @@ describe('Appwrite Client', () => {
         });
 
         it('should export client', async () => {
-            const module = await import('@/lib/appwrite/client');
-            expect('client' in module).toBe(true);
+            const clientModule = await import('@/lib/appwrite/client');
+            expect('client' in clientModule).toBe(true);
         });
 
         it('should export account', async () => {
-            const module = await import('@/lib/appwrite/client');
-            expect('account' in module).toBe(true);
+            const clientModule = await import('@/lib/appwrite/client');
+            expect('account' in clientModule).toBe(true);
         });
 
         it('should export databases', async () => {
-            const module = await import('@/lib/appwrite/client');
-            expect('databases' in module).toBe(true);
+            const clientModule = await import('@/lib/appwrite/client');
+            expect('databases' in clientModule).toBe(true);
         });
 
         it('should export storage', async () => {
-            const module = await import('@/lib/appwrite/client');
-            expect('storage' in module).toBe(true);
+            const clientModule = await import('@/lib/appwrite/client');
+            expect('storage' in clientModule).toBe(true);
         });
 
         it('should export avatars', async () => {
-            const module = await import('@/lib/appwrite/client');
-            expect('avatars' in module).toBe(true);
+            const clientModule = await import('@/lib/appwrite/client');
+            expect('avatars' in clientModule).toBe(true);
         });
 
         it('should export functions', async () => {
-            const module = await import('@/lib/appwrite/client');
-            expect('functions' in module).toBe(true);
+            const clientModule = await import('@/lib/appwrite/client');
+            expect('functions' in clientModule).toBe(true);
         });
     });
 

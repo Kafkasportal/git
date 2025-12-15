@@ -7,7 +7,6 @@
 
 import { describe, it, expect } from 'vitest';
 import { test, fc } from '@fast-check/vitest';
-import { z } from 'zod';
 import {
   tcKimlikNoSchema,
   phoneSchema,
@@ -16,20 +15,14 @@ import {
   requiredEmailSchema,
   turkishNameSchema,
   amountSchema,
-  positiveNumberSchema,
 } from '@/lib/validations/shared-validators';
 import { financeRecordBaseSchema } from '@/lib/validations/finance-record';
 import {
   validTcKimlikNo,
-  invalidTcKimlikNo,
   validPhoneNumber,
-  invalidPhoneNumber,
   validEmail,
-  invalidEmail,
   validAmount,
-  invalidAmount,
   validName,
-  whitespaceString,
   validCurrency,
 } from '../test-utils/generators';
 
@@ -108,7 +101,7 @@ describe('Validation Property Tests', () => {
         expect(result.success).toBe(false);
         if (!result.success) {
           // Zod 4 uses 'issues' instead of 'errors'
-          const issues = result.error.issues || result.error.errors || [];
+          const issues = result.error.issues || [];
           expect(issues.length).toBeGreaterThan(0);
           
           issues.forEach((issue: { path?: unknown[]; message?: string }) => {
@@ -133,7 +126,7 @@ describe('Validation Property Tests', () => {
         
         expect(result.success).toBe(false);
         if (!result.success) {
-          const issues = result.error.issues || result.error.errors || [];
+          const issues = result.error.issues || [];
           expect(issues.length).toBeGreaterThan(0);
           issues.forEach((issue: { message?: string }) => {
             expect(issue.message).toBeDefined();
@@ -151,7 +144,7 @@ describe('Validation Property Tests', () => {
         
         expect(result.success).toBe(false);
         if (!result.success) {
-          const issues = result.error.issues || result.error.errors || [];
+          const issues = result.error.issues || [];
           expect(issues.length).toBeGreaterThan(0);
           issues.forEach((issue: { message?: string }) => {
             expect(issue.message).toBeDefined();

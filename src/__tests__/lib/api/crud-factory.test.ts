@@ -94,7 +94,7 @@ describe('CRUD Factory', () => {
             fetchSpy.mockResolvedValue(new Response(JSON.stringify(mockData), { status: 200 }));
 
             const crud = createCrudOperations('test');
-            await crud.getAll({ filters: { status: 'active', type: undefined, category: null } });
+            await crud.getAll({ filters: { status: 'active', type: undefined } });
 
             const callUrl = fetchSpy.mock.calls[0][0] as string;
             expect(callUrl).toContain('status=active');

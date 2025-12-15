@@ -23,7 +23,6 @@ export default defineConfig({
       reportsDirectory: './coverage',
       clean: true,
       reportOnFailure: true,
-      all: false,
       exclude: [
         'node_modules/',
         'src/__tests__/',

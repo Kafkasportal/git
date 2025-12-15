@@ -18,61 +18,39 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  try {
-    return (
-      <html lang="tr" suppressHydrationWarning data-scroll-behavior="smooth">
-        <head />
-        <body style={fontVariables as React.CSSProperties} className="font-sans" suppressHydrationWarning>
-          {/* FOUC Prevention - Dark Mode Flash Fix - Using Next.js Script for security */}
-          <Script
-            id="theme-init"
-            strategy="beforeInteractive"
-            // SECURITY: dangerouslySetInnerHTML is safe here because:
-            // 1. The script content is entirely static (no user input)
-            // 2. localStorage.getItem returns string|null, safely handled
-            // 3. Only adds/removes 'dark' class to documentElement
-            // 4. Required for SSR to prevent FOUC (Flash of Unstyled Content)
-            dangerouslySetInnerHTML={{
-              __html: `
-                (function() {
-                  try {
-                    var theme = localStorage.getItem('theme');
-                    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                    if (theme === 'dark' || (!theme && prefersDark)) {
-                      document.documentElement.classList.add('dark');
-                    } else {
-                      document.documentElement.classList.remove('dark');
-                    }
-                  } catch (e) {}
-                })();
-              `,
-            }}
-          />
+  return (
+    <html lang="tr" suppressHydrationWarning data-scroll-behavior="smooth">
+      <head />
+      <body style={fontVariables as React.CSSProperties} className="font-sans" suppressHydrationWarning>
+        {/* FOUC Prevention - Dark Mode Flash Fix - Using Next.js Script for security */}
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
+          // SECURITY: dangerouslySetInnerHTML is safe here because:
+          // 1. The script content is entirely static (no user input)
+          // 2. localStorage.getItem returns string|null, safely handled
+          // 3. Only adds/removes 'dark' class to documentElement
+          // 4. Required for SSR to prevent FOUC (Flash of Unstyled Content)
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme');
+                  var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  if (theme === 'dark' || (!theme && prefersDark)) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
         <Providers>
           {children}
         </Providers>
-        </body>
-      </html>
-    );
-  } catch (error) {
-    // Fallback layout if Providers fails
-    return (
-      <html lang="tr">
-        <head />
-        <body>
-          <div style={{ padding: '20px', fontFamily: 'system-ui' }}>
-            <h1>Application Error</h1>
-            <p>An error occurred while loading the application.</p>
-            {process.env.NODE_ENV === 'development' && error instanceof Error && (
-              <pre style={{ background: '#f5f5f5', padding: '10px', overflow: 'auto' }}>
-                {error.message}
-                {'\n'}
-                {error.stack}
-              </pre>
-            )}
-          </div>
-        </body>
-      </html>
-    );
-  }
+      </body>
+    </html>
+  );
 }

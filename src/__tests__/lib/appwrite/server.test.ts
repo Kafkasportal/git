@@ -41,28 +41,28 @@ describe('Appwrite Server Client', () => {
 
     describe('exports', () => {
         it('should export serverClient', async () => {
-            const module = await import('@/lib/appwrite/server');
-            expect('serverClient' in module).toBe(true);
+            const serverModule = await import('@/lib/appwrite/server');
+            expect('serverClient' in serverModule).toBe(true);
         });
 
         it('should export serverDatabases', async () => {
-            const module = await import('@/lib/appwrite/server');
-            expect('serverDatabases' in module).toBe(true);
+            const serverModule = await import('@/lib/appwrite/server');
+            expect('serverDatabases' in serverModule).toBe(true);
         });
 
         it('should export serverStorage', async () => {
-            const module = await import('@/lib/appwrite/server');
-            expect('serverStorage' in module).toBe(true);
+            const serverModule = await import('@/lib/appwrite/server');
+            expect('serverStorage' in serverModule).toBe(true);
         });
 
         it('should export serverUsers', async () => {
-            const module = await import('@/lib/appwrite/server');
-            expect('serverUsers' in module).toBe(true);
+            const serverModule = await import('@/lib/appwrite/server');
+            expect('serverUsers' in serverModule).toBe(true);
         });
 
         it('should export serverAccount', async () => {
-            const module = await import('@/lib/appwrite/server');
-            expect('serverAccount' in module).toBe(true);
+            const serverModule = await import('@/lib/appwrite/server');
+            expect('serverAccount' in serverModule).toBe(true);
         });
 
         it('should export isServerClientReady function', async () => {

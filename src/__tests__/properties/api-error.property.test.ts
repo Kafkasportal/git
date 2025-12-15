@@ -119,7 +119,7 @@ describe('Property 1: CRUD Error Response Consistency', () => {
                     details: [
                         {
                             path: fieldPath,
-                            message: message,
+                            message,
                         },
                     ],
                 };
