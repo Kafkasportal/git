@@ -86,9 +86,9 @@ async function fetchBeneficiariesDirectly(params?: {
 // } from '@/lib/export/export-service';
 
 // Lazy load heavy modal component
-const BeneficiaryQuickAddModal = lazy(() =>
-  import('@/components/forms/BeneficiaryQuickAddModal').then((mod) => ({
-    default: mod.BeneficiaryQuickAddModal,
+const BeneficiaryRegistrationForm = lazy(() =>
+  import('@/components/forms/BeneficiaryRegistrationForm').then((mod) => ({
+    default: mod.BeneficiaryRegistrationForm,
   }))
 );
 
@@ -524,13 +524,13 @@ export default function BeneficiariesPage() {
         <Suspense
           fallback={
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-              <div className="bg-background rounded-lg shadow-lg border p-6 max-w-md w-full mx-4">
-                <TableSkeleton rows={4} />
+              <div className="bg-background rounded-lg shadow-lg border p-6 max-w-2xl w-full mx-4">
+                <TableSkeleton rows={8} />
               </div>
             </div>
           }
         >
-          <BeneficiaryQuickAddModal open={showQuickAddModal} onOpenChange={handleModalClose} />
+          <BeneficiaryRegistrationForm open={showQuickAddModal} onOpenChange={handleModalClose} />
         </Suspense>
       )}
 
