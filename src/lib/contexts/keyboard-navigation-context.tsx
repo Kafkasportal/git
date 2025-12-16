@@ -142,8 +142,8 @@ export function KeyboardNavigationProvider({
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    globalThis.window.addEventListener('keydown', handleKeyDown);
+    return () => globalThis.window.removeEventListener('keydown', handleKeyDown);
   }, [isEnabled, shortcuts]);
 
   const contextValue = useMemo(

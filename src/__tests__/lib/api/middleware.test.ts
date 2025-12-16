@@ -36,6 +36,8 @@ import {
     withLogging,
     withMethodCheck,
     buildApiRoute,
+    type RouteContext,
+    type RouteHandler,
 } from '@/lib/api/middleware';
 import { requireModuleAccess } from '@/lib/api/auth-utils';
 
@@ -76,15 +78,19 @@ describe('API Middleware', () => {
 
     describe('compose', () => {
         const createMiddlewareHandler = (headerName: string) => {
-            return async (req: NextRequest, handler: (req: NextRequest) => Promise<NextResponse>) => {
-                const response = await handler(req);
-                response.headers.set(headerName, 'true');
-                return response;
+            return (handler: RouteHandler): RouteHandler => {
+                return async (req: NextRequest, context?: RouteContext) => {
+                    const response = await handler(req, context);
+                    response.headers.set(headerName, 'true');
+                    return response;
+                };
             };
         };
 
-        const createMiddleware1 = () => vi.fn((handler) => createMiddlewareHandler('X-Middleware-1'));
-        const createMiddleware2 = () => vi.fn((handler) => createMiddlewareHandler('X-Middleware-2'));
+        const createMiddleware1 = () =>
+            vi.fn<(handler: RouteHandler) => RouteHandler>(createMiddlewareHandler('X-Middleware-1'));
+        const createMiddleware2 = () =>
+            vi.fn<(handler: RouteHandler) => RouteHandler>(createMiddlewareHandler('X-Middleware-2'));
 
         it('should compose multiple middleware functions', async () => {
             const middleware1 = createMiddleware1();
@@ -94,10 +100,12 @@ describe('API Middleware', () => {
             const composed = compose(middleware1, middleware2)(handler);
             const request = createMockRequest();
             
-            await composed(request);
+            const response = await composed(request);
 
             expect(middleware1).toHaveBeenCalled();
             expect(middleware2).toHaveBeenCalled();
+            expect(response.headers.get('X-Middleware-1')).toBe('true');
+            expect(response.headers.get('X-Middleware-2')).toBe('true');
         });
     });
 

@@ -13,7 +13,6 @@ export function useCorporateLogin({ redirectTo = '/genel' }: UseCorporateLoginOp
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -48,19 +47,22 @@ export function useCorporateLogin({ redirectTo = '/genel' }: UseCorporateLoginOp
   };
 
   useEffect(() => {
-    if (!initRef.current) {
-      initRef.current = true;
-      loadRememberedEmail();
-      setMounted(true);
-      initializeAuth();
+    if (initRef.current) {
+      return undefined;
     }
+    initRef.current = true;
+    const timeoutId = setTimeout(() => {
+      loadRememberedEmail();
+    }, 0);
+    initializeAuth();
+    return () => clearTimeout(timeoutId);
   }, [initializeAuth]);
 
   useEffect(() => {
-    if (mounted && isAuthenticated) {
+    if (isAuthenticated) {
       router.push(redirectTo);
     }
-  }, [mounted, isAuthenticated, router, redirectTo]);
+  }, [isAuthenticated, router, redirectTo]);
 
   const validateEmail = (emailValue: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

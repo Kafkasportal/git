@@ -209,14 +209,15 @@ export function createFocusTrap(container: HTMLElement): () => void {
     if (focusable.length === 0) return;
 
     const first = focusable[0];
-    const lastIndex = focusable.length - 1;
-    const last = focusable[lastIndex];
+    const last = focusable.at(-1);
     if (!first || !last) return;
 
     if (e.shiftKey && document.activeElement === first) {
       e.preventDefault();
       last.focus();
-    } else if (!e.shiftKey && document.activeElement === last) {
+      return;
+    }
+    if (!e.shiftKey && document.activeElement === last) {
       e.preventDefault();
       first.focus();
     }
@@ -346,6 +347,24 @@ function focusItemIfValid(
 }
 
 /**
+ * Try navigation in a specific direction
+ */
+function tryNavigation(
+  e: KeyboardEvent,
+  items: HTMLElement[],
+  currentIndex: number,
+  loop: boolean,
+  navigationFn: (e: KeyboardEvent, items: HTMLElement[], currentIndex: number, loop: boolean) => number | null
+): number | null {
+  const newIndex = navigationFn(e, items, currentIndex, loop);
+  if (newIndex !== null) {
+    focusItemIfValid(items, newIndex, currentIndex);
+    return newIndex;
+  }
+  return null;
+}
+
+/**
  * Handle arrow key navigation in a list
  */
 export function handleArrowNavigation(
@@ -359,9 +378,6 @@ export function handleArrowNavigation(
 ): number {
   const { orientation = 'vertical', loop = true } = options;
 
-  const isVertical = orientation === 'vertical' || orientation === 'both';
-  const isHorizontal = orientation === 'horizontal' || orientation === 'both';
-
   // Try special keys first
   const specialKeyIndex = handleSpecialKeys(e, items.length);
   if (specialKeyIndex !== null) {
@@ -370,19 +386,19 @@ export function handleArrowNavigation(
   }
 
   // Try vertical navigation
+  const isVertical = orientation === 'vertical' || orientation === 'both';
   if (isVertical) {
-    const verticalIndex = handleVerticalNavigation(e, items, currentIndex, loop);
+    const verticalIndex = tryNavigation(e, items, currentIndex, loop, handleVerticalNavigation);
     if (verticalIndex !== null) {
-      focusItemIfValid(items, verticalIndex, currentIndex);
       return verticalIndex;
     }
   }
 
   // Try horizontal navigation
+  const isHorizontal = orientation === 'horizontal' || orientation === 'both';
   if (isHorizontal) {
-    const horizontalIndex = handleHorizontalNavigation(e, items, currentIndex, loop);
+    const horizontalIndex = tryNavigation(e, items, currentIndex, loop, handleHorizontalNavigation);
     if (horizontalIndex !== null) {
-      focusItemIfValid(items, horizontalIndex, currentIndex);
       return horizontalIndex;
     }
   }

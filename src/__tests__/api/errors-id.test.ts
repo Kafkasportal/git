@@ -81,7 +81,7 @@ describe('PATCH /api/errors/[id]', () => {
   it('updates error successfully', async () => {
     const updateData = {
       title: 'Updated Error Title',
-      status: 'assigned',
+      status: 'open',
       severity: 'medium',
     };
 

@@ -19,6 +19,12 @@ import React, {
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import logger from "@/lib/logger";
+import type {
+  ThemeColors,
+  ThemeLayout,
+  ThemePreset,
+  ThemeTypography,
+} from "@/lib/validations/theme";
 import { useAuthStore } from "@/stores/authStore";
 import { usePathname } from "next/navigation";
 
@@ -34,8 +40,7 @@ export interface AllSettings {
   [category: string]: CategorySettings;
 }
 
-// Theme configuration - Imported from validations to avoid duplication
-export type { ThemeColors, ThemeTypography, ThemeLayout, ThemePreset } from '@/lib/validations/theme';
+export type { ThemeColors, ThemeLayout, ThemePreset, ThemeTypography };
 
 // Type aliases for theme modes
 type ThemeMode = "light" | "dark" | "auto";
@@ -62,7 +67,7 @@ export interface SettingsContextValue {
   // Theme mode (light/dark/auto)
   themeMode: ThemeMode;
   setThemeMode: (mode: ThemeMode) => void;
-  resolvedThemeMode: ResolvedThemeMode; // actual computed mode
+  resolvedThemeMode: ResolvedThemeMode;
 
   // Refresh settings
   refreshSettings: () => void;
@@ -130,12 +135,12 @@ function applyThemeToDocument(theme: ThemePreset, resolvedMode: "light" | "dark"
 /**
  * Initialize theme mode from localStorage
  */
-function getInitialThemeMode(): "light" | "dark" | "auto" {
+function getInitialThemeMode(): ThemeMode {
   if (globalThis.window === undefined) return "light";
   
   const saved = globalThis.window.localStorage.getItem("theme-mode");
   if (saved === "light" || saved === "dark" || saved === "auto") {
-    return saved;
+    return saved as ThemeMode;
   }
   return "light";
 }

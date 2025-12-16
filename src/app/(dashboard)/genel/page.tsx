@@ -43,13 +43,15 @@ const itemVariants = {
   },
 };
 
+interface DashboardHeroSectionProps {
+  readonly userName: string;
+  readonly isRealtimeConnected: boolean;
+}
+
 function DashboardHeroSection({
   userName,
   isRealtimeConnected,
-}: {
-  readonly userName: string;
-  readonly isRealtimeConnected: boolean;
-}) {
+}: DashboardHeroSectionProps) {
   const currentHour = new Date().getHours();
   let greeting: string;
   if (currentHour < 12) {

@@ -144,7 +144,7 @@ const baseConfig: NextConfig = {
             : []),
 
           // Cross-Origin policies - only in production for better dev experience
-          ...(isDevelopment === false
+          ...(!isDevelopment
             ? [
                 {
                   key: 'Cross-Origin-Opener-Policy',
