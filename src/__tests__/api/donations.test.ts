@@ -11,8 +11,8 @@ vi.mock('@/lib/appwrite/api', () => ({
     create: vi.fn(),
   },
   normalizeQueryParams: vi.fn((params) => ({
-    page: params.get('page') ? parseInt(params.get('page')!) : 1,
-    limit: params.get('limit') ? parseInt(params.get('limit')!) : 50,
+    page: params.get('page') ? Number.parseInt(params.get('page')!) : 1,
+    limit: params.get('limit') ? Number.parseInt(params.get('limit')!) : 50,
   })),
 }));
 
@@ -55,7 +55,7 @@ vi.mock('@/lib/api/auth-utils', () => ({
 vi.mock('@/lib/sanitization', () => ({
   sanitizePhone: vi.fn((phone) => {
     // Simple sanitization mock
-    const cleaned = phone.replace(/\D/g, '');
+    const cleaned = phone.replaceAll(/\D/g, '');
     if (cleaned.startsWith('0')) {
       return cleaned.substring(1);
     }

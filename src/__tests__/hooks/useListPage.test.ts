@@ -44,7 +44,7 @@ const createWrapper = () => {
 describe('useListPage', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        global.fetch = vi.fn();
+        globalThis.fetch = vi.fn();
     });
 
     afterEach(() => {
@@ -53,7 +53,7 @@ describe('useListPage', () => {
 
     describe('Initialization', () => {
         it('should initialize with default values', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ data: [], total: 0 }),
             });
@@ -78,7 +78,7 @@ describe('useListPage', () => {
                 { id: '2', name: 'Item 2' },
             ];
 
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ data: mockData, total: 2 }),
             });
@@ -102,7 +102,7 @@ describe('useListPage', () => {
 
     describe('Pagination', () => {
         it('should have pagination state', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ data: [], total: 100 }),
             });
@@ -126,7 +126,7 @@ describe('useListPage', () => {
         });
 
         it('should change page', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ data: [], total: 100 }),
             });
@@ -151,7 +151,7 @@ describe('useListPage', () => {
         });
 
         it('should change page size and reset to page 1', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ data: [], total: 100 }),
             });
@@ -183,7 +183,7 @@ describe('useListPage', () => {
 
     describe('Search', () => {
         it('should update search value', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ data: [], total: 0 }),
             });
@@ -205,7 +205,7 @@ describe('useListPage', () => {
         });
 
         it('should reset to page 1 on search', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ data: [], total: 100 }),
             });
@@ -236,7 +236,7 @@ describe('useListPage', () => {
 
     describe('Filters', () => {
         it('should have filter functions', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ data: [], total: 0 }),
             });
@@ -255,7 +255,7 @@ describe('useListPage', () => {
         });
 
         it('should set a filter', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ data: [], total: 0 }),
             });
@@ -284,7 +284,7 @@ describe('useListPage', () => {
                 { id: '2', name: 'Item 2' },
             ];
 
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ data: mockData, total: 2 }),
             });
@@ -316,7 +316,7 @@ describe('useListPage', () => {
                 { id: '3', name: 'Item 3' },
             ];
 
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ data: mockData, total: 3 }),
             });
@@ -341,7 +341,7 @@ describe('useListPage', () => {
         });
 
         it('should clear selection', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ data: [{ id: '1' }], total: 1 }),
             });
@@ -374,7 +374,7 @@ describe('useListPage', () => {
 
     describe('Error Handling', () => {
         it('should handle fetch errors', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: false,
                 status: 500,
             });
@@ -427,7 +427,7 @@ describe('useListPage', () => {
                 { id: '2', name: 'item 2' },
             ];
 
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ data: mockData, total: 2 }),
             });
@@ -455,7 +455,7 @@ describe('useListPage', () => {
 
     describe('Filter Query Params', () => {
         it('should include array filters in query params', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ data: [], total: 0 }),
             });
@@ -473,14 +473,14 @@ describe('useListPage', () => {
             });
 
             await waitFor(() => {
-                expect(global.fetch).toHaveBeenCalledWith(
+                expect(globalThis.fetch).toHaveBeenCalledWith(
                     expect.stringContaining('tags=tag1%2Ctag2'),
                 );
             });
         });
 
         it('should include date range filters in query params', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ data: [], total: 0 }),
             });
@@ -501,14 +501,14 @@ describe('useListPage', () => {
             });
 
             await waitFor(() => {
-                expect(global.fetch).toHaveBeenCalledWith(
+                expect(globalThis.fetch).toHaveBeenCalledWith(
                     expect.stringContaining('dateRange_from'),
                 );
             });
         });
 
         it('should skip null and undefined filter values', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ data: [], total: 0 }),
             });
@@ -528,7 +528,7 @@ describe('useListPage', () => {
                 expect(result.current.isLoading).toBe(false);
             });
 
-            const fetchCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0][0];
+            const fetchCall = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0][0];
             expect(fetchCall).toContain('status=active');
             expect(fetchCall).not.toContain('empty=');
         });
@@ -541,7 +541,7 @@ describe('useListPage', () => {
                 { id: '2', name: 'Item 2' },
             ];
 
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve(mockData),
             });
@@ -563,7 +563,7 @@ describe('useListPage', () => {
         });
 
         it('should throw error for unexpected response format', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ unexpected: 'format' }),
             });
@@ -586,7 +586,7 @@ describe('useListPage', () => {
 
     describe('Actions', () => {
         it('should refetch data', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ data: [], total: 0 }),
             });
@@ -603,19 +603,19 @@ describe('useListPage', () => {
                 expect(result.current.isLoading).toBe(false);
             });
 
-            const initialCallCount = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.length;
+            const initialCallCount = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls.length;
 
             act(() => {
                 result.current.refetch();
             });
 
             await waitFor(() => {
-                expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThan(initialCallCount);
+                expect((globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThan(initialCallCount);
             });
         });
 
         it('should invalidate query', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ data: [], total: 0 }),
             });
@@ -641,7 +641,7 @@ describe('useListPage', () => {
 
     describe('Disabled Query', () => {
         it('should not fetch when disabled', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ data: [], total: 0 }),
             });
@@ -658,7 +658,7 @@ describe('useListPage', () => {
             // Wait a bit to ensure no fetch is made
             await new Promise(resolve => setTimeout(resolve, 100));
 
-            expect(global.fetch).not.toHaveBeenCalled();
+            expect(globalThis.fetch).not.toHaveBeenCalled();
         });
     });
 });

@@ -251,7 +251,7 @@ describe("useInfiniteScroll - IntersectionObserver", () => {
     observerCallback = null;
 
     // Save original
-    OriginalIntersectionObserver = global.IntersectionObserver;
+    OriginalIntersectionObserver = globalThis.IntersectionObserver;
 
     // Mock IntersectionObserver as a class
     class MockIntersectionObserver implements IntersectionObserver {
@@ -275,11 +275,11 @@ describe("useInfiniteScroll - IntersectionObserver", () => {
       takeRecords = vi.fn().mockReturnValue([]);
     }
 
-    global.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
+    globalThis.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
   });
 
   afterEach(() => {
-    global.IntersectionObserver = OriginalIntersectionObserver;
+    globalThis.IntersectionObserver = OriginalIntersectionObserver;
     vi.restoreAllMocks();
   });
 

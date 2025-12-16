@@ -1,6 +1,6 @@
 import { Client, Databases } from "node-appwrite";
 import dotenv from "dotenv";
-import path from "path";
+import path from "node:path";
 
 // Load environment variables from .env.local
 dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
@@ -47,4 +47,4 @@ async function verifyConnection() {
   }
 }
 
-verifyConnection();
+await verifyConnection();
