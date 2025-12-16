@@ -7,15 +7,15 @@ export const buttonVariants = cva(
       variant: {
         // Default - Alias for primary
         default:
-          'bg-gradient-to-r from-corporate-primary-600 to-corporate-primary-700 text-white shadow-lg hover:from-corporate-primary-700 hover:to-corporate-primary-800 hover:shadow-xl focus-visible:ring-corporate-primary-100 dark:focus-visible:ring-corporate-primary-900',
+          'bg-primary text-primary-foreground bg-gradient-to-r from-corporate-primary-600 to-corporate-primary-700 shadow-lg hover:from-corporate-primary-700 hover:to-corporate-primary-800 hover:shadow-xl focus-visible:ring-corporate-primary-100 dark:focus-visible:ring-corporate-primary-900',
 
         // Primary - Main brand action button (Corporate Blue)
         primary:
-          'bg-gradient-to-r from-corporate-primary-600 to-corporate-primary-700 text-white shadow-lg hover:from-corporate-primary-700 hover:to-corporate-primary-800 hover:shadow-xl focus-visible:ring-corporate-primary-100 dark:focus-visible:ring-corporate-primary-900',
+          'bg-primary text-primary-foreground bg-gradient-to-r from-corporate-primary-600 to-corporate-primary-700 shadow-lg hover:from-corporate-primary-700 hover:to-corporate-primary-800 hover:shadow-xl focus-visible:ring-corporate-primary-100 dark:focus-visible:ring-corporate-primary-900',
 
         // Secondary - Alternative action (Outline)
         secondary:
-          'bg-white border-2 border-corporate-gray-300 text-corporate-gray-900 hover:bg-corporate-gray-50 hover:border-corporate-primary-300 shadow-sm focus-visible:ring-corporate-primary-100 dark:bg-corporate-gray-800 dark:border-corporate-gray-600 dark:text-corporate-gray-50 dark:hover:bg-corporate-gray-700',
+          'bg-secondary text-secondary-foreground bg-white border-2 border-corporate-gray-300 text-corporate-gray-900 hover:bg-corporate-gray-50 hover:border-corporate-primary-300 shadow-sm focus-visible:ring-corporate-primary-100 dark:bg-corporate-gray-800 dark:border-corporate-gray-600 dark:text-corporate-gray-50 dark:hover:bg-corporate-gray-700',
 
         // Success - Positive actions (Green)
         success:
@@ -27,7 +27,7 @@ export const buttonVariants = cva(
 
         // Destructive - Alias for danger
         destructive:
-          'bg-corporate-error-600 text-white shadow-lg hover:bg-corporate-error-700 hover:shadow-xl focus-visible:ring-corporate-error-100 disabled:bg-corporate-error-400 dark:focus-visible:ring-corporate-error-900',
+          'bg-destructive text-white bg-corporate-error-600 shadow-lg hover:bg-corporate-error-700 hover:shadow-xl focus-visible:ring-corporate-error-100 disabled:bg-corporate-error-400 dark:focus-visible:ring-corporate-error-900',
 
         // Warning - Caution actions (Amber)
         warning:
@@ -43,7 +43,7 @@ export const buttonVariants = cva(
 
         // Outline - Bordered style
         outline:
-          'border border-corporate-gray-300 bg-white text-corporate-gray-900 hover:bg-corporate-gray-50 hover:border-corporate-gray-400 shadow-sm focus-visible:ring-corporate-primary-100 dark:border-corporate-gray-600 dark:bg-corporate-gray-800 dark:text-corporate-gray-50',
+          'border bg-background border-corporate-gray-300 bg-white text-corporate-gray-900 hover:bg-corporate-gray-50 hover:border-corporate-gray-400 shadow-sm focus-visible:ring-corporate-primary-100 dark:border-corporate-gray-600 dark:bg-corporate-gray-800 dark:text-corporate-gray-50',
 
         // Info - Informational actions (Cyan)
         info:
@@ -73,7 +73,7 @@ export const buttonVariants = cva(
       size: {
         // Small - Compact buttons
         sm:
-          'h-9 px-3 py-2 text-xs gap-1.5 has-[>svg]:px-2 rounded-md',
+          'h-8 px-3 text-xs gap-1.5 has-[>svg]:px-2 rounded-md',
 
         // Medium - Default size (most common)
         md:
@@ -85,7 +85,7 @@ export const buttonVariants = cva(
 
         // Large - Prominent buttons
         lg:
-          'h-13 px-6 py-3 text-base gap-2 has-[>svg]:px-4 rounded-lg',
+          'h-10 px-8 text-base gap-2 has-[>svg]:px-4 rounded-lg',
 
         // Extra Large - Full width or hero buttons
         xl:
@@ -120,12 +120,12 @@ export const buttonVariants = cva(
 
     compoundVariants: [
       // Primary + Size combinations
-      { variant: 'primary', size: 'sm', class: 'h-9 px-3' },
-      { variant: 'primary', size: 'lg', class: 'h-13 px-6' },
+      { variant: 'primary', size: 'sm', class: 'h-8 px-3' },
+      { variant: 'primary', size: 'lg', class: 'h-10 px-8' },
 
       // Secondary + Size combinations
-      { variant: 'secondary', size: 'sm', class: 'h-9 px-3' },
-      { variant: 'secondary', size: 'lg', class: 'h-13 px-6' },
+      { variant: 'secondary', size: 'sm', class: 'h-8 px-3' },
+      { variant: 'secondary', size: 'lg', class: 'h-10 px-8' },
 
       // Icon variants - no text padding
       { size: 'icon', class: '[&_svg]:size-5' },

@@ -48,7 +48,11 @@ describe('Validation Property Tests', () => {
         amount: fc.integer({ min: 1, max: 999999999 }).map(n => n / 100),
         currency: validCurrency,
         description: trimmedDescription,
-        transaction_date: fc.date({ min: new Date('2000-01-01'), max: new Date() }).map(d => d.toISOString()),
+        transaction_date: fc
+          .date({ min: new Date('2000-01-01'), max: new Date() })
+          // Defensive: avoid rare Invalid Date values causing RangeError in toISOString()
+          .filter((d) => !Number.isNaN(d.getTime()))
+          .map((d) => d.toISOString()),
         created_by: fc.stringMatching(/^user_[a-z0-9]{5,10}$/),
         status: fc.constantFrom('pending', 'approved', 'rejected'),
       }),

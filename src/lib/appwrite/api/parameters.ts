@@ -11,24 +11,33 @@ import {
   deleteDocument,
 } from "./base";
 
+export type ParameterDocument = {
+  $id?: string;
+  id?: string;
+  category?: string;
+  key?: string;
+  value?: unknown;
+  [key: string]: unknown;
+};
+
 /**
  * Parameters API
  */
 export const appwriteParameters = {
   list: async (params?: AppwriteQueryParams) => {
-    return await listDocuments("parameters", params);
+    return await listDocuments<ParameterDocument>("parameters", params);
   },
 
   get: async (id: string) => {
-    return await getDocument("parameters", id);
+    return await getDocument<ParameterDocument>("parameters", id);
   },
 
   create: async (data: Record<string, unknown>) => {
-    return await createDocument("parameters", data);
+    return await createDocument<ParameterDocument>("parameters", data);
   },
 
   update: async (id: string, data: Record<string, unknown>) => {
-    return await updateDocument("parameters", id, data);
+    return await updateDocument<ParameterDocument>("parameters", id, data);
   },
 
   remove: async (id: string) => {

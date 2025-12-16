@@ -152,10 +152,11 @@ class LoggerImpl implements Logger {
     if (!isDevelopment) return;
 
     const color = colors[level];
-    console.log(`${color}${level.toUpperCase()}${resetColor} ${timestamp} ${message}`);
+    const writer = level === 'error' || level === 'fatal' ? console.error : console.warn;
+    writer(`${color}${level.toUpperCase()}${resetColor} ${timestamp} ${message}`);
     
     if (safeContext && typeof safeContext === 'object' && Object.keys(safeContext).length > 0) {
-      console.log(JSON.stringify(safeContext, null, 2));
+      writer(JSON.stringify(safeContext, null, 2));
     }
     
     if (error) {
@@ -193,7 +194,8 @@ class LoggerImpl implements Logger {
     this.logToConsole(level, message, timestamp, safeContext, error || undefined);
 
     if (!isDevelopment) {
-      console.log(JSON.stringify(logEntry));
+      const writer = level === 'error' || level === 'fatal' ? console.error : console.warn;
+      writer(JSON.stringify(logEntry));
     }
   }
 

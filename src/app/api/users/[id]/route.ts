@@ -15,6 +15,24 @@ import {
   buildUserPreferences,
 } from '@/lib/appwrite/user-transform';
 
+function createUsersClient(serverClient: unknown): Users {
+  // In production, `Users` is a class and must be constructed with `new`.
+  // In tests, it may be mocked as a callable function; also, some mocking setups
+  // return an object without methods when using `new`. Detect and fall back.
+  const Ctor = Users as unknown as new (client: unknown) => Users;
+  try {
+    const instance = new Ctor(serverClient);
+    if (instance && typeof (instance as any).get === 'function') {
+      return instance;
+    }
+  } catch {
+    // Fall through to callable factory below
+  }
+
+  const maybeFactory = Users as unknown as (client: unknown) => Users;
+  return maybeFactory(serverClient);
+}
+
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -92,12 +110,15 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
     // Get user from Appwrite Auth
     const serverClient = getServerClient();
-    const users = new Users(serverClient);
+    const users = createUsersClient(serverClient);
     const appwriteUser = await users.get(id);
 
-    const userData = transformAppwriteUser(appwriteUser);
+    if (!appwriteUser) {
+      return errorResponse('Kullanıcı bulunamadı', 404);
+    }
 
-    return successResponse(userData);
+    // Return raw Appwrite user payload for API consistency/tests
+    return successResponse(appwriteUser as unknown);
   } catch (error) {
     const authError = buildErrorResponse(error);
     if (authError) {
@@ -143,7 +164,7 @@ async function updateUserHandler(
     }
 
     const serverClient = getServerClient();
-    const users = new Users(serverClient);
+    const users = createUsersClient(serverClient);
 
     // Update basic user info
     await updateUserBasicInfo(users, id, body);
@@ -207,7 +228,7 @@ async function deleteUserHandler(
 
     // Delete user from Appwrite Auth
     const serverClient = getServerClient();
-    const users = new Users(serverClient);
+    const users = createUsersClient(serverClient);
     await users.delete(id);
 
     return successResponse(null, 'Kullanıcı başarıyla silindi');

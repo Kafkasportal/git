@@ -75,29 +75,33 @@ describe('API Middleware', () => {
     });
 
     describe('compose', () => {
-        const createMiddlewareHandler = (headerName: string) => {
-            return async (req: NextRequest, handler: (req: NextRequest) => Promise<NextResponse>) => {
-                const response = await handler(req);
-                response.headers.set(headerName, 'true');
-                return response;
+        const createHeaderMiddleware = (headerName: string) => {
+            const spy = vi.fn();
+            const middleware = (handler: any) => {
+                spy();
+                return async (req: NextRequest, context?: any) => {
+                    const response = await handler(req, context);
+                    response.headers.set(headerName, 'true');
+                    return response;
+                };
             };
+            return { middleware, spy };
         };
 
-        const createMiddleware1 = () => vi.fn((handler) => createMiddlewareHandler('X-Middleware-1'));
-        const createMiddleware2 = () => vi.fn((handler) => createMiddlewareHandler('X-Middleware-2'));
-
         it('should compose multiple middleware functions', async () => {
-            const middleware1 = createMiddleware1();
-            const middleware2 = createMiddleware2();
+            const { middleware: middleware1, spy: middleware1Spy } = createHeaderMiddleware('X-Middleware-1');
+            const { middleware: middleware2, spy: middleware2Spy } = createHeaderMiddleware('X-Middleware-2');
 
             const handler = createMockHandler();
             const composed = compose(middleware1, middleware2)(handler);
             const request = createMockRequest();
             
-            await composed(request);
+            const response = await composed(request);
 
-            expect(middleware1).toHaveBeenCalled();
-            expect(middleware2).toHaveBeenCalled();
+            expect(middleware1Spy).toHaveBeenCalled();
+            expect(middleware2Spy).toHaveBeenCalled();
+            expect(response.headers.get('X-Middleware-1')).toBe('true');
+            expect(response.headers.get('X-Middleware-2')).toBe('true');
         });
     });
 

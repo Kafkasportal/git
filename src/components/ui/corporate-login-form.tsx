@@ -116,7 +116,6 @@ export function CorporateLoginForm({
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -131,39 +130,42 @@ export function CorporateLoginForm({
 
   const { login, isAuthenticated, initializeAuth } = useAuthStore();
 
-  const loadRememberedEmail = () => {
-    if (globalThis.window === undefined) return;
-    
-    const rememberData = localStorage.getItem('rememberMe');
-    if (!rememberData) return;
-
-    try {
-      const parsed = JSON.parse(rememberData);
-      if (parsed.expires > Date.now()) {
-        setEmail(parsed.email);
-        setRememberMe(true);
-      } else {
-        localStorage.removeItem('rememberMe');
-      }
-    } catch {
-      localStorage.removeItem('rememberMe');
-    }
-  };
-
   useEffect(() => {
     if (!initRef.current) {
       initRef.current = true;
-      loadRememberedEmail();
-      setMounted(true);
       initializeAuth();
+
+      // Defer localStorage reads and state updates to avoid render impurities
+      queueMicrotask(() => {
+        if (typeof window === 'undefined') return;
+
+        const rememberData = localStorage.getItem('rememberMe');
+        if (!rememberData) return;
+
+        try {
+          const parsed = JSON.parse(rememberData);
+          const expires = typeof parsed?.expires === 'number' ? parsed.expires : 0;
+          const rememberedEmail =
+            typeof parsed?.email === 'string' ? parsed.email : '';
+
+          if (expires > Date.now() && rememberedEmail) {
+            setEmail(rememberedEmail);
+            setRememberMe(true);
+          } else {
+            localStorage.removeItem('rememberMe');
+          }
+        } catch {
+          localStorage.removeItem('rememberMe');
+        }
+      });
     }
   }, [initializeAuth]);
 
   useEffect(() => {
-    if (mounted && isAuthenticated) {
+    if (isAuthenticated) {
       router.push(redirectTo);
     }
-  }, [mounted, isAuthenticated, router, redirectTo]);
+  }, [isAuthenticated, router, redirectTo]);
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

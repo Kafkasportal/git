@@ -217,7 +217,12 @@ async function parseLoginResponse(response: Response): Promise<{ success: boolea
 
   // Handle rate limiting
   if (response.status === 429) {
-    const errorMsg = result?.error || result?.message || "Çok fazla deneme yapıldı. Lütfen biraz bekleyin.";
+    const rawMsg = result?.error || result?.message || "";
+    const normalized = typeof rawMsg === "string" ? rawMsg.toLowerCase() : "";
+    const errorMsg =
+      normalized.includes("too many") || normalized.includes("rate limit")
+        ? "Çok fazla deneme yapıldı. Lütfen biraz bekleyin."
+        : (rawMsg || "Çok fazla deneme yapıldı. Lütfen biraz bekleyin.");
     throw new Error(errorMsg);
   }
 
@@ -242,10 +247,25 @@ function handleLoginError(result: { error?: string; message?: string; requiresTw
   }
 
   if (status === 401) {
-    throw new Error(result.error || result.message || "E-posta veya şifre hatalı. Lütfen kontrol edin.");
+    const rawMsg = result.error || result.message || "";
+    const normalized = rawMsg.toLowerCase();
+    // Prefer Turkish default for generic backend messages
+    if (
+      !rawMsg ||
+      normalized.includes("invalid credentials") ||
+      normalized.includes("unauthorized")
+    ) {
+      throw new Error("E-posta veya şifre hatalı. Lütfen kontrol edin.");
+    }
+    throw new Error(rawMsg);
   }
   if (status === 400) {
-    throw new Error(result.error || result.message || "E-posta ve şifre alanları zorunludur.");
+    const rawMsg = result.error || result.message || "";
+    const normalized = rawMsg.toLowerCase();
+    if (!rawMsg || normalized.includes("bad request") || normalized.includes("validation")) {
+      throw new Error("E-posta ve şifre alanları zorunludur.");
+    }
+    throw new Error(rawMsg);
   }
   
   throw new Error(result.error || result.message || "Giriş yapılamadı. Lütfen tekrar deneyin.");
@@ -453,6 +473,10 @@ export const useAuthStore = create<AuthStore>()(
                 state.error = null;
               });
             } catch (error: unknown) {
+              const twoFactorError =
+                error instanceof Error &&
+                (error as Error & { requiresTwoFactor?: boolean }).requiresTwoFactor ===
+                  true;
               let errorMessage = extractErrorMessage(error);
 
               if (isNetworkError(errorMessage)) {
@@ -463,6 +487,10 @@ export const useAuthStore = create<AuthStore>()(
                 state.isLoading = false;
                 state.error = errorMessage;
               });
+
+              if (twoFactorError) {
+                throw error as Error & { requiresTwoFactor?: boolean };
+              }
 
               throw new Error(errorMessage);
             }
