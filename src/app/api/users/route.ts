@@ -56,9 +56,20 @@ async function getUsersHandler(request: NextRequest) {
       return NextResponse.json(authError.body, { status: authError.status });
     }
 
+    // Check for Appwrite configuration errors
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes('not configured') || errorMessage.includes('Appwrite server client')) {
+      logger.error('Appwrite configuration error', error, {
+        endpoint: '/api/users',
+        method: 'GET',
+      });
+      return jsonError('Sunucu yapılandırma hatası. Lütfen yönetici ile iletişime geçin.', 500);
+    }
+
     logger.error('List users error', error, {
       endpoint: '/api/users',
       method: 'GET',
+      errorMessage,
     });
     return jsonError('Kullanıcılar alınamadı', 500);
   }
@@ -145,9 +156,20 @@ async function createUserHandler(request: NextRequest) {
       return NextResponse.json(authError.body, { status: authError.status });
     }
 
+    // Check for Appwrite configuration errors
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes('not configured') || errorMessage.includes('Appwrite server client')) {
+      logger.error('Appwrite configuration error', error, {
+        endpoint: '/api/users',
+        method: 'POST',
+      });
+      return jsonError('Sunucu yapılandırma hatası. Lütfen yönetici ile iletişime geçin.', 500);
+    }
+
     logger.error('Create user error', error, {
       endpoint: '/api/users',
       method: 'POST',
+      errorMessage,
     });
     return jsonError('Kullanıcı oluşturulamadı', 500);
   }

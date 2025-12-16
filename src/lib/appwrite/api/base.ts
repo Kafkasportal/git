@@ -129,7 +129,12 @@ export function buildQueries(params?: AppwriteQueryParams): string[] {
  */
 export function getDatabases(): Databases {
   // Use lazy initialization via getServerClient()
-  return new Databases(getServerClient());
+  try {
+    return new Databases(getServerClient());
+  } catch (error) {
+    logger.error('Failed to get databases instance - Appwrite not configured', { error });
+    throw new Error('Appwrite server client is not configured. Please check your environment variables.');
+  }
 }
 
 // ============================================================================
