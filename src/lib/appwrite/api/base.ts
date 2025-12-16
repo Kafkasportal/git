@@ -164,6 +164,23 @@ export async function listDocuments<T>(
       total: response.total,
     };
   } catch (error) {
+    // Check for Appwrite project_not_found error
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorData = (error as any)?.response || (error as any)?.code;
+    
+    if (
+      errorMessage?.includes('project_not_found') ||
+      errorMessage?.includes('Project with the requested ID could not be found') ||
+      (typeof errorData === 'object' && errorData?.type === 'project_not_found')
+    ) {
+      logger.error(`Appwrite project not found when listing ${collectionName}`, {
+        endpoint: appwriteConfig.endpoint,
+        projectId: appwriteConfig.projectId ? `${appwriteConfig.projectId.substring(0, 8)}...` : '[missing]',
+        error: errorMessage,
+      });
+      throw new Error('Appwrite project not found. Please check your project ID configuration.');
+    }
+    
     logger.error(`Failed to list ${collectionName}`, { error });
     throw error;
   }
@@ -187,6 +204,24 @@ export async function getDocument<T>(
     );
     return document as T;
   } catch (error) {
+    // Check for Appwrite project_not_found error
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorData = (error as any)?.response || (error as any)?.code;
+    
+    if (
+      errorMessage?.includes('project_not_found') ||
+      errorMessage?.includes('Project with the requested ID could not be found') ||
+      (typeof errorData === 'object' && errorData?.type === 'project_not_found')
+    ) {
+      logger.error(`Appwrite project not found when getting ${collectionName}`, {
+        endpoint: appwriteConfig.endpoint,
+        projectId: appwriteConfig.projectId ? `${appwriteConfig.projectId.substring(0, 8)}...` : '[missing]',
+        error: errorMessage,
+        id,
+      });
+      throw new Error('Appwrite project not found. Please check your project ID configuration.');
+    }
+    
     logger.error(`Failed to get ${collectionName}`, { error, id });
     return null;
   }
@@ -211,6 +246,23 @@ export async function createDocument<T>(
     );
     return document as T;
   } catch (error) {
+    // Check for Appwrite project_not_found error
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorData = (error as any)?.response || (error as any)?.code;
+    
+    if (
+      errorMessage?.includes('project_not_found') ||
+      errorMessage?.includes('Project with the requested ID could not be found') ||
+      (typeof errorData === 'object' && errorData?.type === 'project_not_found')
+    ) {
+      logger.error(`Appwrite project not found when creating ${collectionName}`, {
+        endpoint: appwriteConfig.endpoint,
+        projectId: appwriteConfig.projectId ? `${appwriteConfig.projectId.substring(0, 8)}...` : '[missing]',
+        error: errorMessage,
+      });
+      throw new Error('Appwrite project not found. Please check your project ID configuration.');
+    }
+    
     logger.error(`Failed to create ${collectionName}`, { error });
     throw error;
   }
@@ -236,6 +288,24 @@ export async function updateDocument<T>(
     );
     return document as T;
   } catch (error) {
+    // Check for Appwrite project_not_found error
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorData = (error as any)?.response || (error as any)?.code;
+    
+    if (
+      errorMessage?.includes('project_not_found') ||
+      errorMessage?.includes('Project with the requested ID could not be found') ||
+      (typeof errorData === 'object' && errorData?.type === 'project_not_found')
+    ) {
+      logger.error(`Appwrite project not found when updating ${collectionName}`, {
+        endpoint: appwriteConfig.endpoint,
+        projectId: appwriteConfig.projectId ? `${appwriteConfig.projectId.substring(0, 8)}...` : '[missing]',
+        error: errorMessage,
+        id,
+      });
+      throw new Error('Appwrite project not found. Please check your project ID configuration.');
+    }
+    
     logger.error(`Failed to update ${collectionName}`, { error, id });
     throw error;
   }
@@ -254,6 +324,24 @@ export async function deleteDocument(
   try {
     await databases.deleteDocument(appwriteConfig.databaseId, collectionId, id);
   } catch (error) {
+    // Check for Appwrite project_not_found error
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorData = (error as any)?.response || (error as any)?.code;
+    
+    if (
+      errorMessage?.includes('project_not_found') ||
+      errorMessage?.includes('Project with the requested ID could not be found') ||
+      (typeof errorData === 'object' && errorData?.type === 'project_not_found')
+    ) {
+      logger.error(`Appwrite project not found when deleting ${collectionName}`, {
+        endpoint: appwriteConfig.endpoint,
+        projectId: appwriteConfig.projectId ? `${appwriteConfig.projectId.substring(0, 8)}...` : '[missing]',
+        error: errorMessage,
+        id,
+      });
+      throw new Error('Appwrite project not found. Please check your project ID configuration.');
+    }
+    
     logger.error(`Failed to delete ${collectionName}`, { error, id });
     throw error;
   }
