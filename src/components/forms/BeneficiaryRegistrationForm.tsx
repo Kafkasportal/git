@@ -23,7 +23,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
 
-import { BeneficiaryCategory, FundRegion, Gender, MaritalStatus, EducationStatus, Religion, BeneficiaryStatus } from '@/types/beneficiary';
+import { BeneficiaryCategory, FundRegion, Gender, MaritalStatus, EducationStatus, Religion, BeneficiaryStatus, FileConnection } from '@/types/beneficiary';
 import type { BeneficiaryFormData } from '@/lib/validations/beneficiary';
 import { beneficiaries } from '@/lib/api/crud-factory';
 import type { BeneficiaryDocument, CreateDocumentData } from '@/types/database';
