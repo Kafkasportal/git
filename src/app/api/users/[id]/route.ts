@@ -163,6 +163,8 @@ async function updateUserHandler(
     const serverClient = getServerClient();
     const users = createUsersClient(serverClient);
 
+    const updateData: Record<string, unknown> = {};
+
     if (body.email && typeof body.email === 'string') {
       updateData.email = body.email.trim().toLowerCase();
     }
