@@ -164,7 +164,6 @@ async function findUserByEmail(email: string): Promise<{ user: any; error: NextR
     const failedAttempts = getFailedAttemptCount(email);
     const remainingAttempts = LOCKOUT_CONFIG.maxAttempts - failedAttempts;
 
-    const errorMessage = error instanceof Error ? error.message : String(error);
     logger.warn("Login failed - invalid credentials or Appwrite Auth error", {
       email: `${email?.substring(0, 3)}***`,
       failedAttempts,
