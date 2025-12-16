@@ -11,6 +11,8 @@ const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableE
     <div className="w-full overflow-x-auto rounded-lg border border-corporate-gray-200">
       <table
         ref={ref}
+        role="table"
+        aria-label="Data table"
         className={cn(
           'w-full text-sm caption-bottom',
           'border-collapse',

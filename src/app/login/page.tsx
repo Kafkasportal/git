@@ -8,5 +8,5 @@ export default async function LoginPage({
 }) {
   const params = await searchParams;
   const redirect = params?.redirect || '/genel';
-  return <CorporateLoginForm showCorporateBranding={true} redirectTo={redirect} />;
+  return <CorporateLoginForm redirectTo={redirect} />;
 }

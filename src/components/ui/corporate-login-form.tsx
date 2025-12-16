@@ -2,23 +2,20 @@
 // Sophisticated, Trustworthy, Memorable
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/stores/authStore';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { toast } from 'sonner';
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, Shield, CheckCircle2 } from 'lucide-react';
+import { Shield, CheckCircle2, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { OAuthButton } from '@/components/auth/OAuthButton';
+import { useCorporateLogin } from '@/hooks/useCorporateLogin';
+import {
+  LoginFormFields,
+  TwoFactorField,
+  LoginSubmitButton,
+  OAuthSection,
+} from './corporate-login-form-parts';
 
 interface CorporateLoginFormProps {
-  className?: string;
-  showCorporateBranding?: boolean;
-  redirectTo?: string;
+  readonly className?: string;
+  readonly redirectTo?: string;
 }
 
 const GeometricPattern = () => (
@@ -111,194 +108,29 @@ export function CorporateLoginForm({
   className = '',
   redirectTo = '/genel',
 }: CorporateLoginFormProps) {
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
-  const [twoFactorCode, setTwoFactorCode] = useState('');
-  const [twoFactorError, setTwoFactorError] = useState('');
-  const [focusedField, setFocusedField] = useState<string | null>(null);
-
-  const initRef = useRef(false);
-  const emailInputRef = useRef<HTMLInputElement>(null);
-  const twoFactorInputRef = useRef<HTMLInputElement>(null);
-
-  const { login, isAuthenticated, initializeAuth } = useAuthStore();
-
-  const loadRememberedEmail = () => {
-    if (globalThis.window === undefined) return;
-    
-    const rememberData = localStorage.getItem('rememberMe');
-    if (!rememberData) return;
-
-    try {
-      const parsed = JSON.parse(rememberData);
-      if (parsed.expires > Date.now()) {
-        setEmail(parsed.email);
-        setRememberMe(true);
-      } else {
-        localStorage.removeItem('rememberMe');
-      }
-    } catch {
-      localStorage.removeItem('rememberMe');
-    }
-  };
-
-  useEffect(() => {
-    if (!initRef.current) {
-      initRef.current = true;
-      loadRememberedEmail();
-      setMounted(true);
-      initializeAuth();
-    }
-  }, [initializeAuth]);
-
-  useEffect(() => {
-    if (mounted && isAuthenticated) {
-      router.push(redirectTo);
-    }
-  }, [mounted, isAuthenticated, router, redirectTo]);
-
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email) {
-      setEmailError('Email adresi gereklidir');
-      return false;
-    }
-    if (!emailRegex.test(email)) {
-      setEmailError('Geçerli bir email adresi girin');
-      return false;
-    }
-    setEmailError('');
-    return true;
-  };
-
-  const validatePassword = (password: string): boolean => {
-    if (!password) {
-      setPasswordError('Şifre gereklidir');
-      return false;
-    }
-    if (password.length < 6) {
-      setPasswordError('Şifre en az 6 karakter olmalıdır');
-      return false;
-    }
-    setPasswordError('');
-    return true;
-  };
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setEmail(value);
-    if (emailError) validateEmail(value);
-  };
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setPassword(value);
-    if (passwordError) validatePassword(value);
-  };
-
-  const saveRememberMe = (shouldRemember: boolean) => {
-    if (globalThis.window === undefined) return;
-    
-    if (shouldRemember) {
-      const rememberData = {
-        email,
-        timestamp: Date.now(),
-        expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
-      };
-      localStorage.setItem('rememberMe', JSON.stringify(rememberData));
-    } else {
-      localStorage.removeItem('rememberMe');
-    }
-  };
-
-  const handleLoginSuccess = async () => {
-    setIsLoading(false);
-    toast.success('Başarıyla giriş yaptınız', {
-      description: 'Yönlendiriliyorsunuz...',
-      duration: 2000,
-    });
-    await new Promise(resolve => setTimeout(resolve, 500));
-    router.push(redirectTo);
-  };
-
-  const getErrorMessage = (err: unknown, defaultMessage: string): string => {
-    if (err instanceof Error) return err.message;
-    if (typeof err === 'string') return err;
-    return defaultMessage;
-  };
-
-  const handleTwoFactorSubmit = async () => {
-    if (!twoFactorCode || twoFactorCode.length !== 6) {
-      setTwoFactorError('2FA kodu 6 haneli olmalıdır');
-      twoFactorInputRef.current?.focus();
-      return;
-    }
-
-    setTwoFactorError('');
-    setIsLoading(true);
-    
-    try {
-      await login(email, password, rememberMe, twoFactorCode);
-      saveRememberMe(rememberMe);
-      await handleLoginSuccess();
-    } catch (err: unknown) {
-      const errorMessage = getErrorMessage(err, '2FA kodu hatalı');
-      setTwoFactorError(errorMessage);
-      twoFactorInputRef.current?.focus();
-      setIsLoading(false);
-    }
-  };
-
-  const handleRegularLogin = async () => {
-    const isEmailValid = validateEmail(email);
-    const isPasswordValid = validatePassword(password);
-    if (!isEmailValid || !isPasswordValid) return;
-
-    setIsLoading(true);
-    
-    try {
-      await login(email, password, rememberMe);
-      saveRememberMe(rememberMe);
-      await handleLoginSuccess();
-    } catch (err: unknown) {
-      const error = err as Error & { requiresTwoFactor?: boolean };
-      
-      if (error.requiresTwoFactor) {
-        setRequiresTwoFactor(true);
-        setIsLoading(false);
-        setTimeout(() => {
-          twoFactorInputRef.current?.focus();
-        }, 100);
-        toast.info('2FA kodu gereklidir', {
-          description: 'Lütfen authenticator uygulamanızdan kodu girin',
-        });
-      } else {
-        const errorMessage = getErrorMessage(err, 'Giriş başarısız');
-        toast.error('Giriş hatası', { description: errorMessage });
-        emailInputRef.current?.focus();
-        setIsLoading(false);
-      }
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (requiresTwoFactor) {
-      await handleTwoFactorSubmit();
-      return;
-    }
-
-    await handleRegularLogin();
-  };
+  const {
+    email,
+    password,
+    showPassword,
+    rememberMe,
+    emailError,
+    passwordError,
+    isLoading,
+    requiresTwoFactor,
+    twoFactorCode,
+    twoFactorError,
+    focusedField,
+    isAuthenticated,
+    emailInputRef,
+    twoFactorInputRef,
+    setShowPassword,
+    setRememberMe,
+    setFocusedField,
+    handleEmailChange,
+    handlePasswordChange,
+    handleTwoFactorCodeChange,
+    handleSubmit,
+  } = useCorporateLogin({ redirectTo });
 
   // Redirect if already authenticated
   if (isAuthenticated) {
@@ -356,7 +188,9 @@ export function CorporateLoginForm({
                 style={{ fontFamily: 'Poppins, sans-serif' }}
               >
                 Topluluk için{' '}
-                <span className="block font-semibold text-teal-400">birlikte yönetim.</span>
+                <span className="block font-semibold text-teal-400">
+                  birlikte yönetim.
+                </span>
               </h2>
               <p className="text-slate-400 text-lg leading-relaxed mb-8" style={{ fontFamily: 'Inter, sans-serif' }}>
                 Dernek yönetimini dijitalleştiren, şeffaflık ve verimlilik odaklı profesyonel platform.
@@ -451,252 +285,34 @@ export function CorporateLoginForm({
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Email Field */}
-              <motion.div variants={itemVariants} className="space-y-2">
-                <Label
-                  htmlFor="email"
-                  className={cn(
-                    'text-sm font-medium transition-colors duration-200',
-                    focusedField === 'email' ? 'text-teal-600' : 'text-slate-700'
-                  )}
-                  style={{ fontFamily: 'Inter, sans-serif' }}
-                >
-                  E-posta Adresi
-                </Label>
-                <div className="relative group">
-                  <Mail
-                    className={cn(
-                      'absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 transition-all duration-300',
-                      focusedField === 'email' ? 'text-teal-500 scale-110' : 'text-slate-400',
-                      emailError && 'text-red-500'
-                    )}
-                  />
-                  <Input
-                    ref={emailInputRef}
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={handleEmailChange}
-                    onFocus={() => setFocusedField('email')}
-                    onBlur={() => setFocusedField(null)}
-                    placeholder="ornek@email.com"
-                    className={cn(
-                      'h-14 pl-12 pr-4 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400',
-                      'rounded-xl transition-all duration-300',
-                      'focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:shadow-lg focus:shadow-teal-500/10',
-                      'hover:border-slate-300 hover:bg-white',
-                      emailError && 'border-red-400 focus:border-red-500 focus:ring-red-500/20'
-                    )}
-                    style={{ fontFamily: 'Inter, sans-serif' }}
-                  />
-                </div>
-                {emailError && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -8, height: 0 }}
-                    animate={{ opacity: 1, y: 0, height: 'auto' }}
-                    exit={{ opacity: 0, y: -8, height: 0 }}
-                    className="text-sm text-red-500 font-medium pl-1"
-                  >
-                    {emailError}
-                  </motion.p>
-                )}
-              </motion.div>
+              <LoginFormFields
+                email={email}
+                password={password}
+                showPassword={showPassword}
+                rememberMe={rememberMe}
+                emailError={emailError}
+                passwordError={passwordError}
+                focusedField={focusedField}
+                emailInputRef={emailInputRef}
+                onEmailChange={handleEmailChange}
+                onPasswordChange={handlePasswordChange}
+                onTogglePassword={() => setShowPassword(!showPassword)}
+                onRememberMeChange={setRememberMe}
+                onFocusField={setFocusedField}
+              />
 
-              {/* Password Field */}
-              <motion.div variants={itemVariants} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label
-                    htmlFor="password"
-                    className={cn(
-                      'text-sm font-medium transition-colors duration-200',
-                      focusedField === 'password' ? 'text-teal-600' : 'text-slate-700'
-                    )}
-                    style={{ fontFamily: 'Inter, sans-serif' }}
-                  >
-                    Şifre
-                  </Label>
-                  <button
-                    type="button"
-                    className="text-sm text-teal-600 hover:text-teal-700 font-medium transition-colors hover:underline underline-offset-2"
-                    style={{ fontFamily: 'Inter, sans-serif' }}
-                  >
-                    Şifremi unuttum?
-                  </button>
-                </div>
-                <div className="relative group">
-                  <Lock
-                    className={cn(
-                      'absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 transition-all duration-300',
-                      focusedField === 'password' ? 'text-teal-500 scale-110' : 'text-slate-400',
-                      passwordError && 'text-red-500'
-                    )}
-                  />
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={handlePasswordChange}
-                    onFocus={() => setFocusedField('password')}
-                    onBlur={() => setFocusedField(null)}
-                    placeholder="••••••••"
-                    className={cn(
-                      'h-14 pl-12 pr-12 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400',
-                      'rounded-xl transition-all duration-300',
-                      'focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:shadow-lg focus:shadow-teal-500/10',
-                      'hover:border-slate-300 hover:bg-white',
-                      passwordError && 'border-red-400 focus:border-red-500 focus:ring-red-500/20'
-                    )}
-                    style={{ fontFamily: 'Inter, sans-serif' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
-                {passwordError && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -8, height: 0 }}
-                    animate={{ opacity: 1, y: 0, height: 'auto' }}
-                    className="text-sm text-red-500 font-medium pl-1"
-                  >
-                    {passwordError}
-                  </motion.p>
-                )}
-              </motion.div>
-
-              {/* 2FA Code Field */}
               {requiresTwoFactor && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: 'auto' }}
-                  transition={{ duration: 0.4 }}
-                  className="space-y-2 p-5 bg-teal-50 border border-teal-200 rounded-xl"
-                >
-                  <Label
-                    htmlFor="twoFactorCode"
-                    className="text-sm font-medium text-teal-800"
-                    style={{ fontFamily: 'Inter, sans-serif' }}
-                  >
-                    İki Faktörlü Doğrulama Kodu
-                  </Label>
-                  <Input
-                    ref={twoFactorInputRef}
-                    id="twoFactorCode"
-                    type="text"
-                    value={twoFactorCode}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-                      setTwoFactorCode(value);
-                      if (twoFactorError) setTwoFactorError('');
-                    }}
-                    placeholder="000000"
-                    maxLength={6}
-                    className={cn(
-                      'h-14 bg-white border-teal-200 text-slate-900 placeholder:text-slate-400',
-                      'rounded-xl transition-all text-center text-xl tracking-[0.5em] font-semibold',
-                      'focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20',
-                      twoFactorError && 'border-red-400 focus:border-red-500 focus:ring-red-500/20'
-                    )}
-                    style={{ fontFamily: 'Inter, sans-serif' }}
-                  />
-                  {twoFactorError && (
-                    <p className="text-sm text-red-500 font-medium">{twoFactorError}</p>
-                  )}
-                  <p className="text-xs text-teal-700 mt-2">
-                    Authenticator uygulamanızdan 6 haneli kodu girin
-                  </p>
-                </motion.div>
+                <TwoFactorField
+                  twoFactorCode={twoFactorCode}
+                  twoFactorError={twoFactorError}
+                  twoFactorInputRef={twoFactorInputRef}
+                  onCodeChange={handleTwoFactorCodeChange}
+                />
               )}
 
-              {/* Remember Me */}
-              <motion.div variants={itemVariants} className="flex items-center gap-3">
-                <Checkbox
-                  id="remember"
-                  checked={rememberMe}
-                  onCheckedChange={(c) => setRememberMe(c === true)}
-                  className="w-5 h-5 rounded border-slate-300 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500 transition-colors"
-                />
-                <label
-                  htmlFor="remember"
-                  className="text-sm text-slate-600 cursor-pointer select-none font-medium"
-                  style={{ fontFamily: 'Inter, sans-serif' }}
-                >
-                  Beni hatırla
-                </label>
-              </motion.div>
+              <LoginSubmitButton isLoading={isLoading} requiresTwoFactor={requiresTwoFactor} />
 
-              {/* Submit Button */}
-              <motion.div variants={itemVariants}>
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className={cn(
-                    'w-full h-14 font-semibold rounded-xl transition-all duration-300',
-                    'bg-gradient-to-r from-teal-500 to-teal-600',
-                    'hover:from-teal-600 hover:to-teal-700 hover:shadow-xl hover:shadow-teal-500/25',
-                    'active:scale-[0.98]',
-                    'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none',
-                    'focus:ring-4 focus:ring-teal-500/30'
-                  )}
-                  style={{ fontFamily: 'Inter, sans-serif' }}
-                >
-                  {isLoading ? (
-                    <motion.span
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="flex items-center gap-3"
-                    >
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      {requiresTwoFactor ? 'Doğrulanıyor...' : 'Giriş yapılıyor...'}
-                    </motion.span>
-                  ) : (
-                    <span className="flex items-center justify-center gap-2">
-                      {requiresTwoFactor ? 'Doğrula' : 'Giriş Yap'}
-                      <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                    </span>
-                  )}
-                </Button>
-              </motion.div>
-
-              {/* OAuth Divider */}
-              <motion.div variants={itemVariants} className="relative my-8">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200"></div>
-                </div>
-                <div className="relative flex justify-center">
-                  <span
-                    className="bg-white px-4 text-sm text-slate-400 font-medium"
-                    style={{ fontFamily: 'Inter, sans-serif' }}
-                  >
-                    veya şununla devam edin
-                  </span>
-                </div>
-              </motion.div>
-
-              {/* OAuth Buttons */}
-              <motion.div variants={itemVariants} className="grid grid-cols-3 gap-3">
-                <OAuthButton
-                  provider="google"
-                  redirectUrl={redirectTo}
-                  variant="outline"
-                  className="h-12 bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-teal-300 rounded-xl transition-all duration-300 hover:shadow-md"
-                />
-                <OAuthButton
-                  provider="github"
-                  redirectUrl={redirectTo}
-                  variant="outline"
-                  className="h-12 bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-teal-300 rounded-xl transition-all duration-300 hover:shadow-md"
-                />
-                <OAuthButton
-                  provider="microsoft"
-                  redirectUrl={redirectTo}
-                  variant="outline"
-                  className="h-12 bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-teal-300 rounded-xl transition-all duration-300 hover:shadow-md"
-                />
-              </motion.div>
+              <OAuthSection redirectTo={redirectTo} />
             </form>
 
             {/* Footer */}
@@ -722,7 +338,7 @@ export function CorporateLoginForm({
             <a href="/gizlilik-politikasi" className="text-teal-600 hover:underline">
               Gizlilik Politikası
             </a>
-            &apos;nı kabul etmiş olursunuz.
+            {' '}&apos;nı kabul etmiş olursunuz.
           </p>
         </div>
       </div>

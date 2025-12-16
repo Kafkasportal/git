@@ -5,7 +5,7 @@ import { StudentForm } from '@/components/forms/StudentForm';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock the API
-vi.mock('@/lib/api', () => ({
+vi.mock('@/lib/api/client', () => ({
   scholarshipsApi: {
     list: vi.fn().mockResolvedValue({
       success: true,
@@ -101,7 +101,7 @@ describe('StudentForm', () => {
       onSubmit,
       initialData: {
         applicant_name: 'Test Student',
-        applicant_tc_no: '12345678901',
+        applicant_tc_no: '10000000146',
         applicant_phone: '05551234567',
         university: 'Test University',
         department: 'Computer Science',
@@ -120,7 +120,7 @@ describe('StudentForm', () => {
 
     // Verify all fields are filled
     expect(screen.getByDisplayValue('Test Student')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('12345678901')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('10000000146')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Test University')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Computer Science')).toBeInTheDocument();
 
@@ -145,7 +145,7 @@ describe('StudentForm', () => {
   it('populates form with initial data', async () => {
     const initialData = {
       applicant_name: 'John Doe',
-      applicant_tc_no: '12345678901',
+      applicant_tc_no: '10000000146',
       applicant_phone: '05551234567',
       university: 'Test University',
       department: 'Computer Science',
@@ -159,7 +159,7 @@ describe('StudentForm', () => {
 
     await waitFor(() => {
       expect(screen.getByDisplayValue('John Doe')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('12345678901')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('10000000146')).toBeInTheDocument();
       expect(screen.getByDisplayValue('Test University')).toBeInTheDocument();
     });
   });

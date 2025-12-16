@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createMockAuthResponse } from '../test-utils';
-import { GET, PATCH, DELETE } from '@/app/api/users/[id]/route';
+import { GET, PUT, DELETE } from '@/app/api/users/[id]/route';
 import * as authUtils from '@/lib/api/auth-utils';
+import * as appwriteApi from '@/lib/appwrite/api';
 import {
   runGetByIdTests,
 } from '../test-utils/test-patterns';
@@ -14,58 +15,12 @@ import {
   expectErrorResponse,
 } from '../test-utils/api-test-helpers';
 
-// Mock Appwrite server
-const mockUsersInstance = {
-  get: vi.fn(),
-  update: vi.fn(),
-  delete: vi.fn(),
-  updatePrefs: vi.fn(),
-  updatePassword: vi.fn(),
-  updateName: vi.fn(),
-  updateEmail: vi.fn(),
-};
-
-vi.mock('@/lib/appwrite/server', () => ({
-  getServerClient: vi.fn(() => ({ endpoint: 'http://localhost', project: 'test' } as any)),
-}));
-
-vi.mock('node-appwrite', () => ({
-  Users: vi.fn(() => mockUsersInstance),
-}));
-
-// Mock route helpers - use actual implementation
-vi.mock('@/lib/api/route-helpers', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/api/route-helpers')>('@/lib/api/route-helpers');
-  return {
-    ...actual,
-    extractParams: vi.fn(async (params: Promise<Record<string, string>>) => {
-      const resolved = await params;
-      return resolved;
-    }),
-  };
-});
-
-// Mock user-transform
-vi.mock('@/lib/appwrite/user-transform', () => ({
-  transformAppwriteUser: vi.fn((user: unknown) => {
-    const u = user as any;
-    return {
-      id: u.$id || 'test-id',
-      email: u.email || 'test@example.com',
-      name: u.name || 'Test User',
-      role: u.prefs?.role || 'Personel',
-      permissions: u.prefs?.permissions ? JSON.parse(u.prefs.permissions) : [],
-      createdAt: u.$createdAt || new Date().toISOString(),
-      updatedAt: u.$updatedAt || new Date().toISOString(),
-      emailVerification: u.emailVerification ?? true,
-      phoneVerification: u.phoneVerification ?? false,
-    };
-  }),
-  normalizeOptionalPermissions: vi.fn((perms: unknown) => perms),
-  buildUserPreferences: vi.fn((current: unknown, updates: unknown) => ({
-    ...(current as object),
-    ...(updates as object),
-  })),
+vi.mock('@/lib/appwrite/api', () => ({
+  appwriteUsers: {
+    get: vi.fn(),
+    update: vi.fn(),
+    remove: vi.fn(),
+  },
 }));
 
 // Mock auth
@@ -104,7 +59,7 @@ vi.mock('@/lib/logger', () => ({
 // Use test pattern for GET by ID
 runGetByIdTests(
   { GET },
-  mockUsersInstance.get as (id: string) => Promise<unknown>,
+  appwriteApi.appwriteUsers.get as (id: string) => Promise<unknown>,
   'users',
   {
     baseUrl: 'http://localhost/api/users',
@@ -134,8 +89,7 @@ describe('GET /api/users/[id] - Additional tests', () => {
   });
 });
 
-// Use test pattern for PATCH update
-describe('PATCH /api/users/[id]', () => {
+describe('PUT /api/users/[id]', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(authUtils.requireAuthenticatedUser).mockResolvedValue({
@@ -146,15 +100,15 @@ describe('PATCH /api/users/[id]', () => {
 
   it('updates users successfully', async () => {
     const updateData = { name: 'Updated User', email: 'updated@example.com' };
-    const updatedUser = { $id: 'test-id', ...updateData, prefs: { role: 'Admin' } };
-    mockUsersInstance.get.mockResolvedValue(updatedUser);
+    const updatedUser = { _id: 'test-id', ...updateData };
+    vi.mocked(appwriteApi.appwriteUsers.update).mockResolvedValue(updatedUser as unknown);
 
     const request = createTestRequest('http://localhost/api/users/test-id', {
-      method: 'PATCH',
+      method: 'PUT',
       body: updateData,
     });
     const params = createTestParams({ id: 'test-id' });
-    const response = await PATCH(request, { params });
+    const response = await PUT(request, { params });
     const data = await parseJsonResponse<{ success?: boolean; data?: unknown; message?: string }>(response);
 
     expectStatus(response, 200);
@@ -163,14 +117,14 @@ describe('PATCH /api/users/[id]', () => {
   });
 
   it('handles update errors gracefully', async () => {
-    mockUsersInstance.get.mockRejectedValue(new Error('Database error'));
+    vi.mocked(appwriteApi.appwriteUsers.update).mockRejectedValue(new Error('Database error'));
 
     const request = createTestRequest('http://localhost/api/users/test-id', {
-      method: 'PATCH',
+      method: 'PUT',
       body: { name: 'Updated User' },
     });
     const params = createTestParams({ id: 'test-id' });
-    const response = await PATCH(request, { params });
+    const response = await PUT(request, { params });
     const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(response);
 
     expectStatus(response, 500);
@@ -188,8 +142,8 @@ describe('DELETE /api/users/[id]', () => {
     });
   });
 
-  it('deletes users successfully', async () => {
-    mockUsersInstance.delete.mockResolvedValue(undefined);
+	  it('deletes users successfully', async () => {
+	    vi.mocked(appwriteApi.appwriteUsers.remove).mockResolvedValue(undefined);
 
     const request = createTestRequest('http://localhost/api/users/test-id', {
       method: 'DELETE',
@@ -204,7 +158,7 @@ describe('DELETE /api/users/[id]', () => {
   });
 
   it('handles delete errors gracefully', async () => {
-    mockUsersInstance.delete.mockRejectedValue(new Error('Database error'));
+    vi.mocked(appwriteApi.appwriteUsers.remove).mockRejectedValue(new Error('Database error'));
 
     const request = createTestRequest('http://localhost/api/users/test-id', {
       method: 'DELETE',

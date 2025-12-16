@@ -19,6 +19,12 @@ import React, {
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import logger from "@/lib/logger";
+import type {
+  ThemeColors,
+  ThemeLayout,
+  ThemePreset,
+  ThemeTypography,
+} from "@/lib/validations/theme";
 import { useAuthStore } from "@/stores/authStore";
 import { usePathname } from "next/navigation";
 
@@ -34,9 +40,11 @@ export interface AllSettings {
   [category: string]: CategorySettings;
 }
 
-// Theme configuration - Imported from validations to avoid duplication
-import type { ThemeColors, ThemeTypography, ThemeLayout, ThemePreset } from '@/lib/validations/theme';
-export type { ThemeColors, ThemeTypography, ThemeLayout, ThemePreset };
+export type { ThemeColors, ThemeLayout, ThemePreset, ThemeTypography };
+
+// Type aliases for theme modes
+type ThemeMode = "light" | "dark" | "auto";
+type ResolvedThemeMode = "light" | "dark";
 
 // Settings Context interface
 export interface SettingsContextValue {
@@ -57,9 +65,9 @@ export interface SettingsContextValue {
   setTheme: (themeName: string) => Promise<void>;
 
   // Theme mode (light/dark/auto)
-  themeMode: "light" | "dark" | "auto";
-  setThemeMode: (mode: "light" | "dark" | "auto") => void;
-  resolvedThemeMode: "light" | "dark"; // actual computed mode
+  themeMode: ThemeMode;
+  setThemeMode: (mode: ThemeMode) => void;
+  resolvedThemeMode: ResolvedThemeMode;
 
   // Refresh settings
   refreshSettings: () => void;
@@ -71,7 +79,7 @@ export interface SettingsContextValue {
  * Convert camelCase to kebab-case CSS variable name
  */
 function toKebabCase(str: string): string {
-  return str.replace(/([A-Z])/g, "-$1").toLowerCase();
+  return str.replaceAll(/([A-Z])/g, "-$1").toLowerCase();
 }
 
 /**
@@ -127,12 +135,12 @@ function applyThemeToDocument(theme: ThemePreset, resolvedMode: "light" | "dark"
 /**
  * Initialize theme mode from localStorage
  */
-function getInitialThemeMode(): "light" | "dark" | "auto" {
-  if (typeof window === "undefined") return "light";
+function getInitialThemeMode(): ThemeMode {
+  if (globalThis.window === undefined) return "light";
   
-  const saved = localStorage.getItem("theme-mode");
+  const saved = globalThis.window.localStorage.getItem("theme-mode");
   if (saved === "light" || saved === "dark" || saved === "auto") {
-    return saved;
+    return saved as ThemeMode;
   }
   return "light";
 }
@@ -141,10 +149,10 @@ const SettingsContext = createContext<SettingsContextValue | undefined>(
   undefined,
 );
 
-export function SettingsProvider({ children }: { children: React.ReactNode }) {
+export function SettingsProvider({ children }: { readonly children: React.ReactNode }) {
   const [currentTheme, setCurrentTheme] = useState<ThemePreset | null>(null);
-  const [themeMode, setThemeModeState] = useState<"light" | "dark" | "auto">(getInitialThemeMode);
-  const [resolvedThemeMode, setResolvedThemeMode] = useState<"light" | "dark">("light");
+  const [themeMode, setThemeModeState] = useState<ThemeMode>(getInitialThemeMode);
+  const [resolvedThemeMode, setResolvedThemeMode] = useState<ResolvedThemeMode>("light");
   
   // Check if user is authenticated - only fetch settings for authenticated users
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -242,7 +250,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (themeMode === "auto") {
       // Listen to system theme changes
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const mediaQuery = globalThis.window.matchMedia("(prefers-color-scheme: dark)");
       const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
         setResolvedThemeMode(e.matches ? "dark" : "light");
       };

@@ -1,0 +1,32 @@
+{
+  "enabled": true,
+  "name": "Sync Docs on Source Changes",
+  "description": "Automatically updates README.md and /docs folder when source files change to keep documentation in sync with codebase",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/**/*.ts",
+      "src/**/*.tsx",
+      "src/**/*.js",
+      "src/**/*.jsx",
+      "app/**/*.ts",
+      "app/**/*.tsx",
+      "lib/**/*.ts",
+      "lib/**/*.tsx",
+      "components/**/*.ts",
+      "components/**/*.tsx",
+      "hooks/**/*.ts",
+      "hooks/**/*.tsx",
+      "stores/**/*.ts",
+      "types/**/*.ts",
+      "package.json",
+      "tsconfig.json",
+      "next.config.ts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Review the changes made to the source files and update the relevant documentation in README.md or the /docs folder. Include: 1) Summary of what changed, 2) Updated API endpoints if applicable, 3) New components or hooks if added, 4) Configuration changes if any, 5) Updated setup instructions if dependencies changed. Keep documentation clear, concise, and in sync with the actual codebase."
+  }
+}

@@ -61,4 +61,4 @@ Button.displayName = 'Button';
 
 export { Button };
 export type { ButtonProps };
-export { buttonVariants };
+export { buttonVariants } from './button-variants';

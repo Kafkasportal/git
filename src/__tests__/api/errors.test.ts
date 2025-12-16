@@ -89,7 +89,7 @@ describe('GET /api/errors', () => {
     const mockErrors = createMockDocuments([
       {
         _id: '1',
-        status: 'new',
+        status: 'open',
         error_code: 'ERR001',
       },
     ]);
@@ -99,7 +99,7 @@ describe('GET /api/errors', () => {
       total: mockErrors.length,
     } as Models.DocumentList<Models.Document>);
 
-    const request = new NextRequest('http://localhost/api/errors?status=new');
+    const request = new NextRequest('http://localhost/api/errors?status=open');
     const response = await GET(request);
     await response.json();
 
@@ -107,7 +107,7 @@ describe('GET /api/errors', () => {
     expect(vi.mocked(appwriteApi.appwriteErrors.list)).toHaveBeenCalledWith(
       expect.objectContaining({
         filters: expect.objectContaining({
-          status: 'new',
+          status: 'open',
         }),
       })
     );

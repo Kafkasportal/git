@@ -35,7 +35,7 @@ describe('AuthStore', () => {
             removeItem: vi.fn(),
             clear: vi.fn(),
         };
-        Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+        Object.defineProperty(globalThis.window, 'localStorage', { value: localStorageMock });
 
         // Reset store state
         useAuthStore.setState({
@@ -531,7 +531,7 @@ describe('Login Flow', () => {
             removeItem: vi.fn(),
             clear: vi.fn(),
         };
-        Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+        Object.defineProperty(globalThis.window, 'localStorage', { value: localStorageMock });
 
         useAuthStore.setState({
             user: null,
@@ -817,7 +817,7 @@ describe('InitializeAuth Flow', () => {
             removeItem: vi.fn(),
             clear: vi.fn(),
         };
-        Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+        Object.defineProperty(globalThis.window, 'localStorage', { value: localStorageMock });
 
         useAuthStore.setState({
             user: null,
@@ -1000,7 +1000,7 @@ describe('AuthStore SSR & Storage Fallback', () => {
             removeItem: vi.fn(),
             clear: vi.fn(),
         };
-        Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+        Object.defineProperty(globalThis.window, 'localStorage', { value: localStorageMock });
 
         (globalThis.fetch as ReturnType<typeof vi.fn>)
             .mockResolvedValueOnce({
@@ -1031,7 +1031,7 @@ describe('AuthStore SSR & Storage Fallback', () => {
             removeItem: vi.fn(),
             clear: vi.fn(),
         };
-        Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+        Object.defineProperty(globalThis.window, 'localStorage', { value: localStorageMock });
 
         (globalThis.fetch as ReturnType<typeof vi.fn>)
             .mockResolvedValueOnce({
@@ -1066,7 +1066,7 @@ describe('Logout Edge Cases', () => {
             removeItem: vi.fn(),
             clear: vi.fn(),
         };
-        Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+        Object.defineProperty(globalThis.window, 'localStorage', { value: localStorageMock });
     });
 
     it('should redirect to login when no callback provided', async () => {

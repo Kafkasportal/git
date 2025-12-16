@@ -30,5 +30,5 @@ const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
 Badge.displayName = 'Badge';
 
 export { Badge };
-export { badgeVariants };
 export type { BadgeProps };
+export { badgeVariants } from './badge-variants';

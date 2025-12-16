@@ -60,8 +60,9 @@ export function useDashboardRealtime(
 
     // Extract collection ID and event type from realtime event
     const extractCollectionInfo = (events: string[]): { collectionId: string; eventType: string } | null => {
+        const regex = /collections\.(\w+)\.documents\.(\w+)$/;
         for (const event of events) {
-            const match = event.match(/collections\.(\w+)\.documents\.(\w+)$/);
+            const match = regex.exec(event);
             if (match) {
                 return {
                     collectionId: match[1],
