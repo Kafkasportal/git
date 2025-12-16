@@ -16,9 +16,8 @@ import { cn } from '@/lib/utils';
 import { OAuthButton } from '@/components/auth/OAuthButton';
 
 interface CorporateLoginFormProps {
-  className?: string;
-  showCorporateBranding?: boolean;
-  redirectTo?: string;
+  readonly className?: string;
+  readonly redirectTo?: string;
 }
 
 const GeometricPattern = () => (
@@ -133,13 +132,13 @@ export function CorporateLoginForm({
 
   const loadRememberedEmail = () => {
     if (globalThis.window === undefined) return;
-    
+
     const rememberData = localStorage.getItem('rememberMe');
     if (!rememberData) return;
 
     try {
       const parsed = JSON.parse(rememberData);
-      if (parsed.expires > Date.now()) {
+      if (parsed?.expires > Date.now()) {
         setEmail(parsed.email);
         setRememberMe(true);
       } else {
@@ -206,7 +205,7 @@ export function CorporateLoginForm({
 
   const saveRememberMe = (shouldRemember: boolean) => {
     if (globalThis.window === undefined) return;
-    
+
     if (shouldRemember) {
       const rememberData = {
         email,
@@ -244,7 +243,7 @@ export function CorporateLoginForm({
 
     setTwoFactorError('');
     setIsLoading(true);
-    
+
     try {
       await login(email, password, rememberMe, twoFactorCode);
       saveRememberMe(rememberMe);
@@ -257,34 +256,42 @@ export function CorporateLoginForm({
     }
   };
 
+  const handleTwoFactorError = () => {
+    setRequiresTwoFactor(true);
+    setIsLoading(false);
+    setTimeout(() => {
+      twoFactorInputRef.current?.focus();
+    }, 100);
+    toast.info('2FA kodu gereklidir', {
+      description: 'Lütfen authenticator uygulamanızdan kodu girin',
+    });
+  };
+
+  const handleLoginError = (err: unknown) => {
+    const errorMessage = getErrorMessage(err, 'Giriş başarısız');
+    toast.error('Giriş hatası', { description: errorMessage });
+    emailInputRef.current?.focus();
+    setIsLoading(false);
+  };
+
   const handleRegularLogin = async () => {
     const isEmailValid = validateEmail(email);
     const isPasswordValid = validatePassword(password);
     if (!isEmailValid || !isPasswordValid) return;
 
     setIsLoading(true);
-    
+
     try {
       await login(email, password, rememberMe);
       saveRememberMe(rememberMe);
       await handleLoginSuccess();
     } catch (err: unknown) {
       const error = err as Error & { requiresTwoFactor?: boolean };
-      
+
       if (error.requiresTwoFactor) {
-        setRequiresTwoFactor(true);
-        setIsLoading(false);
-        setTimeout(() => {
-          twoFactorInputRef.current?.focus();
-        }, 100);
-        toast.info('2FA kodu gereklidir', {
-          description: 'Lütfen authenticator uygulamanızdan kodu girin',
-        });
+        handleTwoFactorError();
       } else {
-        const errorMessage = getErrorMessage(err, 'Giriş başarısız');
-        toast.error('Giriş hatası', { description: errorMessage });
-        emailInputRef.current?.focus();
-        setIsLoading(false);
+        handleLoginError(err);
       }
     }
   };
@@ -356,7 +363,9 @@ export function CorporateLoginForm({
                 style={{ fontFamily: 'Poppins, sans-serif' }}
               >
                 Topluluk için{' '}
-                <span className="block font-semibold text-teal-400">birlikte yönetim.</span>
+                <span className="block font-semibold text-teal-400">
+                  birlikte yönetim.
+                </span>
               </h2>
               <p className="text-slate-400 text-lg leading-relaxed mb-8" style={{ fontFamily: 'Inter, sans-serif' }}>
                 Dernek yönetimini dijitalleştiren, şeffaflık ve verimlilik odaklı profesyonel platform.
@@ -588,7 +597,7 @@ export function CorporateLoginForm({
                     type="text"
                     value={twoFactorCode}
                     onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                      const value = e.target.value.replaceAll(/\D/g, '').slice(0, 6);
                       setTwoFactorCode(value);
                       if (twoFactorError) setTwoFactorError('');
                     }}
@@ -702,8 +711,7 @@ export function CorporateLoginForm({
             {/* Footer */}
             <motion.div variants={itemVariants} className="mt-10 text-center">
               <p className="text-sm text-slate-500" style={{ fontFamily: 'Inter, sans-serif' }}>
-                Hesabınız yok mu?{' '}
-                <a href="/kayit" className="text-teal-600 hover:text-teal-700 font-semibold hover:underline underline-offset-2">
+                Hesabınız yok mu?{' '}<a href="/kayit" className="text-teal-600 hover:text-teal-700 font-semibold hover:underline underline-offset-2">
                   Kayıt olun
                 </a>
               </p>
