@@ -169,7 +169,7 @@ const baseConfig: NextConfig = {
               "base-uri 'self'",
               "form-action 'self'",
               "img-src 'self' data: blob: https:",
-              "font-src 'self' data:",
+              "font-src 'self' data: https://fonts.gstatic.com",
               "object-src 'none'",
               "frame-ancestors 'none'",
               // Stricter script policy - only allow self and inline
@@ -180,7 +180,7 @@ const baseConfig: NextConfig = {
               // Network access control
               isDevelopment
                 ? "connect-src 'self' ws: wss: http: https:" // Dev: HMR support
-                : "connect-src 'self' https:", // Prod: Only HTTPS
+                : "connect-src 'self' https: https://fonts.googleapis.com", // Prod: Only HTTPS + Google Fonts
               // Additional security directives (production only)
               ...(!isDevelopment ? ['upgrade-insecure-requests', 'block-all-mixed-content'] : []),
             ].join('; '),

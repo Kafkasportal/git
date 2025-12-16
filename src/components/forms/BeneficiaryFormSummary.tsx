@@ -1,6 +1,6 @@
 'use client';
 
-import { BeneficiaryCategory, FundRegion, FileConnection } from '@/types/beneficiary';
+import { BeneficiaryCategory, FundRegion } from '@/types/beneficiary';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
