@@ -2,10 +2,13 @@
 // Sophisticated, Trustworthy, Memorable
 'use client';
 
+import { useRouter } from 'next/navigation';
+import { useState, useRef, useEffect } from 'react';
 import { Shield, CheckCircle2, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { useCorporateLogin } from '@/hooks/useCorporateLogin';
+import { useAuthStore } from '@/stores/authStore';
 import {
   LoginFormFields,
   TwoFactorField,
@@ -201,6 +204,12 @@ export function CorporateLoginForm({
     const value = e.target.value;
     setPassword(value);
     if (passwordError) validatePassword(value);
+  };
+
+  const handleTwoFactorCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+    setTwoFactorCode(value);
+    if (twoFactorError) setTwoFactorError('');
   };
 
   const saveRememberMe = (shouldRemember: boolean) => {

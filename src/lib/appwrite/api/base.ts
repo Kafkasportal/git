@@ -4,7 +4,7 @@
  */
 
 import { ID, Query } from "appwrite";
-import { getServerClient, isServerClientReady } from "../server";
+import { getServerClient } from "../server";
 import { appwriteConfig, type CollectionName } from "../config";
 import logger from "@/lib/logger";
 import { Databases } from "node-appwrite";
