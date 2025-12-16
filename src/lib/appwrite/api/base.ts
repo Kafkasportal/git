@@ -4,7 +4,7 @@
  */
 
 import { ID, Query } from "appwrite";
-import { serverClient } from "../server";
+import { getServerClient, isServerClientReady } from "../server";
 import { appwriteConfig, type CollectionName } from "../config";
 import logger from "@/lib/logger";
 import { Databases } from "node-appwrite";
@@ -128,10 +128,8 @@ export function buildQueries(params?: AppwriteQueryParams): string[] {
  * Get databases instance
  */
 export function getDatabases(): Databases {
-  if (!serverClient) {
-    throw new Error("Appwrite server client not initialized");
-  }
-  return new Databases(serverClient);
+  // Use lazy initialization via getServerClient()
+  return new Databases(getServerClient());
 }
 
 // ============================================================================

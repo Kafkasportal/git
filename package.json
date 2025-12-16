@@ -27,7 +27,8 @@
     "clean:cache": "rm -rf .next/cache .tsbuildinfo",
     "clean:temp": "node -e \"const fs=require('fs');const path=require('path');const files=fs.readdirSync('.').filter(f=>/^(lint-|.*-output\\.txt|.*-current\\.txt|test-|typecheck-)/.test(f)&&f.endsWith('.txt'));files.forEach(f=>{try{fs.unlinkSync(f);}catch(e){}});\"",
     "lint:fix": "eslint --fix --max-warnings 0 .",
-    "lint:check": "eslint --max-warnings 0 ."
+    "lint:check": "eslint --max-warnings 0 .",
+    "check:appwrite": "tsx scripts/check-appwrite-config.ts"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",

@@ -245,7 +245,7 @@ export function createAppwriteCrudOperations<T extends AppwriteDocument>(
 export const appwriteBeneficiaries = createAppwriteCrudOperations<AppwriteDocument>('beneficiaries');
 export const appwriteDonations = createAppwriteCrudOperations<AppwriteDocument>('donations');
 export const appwriteTasks = createAppwriteCrudOperations<AppwriteDocument>('tasks');
-export const appwriteUsers = createAppwriteCrudOperations<AppwriteDocument>('users');
+// Note: appwriteUsers is exported from ./api/users.ts (specific implementation)
 export const appwriteMeetings = createAppwriteCrudOperations<AppwriteDocument>('meetings');
 export const appwriteMessages = createAppwriteCrudOperations<AppwriteDocument>('messages');
 export const appwriteAidApplications = createAppwriteCrudOperations<AppwriteDocument>('aidApplications');

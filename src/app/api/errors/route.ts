@@ -102,8 +102,6 @@ async function postErrorHandler(request: NextRequest) {
       severity: data.severity,
     });
 
-    // Create error using unified backend
-    // Create error using Appwrite
     // Ensure message field is always present (required by Appwrite errors collection)
     // Use title first, then description, then fallback - ensure it's never empty
     const errorMessage = (data.title?.trim() || data.description?.trim() || 'Unknown error').substring(0, 500);
@@ -132,9 +130,29 @@ async function postErrorHandler(request: NextRequest) {
     // Based on PATCH endpoint, these fields might be accepted: category, description, tags, user_id, etc.
     // But we'll be conservative and only add them if they don't cause errors
     
-    const result = await appwriteErrors.create(appwriteData);
-    const typedResult = result as { $id?: string; id?: string };
-    const errorId = typedResult.$id || typedResult.id || '';
+    let errorId: string;
+    try {
+      // Create error using Appwrite
+      const result = await appwriteErrors.create(appwriteData);
+      const typedResult = result as { $id?: string; id?: string };
+      errorId = typedResult.$id || typedResult.id || '';
+    } catch (appwriteError) {
+      // If Appwrite is not configured, log the error but don't fail the request
+      // This allows error tracking to work even when Appwrite is not set up
+      const errorMsg = appwriteError instanceof Error ? appwriteError.message : 'Unknown error';
+      if (errorMsg.includes('not initialized') || errorMsg.includes('not configured')) {
+        logger.warn('Appwrite not configured - error logged to console only', {
+          error_code: data.error_code,
+          title: data.title,
+          severity: data.severity,
+        });
+        // Return success with a mock ID to prevent client-side error loops
+        errorId = `local_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      } else {
+        // Re-throw other errors
+        throw appwriteError;
+      }
+    }
 
     // Send notification for critical/high severity errors
     if (data.severity === 'critical' || data.severity === 'high') {
@@ -266,7 +284,6 @@ async function getErrorsHandler(request: NextRequest) {
       limit,
     });
 
-    // Fetch errors using unified backend
     // Fetch errors using Appwrite
     const params: Record<string, unknown> = {};
     if (status) params.status = status;
@@ -278,8 +295,25 @@ async function getErrorsHandler(request: NextRequest) {
     if (limit) params.limit = parseInt(limit, 10);
     if (skip) params.skip = parseInt(skip, 10);
 
-    const response = await appwriteErrors.list({ filters: params });
-    const result = response.documents || [];
+    let result: unknown[] = [];
+    try {
+      const response = await appwriteErrors.list({ filters: params });
+      result = response.documents || [];
+    } catch (appwriteError) {
+      const errorMsg = appwriteError instanceof Error ? appwriteError.message : 'Unknown error';
+      if (errorMsg.includes('not initialized') || errorMsg.includes('not configured')) {
+        logger.warn('Appwrite not configured - cannot list errors');
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Appwrite yapılandırması eksik. Lütfen yönetici ile iletişime geçin.',
+            code: 'CONFIG_ERROR',
+          },
+          { status: 503 }
+        );
+      }
+      throw appwriteError;
+    }
 
     return NextResponse.json({
       success: true,

@@ -33,16 +33,18 @@ export {
 
 // Server-side
 export {
-  serverClient,
-  serverDatabases,
-  serverStorage,
-  serverUsers,
-  serverAccount,
   isServerClientReady,
   getServerClient,
   getServerDatabases,
   getServerStorage,
   getServerUsers,
+  getServerAccount,
+  // Deprecated: use getter functions instead
+  serverClient,
+  serverDatabases,
+  serverStorage,
+  serverUsers,
+  serverAccount,
 } from './server';
 
 // API Client
@@ -52,7 +54,7 @@ export {
   appwriteBeneficiaries,
   appwriteDonations,
   appwriteTasks,
-  appwriteUsers,
+  // Note: appwriteUsers is exported from ./api (specific implementation)
   appwriteMeetings,
   appwriteMessages,
   appwriteAidApplications,
@@ -67,6 +69,8 @@ export {
   appwriteSystemSettings,
   appwriteParameters,
 } from './api-client';
+// Export appwriteUsers from the specific implementation (in api/users.ts)
+export { appwriteUsers } from './api/users';
 export type { AppwriteDocument, AppwriteCrudOperations } from './api-client';
 
 // Auth

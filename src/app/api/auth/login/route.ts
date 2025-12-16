@@ -56,7 +56,25 @@ function checkAccountLockout(email: string): NextResponse | null {
  * Find user by email in Appwrite
  */
 async function findUserByEmail(email: string): Promise<{ user: any; error: NextResponse | null }> {
-  const serverClient = getServerClient();
+  let serverClient;
+  try {
+    serverClient = getServerClient();
+  } catch (error) {
+    logger.error('Appwrite server client not configured', { error });
+    return {
+      user: null,
+      error: NextResponse.json(
+        {
+          success: false,
+          error: 'Sunucu yapılandırma hatası. Lütfen yönetici ile iletişime geçin.',
+          message: 'Sunucu yapılandırma hatası. Lütfen yönetici ile iletişime geçin.',
+          code: 'CONFIG_ERROR',
+        },
+        { status: 500 },
+      ),
+    };
+  }
+
   const serverUsers = new Users(serverClient);
   const emailLower = email.toLowerCase().trim();
 
@@ -175,6 +193,29 @@ async function verifyPassword(email: string, password: string): Promise<{ succes
 
     if (!sessionResponse.ok) {
       const errorData = await sessionResponse.json().catch(() => ({}));
+      
+      // Check for Appwrite configuration errors
+      if (sessionResponse.status === 404 && errorData.type === "project_not_found") {
+        logger.error("Appwrite project not found - configuration error", {
+          endpoint,
+          projectId: projectId ? `${projectId.substring(0, 8)}...` : "[missing]",
+          error: errorData.message,
+        });
+        
+        return {
+          success: false,
+          error: NextResponse.json(
+            {
+              success: false,
+              error: "Sunucu yapılandırma hatası: Appwrite projesi bulunamadı. Lütfen yönetici ile iletişime geçin.",
+              message: "Sunucu yapılandırma hatası: Appwrite projesi bulunamadı. Lütfen yönetici ile iletişime geçin.",
+              code: "PROJECT_NOT_FOUND",
+            },
+            { status: 500 },
+          ),
+        };
+      }
+      
       recordLoginAttempt(email, false);
       const failedAttempts = getFailedAttemptCount(email);
       const remainingAttempts = LOCKOUT_CONFIG.maxAttempts - failedAttempts;
