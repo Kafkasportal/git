@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Loader2, X, ChevronRight, ChevronLeft, Plus, Trash2 } from 'lucide-react';
@@ -24,10 +23,12 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
 
-import { BeneficiaryCategory, FundRegion, FileConnection, Gender, MaritalStatus, EducationStatus, Religion } from '@/types/beneficiary';
-import { beneficiarySchema, BeneficiaryFormData } from '@/lib/validations/beneficiary';
+import { BeneficiaryCategory, FundRegion, Gender, MaritalStatus, EducationStatus, Religion, BeneficiaryStatus } from '@/types/beneficiary';
+import type { BeneficiaryFormData } from '@/lib/validations/beneficiary';
 import { beneficiaries } from '@/lib/api/crud-factory';
 import type { BeneficiaryDocument, CreateDocumentData } from '@/types/database';
+import { getCities, getDistrictsByCity } from '@/lib/services/address-service';
+import { BeneficiaryFormSummary } from './BeneficiaryFormSummary';
 
 interface BeneficiaryRegistrationFormProps {
   open: boolean;
@@ -91,35 +92,18 @@ const religionLabels: Record<Religion, string> = {
   [Religion.DIGER]: 'Diğer',
 };
 
-const majorCities = [
-  'İstanbul',
-  'Ankara',
-  'İzmir',
-  'Gaziantep',
-  'Şanlıurfa',
-  'Kayseri',
-  'Konya',
-  'Adana',
-  'Mersin',
-  'Diyarbakır',
-  'Antalya',
-  'Kocaeli',
-  'Hatay',
-  'Malatya',
-  'Batman',
-  'Mardin',
-  'Diğer',
-];
+// Get available cities from service
+const availableCities = getCities();
 
 export function BeneficiaryRegistrationForm({ open, onOpenChange }: BeneficiaryRegistrationFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
   const [emergencyContacts, setEmergencyContacts] = useState<Array<{ name: string; relationship: string; phone: string }>>([]);
+  const [availableDistricts, setAvailableDistricts] = useState<string[]>([]);
 
   const methods = useForm<BeneficiaryFormData>({
-    resolver: zodResolver(beneficiarySchema),
-    mode: 'onChange',
+    mode: 'onBlur',
     defaultValues: {
       firstName: '',
       lastName: '',
@@ -131,8 +115,9 @@ export function BeneficiaryRegistrationForm({ open, onOpenChange }: BeneficiaryR
       fundRegion: undefined,
       fileConnection: undefined,
       fileNumber: '',
-      mobilePhone: '',
-      email: '',
+      mobilePhone: '+90 000 000 0000',
+      landlinePhone: '+90 000 000 0000',
+      email: 'default@example.com',
       country: undefined,
       city: undefined,
       district: '',
@@ -154,7 +139,7 @@ export function BeneficiaryRegistrationForm({ open, onOpenChange }: BeneficiaryR
       hasChronicIllness: false,
       hasDisability: false,
       has_health_insurance: false,
-      status: 'TASLAK',
+      status: BeneficiaryStatus.TASLAK,
     },
   });
 
@@ -162,6 +147,16 @@ export function BeneficiaryRegistrationForm({ open, onOpenChange }: BeneficiaryR
 
   const watchedCategory = watch('category');
   const watchedFundRegion = watch('fundRegion');
+
+  // Determine if showing refugee-specific fields
+  const isRefugee = useMemo(() => {
+    return watchedCategory?.includes('MULTECI') || false;
+  }, [watchedCategory]);
+
+  // Determine if showing child/youth specific fields
+  const isChildOrYouth = useMemo(() => {
+    return watchedCategory?.includes('COCUK') || watchedCategory?.includes('GENCLIK') || false;
+  }, [watchedCategory]);
 
   const tabs = useMemo(() => [
     { id: 'basic', label: 'Temel Bilgiler', description: 'Kişisel bilgiler ve iletişim' },
@@ -269,7 +264,7 @@ export function BeneficiaryRegistrationForm({ open, onOpenChange }: BeneficiaryR
         contact_preference: data.contactPreference,
         
         // Status
-        status: 'AKTIF',
+        status: 'AKTIF' as const,
       };
 
       const result = await beneficiaries.create(beneficiaryData);
@@ -325,7 +320,7 @@ export function BeneficiaryRegistrationForm({ open, onOpenChange }: BeneficiaryR
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+      <DialogContent className="max-w-6xl max-h-[95vh] overflow-hidden bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between text-slate-900 dark:text-slate-100">
             <span>İhtiyaç Sahibi Kayıt Formu</span>
@@ -336,33 +331,34 @@ export function BeneficiaryRegistrationForm({ open, onOpenChange }: BeneficiaryR
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Progress indicator */}
-            <div className="px-4 sm:px-6">
-              <div className="flex gap-2">
-                {tabs.map((tab, index) => (
-                  <div key={tab.id} className="flex items-center flex-1">
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`flex-1 text-center py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                        activeTab === tab.id
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                    {index < tabs.length - 1 && <div className="w-1 h-1 bg-slate-300 dark:bg-slate-600 rounded-full mx-1" />}
-                  </div>
-                ))}
+          <form onSubmit={methods.handleSubmit(onSubmit)} className="flex gap-6 w-full">
+            {/* Main form section */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {/* Progress indicator */}
+              <div className="px-4 sm:px-6 pb-4 border-b border-slate-200 dark:border-slate-700">
+                <div className="flex gap-2">
+                  {tabs.map((tab, index) => (
+                    <div key={tab.id} className="flex items-center flex-1">
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex-1 text-center py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+                          activeTab === tab.id
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                      {index < tabs.length - 1 && <div className="w-1 h-1 bg-slate-300 dark:bg-slate-600 rounded-full mx-1" />}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <Separator />
-
-            {/* Tab content */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              {/* Tab content */}
+              <div className="flex-1 overflow-y-auto">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full">
               <TabsContent value="basic" className="space-y-6 px-4 sm:px-6">
                 <div className="space-y-4">
                   <h3 className="font-semibold text-lg text-slate-900 dark:text-slate-100">Temel Bilgiler</h3>
@@ -387,6 +383,21 @@ export function BeneficiaryRegistrationForm({ open, onOpenChange }: BeneficiaryR
                     </Select>
                     {errors.category && <p className="text-sm text-red-500">{errors.category.message}</p>}
                   </div>
+
+                  {/* Category Info Alert */}
+                  {watchedCategory && (
+                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-700 dark:text-blue-300">
+                      {isRefugee && (
+                        <p>🏠 <strong>Mülteci kategorisi:</strong> Ek kimlik ve geçiş bilgileri talep edilecektir.</p>
+                      )}
+                      {isChildOrYouth && (
+                        <p>👶 <strong>Çocuk/Gençlik kategorisi:</strong> Vasi ve eğitim bilgileri talep edilecektir.</p>
+                      )}
+                      {!isRefugee && !isChildOrYouth && (
+                        <p>✓ Standart ihtiyaç sahibi formu uygulanacaktır.</p>
+                      )}
+                    </div>
+                  )}
 
                   {/* Ad Soyad */}
                   <div className="grid grid-cols-2 gap-4">
@@ -563,15 +574,22 @@ export function BeneficiaryRegistrationForm({ open, onOpenChange }: BeneficiaryR
                     <Label>Şehir</Label>
                     <Select
                       value={watch('city') || ''}
-                      onValueChange={(value) => setValue('city', value as City, { shouldValidate: true })}
+                      onValueChange={(value) => {
+                        setValue('city', value as any, { shouldValidate: true });
+                        // Load districts for selected city
+                        const districts = getDistrictsByCity(value);
+                        setAvailableDistricts(districts);
+                        // Clear district field when city changes
+                        setValue('district', '');
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Şehir seçiniz" />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.entries(cityLabels).map(([value, label]) => (
-                          <SelectItem key={value} value={value}>
-                            {label}
+                        {availableCities.map((city) => (
+                          <SelectItem key={city.value} value={city.value}>
+                            {city.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -581,11 +599,24 @@ export function BeneficiaryRegistrationForm({ open, onOpenChange }: BeneficiaryR
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>İlçe</Label>
-                      <Input
-                        {...methods.register('district')}
-                        placeholder="İlçe"
-                        disabled={isLoading}
-                      />
+                      <Select
+                        value={watch('district') || ''}
+                        onValueChange={(value) => setValue('district', value, { shouldValidate: true })}
+                        disabled={availableDistricts.length === 0 || isLoading}
+                      >
+                        <SelectTrigger className={availableDistricts.length === 0 ? 'opacity-50' : ''}>
+                          <SelectValue placeholder={availableDistricts.length === 0 ? 'Önce şehir seçiniz' : 'İlçe seçiniz'} />
+                        </SelectTrigger>
+                        {availableDistricts.length > 0 && (
+                          <SelectContent>
+                            {availableDistricts.map((district) => (
+                              <SelectItem key={district} value={district}>
+                                {district}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        )}
+                      </Select>
                     </div>
 
                     <div className="space-y-2">
@@ -1024,12 +1055,11 @@ export function BeneficiaryRegistrationForm({ open, onOpenChange }: BeneficiaryR
                   </div>
                 </div>
               </TabsContent>
-            </Tabs>
+                </Tabs>
+              </div>
 
-            <Separator />
-
-            {/* Navigation buttons */}
-            <div className="flex justify-between px-4 sm:px-6 pb-4">
+              {/* Navigation buttons */}
+              <div className="flex justify-between px-4 sm:px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
               <Button
                 type="button"
                 variant="outline"
@@ -1074,6 +1104,26 @@ export function BeneficiaryRegistrationForm({ open, onOpenChange }: BeneficiaryR
                     )}
                   </Button>
                 )}
+              </div>
+            </div>
+            </div>
+
+            {/* Sidebar - Summary */}
+            <div className="hidden lg:flex w-80 flex-col border-l border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30 p-4 overflow-y-auto">
+              <div className="space-y-4">
+                <h3 className="font-semibold text-sm text-slate-900 dark:text-slate-100">Kayıt Özeti</h3>
+                <BeneficiaryFormSummary
+                  data={{
+                    firstName: watch('firstName'),
+                    lastName: watch('lastName'),
+                    category: watch('category'),
+                    mobilePhone: watch('mobilePhone'),
+                    city: watch('city'),
+                    district: watch('district'),
+                    fundRegion: watch('fundRegion'),
+                    fileNumber: watch('fileNumber'),
+                  }}
+                />
               </div>
             </div>
           </form>
