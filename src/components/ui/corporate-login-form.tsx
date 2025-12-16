@@ -293,7 +293,8 @@ export function CorporateLoginForm({
     }
   };
 
-  if (!mounted || isAuthenticated) {
+  // Redirect if already authenticated
+  if (isAuthenticated) {
     return null;
   }
 
@@ -429,7 +430,7 @@ export function CorporateLoginForm({
             className="w-full max-w-md"
           >
             {/* Form Header */}
-            <motion.div variants={itemVariants} className="mb-10">
+            <div className="mb-10">
               <h2
                 className="text-3xl font-semibold text-slate-900 mb-2"
                 style={{ fontFamily: 'Poppins, sans-serif' }}
@@ -439,7 +440,7 @@ export function CorporateLoginForm({
               <p className="text-slate-500" style={{ fontFamily: 'Inter, sans-serif' }}>
                 Hesabınıza giriş yapın
               </p>
-            </motion.div>
+            </div>
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">

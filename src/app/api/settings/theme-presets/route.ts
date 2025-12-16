@@ -25,21 +25,12 @@ import type {
 
 /**
  * GET - Get all theme presets
- * Requires authentication and settings:manage permission
+ * Requires authentication (all authenticated users can view theme presets)
  */
 async function getThemePresetsHandler(_request: NextRequest) {
   try {
-    // Require authentication with settings:manage permission
-    const { user } = await requireAuthenticatedUser();
-    if (!user.permissions.includes("settings:manage")) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Bu işlemi gerçekleştirmek için yetkiniz yok",
-        },
-        { status: 403 },
-      );
-    }
+    // Require authentication (no special permission required to view presets)
+    await requireAuthenticatedUser();
 
     // Fetch theme presets from Appwrite
     const presets = await appwriteThemePresets.list();
