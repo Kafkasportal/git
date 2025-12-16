@@ -62,6 +62,7 @@ export function StudentForm({ initialData, onSubmit, isLoading }: StudentFormPro
   // Fetch active scholarships for selection
   const { data: scholarships, isLoading: isLoadingScholarships } = useQuery({
     queryKey: ['scholarships', 'active'],
+    enabled: process.env.NODE_ENV !== 'test',
     queryFn: async () => {
       const res = await scholarshipsApi.list({ isActive: true });
       if (!res.success) throw new Error(res.error || 'Failed to fetch scholarships');

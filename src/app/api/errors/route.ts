@@ -219,8 +219,10 @@ async function getErrorsHandler(request: NextRequest) {
     const skip = searchParams.get('skip');
 
     // Validate and type-cast status
-    // Appwrite errors collection uses: open, investigating, resolved, ignored
+    // Support both legacy UI statuses (new/assigned) and backend statuses (open/investigating/resolved/ignored)
     const validStatuses = [
+      'new',
+      'assigned',
       'open',
       'investigating',
       'resolved',

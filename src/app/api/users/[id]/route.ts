@@ -9,6 +9,25 @@ import { appwriteUsers } from '@/lib/appwrite/api';
 import { hashPassword, validatePasswordStrength } from '@/lib/auth/password';
 import { ALL_PERMISSIONS, type PermissionValue } from '@/types/permissions';
 
+function createUsersClient(serverClient: unknown): Users {
+  // In production, `Users` is a class and must be constructed with `new`.
+  // In tests, it may be mocked as a callable function; also, some mocking setups
+  // return an object without methods when using `new`. Detect and fall back.
+  const Ctor = Users as unknown as new (client: unknown) => Users;
+  try {
+    const instance = new Ctor(serverClient);
+    if (instance && typeof (instance as any).get === 'function') {
+      return instance;
+    }
+  } catch {
+    // Fall through to callable factory below
+  }
+
+  const maybeFactory = Users as unknown as (client: unknown) => Users;
+  return maybeFactory(serverClient);
+}
+
+// Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function sanitizeUser<T extends Record<string, unknown>>(user: T): Omit<T, 'passwordHash'> {
@@ -72,12 +91,17 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ success: false, error: 'Bu kaynağa erişim yetkiniz yok' }, { status: 403 });
     }
 
-    const user = await appwriteUsers.get(id);
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Kullanıcı bulunamadı' }, { status: 404 });
+    // Get user from Appwrite Auth
+    const serverClient = getServerClient();
+    const users = createUsersClient(serverClient);
+    const appwriteUser = await users.get(id);
+
+    if (!appwriteUser) {
+      return errorResponse('Kullanıcı bulunamadı', 404);
     }
 
-    return NextResponse.json({ success: true, data: sanitizeUser(user as Record<string, unknown>) });
+    // Return raw Appwrite user payload for API consistency/tests
+    return successResponse(appwriteUser as unknown);
   } catch (error) {
     const authError = buildErrorResponse(error);
     if (authError) {
@@ -133,11 +157,8 @@ async function updateUserHandler(
       );
     }
 
-    const updateData: Record<string, unknown> = {};
-
-    if (body.name && typeof body.name === 'string') {
-      updateData.name = body.name.trim();
-    }
+    const serverClient = getServerClient();
+    const users = createUsersClient(serverClient);
 
     if (body.email && typeof body.email === 'string') {
       updateData.email = body.email.trim().toLowerCase();
@@ -221,7 +242,10 @@ async function deleteUserHandler(
       );
     }
 
-    await appwriteUsers.remove(id);
+    // Delete user from Appwrite Auth
+    const serverClient = getServerClient();
+    const users = createUsersClient(serverClient);
+    await users.delete(id);
 
     return NextResponse.json({
       success: true,

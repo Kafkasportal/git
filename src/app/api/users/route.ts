@@ -8,59 +8,50 @@ import {
   buildErrorResponse,
 } from '@/lib/api/auth-utils';
 import { dataModificationRateLimit, readOnlyRateLimit } from '@/lib/rate-limit';
-import { ALL_PERMISSIONS, type PermissionValue } from '@/types/permissions';
+import { appwriteUsers, normalizeQueryParams } from '@/lib/appwrite/api';
+import { ALL_PERMISSIONS } from '@/types/permissions';
+import { hashPassword, validatePasswordStrength } from '@/lib/auth/password';
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function sanitizeUser<T extends Record<string, unknown>>(user: T): Omit<T, 'passwordHash'> {
-  const { passwordHash: _passwordHash, password: _password, ...rest } = user as T & {
-    password?: unknown;
-    passwordHash?: unknown;
-  };
-  return rest as Omit<T, 'passwordHash'>;
+function jsonSuccess(data: unknown, status = 200, message?: string) {
+  return NextResponse.json(
+    { success: true, data, ...(message ? { message } : {}) },
+    { status },
+  );
 }
 
-function parseIsActive(value: string | null): boolean | undefined {
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  return undefined;
-}
-
-function normalizePermissions(value: unknown): PermissionValue[] {
-  if (!Array.isArray(value)) return [];
-  return value.filter((permission): permission is PermissionValue => typeof permission === 'string');
-}
-
-function validatePermissions(permissions: PermissionValue[]): boolean {
-  const allowed = ALL_PERMISSIONS as readonly string[];
-  return permissions.every((permission) => allowed.includes(permission));
+function jsonError(error: string, status = 400, details?: string[]) {
+  return NextResponse.json(
+    { success: false, error, ...(details ? { details } : {}) },
+    { status },
+  );
 }
 
 async function getUsersHandler(request: NextRequest) {
   try {
     const { user } = await requireAuthenticatedUser();
-    if (!user.permissions.includes('users:manage')) {
-      return NextResponse.json(
-        { success: false, error: 'Bu kaynağa erişim yetkiniz yok' },
-        { status: 403 }
-      );
+    if (!user.permissions?.includes('users:manage')) {
+      return jsonError('Bu kaynağa erişim yetkiniz yok', 403);
     }
 
     const { searchParams } = new URL(request.url);
-    const params = normalizeQueryParams(searchParams);
+    const normalized = normalizeQueryParams(searchParams);
+
+    const role = searchParams.get('role') || undefined;
+    const isActiveParam = searchParams.get('isActive');
+    const isActive =
+      isActiveParam === null ? undefined : isActiveParam.toLowerCase() === 'true';
 
     const response = await appwriteUsers.list({
-      search: params.search,
-      limit: params.limit,
-      role: searchParams.get('role') || undefined,
-      isActive: parseIsActive(searchParams.get('isActive')),
+      search: typeof normalized.search === 'string' ? normalized.search : undefined,
+      role: role || undefined,
+      isActive,
+      limit: typeof normalized.limit === 'number' ? normalized.limit : undefined,
     });
 
-    return NextResponse.json({
-      success: true,
-      data: (response.documents || []).map((doc) => sanitizeUser(doc as Record<string, unknown>)),
-      total: response.total || 0,
-    });
+    return jsonSuccess(
+      { documents: response.documents, total: response.total },
+      200,
+    );
   } catch (error: unknown) {
     const authError = buildErrorResponse(error);
     if (authError) {
@@ -71,10 +62,7 @@ async function getUsersHandler(request: NextRequest) {
       endpoint: '/api/users',
       method: 'GET',
     });
-    return NextResponse.json(
-      { success: false, error: 'Kullanıcılar alınamadı' },
-      { status: 500 }
-    );
+    return jsonError('Kullanıcılar alınamadı', 500);
   }
 }
 
@@ -82,86 +70,77 @@ async function createUserHandler(request: NextRequest) {
   try {
     await verifyCsrfToken(request);
     const { user } = await requireAuthenticatedUser();
-
-    if (!user.permissions.includes('users:manage')) {
-      return NextResponse.json(
-        { success: false, error: 'Bu kaynağa erişim yetkiniz yok' },
-        { status: 403 }
-      );
+    if (!user.permissions?.includes('users:manage')) {
+      return jsonError('Bu kaynağa erişim yetkiniz yok', 403);
     }
 
-    let body: Record<string, unknown>;
+    let body: unknown;
     try {
-      body = (await request.json()) as Record<string, unknown>;
+      body = await request.json();
     } catch {
-      return NextResponse.json(
-        { success: false, error: 'Geçersiz istek verisi' },
-        { status: 400 }
-      );
+      return jsonError('Geçersiz istek verisi', 400);
     }
 
-    const errors: string[] = [];
+    const bodyData = (body ?? {}) as Record<string, unknown>;
+    const name = typeof bodyData.name === 'string' ? bodyData.name.trim() : '';
+    const email =
+      typeof bodyData.email === 'string' ? bodyData.email.trim().toLowerCase() : '';
+    const role = typeof bodyData.role === 'string' ? bodyData.role.trim() : '';
+    const password = typeof bodyData.password === 'string' ? bodyData.password : '';
+    const permissions = Array.isArray(bodyData.permissions)
+      ? bodyData.permissions.filter((p): p is string => typeof p === 'string')
+      : [];
 
-    const name = typeof body.name === 'string' ? body.name.trim() : '';
-    if (name.length < 3) {
-      errors.push('İsim en az 3 karakter olmalıdır');
+    const details: string[] = [];
+
+    if (!name) {
+      details.push('İsim zorunludur');
+    } else if (name.length < 3) {
+      details.push('İsim en az 3 karakter olmalıdır');
     }
 
-    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
-    if (!email || !EMAIL_REGEX.test(email)) {
-      errors.push('Geçerli bir e-posta adresi gerekli');
+    if (!email || !email.includes('@')) {
+      details.push('Geçerli bir e-posta adresi gerekli');
     }
 
-    const role = typeof body.role === 'string' ? body.role.trim() : '';
-    if (role.length < 2) {
-      errors.push('Rol en az 2 karakter olmalıdır');
+    if (!role) {
+      details.push('Rol zorunludur');
+    } else if (role.length < 2) {
+      details.push('Rol en az 2 karakter olmalıdır');
     }
 
-    const permissions = normalizePermissions(body.permissions);
-    if (permissions.length === 0 || !validatePermissions(permissions)) {
-      errors.push('Geçerli en az bir modül erişimi seçilmelidir');
+    if (!Array.isArray(bodyData.permissions)) {
+      details.push('Yetkiler zorunludur');
+    } else if (permissions.some((p) => !(ALL_PERMISSIONS as readonly string[]).includes(p))) {
+      details.push('Geçersiz yetki');
     }
 
-    const password = typeof body.password === 'string' ? body.password : '';
-    if (!password || password.trim().length === 0) {
-      errors.push('Şifre zorunludur');
-    } else {
-      const passwordValidation = validatePasswordStrength(password);
-      if (!passwordValidation.valid) {
-        errors.push(passwordValidation.error || 'Şifre yeterince güçlü değil');
-      }
+    if (!password) {
+      details.push('Şifre zorunludur');
     }
 
-    if (errors.length > 0) {
-      return NextResponse.json(
-        { success: false, error: 'Doğrulama hatası', details: errors },
-        { status: 400 }
-      );
+    if (details.length > 0) {
+      return jsonError('Validation failed', 400, details);
     }
 
-    const isActive = typeof body.isActive === 'boolean' ? body.isActive : true;
-    const phone = typeof body.phone === 'string' ? body.phone.trim() : undefined;
+    const strength = validatePasswordStrength(password);
+    if (!strength.valid) {
+      return jsonError('Validation failed', 400, [
+        strength.error || 'Şifre yeterince güçlü değil',
+      ]);
+    }
 
     const passwordHash = await hashPassword(password);
-
     const created = await appwriteUsers.create({
       name,
       email,
       role,
       permissions,
       passwordHash,
-      isActive,
-      phone: phone && phone.length > 0 ? phone : undefined,
-    });
+      isActive: true,
+    } as any);
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: sanitizeUser(created as unknown as Record<string, unknown>),
-        message: 'Kullanıcı oluşturuldu',
-      },
-      { status: 201 }
-    );
+    return jsonSuccess(created, 201, 'Kullanıcı oluşturuldu');
   } catch (error: unknown) {
     const authError = buildErrorResponse(error);
     if (authError) {
@@ -172,11 +151,7 @@ async function createUserHandler(request: NextRequest) {
       endpoint: '/api/users',
       method: 'POST',
     });
-
-    return NextResponse.json(
-      { success: false, error: 'Kullanıcı oluşturulamadı' },
-      { status: 500 }
-    );
+    return jsonError('Kullanıcı oluşturulamadı', 500);
   }
 }
 

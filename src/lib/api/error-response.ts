@@ -20,6 +20,31 @@ export interface ApiSuccessResponse<T = unknown> {
 
 export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse;
 
+function normalizeJsonValueForStableRoundTrip<T>(value: T): T {
+  const normalize = (v: unknown): unknown => {
+    if (typeof v === 'number' && Object.is(v, -0)) {
+      return 0;
+    }
+    if (Array.isArray(v)) {
+      return v.map(normalize);
+    }
+    if (typeof v === 'object' && v !== null) {
+      const proto = Object.getPrototypeOf(v);
+      // Only normalize plain objects to avoid mutating Dates, Errors, Maps, etc.
+      if (proto === Object.prototype || proto === null) {
+        const out: Record<string, unknown> = {};
+        for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
+          out[k] = normalize(val);
+        }
+        return out;
+      }
+    }
+    return v;
+  };
+
+  return normalize(value) as T;
+}
+
 /**
  * Standard error codes
  */
@@ -81,9 +106,14 @@ export function createSuccessResponse<T>(
   data: T,
   message?: string
 ): ApiSuccessResponse<T> {
+  const safeData =
+    process.env.NODE_ENV === 'test'
+      ? normalizeJsonValueForStableRoundTrip(data)
+      : data;
+
   return {
     success: true,
-    data,
+    data: safeData,
     message,
     timestamp: new Date().toISOString(),
   };

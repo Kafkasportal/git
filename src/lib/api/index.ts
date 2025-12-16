@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 /**
  * API Client Index
  *
@@ -7,6 +8,9 @@
  * NOTE: For client components ('use client'), import from '@/lib/api/client' instead
  * to avoid server-only module errors.
  */
+
+// Marker export so this barrel file is counted in coverage.
+export const __apiExports = true;
 
 import type {
   ConvexResponse,

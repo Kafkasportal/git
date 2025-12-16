@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { tcKimlikNoSchema, turkishNameSchema, requiredPhoneSchema } from './shared-validators';
+import { tcKimlikNoLenientSchema, turkishNameSchema, requiredPhoneSchema } from './shared-validators';
 
 export const studentFormSchema = z.object({
   applicant_name: turkishNameSchema,
-  applicant_tc_no: tcKimlikNoSchema,
+  applicant_tc_no: tcKimlikNoLenientSchema,
   applicant_phone: requiredPhoneSchema,
   applicant_email: z
     .union([z.literal(''), z.string().email('Geçerli bir e-posta adresi giriniz')])

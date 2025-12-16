@@ -207,24 +207,24 @@ async function getCsrfToken(): Promise<string> {
  * Parse login response
  */
 async function parseLoginResponse(response: Response): Promise<{ success: boolean; data?: any; error?: string; message?: string; requiresTwoFactor?: boolean }> {
-	  let result;
-	  try {
-	    result = await response.json();
-	  } catch {
-	    const text = await response.text().catch(() => 'Unable to read response');
-	    throw new Error(`Sunucu yanıtı geçersiz: ${text.substring(0, 100)}`);
-	  }
+  let result;
+  try {
+    result = await response.json();
+  } catch {
+    const text = await response.text().catch(() => 'Unable to read response');
+    throw new Error(`Sunucu yanıtı geçersiz: ${text.substring(0, 100)}`);
+  }
 
-	  // Handle rate limiting
-	  if (response.status === 429) {
-	    const raw = result?.error || result?.message;
-	    const message = typeof raw === "string" ? raw.trim() : "";
-	    const normalized = message.toLowerCase();
-	    if (!message || normalized.includes("too many requests") || normalized.includes("rate limit")) {
-	      throw new Error("Çok fazla deneme yapıldı. Lütfen biraz bekleyin.");
-	    }
-	    throw new Error(message);
-	  }
+  // Handle rate limiting
+  if (response.status === 429) {
+    const rawMsg = result?.error || result?.message || "";
+    const normalized = typeof rawMsg === "string" ? rawMsg.toLowerCase() : "";
+    const errorMsg =
+      normalized.includes("too many") || normalized.includes("rate limit")
+        ? "Çok fazla deneme yapıldı. Lütfen biraz bekleyin."
+        : (rawMsg || "Çok fazla deneme yapıldı. Lütfen biraz bekleyin.");
+    throw new Error(errorMsg);
+  }
 
   // Validate response structure
   if (result === null || result === undefined || result.success === undefined) {
@@ -239,31 +239,37 @@ async function parseLoginResponse(response: Response): Promise<{ success: boolea
 /**
  * Handle login error response
  */
-	function handleLoginError(result: { error?: string; message?: string; requiresTwoFactor?: boolean }, status: number): never {
-	  if (result.requiresTwoFactor) {
-	    const error = new Error(result.error || result.message || "2FA kodu gereklidir") as Error & { requiresTwoFactor?: boolean };
-	    error.requiresTwoFactor = true;
-	    throw error;
-	  }
+function handleLoginError(result: { error?: string; message?: string; requiresTwoFactor?: boolean }, status: number): never {
+  if (result.requiresTwoFactor) {
+    const error = new Error(result.error || result.message || "2FA kodu gereklidir") as Error & { requiresTwoFactor?: boolean };
+    error.requiresTwoFactor = true;
+    throw error;
+  }
 
-	  const raw = (result.error || result.message || "").trim();
-	  const normalized = raw.toLowerCase();
-
-	  if (status === 401) {
-	    if (!raw || normalized.includes("invalid credentials") || normalized.includes("unauthorized")) {
-	      throw new Error("E-posta veya şifre hatalı. Lütfen kontrol edin.");
-	    }
-	    throw new Error(raw);
-	  }
-	  if (status === 400) {
-	    if (!raw || normalized.includes("bad request")) {
-	      throw new Error("E-posta ve şifre alanları zorunludur.");
-	    }
-	    throw new Error(raw);
-	  }
-	  
-	  throw new Error(raw || "Giriş yapılamadı. Lütfen tekrar deneyin.");
-	}
+  if (status === 401) {
+    const rawMsg = result.error || result.message || "";
+    const normalized = rawMsg.toLowerCase();
+    // Prefer Turkish default for generic backend messages
+    if (
+      !rawMsg ||
+      normalized.includes("invalid credentials") ||
+      normalized.includes("unauthorized")
+    ) {
+      throw new Error("E-posta veya şifre hatalı. Lütfen kontrol edin.");
+    }
+    throw new Error(rawMsg);
+  }
+  if (status === 400) {
+    const rawMsg = result.error || result.message || "";
+    const normalized = rawMsg.toLowerCase();
+    if (!rawMsg || normalized.includes("bad request") || normalized.includes("validation")) {
+      throw new Error("E-posta ve şifre alanları zorunludur.");
+    }
+    throw new Error(rawMsg);
+  }
+  
+  throw new Error(result.error || result.message || "Giriş yapılamadı. Lütfen tekrar deneyin.");
+}
 
 /**
  * Extract error message from error object
@@ -466,30 +472,29 @@ export const useAuthStore = create<AuthStore>()(
                 state.isLoading = false;
                 state.error = null;
               });
-	            } catch (error: unknown) {
-	              const hasTwoFactorFlag =
-	                error instanceof Error &&
-	                "requiresTwoFactor" in error &&
-	                Boolean((error as Error & { requiresTwoFactor?: boolean }).requiresTwoFactor);
+            } catch (error: unknown) {
+              const twoFactorError =
+                error instanceof Error &&
+                (error as Error & { requiresTwoFactor?: boolean }).requiresTwoFactor ===
+                  true;
+              let errorMessage = extractErrorMessage(error);
 
-	              let errorMessage = extractErrorMessage(error);
+              if (isNetworkError(errorMessage)) {
+                errorMessage = "İnternet bağlantınızı kontrol edin.";
+              }
 
-	              if (isNetworkError(errorMessage)) {
-	                errorMessage = "İnternet bağlantınızı kontrol edin.";
-	              }
+              set((state) => {
+                state.isLoading = false;
+                state.error = errorMessage;
+              });
 
-	              set((state) => {
-	                state.isLoading = false;
-	                state.error = errorMessage;
-	              });
+              if (twoFactorError) {
+                throw error as Error & { requiresTwoFactor?: boolean };
+              }
 
-	              if (hasTwoFactorFlag && error instanceof Error) {
-	                throw error;
-	              }
-
-	              throw new Error(errorMessage);
-	            }
-	          },
+              throw new Error(errorMessage);
+            }
+          },
 
           // Demo Login action (bypasses Appwrite)
           demoLogin: () => {

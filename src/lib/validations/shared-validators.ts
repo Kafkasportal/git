@@ -58,7 +58,7 @@ export const tcKimlikNoSchema = z
     // 10. hane kontrolü: (1,3,5,7,9. hanelerin toplamı * 7 - 2,4,6,8. hanelerin toplamı) % 10
     const oddSum = digits[0] + digits[2] + digits[4] + digits[6] + digits[8];
     const evenSum = digits[1] + digits[3] + digits[5] + digits[7];
-    const check10 = (oddSum * 7 - evenSum) % 10;
+    const check10 = (((oddSum * 7 - evenSum) % 10) + 10) % 10;
 
     if (digits[9] !== check10) return false;
 
@@ -68,6 +68,16 @@ export const tcKimlikNoSchema = z
 
     return digits[10] === check11;
   }, 'Geçersiz TC Kimlik No');
+
+/**
+ * Lenient TC Kimlik No validator (shape-only)
+ * Useful for forms that accept placeholder/test IDs.
+ */
+export const tcKimlikNoLenientSchema = z
+  .string()
+  .length(11, 'TC Kimlik No 11 haneli olmalıdır')
+  .regex(/^\d{11}$/, 'TC Kimlik No sadece rakam içermelidir')
+  .refine((value) => value[0] !== '0', 'TC Kimlik No 0 ile başlayamaz');
 
 // ============================================================================
 // PHONE VALIDATORS

@@ -43,12 +43,13 @@ export function successResponse<T>(
   message?: string,
   status: number = 200,
 ): NextResponse<ApiResponse<T>> {
-  // 204/205/304 responses must not include a body.
-  if (status === 204 || status === 205 || status === 304) {
+  // 204 No Content must not include a response body
+  if (status === 204) {
     return new NextResponse(null, { status }) as unknown as NextResponse<
       ApiResponse<T>
     >;
   }
+
   return NextResponse.json(
     {
       success: true,
