@@ -2,18 +2,16 @@
 // Sophisticated, Trustworthy, Memorable
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/stores/authStore';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { toast } from 'sonner';
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, Shield, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { OAuthButton } from '@/components/auth/OAuthButton';
+import { useCorporateLogin } from '@/hooks/useCorporateLogin';
 
 interface CorporateLoginFormProps {
   readonly className?: string;
@@ -110,202 +108,29 @@ export function CorporateLoginForm({
   className = '',
   redirectTo = '/genel',
 }: CorporateLoginFormProps) {
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
-  const [twoFactorCode, setTwoFactorCode] = useState('');
-  const [twoFactorError, setTwoFactorError] = useState('');
-  const [focusedField, setFocusedField] = useState<string | null>(null);
-
-  const initRef = useRef(false);
-  const emailInputRef = useRef<HTMLInputElement>(null);
-  const twoFactorInputRef = useRef<HTMLInputElement>(null);
-
-  const { login, isAuthenticated, initializeAuth } = useAuthStore();
-
-  const loadRememberedEmail = () => {
-    if (globalThis.window === undefined) return;
-
-    const rememberData = localStorage.getItem('rememberMe');
-    if (!rememberData) return;
-
-    try {
-      const parsed = JSON.parse(rememberData);
-      if (parsed?.expires > Date.now()) {
-        setEmail(parsed.email);
-        setRememberMe(true);
-      } else {
-        localStorage.removeItem('rememberMe');
-      }
-    } catch {
-      localStorage.removeItem('rememberMe');
-    }
-  };
-
-  useEffect(() => {
-    if (!initRef.current) {
-      initRef.current = true;
-      loadRememberedEmail();
-      setMounted(true);
-      initializeAuth();
-    }
-  }, [initializeAuth]);
-
-  useEffect(() => {
-    if (mounted && isAuthenticated) {
-      router.push(redirectTo);
-    }
-  }, [mounted, isAuthenticated, router, redirectTo]);
-
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email) {
-      setEmailError('Email adresi gereklidir');
-      return false;
-    }
-    if (!emailRegex.test(email)) {
-      setEmailError('Geçerli bir email adresi girin');
-      return false;
-    }
-    setEmailError('');
-    return true;
-  };
-
-  const validatePassword = (password: string): boolean => {
-    if (!password) {
-      setPasswordError('Şifre gereklidir');
-      return false;
-    }
-    if (password.length < 6) {
-      setPasswordError('Şifre en az 6 karakter olmalıdır');
-      return false;
-    }
-    setPasswordError('');
-    return true;
-  };
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setEmail(value);
-    if (emailError) validateEmail(value);
-  };
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setPassword(value);
-    if (passwordError) validatePassword(value);
-  };
-
-  const saveRememberMe = (shouldRemember: boolean) => {
-    if (globalThis.window === undefined) return;
-
-    if (shouldRemember) {
-      const rememberData = {
-        email,
-        timestamp: Date.now(),
-        expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
-      };
-      localStorage.setItem('rememberMe', JSON.stringify(rememberData));
-    } else {
-      localStorage.removeItem('rememberMe');
-    }
-  };
-
-  const handleLoginSuccess = async () => {
-    setIsLoading(false);
-    toast.success('Başarıyla giriş yaptınız', {
-      description: 'Yönlendiriliyorsunuz...',
-      duration: 2000,
-    });
-    await new Promise(resolve => setTimeout(resolve, 500));
-    router.push(redirectTo);
-  };
-
-  const getErrorMessage = (err: unknown, defaultMessage: string): string => {
-    if (err instanceof Error) return err.message;
-    if (typeof err === 'string') return err;
-    return defaultMessage;
-  };
-
-  const handleTwoFactorSubmit = async () => {
-    if (!twoFactorCode || twoFactorCode.length !== 6) {
-      setTwoFactorError('2FA kodu 6 haneli olmalıdır');
-      twoFactorInputRef.current?.focus();
-      return;
-    }
-
-    setTwoFactorError('');
-    setIsLoading(true);
-
-    try {
-      await login(email, password, rememberMe, twoFactorCode);
-      saveRememberMe(rememberMe);
-      await handleLoginSuccess();
-    } catch (err: unknown) {
-      const errorMessage = getErrorMessage(err, '2FA kodu hatalı');
-      setTwoFactorError(errorMessage);
-      twoFactorInputRef.current?.focus();
-      setIsLoading(false);
-    }
-  };
-
-  const handleTwoFactorError = () => {
-    setRequiresTwoFactor(true);
-    setIsLoading(false);
-    setTimeout(() => {
-      twoFactorInputRef.current?.focus();
-    }, 100);
-    toast.info('2FA kodu gereklidir', {
-      description: 'Lütfen authenticator uygulamanızdan kodu girin',
-    });
-  };
-
-  const handleLoginError = (err: unknown) => {
-    const errorMessage = getErrorMessage(err, 'Giriş başarısız');
-    toast.error('Giriş hatası', { description: errorMessage });
-    emailInputRef.current?.focus();
-    setIsLoading(false);
-  };
-
-  const handleRegularLogin = async () => {
-    const isEmailValid = validateEmail(email);
-    const isPasswordValid = validatePassword(password);
-    if (!isEmailValid || !isPasswordValid) return;
-
-    setIsLoading(true);
-
-    try {
-      await login(email, password, rememberMe);
-      saveRememberMe(rememberMe);
-      await handleLoginSuccess();
-    } catch (err: unknown) {
-      const error = err as Error & { requiresTwoFactor?: boolean };
-
-      if (error.requiresTwoFactor) {
-        handleTwoFactorError();
-      } else {
-        handleLoginError(err);
-      }
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (requiresTwoFactor) {
-      await handleTwoFactorSubmit();
-      return;
-    }
-
-    await handleRegularLogin();
-  };
+  const {
+    email,
+    password,
+    showPassword,
+    rememberMe,
+    emailError,
+    passwordError,
+    isLoading,
+    requiresTwoFactor,
+    twoFactorCode,
+    twoFactorError,
+    focusedField,
+    isAuthenticated,
+    emailInputRef,
+    twoFactorInputRef,
+    setShowPassword,
+    setRememberMe,
+    setFocusedField,
+    handleEmailChange,
+    handlePasswordChange,
+    handleTwoFactorCodeChange,
+    handleSubmit,
+  } = useCorporateLogin({ redirectTo });
 
   // Redirect if already authenticated
   if (isAuthenticated) {
@@ -596,11 +421,7 @@ export function CorporateLoginForm({
                     id="twoFactorCode"
                     type="text"
                     value={twoFactorCode}
-                    onChange={(e) => {
-                      const value = e.target.value.replaceAll(/\D/g, '').slice(0, 6);
-                      setTwoFactorCode(value);
-                      if (twoFactorError) setTwoFactorError('');
-                    }}
+                    onChange={handleTwoFactorCodeChange}
                     placeholder="000000"
                     maxLength={6}
                     className={cn(
@@ -711,7 +532,8 @@ export function CorporateLoginForm({
             {/* Footer */}
             <motion.div variants={itemVariants} className="mt-10 text-center">
               <p className="text-sm text-slate-500" style={{ fontFamily: 'Inter, sans-serif' }}>
-                Hesabınız yok mu?{' '}<a href="/kayit" className="text-teal-600 hover:text-teal-700 font-semibold hover:underline underline-offset-2">
+                Hesabınız yok mu?{' '}
+                <a href="/kayit" className="text-teal-600 hover:text-teal-700 font-semibold hover:underline underline-offset-2">
                   Kayıt olun
                 </a>
               </p>
@@ -730,7 +552,7 @@ export function CorporateLoginForm({
             <a href="/gizlilik-politikasi" className="text-teal-600 hover:underline">
               Gizlilik Politikası
             </a>
-            &apos;nı kabul etmiş olursunuz.
+            {' '}&apos;nı kabul etmiş olursunuz.
           </p>
         </div>
       </div>

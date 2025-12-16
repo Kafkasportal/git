@@ -31,12 +31,12 @@ const Label = React.forwardRef<React.ElementRef<typeof LabelPrimitive.Root>, Lab
     },
     ref
   ) => {
-    const sizeClass =
-      size === 'sm'
-        ? 'text-xs'
-        : size === 'lg'
-          ? 'text-base'
-          : 'text-sm';
+    const getSizeClass = (sizeValue: 'sm' | 'md' | 'lg'): string => {
+      if (sizeValue === 'sm') return 'text-xs';
+      if (sizeValue === 'lg') return 'text-base';
+      return 'text-sm';
+    };
+    const sizeClass = getSizeClass(size);
 
     const emphasisClass = emphasis === 'bold' ? 'font-bold' : 'font-semibold';
 

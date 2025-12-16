@@ -47,8 +47,8 @@ function DashboardHeroSection({
   userName,
   isRealtimeConnected,
 }: {
-  userName: string;
-  isRealtimeConnected: boolean;
+  readonly userName: string;
+  readonly isRealtimeConnected: boolean;
 }) {
   const currentHour = new Date().getHours();
   let greeting: string;
