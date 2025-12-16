@@ -14,7 +14,7 @@ vi.mock('@/lib/appwrite/api', () => ({
   normalizeQueryParams: vi.fn((params) => {
     const result: Record<string, unknown> = {};
     if (params.get('limit')) {
-      result.limit = parseInt(params.get('limit') || '100', 10);
+      result.limit = Number.parseInt(params.get('limit') || '100', 10);
     }
     return result;
   }),

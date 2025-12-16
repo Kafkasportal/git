@@ -5,7 +5,7 @@
 
 import { Client, Users, Query } from 'node-appwrite';
 import dotenv from 'dotenv';
-import path from 'path';
+import path from 'node:path';
 
 // Load environment variables
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
@@ -101,5 +101,5 @@ async function setUserPermissions() {
   }
 }
 
-setUserPermissions();
+await setUserPermissions();
 

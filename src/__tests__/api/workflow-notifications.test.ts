@@ -21,8 +21,8 @@ vi.mock('@/lib/appwrite/api', () => ({
     create: vi.fn(),
   },
   normalizeQueryParams: vi.fn((params: URLSearchParams) => ({
-    page: params.get('page') ? parseInt(params.get('page')!) : 1,
-    limit: params.get('limit') ? parseInt(params.get('limit')!) : 50,
+    page: params.get('page') ? Number.parseInt(params.get('page')!) : 1,
+    limit: params.get('limit') ? Number.parseInt(params.get('limit')!) : 50,
     skip: 0,
     search: params.get('search') || undefined,
   })),

@@ -5,7 +5,7 @@
 
 import { Client, Users } from 'node-appwrite';
 import dotenv from 'dotenv';
-import path from 'path';
+import path from 'node:path';
 
 // Load environment variables
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
@@ -79,7 +79,7 @@ async function resetPasswords() {
   }
 }
 
-resetPasswords();
+await resetPasswords();
 
 
 

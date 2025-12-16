@@ -25,7 +25,7 @@ const STALE_WHILE_REVALIDATE_PATTERNS = [/\/_next\/data\//, /\.json$/];
 /**
  * Install event - precache essential assets
  */
-self.addEventListener("install", (event) => {
+globalThis.addEventListener("install", (event) => {
   console.warn("[SW] Installing service worker...");
 
   event.waitUntil(
@@ -37,7 +37,7 @@ self.addEventListener("install", (event) => {
       })
       .then(() => {
         console.warn("[SW] Service worker installed successfully");
-        return self.skipWaiting();
+        return globalThis.skipWaiting();
       })
       .catch((error) => {
         console.error("[SW] Precache failed:", error);
@@ -48,7 +48,7 @@ self.addEventListener("install", (event) => {
 /**
  * Activate event - clean up old caches
  */
-self.addEventListener("activate", (event) => {
+globalThis.addEventListener("activate", (event) => {
   console.warn("[SW] Activating service worker...");
 
   event.waitUntil(
@@ -66,7 +66,7 @@ self.addEventListener("activate", (event) => {
       })
       .then(() => {
         console.warn("[SW] Service worker activated");
-        return self.clients.claim();
+        return globalThis.clients.claim();
       })
   );
 });
@@ -74,7 +74,7 @@ self.addEventListener("activate", (event) => {
 /**
  * Fetch event - handle requests with appropriate caching strategy
  */
-self.addEventListener("fetch", (event) => {
+globalThis.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
@@ -141,8 +141,8 @@ async function networkFirst(request) {
     }
 
     return response;
-  } catch (_error) {
-    console.warn("[SW] Network failed, trying cache:", request.url);
+  } catch (error) {
+    console.warn("[SW] Network failed, trying cache:", request.url, error);
     const cached = await cache.match(request);
 
     if (cached) {
@@ -189,7 +189,7 @@ async function staleWhileRevalidate(request) {
 /**
  * Background sync for offline mutations
  */
-self.addEventListener("sync", (event) => {
+globalThis.addEventListener("sync", (event) => {
   console.warn("[SW] Background sync triggered:", event.tag);
 
   if (event.tag === "sync-offline-data") {
@@ -221,8 +221,12 @@ async function syncOfflineData() {
     for (const mutation of mutations) {
       try {
         const endpoint = `/api/${mutation.collection}`;
-        const method =
-          mutation.type === "create" ? "POST" : mutation.type === "update" ? "PUT" : "DELETE";
+        let method = "DELETE";
+        if (mutation.type === "create") {
+          method = "POST";
+        } else if (mutation.type === "update") {
+          method = "PUT";
+        }
 
         const response = await fetch(endpoint, {
           method,
@@ -283,7 +287,7 @@ function removeMutationFromDB(db, id) {
 /**
  * Push notifications
  */
-self.addEventListener("push", (event) => {
+globalThis.addEventListener("push", (event) => {
   console.warn("[SW] Push notification received");
 
   const data = event.data ? event.data.json() : {};
@@ -298,13 +302,13 @@ self.addEventListener("push", (event) => {
     },
   };
 
-  event.waitUntil(self.registration.showNotification(data.title || "Kafkasder", options));
+  event.waitUntil(globalThis.registration.showNotification(data.title || "Kafkasder", options));
 });
 
 /**
  * Notification click handler
  */
-self.addEventListener("notificationclick", (event) => {
+globalThis.addEventListener("notificationclick", (event) => {
   console.warn("[SW] Notification clicked");
 
   event.notification.close();
@@ -316,11 +320,11 @@ self.addEventListener("notificationclick", (event) => {
 /**
  * Message handler for communication with main thread
  */
-self.addEventListener("message", (event) => {
+globalThis.addEventListener("message", (event) => {
   console.warn("[SW] Message received:", event.data);
 
   if (event.data && event.data.type === "SKIP_WAITING") {
-    self.skipWaiting();
+    globalThis.skipWaiting();
   }
 
   if (event.data && event.data.type === "CACHE_URLS") {

@@ -34,7 +34,7 @@ describe("useNotificationStream", () => {
     });
 
     // Mock EventSource at global level
-    (global as any).EventSource = vi
+    (globalThis as any).EventSource = vi
       .fn()
       .mockImplementation(function (this: any) {
         this.onopen = null;
@@ -56,7 +56,7 @@ describe("useNotificationStream", () => {
   it("creates EventSource connection when userId is provided", () => {
     renderHook(() => useNotificationStream("test-user"));
 
-    expect(global.EventSource).toHaveBeenCalledWith(
+    expect(globalThis.EventSource).toHaveBeenCalledWith(
       "/api/notifications/stream",
       {
         withCredentials: true,
@@ -68,7 +68,7 @@ describe("useNotificationStream", () => {
   it("does not create connection when userId is undefined", () => {
     renderHook(() => useNotificationStream(undefined));
 
-    expect(global.EventSource).not.toHaveBeenCalled();
+    expect(globalThis.EventSource).not.toHaveBeenCalled();
     expect(eventSourceInstances.length).toBe(0);
   });
 
