@@ -207,19 +207,24 @@ async function getCsrfToken(): Promise<string> {
  * Parse login response
  */
 async function parseLoginResponse(response: Response): Promise<{ success: boolean; data?: any; error?: string; message?: string; requiresTwoFactor?: boolean }> {
-  let result;
-  try {
-    result = await response.json();
-  } catch {
-    const text = await response.text().catch(() => 'Unable to read response');
-    throw new Error(`Sunucu yanıtı geçersiz: ${text.substring(0, 100)}`);
-  }
+	  let result;
+	  try {
+	    result = await response.json();
+	  } catch {
+	    const text = await response.text().catch(() => 'Unable to read response');
+	    throw new Error(`Sunucu yanıtı geçersiz: ${text.substring(0, 100)}`);
+	  }
 
-  // Handle rate limiting
-  if (response.status === 429) {
-    const errorMsg = result?.error || result?.message || "Çok fazla deneme yapıldı. Lütfen biraz bekleyin.";
-    throw new Error(errorMsg);
-  }
+	  // Handle rate limiting
+	  if (response.status === 429) {
+	    const raw = result?.error || result?.message;
+	    const message = typeof raw === "string" ? raw.trim() : "";
+	    const normalized = message.toLowerCase();
+	    if (!message || normalized.includes("too many requests") || normalized.includes("rate limit")) {
+	      throw new Error("Çok fazla deneme yapıldı. Lütfen biraz bekleyin.");
+	    }
+	    throw new Error(message);
+	  }
 
   // Validate response structure
   if (result === null || result === undefined || result.success === undefined) {
@@ -234,22 +239,31 @@ async function parseLoginResponse(response: Response): Promise<{ success: boolea
 /**
  * Handle login error response
  */
-function handleLoginError(result: { error?: string; message?: string; requiresTwoFactor?: boolean }, status: number): never {
-  if (result.requiresTwoFactor) {
-    const error = new Error(result.error || result.message || "2FA kodu gereklidir") as Error & { requiresTwoFactor?: boolean };
-    error.requiresTwoFactor = true;
-    throw error;
-  }
+	function handleLoginError(result: { error?: string; message?: string; requiresTwoFactor?: boolean }, status: number): never {
+	  if (result.requiresTwoFactor) {
+	    const error = new Error(result.error || result.message || "2FA kodu gereklidir") as Error & { requiresTwoFactor?: boolean };
+	    error.requiresTwoFactor = true;
+	    throw error;
+	  }
 
-  if (status === 401) {
-    throw new Error(result.error || result.message || "E-posta veya şifre hatalı. Lütfen kontrol edin.");
-  }
-  if (status === 400) {
-    throw new Error(result.error || result.message || "E-posta ve şifre alanları zorunludur.");
-  }
-  
-  throw new Error(result.error || result.message || "Giriş yapılamadı. Lütfen tekrar deneyin.");
-}
+	  const raw = (result.error || result.message || "").trim();
+	  const normalized = raw.toLowerCase();
+
+	  if (status === 401) {
+	    if (!raw || normalized.includes("invalid credentials") || normalized.includes("unauthorized")) {
+	      throw new Error("E-posta veya şifre hatalı. Lütfen kontrol edin.");
+	    }
+	    throw new Error(raw);
+	  }
+	  if (status === 400) {
+	    if (!raw || normalized.includes("bad request")) {
+	      throw new Error("E-posta ve şifre alanları zorunludur.");
+	    }
+	    throw new Error(raw);
+	  }
+	  
+	  throw new Error(raw || "Giriş yapılamadı. Lütfen tekrar deneyin.");
+	}
 
 /**
  * Extract error message from error object
@@ -452,21 +466,30 @@ export const useAuthStore = create<AuthStore>()(
                 state.isLoading = false;
                 state.error = null;
               });
-            } catch (error: unknown) {
-              let errorMessage = extractErrorMessage(error);
+	            } catch (error: unknown) {
+	              const hasTwoFactorFlag =
+	                error instanceof Error &&
+	                "requiresTwoFactor" in error &&
+	                Boolean((error as Error & { requiresTwoFactor?: boolean }).requiresTwoFactor);
 
-              if (isNetworkError(errorMessage)) {
-                errorMessage = "İnternet bağlantınızı kontrol edin.";
-              }
+	              let errorMessage = extractErrorMessage(error);
 
-              set((state) => {
-                state.isLoading = false;
-                state.error = errorMessage;
-              });
+	              if (isNetworkError(errorMessage)) {
+	                errorMessage = "İnternet bağlantınızı kontrol edin.";
+	              }
 
-              throw new Error(errorMessage);
-            }
-          },
+	              set((state) => {
+	                state.isLoading = false;
+	                state.error = errorMessage;
+	              });
+
+	              if (hasTwoFactorFlag && error instanceof Error) {
+	                throw error;
+	              }
+
+	              throw new Error(errorMessage);
+	            }
+	          },
 
           // Demo Login action (bypasses Appwrite)
           demoLogin: () => {

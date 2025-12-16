@@ -140,7 +140,7 @@ src/
 └── __tests__/            # Test files
 ```
 
-Detaylı geliştirme kuralları için [AGENTS.md](./AGENTS.md) dosyasına bakın.
+Detaylı geliştirme kuralları için [docs/guides/development.md](./docs/guides/development.md) dosyasına bakın.
 
 ## 🔒 Güvenlik
 
@@ -183,8 +183,27 @@ vercel
 
 ## 📚 Dokümantasyon
 
-- [AGENTS.md](./AGENTS.md) - Development guidelines ve build komutları
-- [DEBUG.md](./DEBUG.md) - VS Code debugging rehberi
+Tüm teknik dokümantasyon `docs/` klasöründe organize edilmiştir:
+
+### Rehberler (`docs/guides/`)
+- [development.md](./docs/guides/development.md) - Geliştirici rehberi
+- [testing.md](./docs/guides/testing.md) - Test rehberi
+- [deployment.md](./docs/guides/deployment.md) - Deployment rehberi
+- [monitoring.md](./docs/guides/monitoring.md) - Monitoring rehberi
+- [oauth-setup.md](./docs/guides/oauth-setup.md) - OAuth kurulumu
+
+### Referans (`docs/reference/`)
+- [api-endpoints.md](./docs/reference/api-endpoints.md) - API endpoint listesi
+- [components.md](./docs/reference/components.md) - React component referansı
+- [types.md](./docs/reference/types.md) - TypeScript tip tanımları
+- [hooks-utilities.md](./docs/reference/hooks-utilities.md) - Hook ve utility fonksiyonları
+
+### Tasarım (`docs/design/`)
+- [design-system.md](./docs/design/design-system.md) - Kurumsal tasarım sistemi
+
+### Diğer
+- [PRD.md](./PRD.md) - Ürün gereksinimleri dokümanı
+- [PROJECT_METRICS.md](./PROJECT_METRICS.md) - Proje metrikleri
 - `.env.example` - Environment variables şablonu
 
 ## 🤝 Katkıda Bulunma
@@ -241,7 +260,7 @@ npm run dev
 Sorun yaşıyorsanız:
 1. [Issues](https://github.com/your-repo/issues) sayfasına bakın
 2. Yeni bir issue açın
-3. DEBUG.md dosyasına bakın (debugging bilgileri için)
+3. [docs/guides/development.md](./docs/guides/development.md) dosyasına bakın
 
 ---
 

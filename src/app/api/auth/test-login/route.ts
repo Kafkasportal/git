@@ -4,6 +4,8 @@ import { appwriteUsers } from "@/lib/appwrite/api";
 import { verifyPassword } from "@/lib/auth/password";
 import { serializeSessionCookie } from "@/lib/auth/session";
 import logger from "@/lib/logger";
+import { Query } from "node-appwrite";
+import { getServerUsers } from "@/lib/appwrite/server";
 
 /**
  * Test login endpoint - Development only
@@ -55,6 +57,18 @@ export async function GET() {
       return NextResponse.json({ error: "Şifre hatalı" }, { status: 401 });
     }
 
+    // Resolve Appwrite Auth userId for session consistency
+    const serverUsers = getServerUsers();
+    const emailLower = email.toLowerCase().trim();
+    const authUsers = await serverUsers.list([
+      Query.equal("email", emailLower),
+      Query.limit(1),
+    ]);
+    const authUser = authUsers.users?.[0];
+    if (!authUser) {
+      return NextResponse.json({ error: "Kullanıcı bulunamadı" }, { status: 401 });
+    }
+
     // Create session
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const expireDate = new Date();
@@ -62,7 +76,7 @@ export async function GET() {
 
     const sessionData = {
       sessionId,
-      userId: user.id,
+      userId: authUser.$id,
       expire: expireDate.toISOString(),
     };
 
