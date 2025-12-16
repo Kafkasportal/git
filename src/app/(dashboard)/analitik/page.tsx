@@ -66,7 +66,7 @@ function AnalyticsPageContent() {
 
   // Get session metrics from session tracking module
   const sessionMetrics = useMemo(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof globalThis.window !== 'undefined') {
       return SessionTracking.getSessionMetrics();
     }
     return { avgSessionDuration: 0, bounceRate: 0, pagesPerSession: 0, totalSessions: 0, activeSessions: 0 };

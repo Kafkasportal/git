@@ -26,7 +26,7 @@ vi.mock('@/lib/api/route-helpers', () => ({
 // Mock sanitization
 vi.mock('@/lib/sanitization', () => ({
   sanitizePhone: vi.fn((phone) => {
-    const cleaned = phone.replace(/\D/g, '');
+    const cleaned = phone.replaceAll(/\D/g, '');
     if (cleaned.startsWith('0')) {
       return cleaned.substring(1);
     }

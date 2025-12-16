@@ -29,8 +29,8 @@ interface KeyboardNavigationContextType {
 const KeyboardNavigationContext = createContext<KeyboardNavigationContextType | null>(null);
 
 interface KeyboardNavigationProviderProps {
-  children: ReactNode;
-  enabled?: boolean;
+  readonly children: ReactNode;
+  readonly enabled?: boolean;
 }
 
 export function KeyboardNavigationProvider({
@@ -65,7 +65,7 @@ export function KeyboardNavigationProvider({
       description: 'Global arama',
       action: () => {
         const event = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true });
-        window.dispatchEvent(event);
+        globalThis.window.dispatchEvent(event);
       },
       category: 'Genel',
       global: true,
@@ -142,23 +142,26 @@ export function KeyboardNavigationProvider({
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    globalThis.window.addEventListener('keydown', handleKeyDown);
+    return () => globalThis.window.removeEventListener('keydown', handleKeyDown);
   }, [isEnabled, shortcuts]);
 
+  const contextValue = useMemo(
+    () => ({
+      shortcuts,
+      registerShortcut,
+      unregisterShortcut,
+      isEnabled,
+      setEnabled,
+      showHelp,
+      hideHelp,
+      isHelpOpen,
+    }),
+    [shortcuts, registerShortcut, unregisterShortcut, isEnabled, setEnabled, showHelp, hideHelp, isHelpOpen]
+  );
+
   return (
-    <KeyboardNavigationContext.Provider
-      value={{
-        shortcuts,
-        registerShortcut,
-        unregisterShortcut,
-        isEnabled,
-        setEnabled,
-        showHelp,
-        hideHelp,
-        isHelpOpen,
-      }}
-    >
+    <KeyboardNavigationContext.Provider value={contextValue}>
       {children}
     </KeyboardNavigationContext.Provider>
   );

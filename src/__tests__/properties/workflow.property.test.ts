@@ -47,6 +47,9 @@ const validUserRoles = fc.uniqueArray(
   { minLength: 1, maxLength: 3 }
 );
 
+const workflowMinDate = new Date('2020-01-01T00:00:00.000Z');
+const workflowMaxDate = new Date('2030-01-01T00:00:00.000Z');
+
 describe('Workflow Property Tests', () => {
   /**
    * **Feature: code-quality-improvement, Property 8: Workflow State Machine Validity**
@@ -224,16 +227,16 @@ describe('Workflow Property Tests', () => {
     });
   });
 
-  describe('Workflow Statistics', () => {
-    test.prop([
-      fc.array(
-        fc.record({
-          workflowStage: validWorkflowStage,
-          createdAt: fc.date({ min: new Date('2020-01-01'), max: new Date() }).map(d => d.toISOString()),
-        }),
-        { minLength: 0, maxLength: 50 }
-      ),
-    ], { numRuns: 50 })(
+	  describe('Workflow Statistics', () => {
+	    test.prop([
+	      fc.array(
+	        fc.record({
+	          workflowStage: validWorkflowStage,
+	          createdAt: fc.date({ min: workflowMinDate, max: workflowMaxDate }).map((d) => d.toISOString()),
+	        }),
+	        { minLength: 0, maxLength: 50 }
+	      ),
+	    ], { numRuns: 50 })(
       'statistics calculation is consistent',
       (items) => {
         const stats = calculateWorkflowStatistics(items);

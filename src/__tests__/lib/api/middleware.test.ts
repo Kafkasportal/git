@@ -36,6 +36,8 @@ import {
     withLogging,
     withMethodCheck,
     buildApiRoute,
+    type RouteContext,
+    type RouteHandler,
 } from '@/lib/api/middleware';
 import { requireModuleAccess } from '@/lib/api/auth-utils';
 

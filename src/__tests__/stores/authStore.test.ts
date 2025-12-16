@@ -26,7 +26,7 @@ import { useAuthStore, backendUserToStoreUser } from '@/stores/authStore';
 describe('AuthStore', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        global.fetch = vi.fn();
+        globalThis.fetch = vi.fn();
 
         // Mock localStorage
         const localStorageMock = {
@@ -35,7 +35,7 @@ describe('AuthStore', () => {
             removeItem: vi.fn(),
             clear: vi.fn(),
         };
-        Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+        Object.defineProperty(globalThis.window, 'localStorage', { value: localStorageMock });
 
         // Reset store state
         useAuthStore.setState({
@@ -137,7 +137,7 @@ describe('AuthStore', () => {
                 configurable: true,
             });
 
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ success: true }),
             });
@@ -156,7 +156,7 @@ describe('AuthStore', () => {
         });
 
         it('should clear localStorage on logout', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ success: true }),
             });
@@ -180,7 +180,7 @@ describe('AuthStore', () => {
         it('should call callback after logout', async () => {
             const callback = vi.fn();
 
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve({ success: true }),
             });
@@ -523,7 +523,7 @@ describe('Auth Selectors', () => {
 describe('Login Flow', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        global.fetch = vi.fn();
+        globalThis.fetch = vi.fn();
 
         const localStorageMock = {
             getItem: vi.fn(),
@@ -531,7 +531,7 @@ describe('Login Flow', () => {
             removeItem: vi.fn(),
             clear: vi.fn(),
         };
-        Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+        Object.defineProperty(globalThis.window, 'localStorage', { value: localStorageMock });
 
         useAuthStore.setState({
             user: null,
@@ -555,7 +555,7 @@ describe('Login Flow', () => {
             permissions: ['donations:access'],
         };
 
-        (global.fetch as ReturnType<typeof vi.fn>)
+        (globalThis.fetch as ReturnType<typeof vi.fn>)
             .mockResolvedValueOnce({
                 ok: true,
                 json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
@@ -583,7 +583,7 @@ describe('Login Flow', () => {
     });
 
     it('should handle 401 unauthorized error', async () => {
-        (global.fetch as ReturnType<typeof vi.fn>)
+        (globalThis.fetch as ReturnType<typeof vi.fn>)
             .mockResolvedValueOnce({
                 ok: true,
                 json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
@@ -602,7 +602,7 @@ describe('Login Flow', () => {
     });
 
     it('should handle 429 rate limit error', async () => {
-        (global.fetch as ReturnType<typeof vi.fn>)
+        (globalThis.fetch as ReturnType<typeof vi.fn>)
             .mockResolvedValueOnce({
                 ok: true,
                 json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
@@ -621,7 +621,7 @@ describe('Login Flow', () => {
     });
 
     it('should handle 400 bad request error', async () => {
-        (global.fetch as ReturnType<typeof vi.fn>)
+        (globalThis.fetch as ReturnType<typeof vi.fn>)
             .mockResolvedValueOnce({
                 ok: true,
                 json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
@@ -640,7 +640,7 @@ describe('Login Flow', () => {
     });
 
     it('should handle generic error response', async () => {
-        (global.fetch as ReturnType<typeof vi.fn>)
+        (globalThis.fetch as ReturnType<typeof vi.fn>)
             .mockResolvedValueOnce({
                 ok: true,
                 json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
@@ -659,7 +659,7 @@ describe('Login Flow', () => {
     });
 
     it('should handle CSRF token fetch failure', async () => {
-        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
             ok: false,
             json: () => Promise.resolve({ success: false }),
         });
@@ -672,7 +672,7 @@ describe('Login Flow', () => {
     });
 
     it('should handle CSRF token response with success false', async () => {
-        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
             ok: true,
             json: () => Promise.resolve({ success: false }),
         });
@@ -685,7 +685,7 @@ describe('Login Flow', () => {
     });
 
     it('should handle network error', async () => {
-        (global.fetch as ReturnType<typeof vi.fn>)
+        (globalThis.fetch as ReturnType<typeof vi.fn>)
             .mockResolvedValueOnce({
                 ok: true,
                 json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
@@ -700,7 +700,7 @@ describe('Login Flow', () => {
     });
 
     it('should handle string error', async () => {
-        (global.fetch as ReturnType<typeof vi.fn>)
+        (globalThis.fetch as ReturnType<typeof vi.fn>)
             .mockResolvedValueOnce({
                 ok: true,
                 json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
@@ -715,7 +715,7 @@ describe('Login Flow', () => {
     });
 
     it('should handle 2FA required error', async () => {
-        (global.fetch as ReturnType<typeof vi.fn>)
+        (globalThis.fetch as ReturnType<typeof vi.fn>)
             .mockResolvedValueOnce({
                 ok: true,
                 json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
@@ -743,7 +743,7 @@ describe('Login Flow', () => {
     });
 
     it('should handle 401 status with error message', async () => {
-        (global.fetch as ReturnType<typeof vi.fn>)
+        (globalThis.fetch as ReturnType<typeof vi.fn>)
             .mockResolvedValueOnce({
                 ok: true,
                 json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
@@ -765,7 +765,7 @@ describe('Login Flow', () => {
     });
 
     it('should handle 400 status', async () => {
-        (global.fetch as ReturnType<typeof vi.fn>)
+        (globalThis.fetch as ReturnType<typeof vi.fn>)
             .mockResolvedValueOnce({
                 ok: true,
                 json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
@@ -787,7 +787,7 @@ describe('Login Flow', () => {
     });
 
     it('should handle invalid response (null result)', async () => {
-        (global.fetch as ReturnType<typeof vi.fn>)
+        (globalThis.fetch as ReturnType<typeof vi.fn>)
             .mockResolvedValueOnce({
                 ok: true,
                 json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
@@ -809,7 +809,7 @@ describe('Login Flow', () => {
 describe('InitializeAuth Flow', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        global.fetch = vi.fn();
+        globalThis.fetch = vi.fn();
 
         const localStorageMock = {
             getItem: vi.fn(),
@@ -817,7 +817,7 @@ describe('InitializeAuth Flow', () => {
             removeItem: vi.fn(),
             clear: vi.fn(),
         };
-        Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+        Object.defineProperty(globalThis.window, 'localStorage', { value: localStorageMock });
 
         useAuthStore.setState({
             user: null,
@@ -867,7 +867,7 @@ describe('InitializeAuth Flow', () => {
             permissions: ['donations:read', 'beneficiaries:read'],
         };
 
-        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
             ok: true,
             json: () => Promise.resolve({ success: true, data: mockUser }),
         });
@@ -885,7 +885,7 @@ describe('InitializeAuth Flow', () => {
     it('should clear state when API returns no valid session', async () => {
         (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(null);
 
-        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
             ok: false,
             json: () => Promise.resolve({ success: false }),
         });
@@ -903,7 +903,7 @@ describe('InitializeAuth Flow', () => {
     it('should handle invalid localStorage JSON', async () => {
         (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue('invalid-json');
 
-        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
             ok: false,
             json: () => Promise.resolve({ success: false }),
         });
@@ -923,7 +923,7 @@ describe('InitializeAuth Flow', () => {
         (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(null);
 
         // Simulate a network error
-        (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Network error'));
+        (globalThis.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Network error'));
 
         await act(async () => {
             useAuthStore.getState().initializeAuth();
@@ -946,7 +946,7 @@ describe('InitializeAuth Flow', () => {
             })
         );
 
-        (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Network error'));
+        (globalThis.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Network error'));
 
         await act(async () => {
             useAuthStore.getState().initializeAuth();
@@ -962,7 +962,7 @@ describe('InitializeAuth Flow', () => {
             .mockReturnValueOnce(null) // First call for demo check
             .mockReturnValueOnce('invalid-json'); // Second call for fallback
 
-        (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Network error'));
+        (globalThis.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Network error'));
 
         await act(async () => {
             useAuthStore.getState().initializeAuth();
@@ -993,16 +993,16 @@ describe('AuthStore SSR & Storage Fallback', () => {
     });
 
     it('should handle deeply nested error responses', async () => {
-        global.fetch = vi.fn();
+        globalThis.fetch = vi.fn();
         const localStorageMock = {
             getItem: vi.fn(),
             setItem: vi.fn(),
             removeItem: vi.fn(),
             clear: vi.fn(),
         };
-        Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+        Object.defineProperty(globalThis.window, 'localStorage', { value: localStorageMock });
 
-        (global.fetch as ReturnType<typeof vi.fn>)
+        (globalThis.fetch as ReturnType<typeof vi.fn>)
             .mockResolvedValueOnce({
                 ok: true,
                 json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
@@ -1024,16 +1024,16 @@ describe('AuthStore SSR & Storage Fallback', () => {
     });
 
     it('should handle responses with only message field', async () => {
-        global.fetch = vi.fn();
+        globalThis.fetch = vi.fn();
         const localStorageMock = {
             getItem: vi.fn(),
             setItem: vi.fn(),
             removeItem: vi.fn(),
             clear: vi.fn(),
         };
-        Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+        Object.defineProperty(globalThis.window, 'localStorage', { value: localStorageMock });
 
-        (global.fetch as ReturnType<typeof vi.fn>)
+        (globalThis.fetch as ReturnType<typeof vi.fn>)
             .mockResolvedValueOnce({
                 ok: true,
                 json: () => Promise.resolve({ success: true, token: 'csrf-token' }),
@@ -1058,7 +1058,7 @@ describe('AuthStore SSR & Storage Fallback', () => {
 describe('Logout Edge Cases', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        global.fetch = vi.fn();
+        globalThis.fetch = vi.fn();
 
         const localStorageMock = {
             getItem: vi.fn(),
@@ -1066,7 +1066,7 @@ describe('Logout Edge Cases', () => {
             removeItem: vi.fn(),
             clear: vi.fn(),
         };
-        Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+        Object.defineProperty(globalThis.window, 'localStorage', { value: localStorageMock });
     });
 
     it('should redirect to login when no callback provided', async () => {
@@ -1077,7 +1077,7 @@ describe('Logout Edge Cases', () => {
             configurable: true,
         });
 
-        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
             ok: true,
             json: () => Promise.resolve({ success: true }),
         });
@@ -1098,7 +1098,7 @@ describe('Logout Edge Cases', () => {
             configurable: true,
         });
 
-        (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('API error'));
+        (globalThis.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('API error'));
 
         // Should not throw
         await act(async () => {

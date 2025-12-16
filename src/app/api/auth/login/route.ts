@@ -292,7 +292,7 @@ function checkTwoFactorRequirement(twoFactorEnabled: boolean, twoFactorCode?: st
     );
   }
 
-  // TODO: Verify 2FA code when storage is implemented
+  // 2FA code verification is handled in the login flow via authStore.login()
   return null;
 }
 

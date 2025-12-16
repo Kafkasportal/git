@@ -189,7 +189,7 @@ export function getFocusableElements(container: HTMLElement): HTMLElement[] {
   return Array.from(container.querySelectorAll<HTMLElement>(focusableSelectors))
     .filter((el) => {
       // Check if element is visible
-      const style = window.getComputedStyle(el);
+      const style = globalThis.window.getComputedStyle(el);
       return (
         style.display !== 'none' &&
         style.visibility !== 'hidden' &&
@@ -209,18 +209,17 @@ export function createFocusTrap(container: HTMLElement): () => void {
     if (focusable.length === 0) return;
 
     const first = focusable[0];
-    const last = focusable[focusable.length - 1];
+    const last = focusable.at(-1);
+    if (!first || !last) return;
 
-    if (e.shiftKey) {
-      if (document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      }
-    } else {
-      if (document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+      return;
+    }
+    if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
     }
   };
 
@@ -335,6 +334,37 @@ function handleSpecialKeys(
 }
 
 /**
+ * Focus item at index if valid and different from current
+ */
+function focusItemIfValid(
+  items: HTMLElement[],
+  newIndex: number | null,
+  currentIndex: number
+): void {
+  if (newIndex !== null && newIndex !== currentIndex && items[newIndex]) {
+    items[newIndex].focus();
+  }
+}
+
+/**
+ * Try navigation in a specific direction
+ */
+function tryNavigation(
+  e: KeyboardEvent,
+  items: HTMLElement[],
+  currentIndex: number,
+  loop: boolean,
+  navigationFn: (e: KeyboardEvent, items: HTMLElement[], currentIndex: number, loop: boolean) => number | null
+): number | null {
+  const newIndex = navigationFn(e, items, currentIndex, loop);
+  if (newIndex !== null) {
+    focusItemIfValid(items, newIndex, currentIndex);
+    return newIndex;
+  }
+  return null;
+}
+
+/**
  * Handle arrow key navigation in a list
  */
 export function handleArrowNavigation(
@@ -348,39 +378,28 @@ export function handleArrowNavigation(
 ): number {
   const { orientation = 'vertical', loop = true } = options;
 
-  const isVertical = orientation === 'vertical' || orientation === 'both';
-  const isHorizontal = orientation === 'horizontal' || orientation === 'both';
-
-  let newIndex: number | null = null;
-
   // Try special keys first
-  newIndex = handleSpecialKeys(e, items.length);
-  if (newIndex !== null) {
-    if (newIndex !== currentIndex && items[newIndex]) {
-      items[newIndex].focus();
-    }
-    return newIndex;
+  const specialKeyIndex = handleSpecialKeys(e, items.length);
+  if (specialKeyIndex !== null) {
+    focusItemIfValid(items, specialKeyIndex, currentIndex);
+    return specialKeyIndex;
   }
 
   // Try vertical navigation
+  const isVertical = orientation === 'vertical' || orientation === 'both';
   if (isVertical) {
-    newIndex = handleVerticalNavigation(e, items, currentIndex, loop);
-    if (newIndex !== null) {
-      if (newIndex !== currentIndex && items[newIndex]) {
-        items[newIndex].focus();
-      }
-      return newIndex;
+    const verticalIndex = tryNavigation(e, items, currentIndex, loop, handleVerticalNavigation);
+    if (verticalIndex !== null) {
+      return verticalIndex;
     }
   }
 
   // Try horizontal navigation
+  const isHorizontal = orientation === 'horizontal' || orientation === 'both';
   if (isHorizontal) {
-    newIndex = handleHorizontalNavigation(e, items, currentIndex, loop);
-    if (newIndex !== null) {
-      if (newIndex !== currentIndex && items[newIndex]) {
-        items[newIndex].focus();
-      }
-      return newIndex;
+    const horizontalIndex = tryNavigation(e, items, currentIndex, loop, handleHorizontalNavigation);
+    if (horizontalIndex !== null) {
+      return horizontalIndex;
     }
   }
 
@@ -396,22 +415,24 @@ export function handleArrowNavigation(
  */
 function parseColor(color: string): { r: number; g: number; b: number } | null {
   // Handle hex
-  const hexMatch = color.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+  const hexRegex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i;
+  const hexMatch = hexRegex.exec(color);
   if (hexMatch) {
     return {
-      r: parseInt(hexMatch[1], 16),
-      g: parseInt(hexMatch[2], 16),
-      b: parseInt(hexMatch[3], 16),
+      r: Number.parseInt(hexMatch[1], 16),
+      g: Number.parseInt(hexMatch[2], 16),
+      b: Number.parseInt(hexMatch[3], 16),
     };
   }
 
   // Handle rgb/rgba
-  const rgbMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  const rgbRegex = /rgba?\((\d+),\s*(\d+),\s*(\d+)/;
+  const rgbMatch = rgbRegex.exec(color);
   if (rgbMatch) {
     return {
-      r: parseInt(rgbMatch[1]),
-      g: parseInt(rgbMatch[2]),
-      b: parseInt(rgbMatch[3]),
+      r: Number.parseInt(rgbMatch[1], 10),
+      g: Number.parseInt(rgbMatch[2], 10),
+      b: Number.parseInt(rgbMatch[3], 10),
     };
   }
 
@@ -502,8 +523,8 @@ export const srOnlyStyles = {
  * Check if user prefers reduced motion
  */
 export function prefersReducedMotion(): boolean {
-  if (typeof window === 'undefined') return false;
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (globalThis.window === undefined) return false;
+  return globalThis.window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 /**
@@ -521,10 +542,10 @@ export function getMotionSafeDuration(duration: number): number {
  * Check if user prefers high contrast
  */
 export function prefersHighContrast(): boolean {
-  if (typeof window === 'undefined') return false;
+  if (globalThis.window === undefined) return false;
   return (
-    window.matchMedia('(prefers-contrast: more)').matches ||
-    window.matchMedia('(forced-colors: active)').matches
+    globalThis.window.matchMedia('(prefers-contrast: more)').matches ||
+    globalThis.window.matchMedia('(forced-colors: active)').matches
   );
 }
 
@@ -590,7 +611,7 @@ export function runA11yAudit(container: HTMLElement = document.body): A11yCheckR
   const headings = container.querySelectorAll('h1, h2, h3, h4, h5, h6');
   let previousLevel = 0;
   headings.forEach((heading) => {
-    const level = parseInt(heading.tagName[1]);
+    const level = Number.parseInt(heading.tagName[1], 10);
     if (level > previousLevel + 1 && previousLevel > 0) {
       warnings.push({
         type: 'missing-heading',
@@ -629,7 +650,7 @@ export function runA11yAudit(container: HTMLElement = document.body): A11yCheckR
 
   // Check interactive elements for focus visibility
   container.querySelectorAll('button, a[href], input, select, textarea, [tabindex]').forEach((el) => {
-    const style = window.getComputedStyle(el);
+    const style = globalThis.window.getComputedStyle(el);
     if (style.outlineStyle === 'none' && style.boxShadow === 'none') {
       warnings.push({
         type: 'missing-focus',

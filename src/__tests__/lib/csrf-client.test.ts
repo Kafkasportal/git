@@ -50,7 +50,7 @@ describe('CSRF Client Utilities', () => {
     });
 
     describe('getCsrfTokenFromCookie', () => {
-        const originalDocument = global.document;
+        const originalDocument = globalThis.document;
 
         afterEach(() => {
             if (originalDocument) {
@@ -62,14 +62,14 @@ describe('CSRF Client Utilities', () => {
         });
 
         it('should return null when document is undefined', () => {
-            const doc = global.document;
+            const doc = globalThis.document;
             // @ts-expect-error - Testing undefined document
-            delete global.document;
+            delete globalThis.document;
 
             const result = getCsrfTokenFromCookie();
             expect(result).toBeNull();
 
-            global.document = doc;
+            globalThis.document = doc;
         });
 
         it('should return token from cookie', () => {

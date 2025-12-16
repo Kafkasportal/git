@@ -40,8 +40,7 @@ export const appwriteParameters = {
     return await updateDocument<ParameterDocument>("parameters", id, data);
   },
 
-  remove: async (id: string) => {
+  remove: async (id: string): Promise<void> => {
     return await deleteDocument("parameters", id);
   },
 };
-

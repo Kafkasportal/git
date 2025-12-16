@@ -1,19 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import logger from '@/lib/logger';
-import { extractParams, successResponse, errorResponse } from '@/lib/api/route-helpers';
-import { validatePasswordStrength } from '@/lib/auth/password';
 import {
   buildErrorResponse,
   requireAuthenticatedUser,
   verifyCsrfToken,
 } from '@/lib/api/auth-utils';
-import { Users } from 'node-appwrite';
-import { getServerClient } from '@/lib/appwrite/server';
-import {
-  transformAppwriteUser,
-  normalizeOptionalPermissions,
-  buildUserPreferences,
-} from '@/lib/appwrite/user-transform';
+import { appwriteUsers } from '@/lib/appwrite/api';
+import { hashPassword, validatePasswordStrength } from '@/lib/auth/password';
+import { ALL_PERMISSIONS, type PermissionValue } from '@/types/permissions';
 
 function createUsersClient(serverClient: unknown): Users {
   // In production, `Users` is a class and must be constructed with `new`.
@@ -36,64 +30,53 @@ function createUsersClient(serverClient: unknown): Users {
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function sanitizeUser<T extends Record<string, unknown>>(user: T): Omit<T, 'passwordHash'> {
+  const { passwordHash: _passwordHash, password: _password, ...rest } = user as T & {
+    password?: unknown;
+    passwordHash?: unknown;
+  };
+  return rest as Omit<T, 'passwordHash'>;
+}
+
+function normalizePermissions(value: unknown): PermissionValue[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((permission): permission is PermissionValue => typeof permission === 'string');
+}
+
+function validatePermissions(permissions: PermissionValue[]): boolean {
+  const allowed = ALL_PERMISSIONS as readonly string[];
+  return permissions.every((permission) => allowed.includes(permission));
+}
+
 /**
  * Validate user update request body
  */
-function validateUpdateBody(body: Record<string, unknown>): { valid: boolean; error?: string } {
+function validateUpdateBody(body: Record<string, unknown>): { valid: boolean; errors?: string[] } {
+  const errors: string[] = [];
+
   if (body.email && typeof body.email === 'string' && !EMAIL_REGEX.test(body.email)) {
-    return { valid: false, error: 'Geçersiz e-posta adresi' };
+    errors.push('Geçerli bir e-posta adresi gerekli');
   }
 
-  if (body.name && typeof body.name === 'string' && body.name.trim().length < 2) {
-    return { valid: false, error: 'Ad Soyad en az 2 karakter olmalıdır' };
+  if (body.name && typeof body.name === 'string' && body.name.trim().length < 3) {
+    errors.push('İsim en az 3 karakter olmalıdır');
   }
 
   if (body.role && typeof body.role === 'string' && body.role.trim().length < 2) {
-    return { valid: false, error: 'Rol bilgisi en az 2 karakter olmalıdır' };
+    errors.push('Rol en az 2 karakter olmalıdır');
   }
 
-  const permissions = normalizeOptionalPermissions(body.permissions);
-  if (body.permissions && (!permissions || permissions.length === 0)) {
-    return { valid: false, error: 'Geçerli en az bir modül erişimi seçilmelidir' };
+  if (body.permissions !== undefined) {
+    const permissions = normalizePermissions(body.permissions);
+    if (permissions.length === 0 || !validatePermissions(permissions)) {
+      errors.push('Geçerli en az bir modül erişimi seçilmelidir');
+    }
   }
 
-  return { valid: true };
-}
-
-/**
- * Update user basic info (name, email)
- */
-async function updateUserBasicInfo(
-  users: Users,
-  id: string,
-  body: Record<string, unknown>
-): Promise<void> {
-  if (body.name && typeof body.name === 'string') {
-    await users.updateName(id, body.name.trim());
-  }
-  if (body.email && typeof body.email === 'string') {
-    await users.updateEmail(id, body.email.trim().toLowerCase());
-  }
-}
-
-/**
- * Update user password if provided
- */
-async function updateUserPassword(
-  users: Users,
-  id: string,
-  password: unknown
-): Promise<{ valid: boolean; error?: string }> {
-  if (!password || typeof password !== 'string' || password.trim().length === 0) {
-    return { valid: true };
+  if (errors.length > 0) {
+    return { valid: false, errors };
   }
 
-  const passwordValidation = validatePasswordStrength(password);
-  if (!passwordValidation.valid) {
-    return { valid: false, error: passwordValidation.error || 'Şifre yeterince güçlü değil' };
-  }
-
-  await users.updatePassword(id, password.trim());
   return { valid: true };
 }
 
@@ -101,11 +84,11 @@ async function updateUserPassword(
  * GET /api/users/[id]
  */
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await extractParams(params);
+  const { id } = await params;
   try {
     const { user: currentUser } = await requireAuthenticatedUser();
     if (!currentUser.permissions.includes('users:manage')) {
-      return errorResponse('Bu kaynağa erişim yetkiniz yok', 403);
+      return NextResponse.json({ success: false, error: 'Bu kaynağa erişim yetkiniz yok' }, { status: 403 });
     }
 
     // Get user from Appwrite Auth
@@ -130,66 +113,99 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       method: 'GET',
       userId: id,
     });
-
-    const errorMessage = error instanceof Error ? error.message : '';
-    if (errorMessage.includes('not found')) {
-      return errorResponse('Kullanıcı bulunamadı', 404);
-    }
-
-    return errorResponse('Kullanıcı bilgisi alınamadı', 500);
+    return NextResponse.json(
+      { success: false, error: 'Kullanıcı bilgisi alınamadı' },
+      { status: 500 }
+    );
   }
 }
 
 /**
- * PATCH /api/users/[id]
+ * PUT/PATCH /api/users/[id]
  */
 async function updateUserHandler(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await extractParams(params);
+  const { id } = await params;
   try {
     await verifyCsrfToken(request);
     const { user } = await requireAuthenticatedUser();
     if (!user.permissions.includes('users:manage')) {
-      return errorResponse('Kullanıcı güncelleme yetkiniz bulunmuyor', 403);
+      return NextResponse.json(
+        { success: false, error: 'Bu kaynağa erişim yetkiniz yok' },
+        { status: 403 }
+      );
     }
 
-    const body = (await request.json()) as Record<string, unknown>;
+    let body: Record<string, unknown>;
+    try {
+      body = (await request.json()) as Record<string, unknown>;
+    } catch {
+      return NextResponse.json(
+        { success: false, error: 'Geçersiz istek verisi' },
+        { status: 400 }
+      );
+    }
 
     // Validate request body
     const validation = validateUpdateBody(body);
     if (!validation.valid) {
-      return errorResponse(validation.error || 'Geçersiz istek', 400);
+      return NextResponse.json(
+        { success: false, error: 'Doğrulama hatası', details: validation.errors },
+        { status: 400 }
+      );
     }
 
     const serverClient = getServerClient();
     const users = createUsersClient(serverClient);
 
-    // Update basic user info
-    await updateUserBasicInfo(users, id, body);
-
-    // Update password if provided
-    const passwordResult = await updateUserPassword(users, id, body.password);
-    if (!passwordResult.valid) {
-      return errorResponse(passwordResult.error || 'Şifre güncellenemedi', 400);
+    if (body.email && typeof body.email === 'string') {
+      updateData.email = body.email.trim().toLowerCase();
     }
 
-    // Update role and permissions in preferences
-    const permissions = normalizeOptionalPermissions(body.permissions);
-    const currentUser = await users.get(id);
-    const newPrefs = buildUserPreferences(currentUser.prefs || {}, {
-      role: body.role && typeof body.role === 'string' ? body.role.trim() : undefined,
-      permissions,
+    if (body.role && typeof body.role === 'string') {
+      updateData.role = body.role.trim();
+    }
+
+    if (body.permissions !== undefined) {
+      updateData.permissions = normalizePermissions(body.permissions);
+    }
+
+    if (body.isActive !== undefined && typeof body.isActive === 'boolean') {
+      updateData.isActive = body.isActive;
+    }
+
+    if (body.phone !== undefined && typeof body.phone === 'string') {
+      const phone = body.phone.trim();
+      updateData.phone = phone.length > 0 ? phone : undefined;
+    }
+
+    if (body.password !== undefined && typeof body.password === 'string') {
+      const password = body.password.trim();
+      if (password.length > 0) {
+        const passwordValidation = validatePasswordStrength(password);
+        if (!passwordValidation.valid) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'Doğrulama hatası',
+              details: [passwordValidation.error || 'Şifre yeterince güçlü değil'],
+            },
+            { status: 400 }
+          );
+        }
+        updateData.passwordHash = await hashPassword(password);
+      }
+    }
+
+    const updated = await appwriteUsers.update(id, updateData);
+
+    return NextResponse.json({
+      success: true,
+      data: sanitizeUser(updated as Record<string, unknown>),
+      message: 'Kullanıcı başarıyla güncellendi',
     });
-
-    await users.updatePrefs(id, newPrefs);
-
-    // Get updated user
-    const updatedUser = await users.get(id);
-    const updatedData = transformAppwriteUser(updatedUser);
-
-    return successResponse(updatedData, 'Kullanıcı başarıyla güncellendi');
   } catch (error) {
     const authError = buildErrorResponse(error);
     if (authError) {
@@ -201,13 +217,10 @@ async function updateUserHandler(
       method: 'PATCH',
       userId: id,
     });
-
-    const errorMessage = error instanceof Error ? error.message : '';
-    if (errorMessage.includes('not found')) {
-      return errorResponse('Kullanıcı bulunamadı', 404);
-    }
-
-    return errorResponse('Güncelleme işlemi başarısız', 500);
+    return NextResponse.json(
+      { success: false, error: 'Güncelleme işlemi başarısız' },
+      { status: 500 }
+    );
   }
 }
 
@@ -218,12 +231,15 @@ async function deleteUserHandler(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await extractParams(params);
+  const { id } = await params;
   try {
     await verifyCsrfToken(request);
     const { user } = await requireAuthenticatedUser();
     if (!user.permissions.includes('users:manage')) {
-      return errorResponse('Kullanıcı silme yetkiniz bulunmuyor', 403);
+      return NextResponse.json(
+        { success: false, error: 'Bu kaynağa erişim yetkiniz yok' },
+        { status: 403 }
+      );
     }
 
     // Delete user from Appwrite Auth
@@ -231,7 +247,11 @@ async function deleteUserHandler(
     const users = createUsersClient(serverClient);
     await users.delete(id);
 
-    return successResponse(null, 'Kullanıcı başarıyla silindi');
+    return NextResponse.json({
+      success: true,
+      data: null,
+      message: 'Kullanıcı başarıyla silindi',
+    });
   } catch (error) {
     const authError = buildErrorResponse(error);
     if (authError) {
@@ -243,15 +263,13 @@ async function deleteUserHandler(
       method: 'DELETE',
       userId: id,
     });
-
-    const errorMessage = error instanceof Error ? error.message : '';
-    if (errorMessage.includes('not found')) {
-      return errorResponse('Kullanıcı bulunamadı', 404);
-    }
-
-    return errorResponse('Silme işlemi başarısız', 500);
+    return NextResponse.json(
+      { success: false, error: 'Silme işlemi başarısız' },
+      { status: 500 }
+    );
   }
 }
 
+export const PUT = updateUserHandler;
 export const PATCH = updateUserHandler;
 export const DELETE = deleteUserHandler;

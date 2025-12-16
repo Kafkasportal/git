@@ -5,7 +5,7 @@ describe('Student Form Validation', () => {
     it('validates required fields', () => {
         const validData = {
             applicant_name: 'Test Name',
-            applicant_tc_no: '12345678901',
+            applicant_tc_no: '10000000146',
             applicant_phone: '05551234567',
             university: 'Test University',
             department: 'Computer Science',
@@ -39,7 +39,7 @@ describe('Student Form Validation', () => {
     it('validates optional email field', () => {
         const dataWithEmail = {
             applicant_name: 'Test Name',
-            applicant_tc_no: '12345678901',
+            applicant_tc_no: '10000000146',
             applicant_phone: '05551234567',
             applicant_email: 'ahmet@example.com',
             university: 'Test University',
@@ -57,7 +57,7 @@ describe('Student Form Validation', () => {
     it('rejects invalid email format', () => {
         const invalidData = {
             applicant_name: 'Test Name',
-            applicant_tc_no: '12345678901',
+            applicant_tc_no: '10000000146',
             applicant_phone: '05551234567',
             applicant_email: 'invalid-email',
             university: 'Test University',
@@ -75,7 +75,7 @@ describe('Student Form Validation', () => {
     it('validates GPA range', () => {
         const validGPA = {
             applicant_name: 'Test Name',
-            applicant_tc_no: '12345678901',
+            applicant_tc_no: '10000000146',
             applicant_phone: '05551234567',
             university: 'Test University',
             department: 'Computer Science',
@@ -93,7 +93,7 @@ describe('Student Form Validation', () => {
     it('accepts optional fields as undefined', () => {
         const minimalData = {
             applicant_name: 'Test Name',
-            applicant_tc_no: '12345678901',
+            applicant_tc_no: '10000000146',
             applicant_phone: '05551234567',
             university: 'Test University',
             department: 'Computer Science',

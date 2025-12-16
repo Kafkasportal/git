@@ -58,10 +58,10 @@ function GeometricBackground() {
 // ANIMATED COUNTER COMPONENT
 // ============================================================================
 interface CounterProps {
-  end: number;
-  suffix?: string;
-  prefix?: string;
-  duration?: number;
+  readonly end: number;
+  readonly suffix?: string;
+  readonly prefix?: string;
+  readonly duration?: number;
 }
 
 function AnimatedCounter({ end, suffix = '', prefix = '', duration = 2 }: CounterProps) {
@@ -97,10 +97,10 @@ function AnimatedCounter({ end, suffix = '', prefix = '', duration = 2 }: Counte
 // FEATURE CARD COMPONENT
 // ============================================================================
 interface FeatureCardProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  index: number;
+  readonly icon: React.ReactNode;
+  readonly title: string;
+  readonly description: string;
+  readonly index: number;
 }
 
 function FeatureCard({ icon, title, description, index }: FeatureCardProps) {
@@ -137,10 +137,10 @@ function FeatureCard({ icon, title, description, index }: FeatureCardProps) {
 // STEP COMPONENT
 // ============================================================================
 interface StepProps {
-  number: number;
-  title: string;
-  description: string;
-  isLast?: boolean;
+  readonly number: number;
+  readonly title: string;
+  readonly description: string;
+  readonly isLast?: boolean;
 }
 
 function Step({ number, title, description, isLast = false }: StepProps) {

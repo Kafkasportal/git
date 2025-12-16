@@ -101,15 +101,16 @@ export async function GET(request: NextRequest) {
       // Ignore cleanup errors
     }
 
-    // Create custom session
+    // Create custom session (use Appwrite Auth user id for session consistency)
     const cookieStore = await cookies();
-    const userId = (user as UserDocument).$id || (user as UserDocument)._id || "";
+    const authUserId = appwriteUser.$id as string;
+    const userDocId = (user as UserDocument).$id || (user as UserDocument)._id || '';
     const expireTime = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days for OAuth
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
     const signedSession = serializeSessionCookie({
       sessionId,
-      userId,
+      userId: authUserId,
       expire: expireTime.toISOString(),
     });
 
@@ -134,16 +135,19 @@ export async function GET(request: NextRequest) {
 
     // Update last login
     try {
-      await appwriteUsers.update(userId, {
+      if (userDocId) {
+        await appwriteUsers.update(userDocId, {
         lastLogin: new Date().toISOString(),
-      });
+        });
+      }
     } catch {
       // Ignore if this fails
     }
 
     const maskedEmail = `${emailLower.substring(0, 3)}***`;
     logger.info("OAuth login successful", {
-      userId,
+      userId: authUserId,
+      userDocId,
       email: maskedEmail,
     });
 

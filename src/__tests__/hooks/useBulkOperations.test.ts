@@ -25,7 +25,7 @@ describe('useBulkOperations', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        global.fetch = vi.fn();
+        globalThis.fetch = vi.fn();
     });
 
     afterEach(() => {
@@ -114,7 +114,7 @@ describe('useBulkOperations', () => {
 
         it('should call delete endpoint with selected ids', async () => {
             const mockResult: BulkOperationResult = { success: 2, failed: 0, errors: [] };
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve(mockResult),
             });
@@ -129,7 +129,7 @@ describe('useBulkOperations', () => {
                 await result.current.bulkDelete();
             });
 
-            expect(global.fetch).toHaveBeenCalledWith('/api/test/bulk', {
+            expect(globalThis.fetch).toHaveBeenCalledWith('/api/test/bulk', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: expect.stringContaining('item-1'),
@@ -138,7 +138,7 @@ describe('useBulkOperations', () => {
 
         it('should show success toast on successful delete', async () => {
             const mockResult: BulkOperationResult = { success: 3, failed: 0, errors: [] };
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve(mockResult),
             });
@@ -158,7 +158,7 @@ describe('useBulkOperations', () => {
 
         it('should clear selection after successful delete', async () => {
             const mockResult: BulkOperationResult = { success: 2, failed: 0, errors: [] };
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve(mockResult),
             });
@@ -177,7 +177,7 @@ describe('useBulkOperations', () => {
         });
 
         it('should handle delete errors', async () => {
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: false,
             });
 
@@ -198,7 +198,7 @@ describe('useBulkOperations', () => {
 
         it('should call onSuccess callback', async () => {
             const mockResult: BulkOperationResult = { success: 1, failed: 0, errors: [] };
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve(mockResult),
             });
@@ -231,7 +231,7 @@ describe('useBulkOperations', () => {
 
         it('should call update endpoint with updates', async () => {
             const mockResult: BulkOperationResult = { success: 2, failed: 0, errors: [] };
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve(mockResult),
             });
@@ -246,7 +246,7 @@ describe('useBulkOperations', () => {
                 await result.current.bulkUpdate({ status: 'completed' });
             });
 
-            expect(global.fetch).toHaveBeenCalledWith('/api/test/bulk', {
+            expect(globalThis.fetch).toHaveBeenCalledWith('/api/test/bulk', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: expect.stringContaining('completed'),
@@ -255,7 +255,7 @@ describe('useBulkOperations', () => {
 
         it('should show success toast on successful update', async () => {
             const mockResult: BulkOperationResult = { success: 2, failed: 0, errors: [] };
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve(mockResult),
             });
@@ -279,7 +279,7 @@ describe('useBulkOperations', () => {
                 failed: 1,
                 errors: [{ id: 'item-2', error: 'Not found' }]
             };
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve(mockResult),
             });
@@ -302,7 +302,7 @@ describe('useBulkOperations', () => {
     describe('Bulk Status Change', () => {
         it('should call bulkUpdate with status', async () => {
             const mockResult: BulkOperationResult = { success: 1, failed: 0, errors: [] };
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 json: () => Promise.resolve(mockResult),
             });
@@ -317,7 +317,7 @@ describe('useBulkOperations', () => {
                 await result.current.bulkStatusChange('completed');
             });
 
-            expect(global.fetch).toHaveBeenCalledWith('/api/test/bulk', expect.objectContaining({
+            expect(globalThis.fetch).toHaveBeenCalledWith('/api/test/bulk', expect.objectContaining({
                 method: 'PATCH',
             }));
         });
@@ -336,7 +336,7 @@ describe('useBulkOperations', () => {
 
         it('should call export endpoint', async () => {
             const mockBlob = new Blob(['test'], { type: 'text/csv' });
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 blob: () => Promise.resolve(mockBlob),
             });
@@ -352,7 +352,7 @@ describe('useBulkOperations', () => {
                 blob = await result.current.bulkExport('csv');
             });
 
-            expect(global.fetch).toHaveBeenCalledWith('/api/test/bulk-export', expect.objectContaining({
+            expect(globalThis.fetch).toHaveBeenCalledWith('/api/test/bulk-export', expect.objectContaining({
                 method: 'POST',
             }));
             expect(blob).not.toBeNull();
@@ -360,7 +360,7 @@ describe('useBulkOperations', () => {
 
         it('should show success toast on export', async () => {
             const mockBlob = new Blob(['test'], { type: 'text/csv' });
-            (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
                 ok: true,
                 blob: () => Promise.resolve(mockBlob),
             });
@@ -386,7 +386,7 @@ describe('useBulkOperations', () => {
                 resolvePromise = resolve;
             });
 
-            (global.fetch as ReturnType<typeof vi.fn>).mockReturnValue(
+            (globalThis.fetch as ReturnType<typeof vi.fn>).mockReturnValue(
                 fetchPromise.then(() => ({
                     ok: true,
                     json: () => Promise.resolve({ success: 1, failed: 0, errors: [] }),

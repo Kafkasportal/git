@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import logger from '@/lib/logger';
+import { appwriteUsers, normalizeQueryParams } from '@/lib/appwrite/api';
+import { hashPassword, validatePasswordStrength } from '@/lib/auth/password';
 import {
   requireAuthenticatedUser,
   verifyCsrfToken,
@@ -153,6 +155,5 @@ async function createUserHandler(request: NextRequest) {
   }
 }
 
-// Export handlers with rate limiting
 export const GET = readOnlyRateLimit(getUsersHandler);
 export const POST = dataModificationRateLimit(createUserHandler);

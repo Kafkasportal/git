@@ -5,13 +5,13 @@ import { createMockAuthResponse } from '../test-utils';
 import * as authUtils from '@/lib/api/auth-utils';
 import {
   runGetListTests,
-  runCreateTests,
   runFilteringTests,
 } from '../test-utils/test-patterns';
 import {
   createTestRequest,
   parseJsonResponse,
   expectStatus,
+  expectSuccessResponse,
   expectErrorResponse,
 } from '../test-utils/api-test-helpers';
 
@@ -22,8 +22,8 @@ vi.mock('@/lib/appwrite/api', () => ({
     create: vi.fn(),
   },
   normalizeQueryParams: vi.fn((params: URLSearchParams) => ({
-    page: params.get('page') ? parseInt(params.get('page')!) : 1,
-    limit: params.get('limit') ? parseInt(params.get('limit')!) : 50,
+    page: params.get('page') ? Number.parseInt(params.get('page')!) : 1,
+    limit: params.get('limit') ? Number.parseInt(params.get('limit')!) : 50,
     skip: 0,
     search: params.get('search') || undefined,
   })),
@@ -43,14 +43,6 @@ vi.mock('@/lib/api/auth-utils', () => ({
 vi.mock('@/lib/auth/password', () => ({
   hashPassword: vi.fn().mockResolvedValue('hashed-password'),
   validatePasswordStrength: vi.fn().mockReturnValue({ valid: true }),
-}));
-
-// Mock route helpers
-vi.mock('@/lib/api/route-helpers', () => ({
-  extractParams: vi.fn(async (params: Promise<Record<string, string>>) => {
-    const resolved = await params;
-    return resolved;
-  }),
 }));
 
 // Mock rate limit
@@ -129,25 +121,77 @@ describe('GET /api/users - Additional tests', () => {
   });
 });
 
-// Use test pattern for POST create
-runCreateTests(
-  { POST },
-  appwriteApi.appwriteUsers.create as (data: unknown) => Promise<unknown>,
-  'users',
-  {
-    name: 'New User',
-    email: 'newuser@example.com',
-    role: 'Personel',
-    permissions: ['beneficiaries:access'],
-    password: 'SecurePassword123!',
-  },
-  {
-    baseUrl: 'http://localhost/api/users',
-    successMessage: 'Kullanıcı oluşturuldu',
-    errorMessage: 'Kullanıcı oluşturulamadı',
-    expectedStatus: 201,
-  }
-);
+describe('POST /api/users', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('creates users successfully', async () => {
+    const validUser = {
+      name: 'New User',
+      email: 'newuser@example.com',
+      role: 'Personel',
+      permissions: ['beneficiaries:access'],
+      password: 'SecurePassword123!',
+    };
+
+    vi.mocked(appwriteApi.appwriteUsers.create).mockResolvedValue({
+      _id: 'new-id',
+      ...validUser,
+      passwordHash: 'hashed-password',
+      isActive: true,
+    } as unknown);
+
+    const request = createTestRequest('http://localhost/api/users', {
+      method: 'POST',
+      body: validUser,
+    });
+    const response = await POST(request);
+    const data = await parseJsonResponse<{ success?: boolean; data?: any; message?: string }>(
+      response
+    );
+
+    expectStatus(response, 201);
+    expectSuccessResponse(data, 201);
+    expect(data.message).toBe('Kullanıcı oluşturuldu');
+    expect(data.data?.passwordHash).toBeUndefined();
+    expect(data.data?.password).toBeUndefined();
+    expect(vi.mocked(appwriteApi.appwriteUsers.create)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: validUser.name,
+        email: validUser.email,
+        role: validUser.role,
+        permissions: validUser.permissions,
+        passwordHash: 'hashed-password',
+        isActive: true,
+      })
+    );
+  });
+
+  it('handles creation errors gracefully', async () => {
+    const validUser = {
+      name: 'New User',
+      email: 'newuser@example.com',
+      role: 'Personel',
+      permissions: ['beneficiaries:access'],
+      password: 'SecurePassword123!',
+    };
+
+    vi.mocked(appwriteApi.appwriteUsers.create).mockRejectedValue(new Error('Database error'));
+
+    const request = createTestRequest('http://localhost/api/users', {
+      method: 'POST',
+      body: validUser,
+    });
+    const response = await POST(request);
+    const data = await parseJsonResponse<{ success?: boolean; error?: string; details?: string[] }>(
+      response
+    );
+
+    expectStatus(response, 500);
+    expectErrorResponse(data, 500, 'Kullanıcı oluşturulamadı');
+  });
+});
 
 describe('POST /api/users - Validation', () => {
   beforeEach(() => {

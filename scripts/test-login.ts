@@ -4,7 +4,7 @@
  */
 
 import dotenv from "dotenv";
-import path from "path";
+import path from "node:path";
 
 // Load environment variables
 dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
@@ -126,5 +126,5 @@ if (!password) {
   process.exit(1);
 }
 
-testLogin(email, password);
+await testLogin(email, password);
 

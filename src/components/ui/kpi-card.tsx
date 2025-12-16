@@ -7,16 +7,16 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 
 export interface KPICardProps {
-  title: string;
-  value: string | number;
-  icon: LucideIcon;
-  colorTheme: 'green' | 'orange' | 'blue' | 'red' | 'gray' | 'purple' | 'pink' | 'teal';
-  description?: string;
-  trend?: {
-    value: string;
-    direction: 'up' | 'down';
+  readonly title: string;
+  readonly value: string | number;
+  readonly icon: LucideIcon;
+  readonly colorTheme: 'green' | 'orange' | 'blue' | 'red' | 'gray' | 'purple' | 'pink' | 'teal';
+  readonly description?: string;
+  readonly trend?: {
+    readonly value: string;
+    readonly direction: 'up' | 'down';
   };
-  onClick?: () => void;
+  readonly onClick?: () => void;
 }
 
 const colorThemes = {
