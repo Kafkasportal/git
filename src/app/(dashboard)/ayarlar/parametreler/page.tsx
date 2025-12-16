@@ -318,7 +318,9 @@ function ParameterForm({ onSuccess }: { onSuccess?: () => void }) {
       ),
     onSuccess: () => {
       toast.success('Parametre eklendi');
-      void queryClient.invalidateQueries({ queryKey: ['parameters'] });
+      queryClient.invalidateQueries({ queryKey: ['parameters'] }).catch(() => {
+        // Ignore errors from query invalidation
+      });
       onSuccess?.();
     },
     onError: (error: unknown) => {
@@ -399,7 +401,7 @@ function ParameterForm({ onSuccess }: { onSuccess?: () => void }) {
           min={1}
           value={formData.order}
           onChange={(e) => {
-            setFormData({ ...formData, order: parseInt(e.target.value) });
+            setFormData({ ...formData, order: Number.parseInt(e.target.value) });
           }}
         />
       </div>

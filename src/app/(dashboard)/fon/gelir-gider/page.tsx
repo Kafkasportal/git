@@ -33,7 +33,6 @@ export default function IncomeExpensePage() {
   const [selectedRecord, setSelectedRecord] = useState<FinanceRecord | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [_isViewDialogOpen, _setIsViewDialogOpen] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -72,7 +71,7 @@ export default function IncomeExpensePage() {
 
   const handleViewRecord = (record: FinanceRecord) => {
     setSelectedRecord(record);
-    _setIsViewDialogOpen(true);
+    // View dialog functionality can be added here if needed
   };
 
   const handleEditRecord = (record: FinanceRecord) => {
@@ -137,7 +136,9 @@ export default function IncomeExpensePage() {
       toast.success('İşlem başarıyla güncellendi');
       setIsEditDialogOpen(false);
       setSelectedRecord(null);
-      void queryClient.invalidateQueries({ queryKey: ['finance-records'] });
+      queryClient.invalidateQueries({ queryKey: ['finance-records'] }).catch(() => {
+        // Ignore errors from query invalidation
+      });
     },
   });
 
@@ -189,7 +190,9 @@ export default function IncomeExpensePage() {
       toast.success('İşlem başarıyla silindi');
       setIsDeleteDialogOpen(false);
       setSelectedRecord(null);
-      void queryClient.invalidateQueries({ queryKey: ['finance-records'] });
+      queryClient.invalidateQueries({ queryKey: ['finance-records'] }).catch(() => {
+        // Ignore errors from query invalidation
+      });
     },
   });
 

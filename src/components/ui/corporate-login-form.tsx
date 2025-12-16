@@ -131,31 +131,31 @@ export function CorporateLoginForm({
 
   const { login, isAuthenticated, initializeAuth } = useAuthStore();
 
-  useEffect(() => {
-    const init = async () => {
-      if (typeof window !== 'undefined') {
-        const rememberData = localStorage.getItem('rememberMe');
-        if (rememberData) {
-          try {
-            const parsed = JSON.parse(rememberData);
-            if (parsed.expires > Date.now()) {
-              setEmail(parsed.email);
-              setRememberMe(true);
-            } else {
-              localStorage.removeItem('rememberMe');
-            }
-          } catch {
-            localStorage.removeItem('rememberMe');
-          }
-        }
-      }
-      setMounted(true);
-      initializeAuth();
-    };
+  const loadRememberedEmail = () => {
+    if (globalThis.window === undefined) return;
+    
+    const rememberData = localStorage.getItem('rememberMe');
+    if (!rememberData) return;
 
+    try {
+      const parsed = JSON.parse(rememberData);
+      if (parsed.expires > Date.now()) {
+        setEmail(parsed.email);
+        setRememberMe(true);
+      } else {
+        localStorage.removeItem('rememberMe');
+      }
+    } catch {
+      localStorage.removeItem('rememberMe');
+    }
+  };
+
+  useEffect(() => {
     if (!initRef.current) {
       initRef.current = true;
-      init();
+      loadRememberedEmail();
+      setMounted(true);
+      initializeAuth();
     }
   }, [initializeAuth]);
 
@@ -204,76 +204,73 @@ export function CorporateLoginForm({
     if (passwordError) validatePassword(value);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const saveRememberMe = (shouldRemember: boolean) => {
+    if (globalThis.window === undefined) return;
+    
+    if (shouldRemember) {
+      const rememberData = {
+        email,
+        timestamp: Date.now(),
+        expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
+      };
+      localStorage.setItem('rememberMe', JSON.stringify(rememberData));
+    } else {
+      localStorage.removeItem('rememberMe');
+    }
+  };
 
-    if (requiresTwoFactor) {
-      if (!twoFactorCode || twoFactorCode.length !== 6) {
-        setTwoFactorError('2FA kodu 6 haneli olmalıdır');
-        twoFactorInputRef.current?.focus();
-        return;
-      }
-      setTwoFactorError('');
-      setIsLoading(true);
-      try {
-        await login(email, password, rememberMe, twoFactorCode);
-        if (typeof window !== 'undefined') {
-          if (rememberMe) {
-            const rememberData = {
-              email,
-              timestamp: Date.now(),
-              expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
-            };
-            localStorage.setItem('rememberMe', JSON.stringify(rememberData));
-          } else {
-            localStorage.removeItem('rememberMe');
-          }
-        }
-        setIsLoading(false);
-        toast.success('Başarıyla giriş yaptınız', {
-          description: 'Yönlendiriliyorsunuz...',
-          duration: 2000,
-        });
-        await new Promise(resolve => setTimeout(resolve, 500));
-        router.push(redirectTo);
-      } catch (err: unknown) {
-        const errorMessage =
-          err instanceof Error ? err.message : typeof err === 'string' ? err : '2FA kodu hatalı';
-        setTwoFactorError(errorMessage);
-        twoFactorInputRef.current?.focus();
-        setIsLoading(false);
-      }
+  const handleLoginSuccess = async () => {
+    setIsLoading(false);
+    toast.success('Başarıyla giriş yaptınız', {
+      description: 'Yönlendiriliyorsunuz...',
+      duration: 2000,
+    });
+    await new Promise(resolve => setTimeout(resolve, 500));
+    router.push(redirectTo);
+  };
+
+  const getErrorMessage = (err: unknown, defaultMessage: string): string => {
+    if (err instanceof Error) return err.message;
+    if (typeof err === 'string') return err;
+    return defaultMessage;
+  };
+
+  const handleTwoFactorSubmit = async () => {
+    if (!twoFactorCode || twoFactorCode.length !== 6) {
+      setTwoFactorError('2FA kodu 6 haneli olmalıdır');
+      twoFactorInputRef.current?.focus();
       return;
     }
 
+    setTwoFactorError('');
+    setIsLoading(true);
+    
+    try {
+      await login(email, password, rememberMe, twoFactorCode);
+      saveRememberMe(rememberMe);
+      await handleLoginSuccess();
+    } catch (err: unknown) {
+      const errorMessage = getErrorMessage(err, '2FA kodu hatalı');
+      setTwoFactorError(errorMessage);
+      twoFactorInputRef.current?.focus();
+      setIsLoading(false);
+    }
+  };
+
+  const handleRegularLogin = async () => {
     const isEmailValid = validateEmail(email);
     const isPasswordValid = validatePassword(password);
     if (!isEmailValid || !isPasswordValid) return;
 
     setIsLoading(true);
+    
     try {
       await login(email, password, rememberMe);
-      if (typeof window !== 'undefined') {
-        if (rememberMe) {
-          const rememberData = {
-            email,
-            timestamp: Date.now(),
-            expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
-          };
-          localStorage.setItem('rememberMe', JSON.stringify(rememberData));
-        } else {
-          localStorage.removeItem('rememberMe');
-        }
-      }
-      setIsLoading(false);
-      toast.success('Başarıyla giriş yaptınız', {
-        description: 'Yönlendiriliyorsunuz...',
-        duration: 2000,
-      });
-      await new Promise(resolve => setTimeout(resolve, 500));
-      router.push(redirectTo);
+      saveRememberMe(rememberMe);
+      await handleLoginSuccess();
     } catch (err: unknown) {
       const error = err as Error & { requiresTwoFactor?: boolean };
+      
       if (error.requiresTwoFactor) {
         setRequiresTwoFactor(true);
         setIsLoading(false);
@@ -284,13 +281,23 @@ export function CorporateLoginForm({
           description: 'Lütfen authenticator uygulamanızdan kodu girin',
         });
       } else {
-        const errorMessage =
-          err instanceof Error ? err.message : typeof err === 'string' ? err : 'Giriş başarısız';
+        const errorMessage = getErrorMessage(err, 'Giriş başarısız');
         toast.error('Giriş hatası', { description: errorMessage });
         emailInputRef.current?.focus();
         setIsLoading(false);
       }
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (requiresTwoFactor) {
+      await handleTwoFactorSubmit();
+      return;
+    }
+
+    await handleRegularLogin();
   };
 
   // Redirect if already authenticated
@@ -348,7 +355,7 @@ export function CorporateLoginForm({
                 className="text-4xl xl:text-5xl font-light text-white leading-tight mb-6"
                 style={{ fontFamily: 'Poppins, sans-serif' }}
               >
-                Topluluk için
+                Topluluk için{' '}
                 <span className="block font-semibold text-teal-400">birlikte yönetim.</span>
               </h2>
               <p className="text-slate-400 text-lg leading-relaxed mb-8" style={{ fontFamily: 'Inter, sans-serif' }}>
@@ -363,9 +370,9 @@ export function CorporateLoginForm({
               animate="visible"
               className="space-y-4"
             >
-              {trustBadges.map((badge, index) => (
+              {trustBadges.map((badge) => (
                 <motion.div
-                  key={index}
+                  key={badge.title}
                   variants={itemVariants}
                   className="flex items-center gap-4 group"
                 >
@@ -710,8 +717,8 @@ export function CorporateLoginForm({
             Giriş yaparak{' '}
             <a href="/kullanim-sartlari" className="text-teal-600 hover:underline">
               Kullanım Şartları
-            </a>{' '}
-            ve{' '}
+            </a>
+            {' ve '}
             <a href="/gizlilik-politikasi" className="text-teal-600 hover:underline">
               Gizlilik Politikası
             </a>

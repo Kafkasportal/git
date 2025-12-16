@@ -39,7 +39,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           buttonVariants({
             variant,
             size,
-            state: isLoading ? 'loading' : isDisabled ? 'disabled' : state,
+            state: (() => {
+              if (isLoading) return 'loading';
+              if (isDisabled) return 'disabled';
+              return state;
+            })(),
             className,
           })
         )}

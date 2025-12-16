@@ -131,6 +131,42 @@ jobs:
             --enableExperimental
         continue-on-error: true
 
+  sonarqube:
+    name: SonarQube Analysis
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for better analysis
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+        continue-on-error: true
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_SECRET }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        continue-on-error: true
+
+      - name: SonarQube Quality Gate Check
+        id: sonarqube-quality-gate-check
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_SECRET }}
+        continue-on-error: true
+
   visual-testing:
     name: Visual Testing (Argos)
     runs-on: ubuntu-latest
@@ -219,7 +255,7 @@ jobs:
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
-    needs: [build, test, security, visual-testing]
+    needs: [build, test, security, sonarqube, visual-testing]
     if: github.ref == 'refs/heads/develop'
     steps:
       - uses: actions/checkout@v4
@@ -254,7 +290,7 @@ jobs:
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [build, test, security, visual-testing]
+    needs: [build, test, security, sonarqube, visual-testing]
     if: github.ref == 'refs/heads/main'
     environment:
       name: production
@@ -332,7 +368,7 @@ jobs:
   notify:
     name: Notify Team
     runs-on: ubuntu-latest
-    needs: [lint, build, test, security, visual-testing]
+    needs: [lint, build, test, security, sonarqube, visual-testing]
     if: always()
     steps:
       - name: Send notification

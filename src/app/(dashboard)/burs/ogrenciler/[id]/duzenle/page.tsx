@@ -38,8 +38,12 @@ export default function EditStudentPage() {
     },
     onSuccess: () => {
       toast.success('Öğrenci bilgileri güncellendi');
-      void queryClient.invalidateQueries({ queryKey: ['scholarship-application', id] });
-      void queryClient.invalidateQueries({ queryKey: ['scholarship-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['scholarship-application', id] }).catch(() => {
+        // Ignore errors from query invalidation
+      });
+      queryClient.invalidateQueries({ queryKey: ['scholarship-applications'] }).catch(() => {
+        // Ignore errors from query invalidation
+      });
       router.push(`/burs/ogrenciler/${id}`);
     },
     onError: (error) => {

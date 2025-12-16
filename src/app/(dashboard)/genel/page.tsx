@@ -51,12 +51,14 @@ function DashboardHeroSection({
   isRealtimeConnected: boolean;
 }) {
   const currentHour = new Date().getHours();
-  const greeting =
-    currentHour < 12
-      ? 'Günaydın'
-      : currentHour < 18
-        ? 'İyi günler'
-        : 'İyi akşamlar';
+  let greeting: string;
+  if (currentHour < 12) {
+    greeting = 'Günaydın';
+  } else if (currentHour < 18) {
+    greeting = 'İyi günler';
+  } else {
+    greeting = 'İyi akşamlar';
+  }
 
   const currentDate = new Date().toLocaleDateString('tr-TR', {
     weekday: 'long',
@@ -309,23 +311,33 @@ function DashboardPageComponent() {
               animate={{ opacity: 1 }}
               className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
             >
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="bg-card p-6 rounded-xl border border-border shadow-sm stagger-item"
-                >
-                  <h3 className="text-lg font-semibold mb-2">
-                    {i === 1 ? 'Dashboard Widget Hatası' : i === 2 ? 'İstatistikler' : 'Bildirimler'}
-                  </h3>
-                  <p className="text-muted-foreground text-sm">
-                    {i === 1
-                      ? 'Widget sistemi geçici olarak kullanılamıyor. Lütfen sayfayı yenileyin.'
-                      : i === 2
-                        ? 'Yükleniyor...'
-                        : 'Yeni bildirim yok'}
-                  </p>
-                </div>
-              ))}
+              {[1, 2, 3].map((i) => {
+                const getWidgetTitle = (index: number): string => {
+                  if (index === 1) return 'Dashboard Widget Hatası';
+                  if (index === 2) return 'İstatistikler';
+                  return 'Bildirimler';
+                };
+
+                const getWidgetDescription = (index: number): string => {
+                  if (index === 1) return 'Widget sistemi geçici olarak kullanılamıyor. Lütfen sayfayı yenileyin.';
+                  if (index === 2) return 'Yükleniyor...';
+                  return 'Yeni bildirim yok';
+                };
+
+                return (
+                  <div
+                    key={i}
+                    className="bg-card p-6 rounded-xl border border-border shadow-sm stagger-item"
+                  >
+                    <h3 className="text-lg font-semibold mb-2">
+                      {getWidgetTitle(i)}
+                    </h3>
+                    <p className="text-muted-foreground text-sm">
+                      {getWidgetDescription(i)}
+                    </p>
+                  </div>
+                );
+              })}
             </motion.div>
           }
         >

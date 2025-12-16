@@ -47,16 +47,35 @@ Bu rehber, uygulamanızda Google OAuth2 kimlik doğrulamasını yapılandırman�
 8. Açılan pencerede **Client ID** ve **Client Secret** değerlerini kopyalayın
    - ⚠️ **Önemli**: Client Secret'ı güvenli bir yerde saklayın, bir daha gösterilmeyecek!
 
-## 🔐 Adım 2: Appwrite'da Google OAuth2 Yapılandırması
+## 🔐 Adım 2: Appwrite'da Platform (Domain) Kaydı
 
-### 2.1. Appwrite Console'a Giriş
+### 2.1. Platform Kaydı (ÖNEMLİ - OAuth için zorunlu!)
+
+**⚠️ Bu adım çok önemlidir!** Appwrite, OAuth success/failure URL'lerinin kayıtlı platform domain'leri içinde olmasını gerektirir. Bu adımı atlarsanız "Invalid `success` param: Invalid URI" hatası alırsınız.
 
 1. [Appwrite Console](https://cloud.appwrite.io/) adresine gidin
 2. Projenizi seçin
-3. Sol menüden **Auth** → **Providers** seçin
-4. **Google** provider'ını bulun ve tıklayın
+3. Sol menüden **Settings** → **Platforms** seçin
+4. **+ Add Platform** butonuna tıklayın
+5. Platform tipini seçin:
+   - **Web App**: Development için `localhost` veya production domain'iniz
+   - Development için: `localhost` (port numarası olmadan)
+   - Production için: Tam domain adınız (örn: `www.example.com` veya `example.com`)
+6. Platform adını girin (örn: "Development" veya "Production")
+7. **Create** butonuna tıklayın
 
-### 2.2. Google OAuth Ayarlarını Doldurma
+**Örnek Platform Kayıtları:**
+- Development: `localhost` (port numarası olmadan)
+- Production: `yourdomain.com` veya `www.yourdomain.com`
+
+**Not**: Her domain için ayrı platform kaydı oluşturmanız gerekebilir (localhost ve production için).
+
+### 2.2. Appwrite Console'a Giriş
+
+1. Sol menüden **Auth** → **Providers** seçin
+2. **Google** provider'ını bulun ve tıklayın
+
+### 2.3. Google OAuth Ayarlarını Doldurma
 
 1. **Enabled** toggle'ını açın
 2. **App ID** alanına Google Cloud Console'dan aldığınız **Client ID**'yi yapıştırın
@@ -66,7 +85,7 @@ Bu rehber, uygulamanızda Google OAuth2 kimlik doğrulamasını yapılandırman�
    - Format: `GOCSPX-xxxxxxxxxxxxxxxxxxxxx`
 4. **Save** butonuna tıklayın
 
-### 2.3. Redirect URI'yi Kopyalama
+### 2.4. Redirect URI'yi Kopyalama
 
 1. Kaydettikten sonra, sayfada gösterilen **Redirect URI**'yi kopyalayın
 2. Bu URI'yi Google Cloud Console'daki **Authorized redirect URIs** listesine eklediğinizden emin olun
@@ -115,6 +134,23 @@ Bu rehber, uygulamanızda Google OAuth2 kimlik doğrulamasını yapılandırman�
 2. External kullanıcı tipi seçtiyseniz, test kullanıcıları ekleyin
 3. Veya OAuth consent screen'i yayınlayın (production için)
 
+### Hata: "Invalid `success` param: Invalid URI"
+
+**Sorun**: Appwrite'da platform (domain) kaydı yapılmamış veya success/failure URL'leri kayıtlı domain'ler içinde değil.
+
+**Çözüm**:
+1. Appwrite Console → Settings → Platforms
+2. Uygulamanızın çalıştığı domain'i platform olarak ekleyin:
+   - Development için: `localhost` (port numarası olmadan)
+   - Production için: Tam domain adınız (örn: `yourdomain.com`)
+3. Platform kaydını oluşturduktan sonra OAuth'u tekrar deneyin
+4. Eğer hala çalışmıyorsa, tarayıcı console'unda loglanan `successUrl` değerini kontrol edin
+5. `successUrl`'deki domain'in platform olarak kayıtlı olduğundan emin olun
+
+**Örnek**:
+- Eğer uygulamanız `http://localhost:3000` adresinde çalışıyorsa, platform olarak `localhost` ekleyin
+- Eğer uygulamanız `https://www.example.com` adresinde çalışıyorsa, platform olarak `www.example.com` veya `example.com` ekleyin
+
 ### App ID Alanında "APPWRITE_ENDPOINT" Görünüyor
 
 **Sorun**: App ID alanına yanlış değer girilmiş.
@@ -126,11 +162,13 @@ Bu rehber, uygulamanızda Google OAuth2 kimlik doğrulamasını yapılandırman�
 
 ## 📝 Önemli Notlar
 
-1. **Client Secret Güvenliği**: Client Secret'ı asla public repository'lere commit etmeyin
-2. **Redirect URI**: Her Appwrite projesi için farklı bir redirect URI kullanılır
-3. **OAuth Consent Screen**: Production kullanımı için OAuth consent screen'in yayınlanması gerekir
-4. **Rate Limits**: Google OAuth için rate limit'ler vardır, aşırı kullanımdan kaçının
-5. **Test Users**: External kullanıcı tipi için test aşamasında test kullanıcıları eklemeniz gerekir
+1. **Platform Kaydı**: OAuth kullanmak için mutlaka platform (domain) kaydı yapmanız gerekir. Bu adım atlanırsa "Invalid URI" hatası alırsınız.
+2. **Client Secret Güvenliği**: Client Secret'ı asla public repository'lere commit etmeyin
+3. **Redirect URI**: Her Appwrite projesi için farklı bir redirect URI kullanılır
+4. **OAuth Consent Screen**: Production kullanımı için OAuth consent screen'in yayınlanması gerekir
+5. **Rate Limits**: Google OAuth için rate limit'ler vardır, aşırı kullanımdan kaçının
+6. **Test Users**: External kullanıcı tipi için test aşamasında test kullanıcıları eklemeniz gerekir
+7. **Domain Eşleşmesi**: Success ve failure URL'lerinin domain'leri, kayıtlı platform domain'leri ile tam olarak eşleşmelidir
 
 ## 🔗 İlgili Dokümantasyon
 

@@ -15,7 +15,8 @@ describe('Session Utilities', () => {
 
     beforeEach(() => {
         vi.resetModules();
-        process.env = { ...originalEnv, SESSION_SECRET: 'test-secret-key-min-16-chars' };
+        // Use a secure test secret key (not a real password)
+        process.env = { ...originalEnv, SESSION_SECRET: 't3st-s3cr3t-k3y-m1n-16-ch4rs-x9z8y7w6' };
     });
 
     afterEach(() => {
@@ -25,7 +26,7 @@ describe('Session Utilities', () => {
     describe('parseAuthSession', () => {
         it('should return null for empty cookie', async () => {
             const { parseAuthSession } = await import('@/lib/auth/session');
-            expect(parseAuthSession(undefined)).toBeNull();
+            expect(parseAuthSession()).toBeNull();
             expect(parseAuthSession('')).toBeNull();
         });
 
@@ -201,7 +202,8 @@ describe('Session Utilities', () => {
             const [payload, signature] = serialized.split('.');
 
             // Manually verify the signature
-            const expectedSig = createHmac('sha256', 'test-secret-key-min-16-chars')
+            const testSecret = process.env.SESSION_SECRET || 't3st-s3cr3t-k3y-m1n-16-ch4rs-x9z8y7w6';
+            const expectedSig = createHmac('sha256', testSecret)
                 .update(payload)
                 .digest('hex');
 
@@ -310,8 +312,9 @@ describe('Session Utilities', () => {
         it('should return null for session missing sessionId', async () => {
             const { parseAuthSession } = await import('@/lib/auth/session');
             // Create a valid-looking signed payload but with missing sessionId
+            const testSecret = process.env.SESSION_SECRET || 't3st-s3cr3t-k3y-m1n-16-ch4rs-x9z8y7w6';
             const payload = Buffer.from(JSON.stringify({ userId: 'user' })).toString('base64url');
-            const signature = createHmac('sha256', 'test-secret-key-min-16-chars')
+            const signature = createHmac('sha256', testSecret)
                 .update(payload)
                 .digest('hex');
             const result = parseAuthSession(`${payload}.${signature}`);
@@ -321,8 +324,9 @@ describe('Session Utilities', () => {
         it('should return null for session missing userId', async () => {
             const { parseAuthSession } = await import('@/lib/auth/session');
             // Create a valid-looking signed payload but with missing userId
+            const testSecret = process.env.SESSION_SECRET || 't3st-s3cr3t-k3y-m1n-16-ch4rs-x9z8y7w6';
             const payload = Buffer.from(JSON.stringify({ sessionId: 'sess' })).toString('base64url');
-            const signature = createHmac('sha256', 'test-secret-key-min-16-chars')
+            const signature = createHmac('sha256', testSecret)
                 .update(payload)
                 .digest('hex');
             const result = parseAuthSession(`${payload}.${signature}`);

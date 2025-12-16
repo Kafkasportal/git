@@ -97,42 +97,50 @@ function BreadcrumbNavComponent() {
             )}
 
             {/* Home link */}
-            {index === 0 ? (
-              <Link
-                href={item.href}
-                className={cn(
-                  'inline-flex items-center gap-1.5 px-2 py-1.5 rounded-md transition-all duration-150',
-                  'text-corporate-gray-600 hover:text-corporate-primary-600',
-                  'hover:bg-corporate-primary-50',
-                  'focus:outline-none focus:ring-2 focus:ring-corporate-primary-300 focus:ring-offset-1'
-                )}
-                aria-label="Anasayfa (Dashboard)"
-              >
-                <Home className="h-4 w-4 flex-shrink-0" />
-                <span className="sr-only">{item.label}</span>
-              </Link>
-            ) : item.current ? (
-              /* Current page */
-              <span
-                className="px-2 py-1.5 text-corporate-gray-900 font-semibold"
-                aria-current="page"
-              >
-                {item.label}
-              </span>
-            ) : (
-              /* Middle links */
-              <Link
-                href={item.href}
-                className={cn(
-                  'px-2 py-1.5 rounded-md transition-all duration-150',
-                  'text-corporate-gray-600 hover:text-corporate-primary-600',
-                  'hover:bg-corporate-primary-50',
-                  'focus:outline-none focus:ring-2 focus:ring-corporate-primary-300 focus:ring-offset-1'
-                )}
-              >
-                {item.label}
-              </Link>
-            )}
+            {(() => {
+              if (index === 0) {
+                return (
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      'inline-flex items-center gap-1.5 px-2 py-1.5 rounded-md transition-all duration-150',
+                      'text-corporate-gray-600 hover:text-corporate-primary-600',
+                      'hover:bg-corporate-primary-50',
+                      'focus:outline-none focus:ring-2 focus:ring-corporate-primary-300 focus:ring-offset-1'
+                    )}
+                    aria-label="Anasayfa (Dashboard)"
+                  >
+                    <Home className="h-4 w-4 flex-shrink-0" />
+                    <span className="sr-only">{item.label}</span>
+                  </Link>
+                );
+              }
+              
+              if (item.current) {
+                return (
+                  <span
+                    className="px-2 py-1.5 text-corporate-gray-900 font-semibold"
+                    aria-current="page"
+                  >
+                    {item.label}
+                  </span>
+                );
+              }
+              
+              return (
+                <Link
+                  href={item.href}
+                  className={cn(
+                    'px-2 py-1.5 rounded-md transition-all duration-150',
+                    'text-corporate-gray-600 hover:text-corporate-primary-600',
+                    'hover:bg-corporate-primary-50',
+                    'focus:outline-none focus:ring-2 focus:ring-corporate-primary-300 focus:ring-offset-1'
+                  )}
+                >
+                  {item.label}
+                </Link>
+              );
+            })()}
           </li>
         ))}
       </ol>

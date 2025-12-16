@@ -50,9 +50,15 @@ export default function ThemeSettingsPage() {
 
   const handleThemeModeChange = async (mode: 'light' | 'dark' | 'auto') => {
     setThemeMode(mode);
-    toast.success(
-      `Tema modu ${mode === 'light' ? 'Açık' : mode === 'dark' ? 'Koyu' : 'Otomatik'} olarak ayarlandı`
-    );
+    let modeLabel: string;
+    if (mode === 'light') {
+      modeLabel = 'Açık';
+    } else if (mode === 'dark') {
+      modeLabel = 'Koyu';
+    } else {
+      modeLabel = 'Otomatik';
+    }
+    toast.success(`Tema modu ${modeLabel} olarak ayarlandı`);
   };
 
   const handlePresetChange = async (presetName: string) => {
@@ -100,7 +106,9 @@ export default function ThemeSettingsPage() {
       }
 
       // Invalidate queries to refetch
-      void queryClient.invalidateQueries({ queryKey: ['theme-presets'] });
+      queryClient.invalidateQueries({ queryKey: ['theme-presets'] }).catch(() => {
+        // Ignore errors from query invalidation
+      });
 
       // Apply the new theme
       await setTheme(customThemeName.trim());
@@ -131,7 +139,9 @@ export default function ThemeSettingsPage() {
       }
 
       // Invalidate queries to refetch
-      void queryClient.invalidateQueries({ queryKey: ['theme-presets'] });
+      queryClient.invalidateQueries({ queryKey: ['theme-presets'] }).catch(() => {
+        // Ignore errors from query invalidation
+      });
 
       toast.success(`${presetName} teması başarıyla silindi`);
     } catch (error) {
@@ -199,7 +209,11 @@ export default function ThemeSettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Light Mode */}
                 <button
-                  onClick={() => { handleThemeModeChange('light'); }}
+                  onClick={() => {
+                    handleThemeModeChange('light').catch(() => {
+                      // Ignore errors from theme mode change
+                    });
+                  }}
                   className={`relative p-6 rounded-lg border-2 transition-all ${
                     themeMode === 'light'
                       ? 'border-primary bg-primary/5'
@@ -223,7 +237,11 @@ export default function ThemeSettingsPage() {
 
                 {/* Dark Mode */}
                 <button
-                  onClick={() => { void handleThemeModeChange('dark'); }}
+                  onClick={() => {
+                    handleThemeModeChange('dark').catch(() => {
+                      // Ignore errors from theme mode change
+                    });
+                  }}
                   className={`relative p-6 rounded-lg border-2 transition-all ${
                     themeMode === 'dark'
                       ? 'border-primary bg-primary/5'
@@ -247,7 +265,11 @@ export default function ThemeSettingsPage() {
 
                 {/* Auto Mode */}
                 <button
-                  onClick={() => { void handleThemeModeChange('auto'); }}
+                  onClick={() => {
+                    handleThemeModeChange('auto').catch(() => {
+                      // Ignore errors from theme mode change
+                    });
+                  }}
                   className={`relative p-6 rounded-lg border-2 transition-all ${
                     themeMode === 'auto'
                       ? 'border-primary bg-primary/5'
@@ -275,7 +297,11 @@ export default function ThemeSettingsPage() {
                   <span className="text-sm font-medium">Şu Anki Mod:</span>
                   <Badge variant="outline">
                     {resolvedThemeMode === 'light' ? 'Açık' : 'Koyu'} (
-                    {themeMode === 'auto' ? 'Sistem' : themeMode === 'light' ? 'Açık' : 'Koyu'})
+                    {(() => {
+                      if (themeMode === 'auto') return 'Sistem';
+                      if (themeMode === 'light') return 'Açık';
+                      return 'Koyu';
+                    })()})
                   </Badge>
                 </div>
               </div>
@@ -346,7 +372,9 @@ export default function ThemeSettingsPage() {
                                   <AlertDialogAction
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      void handleDeleteCustomTheme(preset._id || '', preset.name);
+                                      handleDeleteCustomTheme(preset._id || '', preset.name).catch(() => {
+                                        // Ignore errors from theme deletion
+                                      });
                                     }}
                                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                   >

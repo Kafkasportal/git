@@ -110,8 +110,10 @@ export function useFormMutation<TData = unknown, TVariables = unknown>({
       // Only invalidate queries and show toasts if mutation was actually executed (not queued)
       if (!isOffline || !enableOfflineQueue) {
         // Invalidate queries to refresh data
-        void queryClient.invalidateQueries({
+        queryClient.invalidateQueries({
           queryKey: Array.isArray(queryKey) ? queryKey : [queryKey],
+        }).catch(() => {
+          // Ignore errors from query invalidation
         });
 
         // Show success toast
@@ -128,12 +130,14 @@ export function useFormMutation<TData = unknown, TVariables = unknown>({
     },
     onError: (error: unknown) => {
       // Get error message
-      const message =
-        error instanceof Error
-          ? error.message
-          : typeof error === "string"
-          ? error
-          : "Bilinmeyen hata";
+      let message: string;
+      if (error instanceof Error) {
+        message = error.message;
+      } else if (typeof error === "string") {
+        message = error;
+      } else {
+        message = "Bilinmeyen hata";
+      }
 
       // Show error toast
       if (showErrorToast) {

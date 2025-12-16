@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { donations } from '@/lib/api/crud-factory';
 import { VirtualizedDataTable, type DataTableColumn } from '@/components/ui/virtualized-data-table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,7 +16,6 @@ import {
 } from '@/components/ui/dialog';
 import { Plus, TrendingUp, Users, Banknote, Calendar, FileText, User, CreditCard, CheckCircle2, Clock } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useQueryClient } from '@tanstack/react-query';
 import { BulkActionsToolbar } from '@/components/ui/bulk-actions-toolbar';
 import type { BulkEditField } from '@/components/ui/bulk-edit-modal';
 import { ExportMenu } from '@/components/ui/export-menu';
@@ -115,7 +114,9 @@ export default function DonationsPage() {
     endpoint: '/api/donations',
     resourceName: 'bağış',
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['donations'] });
+      queryClient.invalidateQueries({ queryKey: ['donations'] }).catch(() => {
+        // Ignore errors from query invalidation
+      });
     },
   });
 
@@ -235,18 +236,20 @@ export default function DonationsPage() {
     {
       key: 'date',
       label: 'Tarih',
-      render: (item) => (
-        <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm">
-            {item._creationTime
-              ? new Date(item._creationTime).toLocaleDateString('tr-TR')
-              : item.$createdAt
-                ? new Date(item.$createdAt).toLocaleDateString('tr-TR')
-                : '-'}
-          </span>
-        </div>
-      ),
+      render: (item) => {
+        let dateString = '-';
+        if (item._creationTime) {
+          dateString = new Date(item._creationTime).toLocaleDateString('tr-TR');
+        } else if (item.$createdAt) {
+          dateString = new Date(item.$createdAt).toLocaleDateString('tr-TR');
+        }
+        return (
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">{dateString}</span>
+          </div>
+        );
+      },
       className: 'min-w-[120px]',
     },
     {
@@ -336,14 +339,14 @@ export default function DonationsPage() {
         onExport={async (format) => {
           const blob = await bulkOps.bulkExport(format);
           if (blob) {
-            const url = window.URL.createObjectURL(blob);
+            const url = globalThis.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = `bagislar-secili.${format}`;
             document.body.appendChild(a);
             a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+            globalThis.URL.revokeObjectURL(url);
+            a.remove();
           }
         }}
         statusOptions={statusOptions}

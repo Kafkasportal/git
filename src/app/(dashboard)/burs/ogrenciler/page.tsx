@@ -95,7 +95,7 @@ export default function StudentsPage() {
       const res = await scholarshipApplicationsApi.list({
         limit,
         skip: (page - 1) * limit,
-        status: statusFilter !== 'all' ? statusFilter : undefined,
+        status: statusFilter === 'all' ? undefined : statusFilter,
         // search param is not directly supported by list but we can filter client side or add support later
       });
       if (!res.success) throw new Error(res.error || 'Failed to fetch applications');
@@ -198,7 +198,9 @@ export default function StudentsPage() {
     onSuccess: () => {
       toast.success('Öğrenci başarıyla eklendi');
       setIsAddDialogOpen(false);
-      void queryClient.invalidateQueries({ queryKey: ['scholarship-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['scholarship-applications'] }).catch(() => {
+        // Ignore errors from query invalidation
+      });
     },
     onError: (error) => {
       toast.error(`Hata: ${error.message}`);
@@ -263,8 +265,8 @@ export default function StudentsPage() {
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}>
+          {['stats-1', 'stats-2', 'stats-3', 'stats-4'].map((key) => (
+            <Card key={key}>
               <CardHeader>
                 <div className="h-4 w-24 bg-muted rounded animate-pulse" />
               </CardHeader>

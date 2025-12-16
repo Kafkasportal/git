@@ -27,19 +27,19 @@ function buildAbsoluteUrl(url: string): string {
       // Validate the absolute URL
       new URL(trimmedUrl);
       return trimmedUrl;
-    } catch (error) {
-      throw new Error(`Invalid absolute URL: ${trimmedUrl}`);
+    } catch {
+      throw new TypeError(`Invalid absolute URL: ${trimmedUrl}`);
     }
   }
 
   // Get origin from window
-  if (typeof window === 'undefined') {
-    throw new Error('Cannot build absolute URL: window is not available');
+  if (globalThis.window === undefined) {
+    throw new TypeError('Cannot build absolute URL: window is not available');
   }
 
-  const origin = window.location.origin;
+  const origin = globalThis.window.location.origin;
   if (!origin) {
-    throw new Error('Cannot build absolute URL: window.location.origin is not available');
+    throw new TypeError('Cannot build absolute URL: window.location.origin is not available');
   }
 
   // Ensure URL starts with /
@@ -54,8 +54,8 @@ function buildAbsoluteUrl(url: string): string {
   try {
     new URL(absoluteUrl);
     return absoluteUrl;
-  } catch (error) {
-    throw new Error(`Failed to build valid absolute URL from: ${trimmedUrl} with origin: ${origin}`);
+  } catch {
+    throw new TypeError(`Failed to build valid absolute URL from: ${trimmedUrl} with origin: ${origin}`);
   }
 }
 
@@ -71,13 +71,13 @@ export const oauthAuth = {
       throw new Error('Appwrite client not initialized');
     }
 
-    if (typeof window === 'undefined') {
-      throw new Error('OAuth login can only be called from the browser');
+    if (globalThis.window === undefined) {
+      throw new TypeError('OAuth login can only be called from the browser');
     }
 
     // Ensure window.location is available
-    if (!window.location || !window.location.origin) {
-      throw new Error('window.location.origin is not available. Please ensure this is called from a browser context.');
+    if (!globalThis.window.location?.origin) {
+      throw new TypeError('window.location.origin is not available. Please ensure this is called from a browser context.');
     }
 
     try {
@@ -102,8 +102,8 @@ export const oauthAuth = {
         successUrl, 
         failureUrl,
         redirectUrl: redirectUrl || 'not provided',
-        origin: window.location.origin,
-        href: window.location.href
+        origin: globalThis.window.location.origin,
+        href: globalThis.window.location.href
       });
       
       account.createOAuth2Session(OAuthProvider.Google, successUrl, failureUrl);
@@ -111,8 +111,8 @@ export const oauthAuth = {
       logger.error('Google OAuth failed', { 
         error, 
         redirectUrl,
-        origin: window.location?.origin,
-        href: window.location?.href
+        origin: globalThis.window.location?.origin,
+        href: globalThis.window.location?.href
       });
       throw error;
     }
@@ -126,8 +126,8 @@ export const oauthAuth = {
       throw new Error('Appwrite client not initialized');
     }
 
-    if (typeof window === 'undefined') {
-      throw new Error('OAuth login can only be called from the browser');
+    if (globalThis.window === undefined) {
+      throw new TypeError('OAuth login can only be called from the browser');
     }
 
     try {
@@ -163,8 +163,8 @@ export const oauthAuth = {
       throw new Error('Appwrite client not initialized');
     }
 
-    if (typeof window === 'undefined') {
-      throw new Error('OAuth login can only be called from the browser');
+    if (globalThis.window === undefined) {
+      throw new TypeError('OAuth login can only be called from the browser');
     }
 
     try {
@@ -200,8 +200,8 @@ export const oauthAuth = {
       throw new Error('Appwrite client not initialized');
     }
 
-    if (typeof window === 'undefined') {
-      throw new Error('OAuth login can only be called from the browser');
+    if (globalThis.window === undefined) {
+      throw new TypeError('OAuth login can only be called from the browser');
     }
 
     try {

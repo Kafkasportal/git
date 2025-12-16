@@ -33,6 +33,8 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Search, FileText, CheckCircle, XCircle, Clock, Eye } from 'lucide-react';
 
+type ApplicationStatus = 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'waitlisted';
+
 const STATUS_LABELS = {
   draft: { label: 'Taslak', color: 'bg-gray-100 text-gray-700', icon: Clock },
   submitted: { label: 'Gönderildi', color: 'bg-blue-100 text-blue-700', icon: FileText },
@@ -63,18 +65,20 @@ export default function ScholarshipApplicationsPage() {
     queryFn: () =>
       scholarshipApplicationsApi.list({
         limit: 100,
-        status: statusFilter !== 'all' ? statusFilter : undefined,
+        status: statusFilter === 'all' ? undefined : statusFilter,
         scholarship_id:
-          scholarshipFilter !== 'all' ? scholarshipFilter : undefined,
+          scholarshipFilter === 'all' ? undefined : scholarshipFilter,
       }),
   });
 
   // Update application mutation
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { status?: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'waitlisted'; reviewed_at?: string; [key: string]: unknown } }) =>
-      scholarshipApplicationsApi.update(id, data as { status?: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'waitlisted'; reviewed_at?: string; reviewed_by?: string; submitted_at?: string }),
+    mutationFn: ({ id, data }: { id: string; data: { status?: ApplicationStatus; reviewed_at?: string; [key: string]: unknown } }) =>
+      scholarshipApplicationsApi.update(id, data as { status?: ApplicationStatus; reviewed_at?: string; reviewed_by?: string; submitted_at?: string }),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['scholarship-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['scholarship-applications'] }).catch(() => {
+        // Ignore errors from query invalidation
+      });
       toast.success('Başvuru güncellendi');
       setIsDetailDialogOpen(false);
     },
@@ -114,7 +118,7 @@ export default function ScholarshipApplicationsPage() {
     updateMutation.mutate({
       id: applicationId,
       data: {
-        status: newStatus as 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'waitlisted',
+        status: newStatus as ApplicationStatus,
         reviewed_at: new Date().toISOString(),
       },
     });
@@ -237,16 +241,23 @@ export default function ScholarshipApplicationsPage() {
           <CardDescription>Burs başvurularının listesi</CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-            </div>
-          ) : filteredApplications.length === 0 ? (
-            <div className="text-center py-8 text-slate-500">
-              <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>Başvuru bulunamadı</p>
-            </div>
-          ) : (
+          {(() => {
+            if (isLoading) {
+              return (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+                </div>
+              );
+            }
+            if (filteredApplications.length === 0) {
+              return (
+                <div className="text-center py-8 text-slate-500">
+                  <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>Başvuru bulunamadı</p>
+                </div>
+              );
+            }
+            return (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -336,7 +347,8 @@ export default function ScholarshipApplicationsPage() {
                 })}
               </TableBody>
             </Table>
-          )}
+            );
+          })()}
         </CardContent>
       </Card>
 
