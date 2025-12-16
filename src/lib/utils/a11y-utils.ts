@@ -247,6 +247,94 @@ export function createFocusRestore(): () => void {
 export type ArrowDirection = 'up' | 'down' | 'left' | 'right';
 
 /**
+ * Calculate next index when moving backward in a list
+ */
+function calculateBackwardIndex(
+  currentIndex: number,
+  itemsLength: number,
+  loop: boolean
+): number {
+  const newIndex = currentIndex - 1;
+  if (newIndex < 0) {
+    return loop ? itemsLength - 1 : 0;
+  }
+  return newIndex;
+}
+
+/**
+ * Calculate next index when moving forward in a list
+ */
+function calculateForwardIndex(
+  currentIndex: number,
+  itemsLength: number,
+  loop: boolean
+): number {
+  const newIndex = currentIndex + 1;
+  if (newIndex >= itemsLength) {
+    return loop ? 0 : itemsLength - 1;
+  }
+  return newIndex;
+}
+
+/**
+ * Handle vertical arrow key navigation
+ */
+function handleVerticalNavigation(
+  e: KeyboardEvent,
+  items: HTMLElement[],
+  currentIndex: number,
+  loop: boolean
+): number | null {
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    return calculateBackwardIndex(currentIndex, items.length, loop);
+  }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    return calculateForwardIndex(currentIndex, items.length, loop);
+  }
+  return null;
+}
+
+/**
+ * Handle horizontal arrow key navigation
+ */
+function handleHorizontalNavigation(
+  e: KeyboardEvent,
+  items: HTMLElement[],
+  currentIndex: number,
+  loop: boolean
+): number | null {
+  if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    return calculateBackwardIndex(currentIndex, items.length, loop);
+  }
+  if (e.key === 'ArrowRight') {
+    e.preventDefault();
+    return calculateForwardIndex(currentIndex, items.length, loop);
+  }
+  return null;
+}
+
+/**
+ * Handle special key navigation (Home/End)
+ */
+function handleSpecialKeys(
+  e: KeyboardEvent,
+  itemsLength: number
+): number | null {
+  if (e.key === 'Home') {
+    e.preventDefault();
+    return 0;
+  }
+  if (e.key === 'End') {
+    e.preventDefault();
+    return itemsLength - 1;
+  }
+  return null;
+}
+
+/**
  * Handle arrow key navigation in a list
  */
 export function handleArrowNavigation(
@@ -263,60 +351,40 @@ export function handleArrowNavigation(
   const isVertical = orientation === 'vertical' || orientation === 'both';
   const isHorizontal = orientation === 'horizontal' || orientation === 'both';
 
-  let newIndex = currentIndex;
+  let newIndex: number | null = null;
 
-  switch (e.key) {
-    case 'ArrowUp':
-      if (isVertical) {
-        e.preventDefault();
-        newIndex = currentIndex - 1;
-        if (newIndex < 0) {
-          newIndex = loop ? items.length - 1 : 0;
-        }
-      }
-      break;
-    case 'ArrowDown':
-      if (isVertical) {
-        e.preventDefault();
-        newIndex = currentIndex + 1;
-        if (newIndex >= items.length) {
-          newIndex = loop ? 0 : items.length - 1;
-        }
-      }
-      break;
-    case 'ArrowLeft':
-      if (isHorizontal) {
-        e.preventDefault();
-        newIndex = currentIndex - 1;
-        if (newIndex < 0) {
-          newIndex = loop ? items.length - 1 : 0;
-        }
-      }
-      break;
-    case 'ArrowRight':
-      if (isHorizontal) {
-        e.preventDefault();
-        newIndex = currentIndex + 1;
-        if (newIndex >= items.length) {
-          newIndex = loop ? 0 : items.length - 1;
-        }
-      }
-      break;
-    case 'Home':
-      e.preventDefault();
-      newIndex = 0;
-      break;
-    case 'End':
-      e.preventDefault();
-      newIndex = items.length - 1;
-      break;
+  // Try special keys first
+  newIndex = handleSpecialKeys(e, items.length);
+  if (newIndex !== null) {
+    if (newIndex !== currentIndex && items[newIndex]) {
+      items[newIndex].focus();
+    }
+    return newIndex;
   }
 
-  if (newIndex !== currentIndex && items[newIndex]) {
-    items[newIndex].focus();
+  // Try vertical navigation
+  if (isVertical) {
+    newIndex = handleVerticalNavigation(e, items, currentIndex, loop);
+    if (newIndex !== null) {
+      if (newIndex !== currentIndex && items[newIndex]) {
+        items[newIndex].focus();
+      }
+      return newIndex;
+    }
   }
 
-  return newIndex;
+  // Try horizontal navigation
+  if (isHorizontal) {
+    newIndex = handleHorizontalNavigation(e, items, currentIndex, loop);
+    if (newIndex !== null) {
+      if (newIndex !== currentIndex && items[newIndex]) {
+        items[newIndex].focus();
+      }
+      return newIndex;
+    }
+  }
+
+  return currentIndex;
 }
 
 // ============================================

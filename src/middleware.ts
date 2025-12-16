@@ -134,6 +134,106 @@ const protectedRoutes: RouteRule[] = [
 ];
 
 /**
+ * Check if route is public
+ */
+function isPublicRoute(pathname: string): boolean {
+  return (
+    publicRoutes.some((route) => pathname.startsWith(route)) ||
+    pathname.startsWith("/api/health")
+  );
+}
+
+/**
+ * Check if method requires CSRF protection
+ */
+function requiresCsrfProtection(method: string): boolean {
+  const upperMethod = method.toUpperCase();
+  return (
+    upperMethod === "POST" ||
+    upperMethod === "PUT" ||
+    upperMethod === "PATCH" ||
+    upperMethod === "DELETE"
+  );
+}
+
+/**
+ * Validate CSRF token for API requests
+ */
+function validateApiCsrf(request: NextRequest, pathname: string): NextResponse | null {
+  if (!pathname.startsWith("/api")) {
+    return null;
+  }
+
+  if (!requiresCsrfProtection(request.method)) {
+    return null;
+  }
+
+  // Skip CSRF validation for exempt routes
+  const isCsrfExempt = csrfExemptRoutes.some((route) =>
+    pathname.startsWith(route),
+  );
+
+  if (isCsrfExempt) {
+    return null;
+  }
+
+  const headerName = getCsrfTokenHeaderEdge();
+  const headerToken = request.headers.get(headerName) || "";
+  const cookieToken = request.cookies.get("csrf-token")?.value || "";
+  
+  if (!validateCsrfTokenEdge(headerToken, cookieToken)) {
+    return new NextResponse(
+      JSON.stringify({
+        success: false,
+        error: "CSRF doğrulaması başarısız",
+        code: "INVALID_CSRF",
+      }),
+      { status: 403, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  return null;
+}
+
+/**
+ * Handle unauthenticated requests
+ */
+function handleUnauthenticated(
+  request: NextRequest,
+  pathname: string,
+  isProtectedApiRoute: boolean
+): NextResponse {
+  if (isProtectedApiRoute) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 },
+    );
+  }
+
+  const loginUrl = new URL("/login", request.url);
+  loginUrl.searchParams.set("redirect", pathname);
+  return NextResponse.redirect(loginUrl);
+}
+
+/**
+ * Add session headers to request for API routes
+ */
+function addSessionHeaders(
+  request: NextRequest,
+  session: { userId: string; sessionId: string }
+): NextResponse {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-user-id", session.userId);
+  requestHeaders.set("x-session-id", session.sessionId);
+
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
+}
+
+/**
  * Main middleware function (Edge Runtime compatible)
  *
  * Note: Edge middleware is lightweight and cannot call external APIs like Appwrite.
@@ -142,57 +242,26 @@ const protectedRoutes: RouteRule[] = [
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Handle root path - redirect to login (page.tsx will handle the redirect)
+  // Handle root path
   if (pathname === "/") {
     return NextResponse.next();
   }
 
   // Allow public routes
-  if (
-    publicRoutes.some((route) => pathname.startsWith(route)) ||
-    pathname.startsWith("/api/health")
-  ) {
+  if (isPublicRoute(pathname)) {
     return NextResponse.next();
   }
 
   // CSRF protection for mutating API requests
-  if (pathname.startsWith("/api")) {
-    const method = request.method.toUpperCase();
-    if (
-      method === "POST" ||
-      method === "PUT" ||
-      method === "PATCH" ||
-      method === "DELETE"
-    ) {
-      // Skip CSRF validation for exempt routes
-      const isCsrfExempt = csrfExemptRoutes.some((route) =>
-        pathname.startsWith(route),
-      );
-
-      if (!isCsrfExempt) {
-        const headerName = getCsrfTokenHeaderEdge();
-        const headerToken = request.headers.get(headerName) || "";
-        const cookieToken = request.cookies.get("csrf-token")?.value || "";
-        if (!validateCsrfTokenEdge(headerToken, cookieToken)) {
-          return new NextResponse(
-            JSON.stringify({
-              success: false,
-              error: "CSRF doğrulaması başarısız",
-              code: "INVALID_CSRF",
-            }),
-            { status: 403, headers: { "Content-Type": "application/json" } },
-          );
-        }
-      }
-    }
+  const csrfError = validateApiCsrf(request, pathname);
+  if (csrfError) {
+    return csrfError;
   }
 
-  // Check if it's a protected API route
+  // Check if it's a protected route
   const isProtectedApiRoute = protectedApiRoutes.some((route) =>
     pathname.startsWith(route),
   );
-
-  // Check if it's a protected page route
   const matchingRoute = protectedRoutes.find((route) =>
     pathname.startsWith(route.path),
   );
@@ -205,35 +274,14 @@ export default async function middleware(request: NextRequest) {
   // Get user session (Edge-compatible)
   const session = await getAuthSessionFromRequestEdge(request);
 
-  // If no session or session expired, redirect to login (for pages) or return 401 (for API)
+  // If no session or session expired, handle unauthenticated
   if (!session || isSessionExpired(session)) {
-    if (isProtectedApiRoute) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 },
-      );
-    }
-
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
+    return handleUnauthenticated(request, pathname, isProtectedApiRoute);
   }
-
-  // For Edge middleware, we defer permission checks to API routes and server components
-  // This is because Edge middleware cannot call external APIs like Appwrite
-  // The session validation above is sufficient for basic auth
 
   // Add session info to request headers for API routes
   if (isProtectedApiRoute) {
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.set("x-user-id", session.userId);
-    requestHeaders.set("x-session-id", session.sessionId);
-
-    return NextResponse.next({
-      request: {
-        headers: requestHeaders,
-      },
-    });
+    return addSessionHeaders(request, session);
   }
 
   return NextResponse.next();

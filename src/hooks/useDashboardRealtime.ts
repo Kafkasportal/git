@@ -58,65 +58,71 @@ export function useDashboardRealtime(
         `databases.${databaseId}.collections.notifications.documents`,
     ];
 
-    // Handle realtime messages
-    const handleMessage = useCallback((response: RealtimeResponseEvent<unknown>) => {
-        const events = response.events || [];
-
-        // Determine which collection was updated
-        let collectionId = '';
-        let eventType = '';
-
+    // Extract collection ID and event type from realtime event
+    const extractCollectionInfo = (events: string[]): { collectionId: string; eventType: string } | null => {
         for (const event of events) {
             const match = event.match(/collections\.(\w+)\.documents\.(\w+)$/);
             if (match) {
-                collectionId = match[1];
-                eventType = match[2]; // create, update, delete
-                break;
+                return {
+                    collectionId: match[1],
+                    eventType: match[2], // create, update, delete
+                };
             }
         }
+        return null;
+    };
 
-        if (!collectionId) return;
+    // Invalidate queries for specific collection
+    const invalidateCollectionQueries = useCallback((collectionId: string) => {
+        const invalidationMap: Record<string, string[][]> = {
+            beneficiaries: [['monitoring', 'stats'], ['beneficiaries']],
+            donations: [['monitoring', 'stats'], ['dashboard', 'charts'], ['donations']],
+            tasks: [['monitoring', 'kpis'], ['tasks']],
+            meetings: [['monitoring', 'kpis'], ['meetings']],
+            notifications: [['notifications']],
+        };
 
-        // Invalidate relevant queries based on collection
-        switch (collectionId) {
-            case 'beneficiaries':
-                queryClient.invalidateQueries({ queryKey: ['monitoring', 'stats'] });
-                queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
-                break;
-            case 'donations':
-                queryClient.invalidateQueries({ queryKey: ['monitoring', 'stats'] });
-                queryClient.invalidateQueries({ queryKey: ['dashboard', 'charts'] });
-                queryClient.invalidateQueries({ queryKey: ['donations'] });
-                break;
-            case 'tasks':
-                queryClient.invalidateQueries({ queryKey: ['monitoring', 'kpis'] });
-                queryClient.invalidateQueries({ queryKey: ['tasks'] });
-                break;
-            case 'meetings':
-                queryClient.invalidateQueries({ queryKey: ['monitoring', 'kpis'] });
-                queryClient.invalidateQueries({ queryKey: ['meetings'] });
-                break;
-            case 'notifications':
-                queryClient.invalidateQueries({ queryKey: ['notifications'] });
-                break;
-            default:
-                // Generic invalidation
-                queryClient.invalidateQueries({ queryKey: [collectionId] });
+        const queryKeys = invalidationMap[collectionId];
+        if (queryKeys) {
+            queryKeys.forEach((key) => {
+                queryClient.invalidateQueries({ queryKey: key }).catch(() => {
+                    // Ignore errors from query invalidation
+                });
+            });
+        } else {
+            // Generic invalidation
+            queryClient.invalidateQueries({ queryKey: [collectionId] }).catch(() => {
+                // Ignore errors from query invalidation
+            });
         }
+    }, [queryClient]);
+
+    // Handle realtime messages
+    const handleMessage = useCallback((response: RealtimeResponseEvent<unknown>) => {
+        const events = response.events || [];
+        const collectionInfo = extractCollectionInfo(events);
+
+        if (!collectionInfo) return;
+
+        invalidateCollectionQueries(collectionInfo.collectionId);
 
         // Show notification if enabled
-        if (showNotifications && eventType) {
-            const label = COLLECTION_LABELS[collectionId] || collectionId;
-            const action = eventType === 'create' ? 'eklendi' :
-                eventType === 'update' ? 'güncellendi' :
-                    eventType === 'delete' ? 'silindi' : 'değişti';
+        if (showNotifications && collectionInfo.eventType) {
+            const label = COLLECTION_LABELS[collectionInfo.collectionId] || collectionInfo.collectionId;
+            const getActionLabel = (type: string): string => {
+                if (type === 'create') return 'eklendi';
+                if (type === 'update') return 'güncellendi';
+                if (type === 'delete') return 'silindi';
+                return 'değişti';
+            };
+            const action = getActionLabel(collectionInfo.eventType);
 
             toast.info(`${label} ${action}`, {
                 description: 'Dashboard otomatik güncellendi',
                 duration: 3000,
             });
         }
-    }, [queryClient, showNotifications]);
+    }, [queryClient, showNotifications, invalidateCollectionQueries]);
 
     // Use Appwrite realtime subscription
     const { isConnected, error } = useAppwriteMultipleChannels({

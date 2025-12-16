@@ -15,6 +15,70 @@ import {
   buildUserPreferences,
 } from '@/lib/appwrite/user-transform';
 
+// Email validation regex
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Validate user update request body
+ */
+function validateUpdateBody(body: Record<string, unknown>): { valid: boolean; error?: string } {
+  if (body.email && typeof body.email === 'string' && !EMAIL_REGEX.test(body.email)) {
+    return { valid: false, error: 'Geçersiz e-posta adresi' };
+  }
+
+  if (body.name && typeof body.name === 'string' && body.name.trim().length < 2) {
+    return { valid: false, error: 'Ad Soyad en az 2 karakter olmalıdır' };
+  }
+
+  if (body.role && typeof body.role === 'string' && body.role.trim().length < 2) {
+    return { valid: false, error: 'Rol bilgisi en az 2 karakter olmalıdır' };
+  }
+
+  const permissions = normalizeOptionalPermissions(body.permissions);
+  if (body.permissions && (!permissions || permissions.length === 0)) {
+    return { valid: false, error: 'Geçerli en az bir modül erişimi seçilmelidir' };
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Update user basic info (name, email)
+ */
+async function updateUserBasicInfo(
+  users: Users,
+  id: string,
+  body: Record<string, unknown>
+): Promise<void> {
+  if (body.name && typeof body.name === 'string') {
+    await users.updateName(id, body.name.trim());
+  }
+  if (body.email && typeof body.email === 'string') {
+    await users.updateEmail(id, body.email.trim().toLowerCase());
+  }
+}
+
+/**
+ * Update user password if provided
+ */
+async function updateUserPassword(
+  users: Users,
+  id: string,
+  password: unknown
+): Promise<{ valid: boolean; error?: string }> {
+  if (!password || typeof password !== 'string' || password.trim().length === 0) {
+    return { valid: true };
+  }
+
+  const passwordValidation = validatePasswordStrength(password);
+  if (!passwordValidation.valid) {
+    return { valid: false, error: passwordValidation.error || 'Şifre yeterince güçlü değil' };
+  }
+
+  await users.updatePassword(id, password.trim());
+  return { valid: true };
+}
+
 /**
  * GET /api/users/[id]
  */
@@ -72,47 +136,26 @@ async function updateUserHandler(
 
     const body = (await request.json()) as Record<string, unknown>;
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (body.email && typeof body.email === 'string' && !emailRegex.test(body.email)) {
-      return errorResponse('Geçersiz e-posta adresi', 400);
+    // Validate request body
+    const validation = validateUpdateBody(body);
+    if (!validation.valid) {
+      return errorResponse(validation.error || 'Geçersiz istek', 400);
     }
 
-    if (body.name && typeof body.name === 'string' && body.name.trim().length < 2) {
-      return errorResponse('Ad Soyad en az 2 karakter olmalıdır', 400);
-    }
-
-    if (body.role && typeof body.role === 'string' && body.role.trim().length < 2) {
-      return errorResponse('Rol bilgisi en az 2 karakter olmalıdır', 400);
-    }
-
-    const permissions = normalizeOptionalPermissions(body.permissions);
-
-    if (body.permissions && (!permissions || permissions.length === 0)) {
-      return errorResponse('Geçerli en az bir modül erişimi seçilmelidir', 400);
-    }
-
-    // Update user in Appwrite Auth
     const serverClient = getServerClient();
     const users = new Users(serverClient);
 
     // Update basic user info
-    if (body.name && typeof body.name === 'string') {
-      await users.updateName(id, body.name.trim());
-    }
-    if (body.email && typeof body.email === 'string') {
-      await users.updateEmail(id, body.email.trim().toLowerCase());
-    }
+    await updateUserBasicInfo(users, id, body);
 
     // Update password if provided
-    if (body.password && typeof body.password === 'string' && body.password.trim().length > 0) {
-      const passwordValidation = validatePasswordStrength(body.password);
-      if (!passwordValidation.valid) {
-        return errorResponse(passwordValidation.error || 'Şifre yeterince güçlü değil', 400);
-      }
-      await users.updatePassword(id, body.password.trim());
+    const passwordResult = await updateUserPassword(users, id, body.password);
+    if (!passwordResult.valid) {
+      return errorResponse(passwordResult.error || 'Şifre güncellenemedi', 400);
     }
 
     // Update role and permissions in preferences
+    const permissions = normalizeOptionalPermissions(body.permissions);
     const currentUser = await users.get(id);
     const newPrefs = buildUserPreferences(currentUser.prefs || {}, {
       role: body.role && typeof body.role === 'string' ? body.role.trim() : undefined,

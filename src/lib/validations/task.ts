@@ -68,8 +68,14 @@ export const taskSchema = z
   .refine(
     (data) => {
       // Auto-set completed_at when status becomes 'completed'
+      // Allow missing completed_at as it will be auto-set during form submission
       if (data.status === 'completed' && !data.completed_at) {
-        return true; // This will be handled in the form submission
+        return true; // Valid - will be auto-set
+      }
+      // If completed_at is provided, it should be valid
+      if (data.completed_at) {
+        const completedDate = new Date(data.completed_at);
+        return !Number.isNaN(completedDate.getTime());
       }
       return true;
     },
@@ -94,14 +100,15 @@ export const taskSchema = z
   )
   .refine(
     (data) => {
-      // Warn if due_date is within 24 hours and status is pending
-      if (data.due_date && data.status === 'pending') {
+      // Validate due_date is valid if provided
+      if (data.due_date) {
         const dueDate = new Date(data.due_date);
-        const now = new Date();
-        const hoursUntilDue = (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-        if (hoursUntilDue <= 24 && hoursUntilDue > 0) {
-          // This is just a warning, not an error
+        if (Number.isNaN(dueDate.getTime())) {
+          return false; // Invalid date
+        }
+        // Warn if due_date is within 24 hours and status is pending
+        // This is just a warning, not an error - always return true
+        if (data.status === 'pending') {
           return true;
         }
       }

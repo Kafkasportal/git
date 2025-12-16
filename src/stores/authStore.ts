@@ -73,6 +73,207 @@ interface AuthActions {
 
 type AuthStore = AuthState & AuthActions;
 
+// Helper functions for auth operations
+const DEMO_PERMISSIONS: PermissionValue[] = [
+  "beneficiaries:access",
+  "donations:access",
+  "aid_applications:access",
+  "scholarships:access",
+  "messages:access",
+  "finance:access",
+  "reports:access",
+  "settings:access",
+  "workflow:access",
+  "partners:access",
+  "users:manage",
+  "settings:manage",
+  "audit:view",
+];
+
+/**
+ * Create demo user object
+ */
+function createDemoUser(): User {
+  return {
+    id: "demo-user-001",
+    email: "demo@dernek.org",
+    name: "Demo Kullanici",
+    role: "admin",
+    avatar: null,
+    permissions: DEMO_PERMISSIONS,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Set authenticated state
+ */
+function setAuthenticatedState(
+  set: (fn: (state: AuthState) => void) => void,
+  user: User | null,
+  isAuthenticated: boolean
+): void {
+  set((state) => {
+    state.user = user;
+    state.isAuthenticated = isAuthenticated;
+    state.isInitialized = true;
+    state.isLoading = false;
+  });
+}
+
+/**
+ * Set unauthenticated state
+ */
+function setUnauthenticatedState(
+  set: (fn: (state: AuthState) => void) => void
+): void {
+  set((state) => {
+    state.isAuthenticated = false;
+    state.user = null;
+    state.isInitialized = true;
+    state.isLoading = false;
+  });
+}
+
+/**
+ * Validate session from server
+ */
+async function validateSessionFromServer(): Promise<User | null> {
+  const userResp = await fetch("/api/auth/user", {
+    method: "GET",
+    cache: "no-store",
+    credentials: "include",
+  });
+
+  if (!userResp.ok) {
+    return null;
+  }
+
+  const userData = await userResp.json();
+  if (userData.success && userData.data) {
+    const user = userData.data;
+    
+    // Update localStorage (minimal info for offline fallback)
+    localStorage.setItem(
+      "auth-session",
+      JSON.stringify({
+        userId: user.id,
+        isAuthenticated: true,
+        lastVerified: Date.now(),
+      }),
+    );
+    
+    return user;
+  }
+
+  return null;
+}
+
+/**
+ * Check if localStorage session is stale
+ */
+function isSessionStale(localData: { lastVerified?: number }): boolean {
+  if (!localData.lastVerified) {
+    return true;
+  }
+  const STALE_THRESHOLD = 24 * 60 * 60 * 1000; // 24 hours
+  return Date.now() - localData.lastVerified > STALE_THRESHOLD;
+}
+
+/**
+ * Get CSRF token from server
+ */
+async function getCsrfToken(): Promise<string> {
+  const csrfResponse = await fetch("/api/csrf", {
+    credentials: "include",
+  });
+
+  if (!csrfResponse.ok) {
+    throw new Error("Güvenlik doğrulaması başarısız. Lütfen sayfayı yenileyin.");
+  }
+
+  const csrfData = await csrfResponse.json();
+
+  if (!csrfData.success) {
+    throw new Error("Güvenlik doğrulaması başarısız. Lütfen sayfayı yenileyin.");
+  }
+
+  return csrfData.token;
+}
+
+/**
+ * Parse login response
+ */
+async function parseLoginResponse(response: Response): Promise<{ success: boolean; data?: any; error?: string; message?: string; requiresTwoFactor?: boolean }> {
+  let result;
+  try {
+    result = await response.json();
+  } catch {
+    const text = await response.text().catch(() => 'Unable to read response');
+    throw new Error(`Sunucu yanıtı geçersiz: ${text.substring(0, 100)}`);
+  }
+
+  // Handle rate limiting
+  if (response.status === 429) {
+    const errorMsg = result?.error || result?.message || "Çok fazla deneme yapıldı. Lütfen biraz bekleyin.";
+    throw new Error(errorMsg);
+  }
+
+  // Validate response structure
+  if (result === null || result === undefined || result.success === undefined) {
+    throw new Error(
+      result?.error || result?.message || "Sunucudan geçersiz yanıt alındı. Lütfen tekrar deneyin.",
+    );
+  }
+
+  return result;
+}
+
+/**
+ * Handle login error response
+ */
+function handleLoginError(result: { error?: string; message?: string; requiresTwoFactor?: boolean }, status: number): never {
+  if (result.requiresTwoFactor) {
+    const error = new Error(result.error || result.message || "2FA kodu gereklidir") as Error & { requiresTwoFactor?: boolean };
+    error.requiresTwoFactor = true;
+    throw error;
+  }
+
+  if (status === 401) {
+    throw new Error(result.error || result.message || "E-posta veya şifre hatalı. Lütfen kontrol edin.");
+  }
+  if (status === 400) {
+    throw new Error(result.error || result.message || "E-posta ve şifre alanları zorunludur.");
+  }
+  
+  throw new Error(result.error || result.message || "Giriş yapılamadı. Lütfen tekrar deneyin.");
+}
+
+/**
+ * Extract error message from error object
+ */
+function extractErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === "string") {
+    return error;
+  }
+  return "Giriş yapılamadı. Lütfen tekrar deneyin.";
+}
+
+/**
+ * Check if error is network related
+ */
+function isNetworkError(errorMessage: string): boolean {
+  return (
+    errorMessage.includes("Failed to fetch") ||
+    errorMessage.includes("NetworkError")
+  );
+}
+
 // Convert backend user to Store user
 export const backendUserToStoreUser = (backendUser: {
   id: string;
@@ -125,149 +326,58 @@ export const useAuthStore = create<AuthStore>()(
                   state.isLoading = true;
                 });
 
-                // Check for demo session first (no API call needed)
                 const stored = localStorage.getItem("auth-session");
-                if (stored) {
-                  try {
-                    const localData = JSON.parse(stored);
-                    if (localData.isDemo && localData.isAuthenticated) {
-                      // Demo session - restore demo user without API call
-                      const demoUser: User = {
-                        id: "demo-user-001",
-                        email: "demo@dernek.org",
-                        name: "Demo Kullanici",
-                        role: "admin",
-                        avatar: null,
-                        permissions: [
-                          "donations:read",
-                          "donations:write",
-                          "beneficiaries:read",
-                          "beneficiaries:write",
-                          "scholarships:read",
-                          "scholarships:write",
-                          "finance:read",
-                          "finance:write",
-                          "messages:read",
-                          "messages:write",
-                          "workflow:read",
-                          "workflow:write",
-                          "partners:read",
-                          "partners:write",
-                          "reports:read",
-                          "reports:write",
-                          "settings:read",
-                          "settings:write",
-                          "users:manage",
-                          "aid_applications:read",
-                          "aid_applications:write",
-                        ] as PermissionValue[],
-                        isActive: true,
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString(),
-                      };
-
-                      set((state) => {
-                        state.user = demoUser;
-                        state.isAuthenticated = true;
-                        state.isInitialized = true;
-                        state.isLoading = false;
-                      });
-                      return;
-                    }
-
-                    // Check if we have a valid session indicator in localStorage
-                    // Only make API call if we have a session indicator
-                    if (localData.userId && localData.isAuthenticated) {
-                      // We have a session indicator, validate it with server
-                      try {
-                        // Fetch current user (this validates session on server)
-                        const userResp = await fetch("/api/auth/user", {
-                          method: "GET",
-                          cache: "no-store",
-                          credentials: "include",
-                        });
-
-                        if (userResp.ok) {
-                          const userData = await userResp.json();
-                          if (userData.success && userData.data) {
-                            const user = userData.data;
-
-                            // Update localStorage (minimal info for offline fallback)
-                            // SECURITY: Don't store sensitive data like email, role, permissions
-                            localStorage.setItem(
-                              "auth-session",
-                              JSON.stringify({
-                                userId: user.id,
-                                isAuthenticated: true,
-                                lastVerified: Date.now(),
-                              }),
-                            );
-
-                            set((state) => {
-                              state.user = user;
-                              state.isAuthenticated = true;
-                              state.isInitialized = true;
-                              state.isLoading = false;
-                            });
-                            return;
-                          }
-                        }
-
-                        // No valid session - clear localStorage
-                        localStorage.removeItem("auth-session");
-                        set((state) => {
-                          state.isAuthenticated = false;
-                          state.user = null;
-                          state.isInitialized = true;
-                          state.isLoading = false;
-                        });
-                        return;
-                      } catch (_apiError) {
-                        // API call failed - clear invalid session
-                        localStorage.removeItem("auth-session");
-                        set((state) => {
-                          state.isAuthenticated = false;
-                          state.user = null;
-                          state.isInitialized = true;
-                          state.isLoading = false;
-                        });
-                        return;
-                      }
-                    }
-                  } catch {
-                    // Invalid localStorage, continue with normal flow
-                  }
+                if (!stored) {
+                  setUnauthenticatedState(set);
+                  return;
                 }
 
-                // No session in localStorage - user is not authenticated
-                set((state) => {
-                  state.isAuthenticated = false;
-                  state.user = null;
-                  state.isInitialized = true;
-                  state.isLoading = false;
-                });
+                try {
+                  const localData = JSON.parse(stored);
+                  
+                  // Handle demo session
+                  if (localData.isDemo && localData.isAuthenticated) {
+                    const demoUser = createDemoUser();
+                    setAuthenticatedState(set, demoUser, true);
+                    return;
+                  }
+
+                  // Validate real session with server
+                  if (localData.userId && localData.isAuthenticated) {
+                    try {
+                      const user = await validateSessionFromServer();
+                      if (user) {
+                        setAuthenticatedState(set, user, true);
+                        return;
+                      }
+                    } catch {
+                      // API call failed - clear invalid session
+                      localStorage.removeItem("auth-session");
+                      setUnauthenticatedState(set);
+                      return;
+                    }
+                  }
+                } catch {
+                  // Invalid localStorage, continue with normal flow
+                }
+
+                // No valid session
+                setUnauthenticatedState(set);
               } catch (_error) {
                 // Network error - try localStorage fallback
                 const storedFallback = localStorage.getItem("auth-session");
                 if (storedFallback) {
                   try {
                     const localData = JSON.parse(storedFallback);
-                    // SECURITY: Only check for basic session validity
-                    // Full user data should be fetched from server when online
-                    const hasValidData =
-                      localData.userId && localData.isAuthenticated;
-                    const isStale =
-                      !localData.lastVerified ||
-                      Date.now() - localData.lastVerified > 24 * 60 * 60 * 1000; // 24 hours
+                    const hasValidData = localData.userId && localData.isAuthenticated;
+                    const stale = isSessionStale(localData);
 
-                    if (hasValidData && !isStale) {
-                      // Note: We only set isAuthenticated flag here
-                      // User data will be fetched when network is available
+                    if (hasValidData && !stale) {
+                      // Only set isAuthenticated flag, user data will be fetched when online
                       set((state) => {
                         state.isAuthenticated = true;
                         state.isInitialized = true;
                         state.isLoading = false;
-                        // Don't set user data from localStorage to avoid stale data
                       });
                       return;
                     }
@@ -278,12 +388,7 @@ export const useAuthStore = create<AuthStore>()(
 
                 // Clear everything on error
                 localStorage.removeItem("auth-session");
-                set((state) => {
-                  state.isAuthenticated = false;
-                  state.user = null;
-                  state.isInitialized = true;
-                  state.isLoading = false;
-                });
+                setUnauthenticatedState(set);
               }
             })();
           },
@@ -302,91 +407,34 @@ export const useAuthStore = create<AuthStore>()(
             });
 
             try {
-              // Get CSRF token first
-              const csrfResponse = await fetch("/api/csrf", {
-                credentials: "include", // Required for cookies to be sent/received
-              });
+              // Get CSRF token
+              const csrfToken = await getCsrfToken();
 
-              if (!csrfResponse.ok) {
-                throw new Error(
-                  "Güvenlik doğrulaması başarısız. Lütfen sayfayı yenileyin.",
-                );
-              }
-
-              const csrfData = await csrfResponse.json();
-
-              if (!csrfData.success) {
-                throw new Error(
-                  "Güvenlik doğrulaması başarısız. Lütfen sayfayı yenileyin.",
-                );
-              }
-
-              // Call server-side login API (sets HttpOnly cookie)
+              // Call server-side login API
               const response = await fetch("/api/auth/login", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
-                  "x-csrf-token": csrfData.token,
+                  "x-csrf-token": csrfToken,
                 },
-                credentials: "include", // Required for cookies to be sent/received
+                credentials: "include",
                 body: JSON.stringify({ email, password, rememberMe, twoFactorCode }),
               });
 
-              let result;
-              try {
-                result = await response.json();
-              } catch {
-                const text = await response.text().catch(() => 'Unable to read response');
-                throw new Error(`Sunucu yanıtı geçersiz: ${text.substring(0, 100)}`);
-              }
-
-              // Handle rate limiting (429) before checking success field
-              if (response.status === 429) {
-                const errorMsg = result?.error || result?.message || "Çok fazla deneme yapıldı. Lütfen biraz bekleyin.";
-                throw new Error(errorMsg);
-              }
-
-              // Ensure result has success field (default to false if missing)
-              if (result === null || result === undefined || result.success === undefined) {
-                throw new Error(
-                  result?.error || result?.message || "Sunucudan geçersiz yanıt alındı. Lütfen tekrar deneyin.",
-                );
-              }
+              const result = await parseLoginResponse(response);
 
               if (!result.success) {
-                // Check if 2FA is required
-                if (result.requiresTwoFactor) {
-                  // Return special error to trigger 2FA prompt
-                  const error = new Error(result.error || result.message || "2FA kodu gereklidir") as Error & { requiresTwoFactor?: boolean };
-                  error.requiresTwoFactor = true;
-                  throw error;
-                }
-
-                // Handle specific error cases
-                if (response.status === 401) {
-                  throw new Error(
-                    result.error || result.message || "E-posta veya şifre hatalı. Lütfen kontrol edin.",
-                  );
-                } else if (response.status === 400) {
-                  throw new Error(result.error || result.message || "E-posta ve şifre alanları zorunludur.");
-                } else {
-                  throw new Error(
-                    result.error || result.message || "Giriş yapılamadı. Lütfen tekrar deneyin.",
-                  );
-                }
+                handleLoginError(result, response.status);
               }
 
               const user = result.data.user;
-
-              // Create session object (without actual token - stored in HttpOnly cookie)
               const sessionObj: Session = {
                 userId: user.id,
-                accessToken: "stored-in-httponly-cookie", // Not stored client-side
+                accessToken: "stored-in-httponly-cookie",
                 expire: result.data.session.expire,
               };
 
               // Save minimal session info to localStorage
-              // SECURITY: Don't store sensitive data like email, role, permissions
               localStorage.setItem(
                 "auth-session",
                 JSON.stringify({
@@ -405,19 +453,9 @@ export const useAuthStore = create<AuthStore>()(
                 state.error = null;
               });
             } catch (error: unknown) {
-              let errorMessage = "Giriş yapılamadı. Lütfen tekrar deneyin.";
+              let errorMessage = extractErrorMessage(error);
 
-              if (error instanceof Error) {
-                errorMessage = error.message;
-              } else if (typeof error === "string") {
-                errorMessage = error;
-              }
-
-              // Network error handling
-              if (
-                errorMessage.includes("Failed to fetch") ||
-                errorMessage.includes("NetworkError")
-              ) {
+              if (isNetworkError(errorMessage)) {
                 errorMessage = "İnternet bağlantınızı kontrol edin.";
               }
 

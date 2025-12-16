@@ -101,6 +101,61 @@ function shortenStackTrace(error: Error): Error {
   return error;
 }
 
+/**
+ * Prepare error for safe logging
+ */
+function prepareSafeError(error: unknown): unknown {
+  if (error instanceof Error) {
+    const errorCopy = new Error(error.message);
+    errorCopy.name = error.name;
+    errorCopy.stack = error.stack;
+    return shortenStackTrace(errorCopy);
+  }
+  return error;
+}
+
+/**
+ * Log error to console in development mode
+ */
+function logErrorToConsole(error: unknown): void {
+  if (error instanceof Error) {
+    console.error(error);
+    return;
+  }
+  
+  // For non-Error objects, try to stringify or convert to string
+  try {
+    const errorStr = typeof error === 'object' && error !== null
+      ? JSON.stringify(error, null, 2)
+      : String(error);
+    console.error('Error:', errorStr);
+  } catch {
+    console.error('Error:', error);
+  }
+}
+
+/**
+ * Log to console in development mode
+ */
+function logToDevelopmentConsole(
+  level: LogLevel,
+  timestamp: string,
+  message: string,
+  safeContext: unknown,
+  error?: unknown
+): void {
+  const color = colors[level];
+  console.log(`${color}${level.toUpperCase()}${resetColor} ${timestamp} ${message}`);
+  
+  if (safeContext && typeof safeContext === 'object' && Object.keys(safeContext).length > 0) {
+    console.log(JSON.stringify(safeContext, null, 2));
+  }
+  
+  if (error) {
+    logErrorToConsole(error);
+  }
+}
+
 class LoggerImpl implements Logger {
   private namespace?: string;
   private baseContext?: LogContext;
@@ -127,50 +182,20 @@ class LoggerImpl implements Logger {
     if (this.namespace) fullContext.namespace = this.namespace;
 
     const safeContext = maskSensitive(fullContext);
-    let safeError: Error | unknown = error;
-    
-    if (error instanceof Error) {
-      // Create a copy for safe logging (with shortened stack in production)
-      const errorCopy = new Error(error.message);
-      errorCopy.name = error.name;
-      errorCopy.stack = error.stack;
-      safeError = shortenStackTrace(errorCopy);
-    }
-
-    const logEntry = {
-      timestamp,
-      level,
-      message,
-      context: safeContext,
-      ...(safeError ? { error: safeError } : {}),
-    };
+    const safeError = error ? prepareSafeError(error) : undefined;
 
     if (isDevelopment) {
-      const color = colors[level];
-      console.log(`${color}${level.toUpperCase()}${resetColor} ${timestamp} ${message}`);
-      if (safeContext && typeof safeContext === 'object' && Object.keys(safeContext).length > 0) {
-        console.log(JSON.stringify(safeContext, null, 2));
-      }
-      if (error) {
-        // Use original error for console.error to preserve full stack trace
-        if (error instanceof Error) {
-          console.error(error);
-        } else {
-          // For non-Error objects, try to stringify or convert to string
-          try {
-            const errorStr = typeof error === 'object' && error !== null
-              ? JSON.stringify(error, null, 2)
-              : String(error);
-            console.error('Error:', errorStr);
-          } catch {
-            console.error('Error:', error);
-          }
-        }
-      }
+      logToDevelopmentConsole(level, timestamp, message, safeContext, error);
     } else {
+      const logEntry = {
+        timestamp,
+        level,
+        message,
+        context: safeContext,
+        ...(safeError ? { error: safeError } : {}),
+      };
       console.log(JSON.stringify(logEntry));
     }
-
   }
 
   debug(message: string, context?: LogContext): void {

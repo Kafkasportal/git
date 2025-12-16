@@ -228,6 +228,52 @@ export function sanitizeSearchQuery(query: string): string {
 }
 
 /**
+ * Clean number string with both dot and comma separators
+ * Determines format based on separator positions
+ */
+function cleanNumberWithBothSeparators(cleaned: string): string {
+  const lastDot = cleaned.lastIndexOf('.');
+  const lastComma = cleaned.lastIndexOf(',');
+
+  if (lastComma > lastDot) {
+    // Comma is last -> Turkish format (dot thousands, comma decimal)
+    return cleaned.replaceAll('.', '').replace(',', '.');
+  }
+    // Dot is last -> US format (comma thousands, dot decimal)
+    return cleaned.replaceAll(',', '');
+}
+
+/**
+ * Clean number string with only comma separator
+ * Determines if comma is decimal or thousands separator
+ */
+function cleanNumberWithCommaOnly(cleaned: string): string {
+  const parts = cleaned.split(',');
+  if (parts.length === 2 && parts[1].length <= 2) {
+    // Turkish decimal format
+    return cleaned.replace(',', '.');
+  }
+    // US thousands separator
+    return cleaned.replaceAll(',', '');
+}
+
+/**
+ * Clean number string based on format
+ */
+function cleanNumberString(value: string): string {
+  const cleaned = value.trim();
+
+  if (cleaned.includes('.') && cleaned.includes(',')) {
+    return cleanNumberWithBothSeparators(cleaned);
+  }
+  if (cleaned.includes(',') && !cleaned.includes('.')) {
+    return cleanNumberWithCommaOnly(cleaned);
+  }
+  // If only dots or no separators, leave as is
+  return cleaned;
+}
+
+/**
  * Sanitize number input
  * Returns null if not a valid number
  * Handles Turkish number format: 5.000,50 -> 5000.50
@@ -238,39 +284,7 @@ export function sanitizeNumber(value: string | number): number | null {
   let processedValue: string | number = value;
 
   if (typeof value === 'string') {
-    let cleaned = value.trim();
-
-    // Handle both formats:
-    // 1. Turkish format: 5.000,50 (dot as thousand separator, comma as decimal) -> 5000.50
-    // 2. US format: 5,000.50 (comma as thousand separator, dot as decimal) -> 5000.50
-
-    if (cleaned.includes('.') && cleaned.includes(',')) {
-      // Both separators present - determine which is decimal separator
-      const lastDot = cleaned.lastIndexOf('.');
-      const lastComma = cleaned.lastIndexOf(',');
-
-      if (lastComma > lastDot) {
-        // Comma is last -> Turkish format (dot thousands, comma decimal)
-        cleaned = cleaned.replace(/\./g, '').replace(',', '.');
-      } else {
-        // Dot is last -> US format (comma thousands, dot decimal)
-        cleaned = cleaned.replace(/,/g, '');
-      }
-    } else if (cleaned.includes(',') && !cleaned.includes('.')) {
-      // Only comma present - could be Turkish decimal: 5,50 -> 5.50
-      // Or US thousands: 5,000 -> 5000
-      const parts = cleaned.split(',');
-      if (parts.length === 2 && parts[1].length <= 2) {
-        // Turkish decimal format
-        cleaned = cleaned.replace(',', '.');
-      } else {
-        // US thousands separator
-        cleaned = cleaned.replace(/,/g, '');
-      }
-    }
-    // If only dots, leave as is
-
-    processedValue = cleaned;
+    processedValue = cleanNumberString(value);
   }
 
   const num = typeof processedValue === 'string' ? parseFloat(processedValue) : processedValue;

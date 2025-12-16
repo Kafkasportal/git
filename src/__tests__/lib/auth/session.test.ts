@@ -202,7 +202,8 @@ describe('Session Utilities', () => {
             const [payload, signature] = serialized.split('.');
 
             // Manually verify the signature
-            const testSecret = process.env.SESSION_SECRET || 't3st-s3cr3t-k3y-m1n-16-ch4rs-x9z8y7w6';
+            // Use a test-specific secret for testing purposes only
+            const testSecret = process.env.SESSION_SECRET || 'test-secret-key-min-16-chars-12345';
             const expectedSig = createHmac('sha256', testSecret)
                 .update(payload)
                 .digest('hex');
@@ -312,7 +313,8 @@ describe('Session Utilities', () => {
         it('should return null for session missing sessionId', async () => {
             const { parseAuthSession } = await import('@/lib/auth/session');
             // Create a valid-looking signed payload but with missing sessionId
-            const testSecret = process.env.SESSION_SECRET || 't3st-s3cr3t-k3y-m1n-16-ch4rs-x9z8y7w6';
+            // Use a test-specific secret for testing purposes only
+            const testSecret = process.env.SESSION_SECRET || 'test-secret-key-min-16-chars-12345';
             const payload = Buffer.from(JSON.stringify({ userId: 'user' })).toString('base64url');
             const signature = createHmac('sha256', testSecret)
                 .update(payload)
@@ -324,7 +326,8 @@ describe('Session Utilities', () => {
         it('should return null for session missing userId', async () => {
             const { parseAuthSession } = await import('@/lib/auth/session');
             // Create a valid-looking signed payload but with missing userId
-            const testSecret = process.env.SESSION_SECRET || 't3st-s3cr3t-k3y-m1n-16-ch4rs-x9z8y7w6';
+            // Use a test-specific secret for testing purposes only
+            const testSecret = process.env.SESSION_SECRET || 'test-secret-key-min-16-chars-12345';
             const payload = Buffer.from(JSON.stringify({ sessionId: 'sess' })).toString('base64url');
             const signature = createHmac('sha256', testSecret)
                 .update(payload)

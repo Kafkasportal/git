@@ -89,6 +89,17 @@ function ModernSidebarComponent({
   const isModuleActive = (module: NavigationModule) =>
     module.subPages.some(sub => pathname.startsWith(sub.href));
 
+  // Filter visible modules
+  const visibleModules = navigationModules.filter((module) => {
+    if (module.permission && !effectivePermissions.includes(module.permission)) {
+      return false;
+    }
+    const visibleSubPages = module.subPages.filter(
+      (subPage) => !subPage.permission || effectivePermissions.includes(subPage.permission)
+    );
+    return visibleSubPages.length > 0;
+  });
+
   return (
     <TooltipProvider delayDuration={100}>
       {/* Sidebar */}
@@ -104,16 +115,10 @@ function ModernSidebarComponent({
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
           <div className="space-y-1">
-            {navigationModules.map((module) => {
-              if (module.permission && !effectivePermissions.includes(module.permission)) {
-                return null;
-              }
-
+            {visibleModules.map((module) => {
               const visibleSubPages = module.subPages.filter(
                 (subPage) => !subPage.permission || effectivePermissions.includes(subPage.permission)
               );
-
-              if (visibleSubPages.length === 0) return null;
 
               const isExpanded = expandedModules.includes(module.id);
               const moduleActive = isModuleActive({ ...module, subPages: visibleSubPages });

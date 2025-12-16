@@ -75,23 +75,25 @@ describe('API Middleware', () => {
     });
 
     describe('compose', () => {
-        it('should compose multiple middleware functions', async () => {
-            const middleware1 = vi.fn((handler) => async (req: NextRequest) => {
+        const createMiddlewareHandler = (headerName: string) => {
+            return async (req: NextRequest, handler: (req: NextRequest) => Promise<NextResponse>) => {
                 const response = await handler(req);
-                response.headers.set('X-Middleware-1', 'true');
+                response.headers.set(headerName, 'true');
                 return response;
-            });
+            };
+        };
 
-            const middleware2 = vi.fn((handler) => async (req: NextRequest) => {
-                const response = await handler(req);
-                response.headers.set('X-Middleware-2', 'true');
-                return response;
-            });
+        const createMiddleware1 = () => vi.fn((handler) => createMiddlewareHandler('X-Middleware-1'));
+        const createMiddleware2 = () => vi.fn((handler) => createMiddlewareHandler('X-Middleware-2'));
+
+        it('should compose multiple middleware functions', async () => {
+            const middleware1 = createMiddleware1();
+            const middleware2 = createMiddleware2();
 
             const handler = createMockHandler();
             const composed = compose(middleware1, middleware2)(handler);
-
             const request = createMockRequest();
+            
             await composed(request);
 
             expect(middleware1).toHaveBeenCalled();

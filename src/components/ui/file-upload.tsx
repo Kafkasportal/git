@@ -10,6 +10,67 @@ import NextImage from 'next/image';
 import { cn } from '@/lib/utils';
 import { validateFile } from '@/lib/sanitization';
 
+// Helper: Get file type icon based on MIME type
+function getFileTypeIcon(file: File) {
+  if (file.type.startsWith('image/')) {
+    return <Image className="h-8 w-8 text-primary" />;
+  }
+  if (file.type === 'application/pdf') {
+    return <FileText className="h-8 w-8 text-destructive" />;
+  }
+  return <File className="h-8 w-8 text-muted-foreground" />;
+}
+
+// Helper: Format file size for display
+function formatFileSizeDisplay(bytes: number): string {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+}
+
+// Helper: Check if filename has multiple extensions (security check)
+function hasMultipleExtensions(filename: string): boolean {
+  return filename.split('.').length > 2;
+}
+
+// Helper: Check if filename is too long
+function isFilenameTooLong(filename: string, maxLength = 255): boolean {
+  return filename.length > maxLength;
+}
+
+// Helper: Validate file for upload
+function performFileValidation(
+  file: File,
+  maxSize: number,
+  allowedTypes?: string[],
+  allowedExtensions?: string[]
+): { valid: boolean; error?: string; sanitizedFilename?: string } {
+  // Use advanced validation from sanitization library
+  const validation = validateFile(file, {
+    maxSize: maxSize * 1024 * 1024,
+    allowedTypes,
+    allowedExtensions,
+  });
+
+  if (!validation.valid) {
+    return { valid: false, error: validation.error || 'Geçersiz dosya' };
+  }
+
+  // Check for double extensions (e.g., file.pdf.exe)
+  if (hasMultipleExtensions(file.name)) {
+    return { valid: false, error: 'Dosya adı birden fazla uzantı içeremez' };
+  }
+
+  // Check for suspiciously long filenames
+  if (isFilenameTooLong(file.name)) {
+    return { valid: false, error: 'Dosya adı çok uzun' };
+  }
+
+  return { valid: true, sanitizedFilename: validation.sanitizedFilename };
+}
+
 // Grouped configuration for file validation
 export interface FileValidationConfig {
   maxSize?: number; // in MB
@@ -148,34 +209,13 @@ export function FileUpload(props: FileUploadProps) {
   }, []);
 
   const validateFileUpload = (file: File): { valid: boolean; sanitizedFilename?: string } => {
-    // Use advanced validation from sanitization library
-    const validation = validateFile(file, {
-      maxSize: maxSize * 1024 * 1024,
-      allowedTypes,
-      allowedExtensions,
-    });
-
-    if (!validation.valid) {
-      setError(validation.error || 'Geçersiz dosya');
+    const result = performFileValidation(file, maxSize, allowedTypes, allowedExtensions);
+    if (!result.valid) {
+      setError(result.error || 'Geçersiz dosya');
       return { valid: false };
     }
-
-    // Additional security checks
-    // Check for double extensions (e.g., file.pdf.exe)
-    const parts = file.name.split('.');
-    if (parts.length > 2) {
-      setError('Dosya adı birden fazla uzantı içeremez');
-      return { valid: false };
-    }
-
-    // Check for suspiciously long filenames
-    if (file.name.length > 255) {
-      setError('Dosya adı çok uzun');
-      return { valid: false };
-    }
-
     setError(null);
-    return { valid: true, sanitizedFilename: validation.sanitizedFilename };
+    return { valid: true, sanitizedFilename: result.sanitizedFilename };
   };
 
   const createPreview = (file: File) => {
@@ -291,23 +331,8 @@ export function FileUpload(props: FileUploadProps) {
     setShowPreviewModal(false);
   };
 
-  const getFileIcon = (file: File) => {
-    if (file.type.startsWith('image/')) {
-      return <Image className="h-8 w-8 text-primary" />;
-    } else if (file.type === 'application/pdf') {
-      return <FileText className="h-8 w-8 text-destructive" />;
-    } else {
-      return <File className="h-8 w-8 text-muted-foreground" />;
-    }
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
-  };
+  const getFileIcon = (file: File) => getFileTypeIcon(file);
+  const formatFileSize = (bytes: number) => formatFileSizeDisplay(bytes);
 
   return (
     <>

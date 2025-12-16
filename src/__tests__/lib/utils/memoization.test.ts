@@ -56,7 +56,8 @@ describe('Memoization Utilities', () => {
     });
 
     it('handles complex arguments', () => {
-      const fn = vi.fn((arr: number[]) => arr.reduce((a, b) => a + b, 0));
+      const sumReducer = (a: number, b: number) => a + b;
+      const fn = vi.fn((arr: number[]) => arr.reduce(sumReducer, 0));
       const memoized = memoize(fn);
       
       expect(memoized([1, 2, 3])).toBe(6);

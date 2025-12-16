@@ -82,6 +82,47 @@ const STORES: StoreConfig[] = [
 
 let dbInstance: IDBDatabase | null = null;
 
+/**
+ * Create indexes for a store
+ */
+function createStoreIndexes(store: IDBObjectStore, indexes: IndexConfig[] | undefined): void {
+  if (!indexes) return;
+  
+  indexes.forEach((indexConfig) => {
+    store.createIndex(indexConfig.name, indexConfig.keyPath, {
+      unique: indexConfig.unique ?? false,
+    });
+  });
+}
+
+/**
+ * Create a single store in the database
+ */
+function createStore(db: IDBDatabase, storeConfig: StoreConfig): void {
+  // Delete existing store if exists (for upgrades)
+  if (db.objectStoreNames.contains(storeConfig.name)) {
+    db.deleteObjectStore(storeConfig.name);
+  }
+
+  // Create store
+  const store = db.createObjectStore(storeConfig.name, {
+    keyPath: storeConfig.keyPath,
+    autoIncrement: storeConfig.autoIncrement,
+  });
+
+  // Create indexes
+  createStoreIndexes(store, storeConfig.indexes);
+}
+
+/**
+ * Handle database upgrade by creating all stores
+ */
+function handleDatabaseUpgrade(db: IDBDatabase): void {
+  STORES.forEach((storeConfig) => {
+    createStore(db, storeConfig);
+  });
+}
+
 export async function openDatabase(): Promise<IDBDatabase> {
   if (dbInstance) {
     return dbInstance;
@@ -101,26 +142,7 @@ export async function openDatabase(): Promise<IDBDatabase> {
 
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
-
-      STORES.forEach((storeConfig) => {
-        // Delete existing store if exists (for upgrades)
-        if (db.objectStoreNames.contains(storeConfig.name)) {
-          db.deleteObjectStore(storeConfig.name);
-        }
-
-        // Create store
-        const store = db.createObjectStore(storeConfig.name, {
-          keyPath: storeConfig.keyPath,
-          autoIncrement: storeConfig.autoIncrement,
-        });
-
-        // Create indexes
-        storeConfig.indexes?.forEach((indexConfig) => {
-          store.createIndex(indexConfig.name, indexConfig.keyPath, {
-            unique: indexConfig.unique ?? false,
-          });
-        });
-      });
+      handleDatabaseUpgrade(db);
     };
   });
 }

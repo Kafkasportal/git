@@ -278,6 +278,121 @@ export async function clearAllMutations(): Promise<void> {
 }
 
 /**
+ * Check if mutation should be skipped due to retry limit or backoff
+ */
+function shouldSkipMutation(mutation: OfflineMutation): boolean {
+  if (mutation.retryCount >= 3) {
+    return true;
+  }
+
+  if (mutation.lastRetryAt) {
+    const backoffDelay = Math.pow(2, mutation.retryCount) * 1000;
+    const timeSinceLastRetry = Date.now() - mutation.lastRetryAt;
+    return timeSinceLastRetry < backoffDelay;
+  }
+
+  return false;
+}
+
+/**
+ * Build endpoint URL for mutation
+ */
+function buildEndpoint(mutation: OfflineMutation): string {
+  const baseEndpoint =
+    COLLECTION_ENDPOINT_MAP[mutation.collection] || `/api/${mutation.collection}`;
+
+  if ((mutation.type === 'update' || mutation.type === 'delete') && mutation.data) {
+    const docId = (mutation.data.id || mutation.data.$id) as string | undefined;
+    if (docId) {
+      return `${baseEndpoint}/${docId}`;
+    }
+  }
+
+  return baseEndpoint;
+}
+
+/**
+ * Get HTTP method for mutation type
+ */
+function getHttpMethod(mutationType: 'create' | 'update' | 'delete'): string {
+  if (mutationType === 'create') return 'POST';
+  if (mutationType === 'update') return 'PUT';
+  return 'DELETE';
+}
+
+/**
+ * Handle conflict response with last-write-wins strategy
+ */
+async function handleConflict(
+  endpoint: string,
+  method: string,
+  mutation: OfflineMutation
+): Promise<void> {
+  logger.warn('Conflict detected, applying last-write-wins', { mutation });
+  
+  const retryResponse = await fetch(endpoint, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Force-Overwrite': 'true',
+    },
+    body: JSON.stringify(mutation.data),
+  });
+
+  if (!retryResponse.ok) {
+    throw new Error(`Retry failed: ${retryResponse.status}`);
+  }
+}
+
+/**
+ * Handle non-conflict errors by incrementing retry count
+ */
+async function handleError(
+  response: Response,
+  mutation: OfflineMutation
+): Promise<never> {
+  const newRetryCount = mutation.retryCount + 1;
+  await updateMutationRetry(mutation.id, newRetryCount);
+  
+  logger.warn('Mutation sync failed, incrementing retry count', {
+    mutation,
+    retryCount: newRetryCount,
+    status: response.status,
+  });
+  
+  throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+}
+
+/**
+ * Sync a single mutation to the server
+ */
+async function syncSingleMutation(mutation: OfflineMutation): Promise<boolean> {
+  logger.info('Syncing mutation', { mutation });
+
+  const endpoint = buildEndpoint(mutation);
+  const method = getHttpMethod(mutation.type);
+
+  const response = await fetch(endpoint, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(mutation.data),
+  });
+
+  if (!response.ok) {
+    if (response.status === 409) {
+      await handleConflict(endpoint, method, mutation);
+    } else {
+      await handleError(response, mutation);
+    }
+  }
+
+  await removeMutation(mutation.id);
+  return true;
+}
+
+/**
  * Sync pending mutations to server
  * Implements last-write-wins conflict resolution with retry logic and exponential backoff
  */
@@ -292,92 +407,22 @@ export async function syncPendingMutations(): Promise<{ success: number; failed:
   const sortedMutations = [...mutations].sort((a, b) => a.timestamp - b.timestamp);
 
   for (const mutation of sortedMutations) {
-    // Skip mutations that exceeded retry limit
-    if (mutation.retryCount >= 3) {
-      logger.warn('Mutation exceeded retry limit, skipping', { mutation });
-      failed++;
+    if (shouldSkipMutation(mutation)) {
+      if (mutation.retryCount >= 3) {
+        logger.warn('Mutation exceeded retry limit, skipping', { mutation });
+        failed++;
+      }
       continue;
     }
 
-    // Check exponential backoff delay
-    if (mutation.lastRetryAt) {
-      const backoffDelay = Math.pow(2, mutation.retryCount) * 1000; // 2^retryCount seconds
-      const timeSinceLastRetry = Date.now() - mutation.lastRetryAt;
-      if (timeSinceLastRetry < backoffDelay) {
-        logger.info('Mutation in backoff period, skipping', {
-          mutation,
-          remainingMs: backoffDelay - timeSinceLastRetry,
-        });
-        continue;
-      }
-    }
-
     try {
-      logger.info('Syncing mutation', { mutation });
-
-      // Get endpoint from collection map or use default
-      const baseEndpoint =
-        COLLECTION_ENDPOINT_MAP[mutation.collection] || `/api/${mutation.collection}`;
-
-      // For update/delete, append document ID if present
-      let endpoint = baseEndpoint;
-      if ((mutation.type === 'update' || mutation.type === 'delete') && mutation.data) {
-        const docId = (mutation.data.id || mutation.data.$id) as string | undefined;
-        if (docId) {
-          endpoint = `${baseEndpoint}/${docId}`;
-        }
-      }
-
-      const method =
-        mutation.type === 'create' ? 'POST' : mutation.type === 'update' ? 'PUT' : 'DELETE';
-
-      const response = await fetch(endpoint, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(mutation.data),
-      });
-
-      if (!response.ok) {
-        // Handle conflict (409) with last-write-wins strategy
-        if (response.status === 409) {
-          logger.warn('Conflict detected, applying last-write-wins', { mutation });
-          // Force update by retrying with overwrite flag
-          const retryResponse = await fetch(endpoint, {
-            method,
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Force-Overwrite': 'true',
-            },
-            body: JSON.stringify(mutation.data),
-          });
-
-          if (!retryResponse.ok) {
-            throw new Error(`Retry failed: ${retryResponse.status}`);
-          }
-        } else {
-          // Increment retry count for other errors
-          const newRetryCount = mutation.retryCount + 1;
-          await updateMutationRetry(mutation.id, newRetryCount);
-          logger.warn('Mutation sync failed, incrementing retry count', {
-            mutation,
-            retryCount: newRetryCount,
-            status: response.status,
-          });
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-      }
-
-      await removeMutation(mutation.id);
+      await syncSingleMutation(mutation);
       success++;
     } catch (error) {
       logger.error('Failed to sync mutation', error as Error, { mutation });
-      // Retry count already incremented in try block for non-409 errors
       if (mutation.retryCount < 3) {
         failed++;
       }
-      // Continue with next mutation instead of stopping
     }
   }
 

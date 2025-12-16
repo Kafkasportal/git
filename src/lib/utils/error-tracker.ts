@@ -148,51 +148,105 @@ export function getPageContext(): Record<string, unknown> {
 }
 
 /**
- * Capture and track an error
+ * Extract error description from options
  */
-export async function captureError(options: CaptureErrorOptions): Promise<void> {
+function extractErrorDescription(
+  description: string | undefined,
+  error: unknown,
+  title: string
+): string {
+  if (description?.trim()) {
+    return description.trim();
+  }
+  if (error instanceof Error && error.message?.trim()) {
+    return error.message.trim();
+  }
+  if (title?.trim()) {
+    return String(title).trim();
+  }
+  return 'No description provided';
+}
+
+/**
+ * Extract stack trace from error
+ */
+function extractStackTrace(error: unknown): string | undefined {
+  if (error instanceof Error) {
+    return error.stack;
+  }
+  return undefined;
+}
+
+/**
+ * Get session ID from context or storage
+ */
+function getSessionId(context: CaptureErrorOptions['context']): string | undefined {
+  if (context?.session_id) {
+    return context.session_id;
+  }
+  if (typeof sessionStorage !== 'undefined') {
+    return sessionStorage.getItem('session_id') || undefined;
+  }
+  return undefined;
+}
+
+/**
+ * Get URL from context or window
+ */
+function getErrorUrl(context: CaptureErrorOptions['context']): string | undefined {
+  if (context?.url) {
+    return context.url;
+  }
+      if (globalThis.window !== undefined) {
+        return globalThis.window.location?.href;
+      }
+  return undefined;
+}
+
+/**
+ * Get user agent from context or navigator
+ */
+function getUserAgent(context: CaptureErrorOptions['context']): string | undefined {
+  if (context?.user_agent) {
+    return context.user_agent;
+  }
+  if (typeof navigator !== 'undefined') {
+    return navigator.userAgent;
+  }
+  return undefined;
+}
+
+/**
+ * Build error data object
+ */
+function buildErrorData(
+  options: CaptureErrorOptions,
+  errorCode: string,
+  stackTrace: string | undefined,
+  fingerprint: string
+): Record<string, unknown> {
   const {
     title,
-    description,
     category,
     severity,
-    error,
     context = {},
     tags = [],
-    autoReport = true,
   } = options;
 
-  // Generate error code
-  const errorCode = `ERR_${category.toUpperCase()}_${Date.now().toString(36)}`;
+  const errorDescription = extractErrorDescription(
+    options.description,
+    options.error,
+    title
+  );
 
-  // Extract stack trace
-  let stackTrace: string | undefined;
-  if (error instanceof Error) {
-    stackTrace = error.stack;
-  }
-
-  // Collect comprehensive context
   const deviceInfo = collectDeviceInfo();
   const performanceMetrics = collectPerformanceMetrics();
   const pageContext = getPageContext();
 
-  // Generate fingerprint for deduplication
-  const fingerprint = generateErrorFingerprint(
-    error || new Error(title),
-    context.component,
-    context.function_name
-  );
-
-  // Prepare error data - ensure all required fields are present and valid
-  // Ensure description is never empty - Appwrite requires non-empty message field
-  const errorDescription = description?.trim() || 
-    (error instanceof Error ? error.message?.trim() : String(error || title)?.trim()) || 
-    'No description provided';
-  
-  const errorData = {
+  return {
     error_code: errorCode,
     title: title || 'Untitled Error',
-    description: errorDescription || 'No description provided',
+    description: errorDescription,
     category,
     severity,
     stack_trace: stackTrace,
@@ -202,9 +256,9 @@ export async function captureError(options: CaptureErrorOptions): Promise<void> 
       page: pageContext,
     },
     user_id: context.user_id,
-    session_id: context.session_id || (typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('session_id') : undefined),
+    session_id: getSessionId(context),
     device_info: deviceInfo,
-    url: context.url || (typeof window !== 'undefined' ? window.location?.href : undefined),
+    url: getErrorUrl(context),
     component: context.component,
     function_name: context.function_name,
     tags: Array.isArray(tags) ? tags : [],
@@ -213,14 +267,99 @@ export async function captureError(options: CaptureErrorOptions): Promise<void> 
       user_action: context.user_action,
       request_id: context.request_id,
       ip_address: context.ip_address,
-      user_agent: context.user_agent || (typeof navigator !== 'undefined' ? navigator.userAgent : undefined),
+      user_agent: getUserAgent(context),
     },
   };
+}
 
-  // Log to console in development
-  if (process.env.NODE_ENV === 'development') {
-    // Error captured and logged
+/**
+ * Check if running in browser environment
+ */
+function isBrowserEnvironment(): boolean {
+  return globalThis.window !== undefined && typeof fetch !== 'undefined';
+}
+
+/**
+ * Store error in localStorage for retry
+ */
+function storeErrorForRetry(errorData: Record<string, unknown>): void {
+  try {
+    const pendingErrors = JSON.parse(localStorage.getItem('pending_errors') || '[]');
+    pendingErrors.push({
+      ...errorData,
+      captured_at: new Date().toISOString(),
+    });
+    // Keep only last 10 errors
+    localStorage.setItem('pending_errors', JSON.stringify(pendingErrors.slice(-10)));
+  } catch (storageError) {
+    logger.error('Failed to store error for retry', storageError);
   }
+}
+
+/**
+ * Extract error details from response
+ */
+async function extractResponseError(response: Response): Promise<string> {
+  let errorDetails = response.statusText;
+  try {
+    const errorBody = await response.json();
+    if (errorBody.details) {
+      errorDetails = JSON.stringify(errorBody.details);
+    } else if (errorBody.error) {
+      errorDetails = errorBody.error;
+    }
+  } catch {
+    // Ignore JSON parse errors
+  }
+  return errorDetails;
+}
+
+/**
+ * Send error to backend API
+ */
+async function sendErrorToBackend(errorData: Record<string, unknown>): Promise<void> {
+  if (!isBrowserEnvironment()) {
+    logger.warn('Cannot report error - not in browser environment');
+    return;
+  }
+
+  try {
+    const response = await fetchWithCsrf('/api/errors', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(errorData),
+    });
+
+    if (!response.ok) {
+      const errorDetails = await extractResponseError(response);
+      throw new Error(`Failed to report error: ${errorDetails}`);
+    }
+  } catch (reportError) {
+    storeErrorForRetry(errorData);
+    logger.error('Failed to report error to backend', reportError);
+  }
+}
+
+/**
+ * Capture and track an error
+ */
+export async function captureError(options: CaptureErrorOptions): Promise<void> {
+  const { title, category, severity, error, context = {}, autoReport = true } = options;
+
+  // Generate error code
+  const errorCode = `ERR_${category.toUpperCase()}_${Date.now().toString(36)}`;
+
+  // Extract stack trace and generate fingerprint
+  const stackTrace = extractStackTrace(error);
+  const fingerprint = generateErrorFingerprint(
+    error || new Error(title),
+    context.component,
+    context.function_name
+  );
+
+  // Build error data
+  const errorData = buildErrorData(options, errorCode, stackTrace, fingerprint);
 
   // Log using logger
   logger.error(title, error, {
@@ -232,53 +371,7 @@ export async function captureError(options: CaptureErrorOptions): Promise<void> 
 
   // Send to backend API
   if (autoReport) {
-    try {
-      // Only send if we're in a browser environment
-      if (typeof window === 'undefined' || typeof fetch === 'undefined') {
-        logger.warn('Cannot report error - not in browser environment');
-        return;
-      }
-
-      const response = await fetchWithCsrf('/api/errors', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(errorData),
-      });
-
-      if (!response.ok) {
-        // Try to get error details from response
-        let errorDetails = response.statusText;
-        try {
-          const errorBody = await response.json();
-          if (errorBody.details) {
-            errorDetails = JSON.stringify(errorBody.details);
-          } else if (errorBody.error) {
-            errorDetails = errorBody.error;
-          }
-        } catch {
-          // Ignore JSON parse errors
-        }
-        throw new Error(`Failed to report error: ${errorDetails}`);
-      }
-    } catch (reportError) {
-      // Fallback: store in localStorage for retry
-      try {
-        const pendingErrors = JSON.parse(localStorage.getItem('pending_errors') || '[]');
-        pendingErrors.push({
-          ...errorData,
-          captured_at: new Date().toISOString(),
-        });
-        // Keep only last 10 errors
-        localStorage.setItem('pending_errors', JSON.stringify(pendingErrors.slice(-10)));
-      } catch (storageError) {
-        logger.error('Failed to store error for retry', storageError);
-      }
-
-      logger.error('Failed to report error to backend', reportError);
-    }
+    await sendErrorToBackend(errorData);
   }
 }
 

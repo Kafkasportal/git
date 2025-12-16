@@ -55,11 +55,15 @@ describe('Security Module', () => {
             RateLimiter.checkLimit(identifier, 5, 1); // 1ms window
 
             // Wait for window to expire
+            const checkAfterExpiry = () => {
+                const result = RateLimiter.checkLimit(identifier, 5, 60000);
+                expect(result.allowed).toBe(true);
+                expect(result.remaining).toBe(4);
+            };
+
             return new Promise<void>((resolve) => {
                 setTimeout(() => {
-                    const result = RateLimiter.checkLimit(identifier, 5, 60000);
-                    expect(result.allowed).toBe(true);
-                    expect(result.remaining).toBe(4);
+                    checkAfterExpiry();
                     resolve();
                 }, 10);
             });
