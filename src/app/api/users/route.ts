@@ -8,9 +8,7 @@ import {
   buildErrorResponse,
 } from '@/lib/api/auth-utils';
 import { dataModificationRateLimit, readOnlyRateLimit } from '@/lib/rate-limit';
-import { appwriteUsers, normalizeQueryParams } from '@/lib/appwrite/api';
 import { ALL_PERMISSIONS } from '@/types/permissions';
-import { hashPassword, validatePasswordStrength } from '@/lib/auth/password';
 
 function jsonSuccess(data: unknown, status = 200, message?: string) {
   return NextResponse.json(
