@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Users } from 'node-appwrite';
 import logger from '@/lib/logger';
 import {
   buildErrorResponse,
@@ -6,8 +7,10 @@ import {
   verifyCsrfToken,
 } from '@/lib/api/auth-utils';
 import { appwriteUsers } from '@/lib/appwrite/api';
+import { getServerClient } from '@/lib/appwrite/server';
 import { hashPassword, validatePasswordStrength } from '@/lib/auth/password';
 import { ALL_PERMISSIONS, type PermissionValue } from '@/types/permissions';
+import { errorResponse, successResponse } from '@/lib/api/route-helpers';
 
 function createUsersClient(serverClient: unknown): Users {
   // In production, `Users` is a class and must be constructed with `new`.
