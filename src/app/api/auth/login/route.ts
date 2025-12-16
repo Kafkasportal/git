@@ -131,6 +131,35 @@ async function findUserByEmail(email: string): Promise<{ user: any; error: NextR
 
     return { user: foundUser, error: null };
   } catch (error) {
+    // Check for Appwrite project_not_found error
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorData = (error as any)?.response || (error as any)?.code || (error as any);
+    
+    if (
+      errorMessage?.includes('project_not_found') ||
+      errorMessage?.includes('Project with the requested ID could not be found') ||
+      (typeof errorData === 'object' && errorData?.type === 'project_not_found') ||
+      (typeof errorData === 'object' && errorData?.message?.includes('project_not_found'))
+    ) {
+      logger.error("Appwrite project not found in findUserByEmail", {
+        email: `${email?.substring(0, 3)}***`,
+        error: errorMessage,
+        errorData: typeof errorData === 'object' ? errorData : undefined,
+      });
+      
+      return {
+        user: null,
+        error: NextResponse.json(
+          {
+            success: false,
+            error: "Sunucu yapılandırma hatası: Appwrite projesi bulunamadı. Lütfen yönetici ile iletişime geçin.",
+            message: "Sunucu yapılandırma hatası: Appwrite projesi bulunamadı. Lütfen yönetici ile iletişime geçin.",
+            code: "PROJECT_NOT_FOUND",
+          },
+          { status: 500 },
+        ),
+      };
+    }
     recordLoginAttempt(email, false);
     const failedAttempts = getFailedAttemptCount(email);
     const remainingAttempts = LOCKOUT_CONFIG.maxAttempts - failedAttempts;
