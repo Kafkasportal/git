@@ -5,5 +5,7 @@
 import { describe, it } from "vitest";
 
 describe("middleware", () => {
-  it.todo("should implement middleware API tests");
+  it.skip("should implement middleware API tests", () => {
+    // TODO: Implement middleware API tests
+  });
 });

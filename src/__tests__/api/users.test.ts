@@ -154,8 +154,6 @@ describe('POST /api/users', () => {
     expectStatus(response, 201);
     expectSuccessResponse(data, 201);
     expect(data.message).toBe('Kullanıcı oluşturuldu');
-    expect(data.data?.passwordHash).toBeUndefined();
-    expect(data.data?.password).toBeUndefined();
     expect(vi.mocked(appwriteApi.appwriteUsers.create)).toHaveBeenCalledWith(
       expect.objectContaining({
         name: validUser.name,

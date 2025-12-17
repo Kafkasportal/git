@@ -327,7 +327,7 @@ export class AuditLogger {
       logData.status === 'failure'
         ? 'warn'
         : logData.action.toLowerCase().includes('violation') ||
-            logData.action.toLowerCase().includes('security')
+          logData.action.toLowerCase().includes('security')
           ? 'error'
           : 'info';
 

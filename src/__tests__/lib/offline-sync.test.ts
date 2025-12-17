@@ -1,11 +1,13 @@
-/**
- * offline-sync Tests
- */
+import { describe, it, expect } from 'vitest';
+import {
+  isOfflineModeSupported,
+} from '@/lib/utils/offline-sync';
 
-import { describe, it, expect } from "vitest";
-
-describe("offline-sync", () => {
-  it("should pass - placeholder test", () => {
-    expect(true).toBe(true);
+describe('offline-sync', () => {
+  describe('isOfflineModeSupported', () => {
+    it('should detect IndexedDB support', () => {
+      const supported = isOfflineModeSupported();
+      expect(typeof supported).toBe('boolean');
+    });
   });
 });

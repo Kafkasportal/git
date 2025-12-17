@@ -5,5 +5,7 @@
 import { describe, it } from "vitest";
 
 describe("injection", () => {
-  it.todo("should implement injection security tests");
+  it.skip("should implement injection security tests", () => {
+    // TODO: Implement injection security tests
+  });
 });

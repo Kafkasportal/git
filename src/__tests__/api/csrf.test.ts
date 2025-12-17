@@ -5,5 +5,7 @@
 import { describe, it } from "vitest";
 
 describe("csrf", () => {
-  it.todo("should implement CSRF API tests");
+  it.skip("should implement CSRF API tests", () => {
+    // TODO: Implement CSRF API tests
+  });
 });

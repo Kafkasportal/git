@@ -1,11 +1,7 @@
-/**
- * beneficiary Tests
- */
+import { describe, it, expect } from 'vitest';
 
-import { describe, it, expect } from "vitest";
-
-describe("beneficiary", () => {
-  it("should pass - placeholder test", () => {
+describe('beneficiary-validation', () => {
+  it('placeholder', () => {
     expect(true).toBe(true);
   });
 });

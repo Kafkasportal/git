@@ -1,4 +1,8 @@
-import '@testing-library/jest-dom';
+import { expect } from 'vitest';
+import * as matchers from '@testing-library/jest-dom/matchers';
+
+// Manually extend expect with jest-dom matchers for vitest v4+
+expect.extend(matchers);
 
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {

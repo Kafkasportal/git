@@ -1,11 +1,7 @@
-/**
- * forms Tests
- */
+import { describe, it, expect } from 'vitest';
 
-import { describe, it, expect } from "vitest";
-
-describe("forms", () => {
-  it("should pass - placeholder test", () => {
+describe('forms-validation', () => {
+  it('placeholder', () => {
     expect(true).toBe(true);
   });
 });

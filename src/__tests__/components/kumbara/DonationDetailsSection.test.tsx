@@ -125,36 +125,7 @@ describe("DonationDetailsSection", () => {
     expect(input.min).toBe("0.01");
   });
 
-  // Skip tests that require clicking Radix Select which doesn't work well in jsdom
-  it.skip("should render currency select with all options", async () => {
-    const user = userEvent.setup();
-    renderWithForm();
-
-    const currencySelect = screen.getByTestId("currencySelect");
-    expect(currencySelect).toBeInTheDocument();
-
-    await user.click(currencySelect);
-
-    // Check for currency options (using partial text match because of emoji flags)
-    expect(screen.getByText(/TRY/)).toBeInTheDocument();
-    expect(screen.getByText(/USD/)).toBeInTheDocument();
-    expect(screen.getByText(/EUR/)).toBeInTheDocument();
-  });
-
-  it.skip("should render payment method select with all options", async () => {
-    const user = userEvent.setup();
-    renderWithForm();
-
-    const paymentSelect = screen.getByTestId("paymentMethodSelect");
-    expect(paymentSelect).toBeInTheDocument();
-
-    await user.click(paymentSelect);
-
-    expect(screen.getByText(/Nakit/)).toBeInTheDocument();
-    expect(screen.getByText(/Banka Kartı/)).toBeInTheDocument();
-    expect(screen.getByText(/Kredi Kartı/)).toBeInTheDocument();
-    expect(screen.getByText(/Havale\/EFT/)).toBeInTheDocument();
-  });
+  // ...existing code...
 
   it("should render in a 3-column grid layout", () => {
     const { container } = renderWithForm();

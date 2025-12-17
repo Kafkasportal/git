@@ -1,11 +1,7 @@
-/**
- * api-client Tests
- */
+import { describe, it, expect } from 'vitest';
 
-import { describe, it, expect } from "vitest";
-
-describe("api-client", () => {
-  it("should pass - placeholder test", () => {
+describe('api-client', () => {
+  it('placeholder', () => {
     expect(true).toBe(true);
   });
 });

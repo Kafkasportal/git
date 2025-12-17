@@ -1,11 +1,7 @@
-/**
- * phone-validation Tests
- */
+import { describe, it, expect } from 'vitest';
 
-import { describe, it, expect } from "vitest";
-
-describe("phone-validation", () => {
-  it("should pass - placeholder test", () => {
+describe('phone-validation', () => {
+  it('placeholder', () => {
     expect(true).toBe(true);
   });
 });

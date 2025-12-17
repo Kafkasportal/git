@@ -1,11 +1,7 @@
-/**
- * route-helpers Tests
- */
+import { describe, it, expect } from 'vitest';
 
-import { describe, it, expect } from "vitest";
-
-describe("route-helpers", () => {
-  it("should pass - placeholder test", () => {
+describe('route-helpers', () => {
+  it('placeholder', () => {
     expect(true).toBe(true);
   });
 });

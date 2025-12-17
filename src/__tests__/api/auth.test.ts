@@ -5,5 +5,7 @@
 import { describe, it } from "vitest";
 
 describe("auth", () => {
-  it.todo("should implement auth API tests");
+  it.skip("should implement auth API tests", () => {
+    // TODO: Implement auth API tests
+  });
 });

@@ -5,5 +5,7 @@
 import { describe, it } from "vitest";
 
 describe("beneficiary-sanitization", () => {
-  it.todo("should implement beneficiary-sanitization integration tests");
+  it.skip("should implement beneficiary-sanitization integration tests", () => {
+    // TODO: Implement beneficiary-sanitization integration tests
+  });
 });

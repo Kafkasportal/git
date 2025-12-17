@@ -1,11 +1,7 @@
-/**
- * persistent-cache Tests
- */
+import { describe, it, expect } from 'vitest';
 
-import { describe, it, expect } from "vitest";
-
-describe("persistent-cache", () => {
-  it("should pass - placeholder test", () => {
+describe('persistent-cache', () => {
+  it('placeholder', () => {
     expect(true).toBe(true);
   });
 });

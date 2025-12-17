@@ -1,11 +1,7 @@
-/**
- * error-tracker Tests
- */
+import { describe, it, expect } from 'vitest';
 
-import { describe, it, expect } from "vitest";
-
-describe("error-tracker", () => {
-  it("should pass - placeholder test", () => {
+describe('error-tracker', () => {
+  it('placeholder', () => {
     expect(true).toBe(true);
   });
 });

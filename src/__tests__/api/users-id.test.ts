@@ -4,9 +4,6 @@ import { GET, PUT, DELETE } from '@/app/api/users/[id]/route';
 import * as authUtils from '@/lib/api/auth-utils';
 import * as appwriteApi from '@/lib/appwrite/api';
 import {
-  runGetByIdTests,
-} from '../test-utils/test-patterns';
-import {
   createTestRequest,
   createTestParams,
   parseJsonResponse,
@@ -14,6 +11,21 @@ import {
   expectSuccessResponse,
   expectErrorResponse,
 } from '../test-utils/api-test-helpers';
+
+// Mock Appwrite server client
+const mockUsersGet = vi.fn();
+const mockUsersDelete = vi.fn();
+
+vi.mock('@/lib/appwrite/server', () => ({
+  getServerClient: vi.fn().mockReturnValue({}),
+}));
+
+vi.mock('node-appwrite', () => ({
+  Users: vi.fn().mockImplementation(() => ({
+    get: mockUsersGet,
+    delete: mockUsersDelete,
+  })),
+}));
 
 vi.mock('@/lib/appwrite/api', () => ({
   appwriteUsers: {
@@ -56,21 +68,47 @@ vi.mock('@/lib/logger', () => ({
   },
 }));
 
-// Use test pattern for GET by ID
-runGetByIdTests(
-  { GET },
-  appwriteApi.appwriteUsers.get as (id: string) => Promise<unknown>,
-  'users',
-  {
-    baseUrl: 'http://localhost/api/users',
-    notFoundError: 'Kullanıcı bulunamadı',
-    errorMessage: 'Kullanıcı bilgisi alınamadı',
-  }
-);
-
-describe('GET /api/users/[id] - Additional tests', () => {
+describe('GET /api/users/[id]', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('returns users by ID successfully', async () => {
+    const mockUser = { $id: 'test-id', name: 'Test User', email: 'test@example.com' };
+    mockUsersGet.mockResolvedValue(mockUser);
+
+    const request = createTestRequest('http://localhost/api/users/test-id');
+    const params = createTestParams({ id: 'test-id' });
+    const response = await GET(request, { params });
+    const data = await parseJsonResponse<{ success?: boolean; data?: unknown }>(response);
+
+    expectStatus(response, 200);
+    expectSuccessResponse(data);
+    expect(data.data).toEqual(mockUser);
+  });
+
+  it('returns 404 when users not found', async () => {
+    mockUsersGet.mockResolvedValue(null);
+
+    const request = createTestRequest('http://localhost/api/users/non-existent');
+    const params = createTestParams({ id: 'non-existent' });
+    const response = await GET(request, { params });
+    const data = await parseJsonResponse<{ success?: boolean; error?: string }>(response);
+
+    expectStatus(response, 404);
+    expectErrorResponse(data, 404, 'Kullanıcı bulunamadı');
+  });
+
+  it('handles errors gracefully', async () => {
+    mockUsersGet.mockRejectedValue(new Error('Database error'));
+
+    const request = createTestRequest('http://localhost/api/users/test-id');
+    const params = createTestParams({ id: 'test-id' });
+    const response = await GET(request, { params });
+    const data = await parseJsonResponse<{ success?: boolean; error?: string }>(response);
+
+    expectStatus(response, 500);
+    expectErrorResponse(data, 500, 'Kullanıcı bilgisi alınamadı');
   });
 
   it('returns 403 when user does not have users:manage permission', async () => {
@@ -142,8 +180,8 @@ describe('DELETE /api/users/[id]', () => {
     });
   });
 
-	  it('deletes users successfully', async () => {
-	    vi.mocked(appwriteApi.appwriteUsers.remove).mockResolvedValue(undefined);
+  it('deletes users successfully', async () => {
+    mockUsersDelete.mockResolvedValue(undefined);
 
     const request = createTestRequest('http://localhost/api/users/test-id', {
       method: 'DELETE',
@@ -158,7 +196,7 @@ describe('DELETE /api/users/[id]', () => {
   });
 
   it('handles delete errors gracefully', async () => {
-    vi.mocked(appwriteApi.appwriteUsers.remove).mockRejectedValue(new Error('Database error'));
+    mockUsersDelete.mockRejectedValue(new Error('Database error'));
 
     const request = createTestRequest('http://localhost/api/users/test-id', {
       method: 'DELETE',
