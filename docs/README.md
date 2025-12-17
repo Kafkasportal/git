@@ -17,8 +17,10 @@ docs/
 │   ├── components.md     # React component referansı
 │   ├── types.md          # TypeScript tip tanımları
 │   └── hooks-utilities.md # Hook ve utility fonksiyonları
-└── design/           # Tasarım Sistemi
-    └── design-system.md  # Kurumsal tasarım sistemi
+├── design/           # Tasarım Sistemi
+│   └── design-system.md  # Kurumsal tasarım sistemi
+└── troubleshooting/  # Sorun Giderme
+    └── README.md         # Sorun giderme rehberleri
 ```
 
 ## 🚀 Hızlı Başlangıç
@@ -28,6 +30,7 @@ docs/
 3. **Deploy Edeceksen**: `guides/deployment.md` takip et
 4. **API Kullanacaksan**: `reference/api-endpoints.md` referans al
 5. **UI Geliştireceksen**: `design/design-system.md` incele
+6. **Sorun Gidereceksen**: `troubleshooting/README.md` kontrol et
 
 ## 📖 Ana Proje Dokümantasyonu
 
