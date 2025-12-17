@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { useQuery } from '@tanstack/react-query';
 import { WidgetConfig } from '@/types/dashboard';
 import { WidgetContainer } from './widget-container';
-import { WidgetSkeleton } from '@/components/ui/skeleton-variants';
+import { WidgetSkeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 import { KPICard } from '@/components/ui/kpi-card';
@@ -134,42 +134,42 @@ export function useDashboardWidgets({ onToggleWidget, isEditMode }: DashboardWid
                                 title: 'Bekleyen İşlemler',
                                 value: enhancedKPIs.pendingOperations.total,
                                 icon: ListTodo,
-                                colorTheme: 'orange' as const,
+                                colorTheme: 'warning' as const,
                                 description: `${enhancedKPIs.pendingOperations.tasks} görev`,
                             },
                             {
                                 title: 'Takipteki İşler',
                                 value: enhancedKPIs.trackedWorkItems.total,
                                 icon: ClipboardList,
-                                colorTheme: 'blue' as const,
+                                colorTheme: 'info' as const,
                                 description: `${enhancedKPIs.trackedWorkItems.active} aktif`,
                             },
                             {
                                 title: 'Takvim Etkinlikleri',
                                 value: enhancedKPIs.calendarEvents.total,
                                 icon: Calendar,
-                                colorTheme: 'gray' as const,
+                                colorTheme: 'neutral' as const,
                                 description: `${enhancedKPIs.calendarEvents.upcoming} yaklaşan`,
                             },
                             {
                                 title: 'Toplantılar',
                                 value: enhancedKPIs.plannedMeetings.total,
                                 icon: CalendarCheck,
-                                colorTheme: 'purple' as const,
+                                colorTheme: 'primary' as const,
                                 description: `Bu hafta ${enhancedKPIs.plannedMeetings.thisWeek}`,
                             },
                             {
                                 title: 'İhtiyaç Sahipleri',
                                 value: dashboardStats.beneficiaries.total,
                                 icon: Users,
-                                colorTheme: 'blue' as const,
+                                colorTheme: 'info' as const,
                                 description: `+${dashboardStats.beneficiaries.recent} bu ay`,
                             },
                             {
                                 title: 'Toplam Bağış',
                                 value: dashboardStats.donations.total,
                                 icon: Heart,
-                                colorTheme: 'green' as const,
+                                colorTheme: 'success' as const,
                                 description: `+${dashboardStats.donations.recent} bu ay`,
                             },
                         ].map((kpi) => (

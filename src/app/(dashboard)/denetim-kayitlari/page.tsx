@@ -124,14 +124,14 @@ export default function AuditLogsPage() {
     switch (action) {
       case 'CREATE':
         return (
-          <Badge className="bg-green-500">
+          <Badge className="bg-success text-success-foreground">
             <Plus className="h-3 w-3 mr-1" />
             Oluşturma
           </Badge>
         );
       case 'UPDATE':
         return (
-          <Badge className="bg-blue-500">
+          <Badge className="bg-info text-info-foreground">
             <Edit className="h-3 w-3 mr-1" />
             Güncelleme
           </Badge>
@@ -204,7 +204,7 @@ export default function AuditLogsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Toplam İşlem</CardTitle>
-            <Shield className="h-4 w-4 text-gray-600" />
+            <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.total}</div>
@@ -215,10 +215,10 @@ export default function AuditLogsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Oluşturma</CardTitle>
-            <Plus className="h-4 w-4 text-green-600" />
+            <Plus className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.creates}</div>
+            <div className="text-2xl font-bold text-success">{stats.creates}</div>
             <p className="text-xs text-muted-foreground mt-1">Yeni kayıt işlemleri</p>
           </CardContent>
         </Card>
@@ -226,10 +226,10 @@ export default function AuditLogsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Güncelleme</CardTitle>
-            <Edit className="h-4 w-4 text-blue-600" />
+            <Edit className="h-4 w-4 text-info" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.updates}</div>
+            <div className="text-2xl font-bold text-info">{stats.updates}</div>
             <p className="text-xs text-muted-foreground mt-1">Değişiklik işlemleri</p>
           </CardContent>
         </Card>
@@ -237,10 +237,10 @@ export default function AuditLogsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Silme</CardTitle>
-            <Trash2 className="h-4 w-4 text-red-600" />
+            <Trash2 className="h-4 w-4 text-error" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.deletes}</div>
+            <div className="text-2xl font-bold text-error">{stats.deletes}</div>
             <p className="text-xs text-muted-foreground mt-1">Silme işlemleri</p>
           </CardContent>
         </Card>
@@ -258,7 +258,7 @@ export default function AuditLogsPage() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-4">
             <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Kullanıcı, kaynak veya ID ara..."
                 className="pl-8"
@@ -334,7 +334,7 @@ export default function AuditLogsPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <User className="h-4 w-4 text-gray-500" />
+                          <User className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">{log.userName}</span>
                         </div>
                       </TableCell>
@@ -342,10 +342,10 @@ export default function AuditLogsPage() {
                       <TableCell>
                         <Badge variant="outline">{getResourceLabel(log.resource)}</Badge>
                       </TableCell>
-                      <TableCell className="font-mono text-xs text-gray-600">
+                      <TableCell className="font-mono text-xs text-muted-foreground">
                         {log.resourceId.substring(0, 12)}...
                       </TableCell>
-                      <TableCell className="text-sm text-gray-600">
+                      <TableCell className="text-sm text-muted-foreground">
                         {log.ipAddress || '-'}
                       </TableCell>
                       <TableCell className="text-right">
@@ -364,31 +364,31 @@ export default function AuditLogsPage() {
                               <div className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                   <div>
-                                    <label className="text-sm font-medium text-gray-600">
+                                    <label className="text-sm font-medium text-muted-foreground">
                                       Kullanıcı
                                     </label>
                                     <p className="mt-1 font-medium">{selectedLog.userName}</p>
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-xs text-muted-foreground">
                                       ID: {selectedLog.userId}
                                     </p>
                                   </div>
                                   <div>
-                                    <label className="text-sm font-medium text-gray-600">
+                                    <label className="text-sm font-medium text-muted-foreground">
                                       İşlem
                                     </label>
                                     <div className="mt-1">{getActionBadge(selectedLog.action)}</div>
                                   </div>
                                   <div>
-                                    <label className="text-sm font-medium text-gray-600">
+                                    <label className="text-sm font-medium text-muted-foreground">
                                       Kaynak
                                     </label>
                                     <p className="mt-1">{getResourceLabel(selectedLog.resource)}</p>
-                                    <p className="text-xs font-mono text-gray-500 break-all">
+                                    <p className="text-xs font-mono text-muted-foreground break-all">
                                       {selectedLog.resourceId}
                                     </p>
                                   </div>
                                   <div>
-                                    <label className="text-sm font-medium text-gray-600">
+                                    <label className="text-sm font-medium text-muted-foreground">
                                       <Calendar className="inline h-3 w-3 mr-1" />
                                       Tarih
                                     </label>
@@ -406,7 +406,7 @@ export default function AuditLogsPage() {
 
                                 {selectedLog.ipAddress && (
                                   <div>
-                                    <label className="text-sm font-medium text-gray-600">
+                                    <label className="text-sm font-medium text-muted-foreground">
                                       IP Adresi
                                     </label>
                                     <p className="mt-1 font-mono text-sm">
@@ -417,10 +417,10 @@ export default function AuditLogsPage() {
 
                                 {selectedLog.userAgent && (
                                   <div>
-                                    <label className="text-sm font-medium text-gray-600">
+                                    <label className="text-sm font-medium text-muted-foreground">
                                       Tarayıcı
                                     </label>
-                                    <p className="mt-1 text-sm text-gray-700">
+                                    <p className="mt-1 text-sm text-foreground">
                                       {selectedLog.userAgent}
                                     </p>
                                   </div>
@@ -428,26 +428,26 @@ export default function AuditLogsPage() {
 
                                 {selectedLog.changes && (
                                   <div className="space-y-3">
-                                    <label className="text-sm font-medium text-gray-600">
+                                    <label className="text-sm font-medium text-muted-foreground">
                                       Değişiklikler
                                     </label>
                                     <div className="grid grid-cols-2 gap-4">
                                       {selectedLog.changes.before && (
                                         <div>
-                                          <p className="text-xs font-semibold text-red-600 mb-2">
+                                          <p className="text-xs font-semibold text-error mb-2">
                                             Önce:
                                           </p>
-                                          <pre className="p-3 bg-red-50 rounded text-xs overflow-auto max-h-64">
+                                          <pre className="p-3 bg-error/10 rounded text-xs overflow-auto max-h-64">
                                             {JSON.stringify(selectedLog.changes.before, null, 2)}
                                           </pre>
                                         </div>
                                       )}
                                       {selectedLog.changes.after && (
                                         <div>
-                                          <p className="text-xs font-semibold text-green-600 mb-2">
+                                          <p className="text-xs font-semibold text-success mb-2">
                                             Sonra:
                                           </p>
-                                          <pre className="p-3 bg-green-50 rounded text-xs overflow-auto max-h-64">
+                                          <pre className="p-3 bg-success/10 rounded text-xs overflow-auto max-h-64">
                                             {JSON.stringify(selectedLog.changes.after, null, 2)}
                                           </pre>
                                         </div>
@@ -459,10 +459,10 @@ export default function AuditLogsPage() {
                                 {selectedLog.metadata &&
                                   Object.keys(selectedLog.metadata).length > 0 && (
                                     <div>
-                                      <label className="text-sm font-medium text-gray-600">
+                                      <label className="text-sm font-medium text-muted-foreground">
                                         Ek Bilgiler
                                       </label>
-                                      <pre className="mt-1 p-3 bg-gray-50 rounded text-xs overflow-auto max-h-32">
+                                      <pre className="mt-1 p-3 bg-muted rounded text-xs overflow-auto max-h-32">
                                         {JSON.stringify(selectedLog.metadata, null, 2)}
                                       </pre>
                                     </div>
@@ -479,9 +479,9 @@ export default function AuditLogsPage() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <Shield className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Kayıt bulunamadı</h3>
-              <p className="text-gray-600">
+              <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">Kayıt bulunamadı</h3>
+              <p className="text-muted-foreground">
                 {searchTerm || actionFilter !== 'all' || resourceFilter !== 'all'
                   ? 'Filtrelere uygun kayıt bulunamadı. Filtreleri değiştirmeyi deneyin.'
                   : 'Henüz hiç denetim kaydı oluşturulmamış.'}
@@ -492,14 +492,14 @@ export default function AuditLogsPage() {
       </Card>
 
       {/* KVKK Compliance Info */}
-      <Card className="mt-6 border-blue-200 bg-blue-50">
+      <Card className="mt-6 border-info/20 bg-info/10">
         <CardHeader>
-          <CardTitle className="text-blue-900 flex items-center gap-2">
+          <CardTitle className="text-foreground flex items-center gap-2">
             <Shield className="h-5 w-5" />
             KVKK/GDPR Uyumluluk Bilgisi
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-blue-800 space-y-2">
+        <CardContent className="text-sm text-muted-foreground space-y-2">
           <p>• Tüm kritik işlemler otomatik olarak kaydedilir ve 7 yıl boyunca saklanır.</p>
           <p>
             • Denetim kayıtları, veri sorumlusunun hesap verebilirlik yükümlülüğü kapsamında

@@ -57,16 +57,16 @@ const UserMenu = memo(function UserMenu({
     return (
         <Popover open={isOpen} onOpenChange={onOpenChange}>
             <PopoverTrigger asChild>
-                <button className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                    <Avatar className="h-8 w-8 ring-2 ring-slate-200 dark:ring-slate-700">
+                <button className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-secondary transition-colors">
+                    <Avatar className="h-8 w-8 ring-2 ring-border">
                         <AvatarImage src={user?.avatar ?? undefined} alt={user?.name} />
-                        <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-xs font-semibold">
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-primary-700 text-primary-foreground text-xs font-semibold">
                             {userInitials}
                         </AvatarFallback>
                     </Avatar>
                     <ChevronDown
                         className={cn(
-                            'hidden sm:block h-4 w-4 text-slate-400 transition-transform duration-200',
+                            'hidden sm:block h-4 w-4 text-muted-foreground transition-transform duration-200',
                             isOpen && 'rotate-180'
                         )}
                     />
@@ -74,19 +74,19 @@ const UserMenu = memo(function UserMenu({
             </PopoverTrigger>
             <PopoverContent className="w-64 p-0" align="end">
                 {/* User Info */}
-                <div className="p-4 border-b border-slate-100 dark:border-slate-800">
+                <div className="p-4 border-b border-border">
                     <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
                             <AvatarImage src={user?.avatar ?? undefined} />
-                            <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-violet-600 text-white font-semibold">
+                            <AvatarFallback className="bg-gradient-to-br from-primary to-primary-700 text-primary-foreground font-semibold">
                                 {userInitials}
                             </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm text-slate-900 dark:text-white truncate">
+                            <p className="font-medium text-sm text-foreground truncate">
                                 {user?.name || 'Kullanıcı'}
                             </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                            <p className="text-xs text-muted-foreground truncate">
                                 {user?.email || ''}
                             </p>
                         </div>
@@ -103,7 +103,7 @@ const UserMenu = memo(function UserMenu({
                     <Link
                         href="/ayarlar/profil"
                         onClick={() => onOpenChange(false)}
-                        className="flex items-center gap-3 w-full px-3 py-2 text-sm text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        className="flex items-center gap-3 w-full px-3 py-2 text-sm text-foreground rounded-lg hover:bg-secondary transition-colors"
                     >
                         <UserIcon className="h-4 w-4" />
                         Profilim
@@ -111,7 +111,7 @@ const UserMenu = memo(function UserMenu({
                     <Link
                         href="/ayarlar"
                         onClick={() => onOpenChange(false)}
-                        className="flex items-center gap-3 w-full px-3 py-2 text-sm text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        className="flex items-center gap-3 w-full px-3 py-2 text-sm text-foreground rounded-lg hover:bg-secondary transition-colors"
                     >
                         <Settings className="h-4 w-4" />
                         Ayarlar
@@ -119,7 +119,7 @@ const UserMenu = memo(function UserMenu({
                     <Separator className="my-2" />
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                        className="flex items-center gap-3 w-full px-3 py-2 text-sm text-destructive rounded-lg hover:bg-destructive/10 transition-colors"
                     >
                         <LogOut className="h-4 w-4" />
                         Çıkış Yap
@@ -145,8 +145,8 @@ export const DashboardHeader = memo(function DashboardHeader({
     return (
         <header
             className={cn(
-                'sticky top-0 z-50 h-16 bg-white dark:bg-slate-900 border-b transition-all duration-200',
-                isScrolled ? 'border-slate-200 dark:border-slate-800 shadow-sm' : 'border-transparent'
+                'sticky top-0 z-50 h-16 bg-background border-b transition-all duration-200',
+                isScrolled ? 'border-border shadow-sm' : 'border-transparent'
             )}
         >
             <div className="flex h-full items-center justify-between px-4 lg:px-6">
@@ -154,7 +154,7 @@ export const DashboardHeader = memo(function DashboardHeader({
                 <div className="flex items-center gap-3">
                     {/* Sidebar Toggle */}
                     <button
-                        className="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors"
+                        className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                         onClick={onToggleSidebar}
                         aria-label={isSidebarCollapsed ? 'Menüyü genişlet' : 'Menüyü daralt'}
                     >
@@ -167,10 +167,10 @@ export const DashboardHeader = memo(function DashboardHeader({
 
                     {/* Logo */}
                     <Link href="/genel" className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md shadow-indigo-500/20">
-                            <Building2 className="w-5 h-5 text-white" />
+                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-primary-700 flex items-center justify-center shadow-md shadow-primary/20">
+                            <Building2 className="w-5 h-5 text-primary-foreground" />
                         </div>
-                        <span className="hidden md:block text-lg font-semibold text-slate-800 dark:text-white">
+                        <span className="hidden md:block text-lg font-semibold text-foreground">
                             Dernek Yönetim
                         </span>
                     </Link>
@@ -182,14 +182,14 @@ export const DashboardHeader = memo(function DashboardHeader({
                         onClick={onOpenSearch}
                         className={cn(
                             'w-full h-10 px-4 flex items-center gap-3 rounded-lg border transition-all',
-                            'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700',
-                            'text-slate-500 dark:text-slate-400 text-sm',
-                            'hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                            'bg-muted border-border',
+                            'text-muted-foreground text-sm',
+                            'hover:bg-secondary hover:border-border'
                         )}
                     >
                         <Search className="h-4 w-4" />
                         <span className="flex-1 text-left">Hızlı arama...</span>
-                        <kbd className="hidden sm:inline-flex px-2 py-0.5 text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded">
+                        <kbd className="hidden sm:inline-flex px-2 py-0.5 text-xs font-medium bg-background border border-border rounded">
                             ⌘K
                         </kbd>
                     </button>
@@ -200,15 +200,15 @@ export const DashboardHeader = memo(function DashboardHeader({
                     {/* Mobile Search */}
                     <button
                         onClick={onOpenSearch}
-                        className="lg:hidden p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors"
+                        className="lg:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                     >
                         <Search className="h-5 w-5" />
                     </button>
 
                     {/* Notifications */}
-                    <button className="p-2 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors relative">
+                    <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors relative">
                         <Bell className="h-5 w-5" />
-                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />
                     </button>
 
                     {/* User Menu */}

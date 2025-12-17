@@ -236,7 +236,7 @@ export function WidgetGrid({
       {/* Responsive Grid */}
 
       {visibleWidgets.length === 0 ? (
-        <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-lg bg-slate-50 dark:bg-slate-900/50">
+        <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-lg bg-muted">
           <div className="text-center text-muted-foreground">
             <LayoutGrid className="h-12 w-12 mx-auto mb-3 opacity-20" />
             <p className="font-medium">Hiç widget görünür değil</p>

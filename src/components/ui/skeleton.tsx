@@ -223,3 +223,77 @@ export const SkeletonForm = memo(function SkeletonForm({ fields = 3 }: { fields?
     </div>
   );
 });
+
+/**
+ * Dashboard Widget Skeleton
+ */
+interface WidgetSkeletonProps {
+  type?: 'stats' | 'chart' | 'list' | 'table';
+  className?: string;
+}
+
+export const WidgetSkeleton = memo(function WidgetSkeleton({ type = 'stats', className }: WidgetSkeletonProps) {
+  return (
+    <div className={cn('rounded-lg border bg-card p-4', className)}>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-8 w-8 rounded" />
+      </div>
+
+      {/* Content based on type */}
+      {type === 'stats' && (
+        <div className="space-y-3">
+          <Skeleton className="h-10 w-24" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-4 w-12" />
+          </div>
+        </div>
+      )}
+
+      {type === 'chart' && (
+        <div className="h-48 flex items-end gap-2">
+          {[65, 80, 45, 70, 55, 90, 60].map((height, i) => (
+            <Skeleton
+              key={i}
+              className="flex-1"
+              style={{ height: `${height}%` }}
+            />
+          ))}
+        </div>
+      )}
+
+      {type === 'list' && (
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <SkeletonAvatar size="sm" />
+              <div className="flex-1 space-y-1">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {type === 'table' && (
+        <div className="space-y-2">
+          <div className="flex gap-4 pb-2 border-b">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-4 w-20" />
+            ))}
+          </div>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex gap-4 py-2">
+              {Array.from({ length: 3 }).map((_, j) => (
+                <Skeleton key={j} className="h-4 w-20" />
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+});

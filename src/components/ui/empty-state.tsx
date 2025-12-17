@@ -196,14 +196,14 @@ export function EmptyState({
 }
 
 // Pre-configured empty states
-export function NoDataEmptyState({ onAction }: { onAction?: () => void }) {
+export function NoDataEmptyState({ onAction, actionLabel = 'Yeni Kayıt Ekle' }: { onAction?: () => void; actionLabel?: string }) {
   return (
     <EmptyState
       illustration="no-data"
       variant="illustration"
       title="Veri bulunamadı"
       description="Henüz kayıt eklenmemiş. Yeni bir kayıt ekleyerek başlayın."
-      actionLabel={onAction ? 'Yeni Kayıt Ekle' : undefined}
+      actionLabel={actionLabel}
       onAction={onAction}
     />
   );
@@ -272,24 +272,28 @@ export function NoMeetingsEmptyState({ onAction }: { onAction?: () => void }) {
   );
 }
 
-export function EmptyInboxEmptyState() {
+export function EmptyInboxEmptyState({ onAction, actionLabel = 'Mesaj Oluştur' }: { onAction?: () => void; actionLabel?: string }) {
   return (
     <EmptyState
       illustration="empty-inbox"
       variant="illustration"
       title="Gelen kutusu boş"
       description="Yeni mesajlar burada görünecek."
+      actionLabel={actionLabel}
+      onAction={onAction}
     />
   );
 }
 
-export function EmptyFolderEmptyState() {
+export function EmptyFolderEmptyState({ onAction, actionLabel = 'Dosya Yükle' }: { onAction?: () => void; actionLabel?: string }) {
   return (
     <EmptyState
       illustration="empty-folder"
       variant="illustration"
       title="Klasör boş"
       description="Bu klasörde henüz dosya bulunmuyor."
+      actionLabel={actionLabel}
+      onAction={onAction}
     />
   );
 }

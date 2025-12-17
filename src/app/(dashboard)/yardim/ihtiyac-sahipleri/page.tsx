@@ -328,14 +328,14 @@ export default function BeneficiariesPage() {
           const status = item.status;
           if (status === 'AKTIF') {
             return (
-              <Badge variant="outline" className="text-xs border-emerald-200 text-emerald-700 dark:border-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30">
+              <Badge variant="outline" className="text-xs border-success/20 text-success bg-success/10">
                 Aktif
               </Badge>
             );
           }
           if (status === 'PASIF') {
             return (
-              <Badge variant="outline" className="text-xs border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/30">
+              <Badge variant="outline" className="text-xs border-border text-muted-foreground bg-muted">
                 Pasif
               </Badge>
             );
@@ -468,7 +468,7 @@ export default function BeneficiariesPage() {
         label: 'Yardım',
         className: 'flex-none w-[100px] max-w-[100px] text-xs overflow-hidden text-right',
         render: (item) => (
-          <span className="font-medium text-emerald-700 dark:text-emerald-400">
+          <span className="font-medium text-success">
             {item.totalAidAmount ? `${item.totalAidAmount.toLocaleString('tr-TR')} ₺` : '-'}
           </span>
         ),

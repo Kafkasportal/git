@@ -6,11 +6,13 @@ import { LucideIcon, TrendingUp, TrendingDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 
+export type KPIColorTheme = 'primary' | 'success' | 'warning' | 'error' | 'info' | 'neutral';
+
 export interface KPICardProps {
   readonly title: string;
   readonly value: string | number;
   readonly icon: LucideIcon;
-  readonly colorTheme: 'green' | 'orange' | 'blue' | 'red' | 'gray' | 'purple' | 'pink' | 'teal';
+  readonly colorTheme: KPIColorTheme;
   readonly description?: string;
   readonly trend?: {
     readonly value: string;
@@ -19,78 +21,68 @@ export interface KPICardProps {
   readonly onClick?: () => void;
 }
 
-const colorThemes = {
-  teal: {
-    gradient: 'from-teal-500 to-teal-600',
-    iconBg: 'bg-gradient-to-br from-teal-500/20 to-teal-600/10',
-    iconColor: 'text-teal-600 dark:text-teal-400',
-    border: 'border-teal-200/50 dark:border-teal-800/30',
-    hoverBorder: 'hover:border-teal-300 dark:hover:border-teal-700',
-    glow: 'group-hover:shadow-teal-500/10',
-    text: 'text-teal-700 dark:text-teal-400',
+const colorThemes: Record<KPIColorTheme, {
+  gradient: string;
+  iconBg: string;
+  iconColor: string;
+  border: string;
+  hoverBorder: string;
+  glow: string;
+  text: string;
+}> = {
+  primary: {
+    gradient: 'from-primary to-primary-700',
+    iconBg: 'bg-primary/10',
+    iconColor: 'text-primary',
+    border: 'border-primary/20',
+    hoverBorder: 'hover:border-primary/40',
+    glow: 'group-hover:shadow-primary/10',
+    text: 'text-primary',
   },
-  green: {
-    gradient: 'from-emerald-500 to-emerald-600',
-    iconBg: 'bg-gradient-to-br from-emerald-500/20 to-emerald-600/10',
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
-    border: 'border-emerald-200/50 dark:border-emerald-800/30',
-    hoverBorder: 'hover:border-emerald-300 dark:hover:border-emerald-700',
-    glow: 'group-hover:shadow-emerald-500/10',
-    text: 'text-emerald-700 dark:text-emerald-400',
+  success: {
+    gradient: 'from-success to-success-700',
+    iconBg: 'bg-success/10',
+    iconColor: 'text-success',
+    border: 'border-success/20',
+    hoverBorder: 'hover:border-success/40',
+    glow: 'group-hover:shadow-success/10',
+    text: 'text-success',
   },
-  orange: {
-    gradient: 'from-amber-500 to-orange-500',
-    iconBg: 'bg-gradient-to-br from-amber-500/20 to-orange-500/10',
-    iconColor: 'text-amber-600 dark:text-amber-400',
-    border: 'border-amber-200/50 dark:border-amber-800/30',
-    hoverBorder: 'hover:border-amber-300 dark:hover:border-amber-700',
-    glow: 'group-hover:shadow-amber-500/10',
-    text: 'text-amber-700 dark:text-amber-400',
+  warning: {
+    gradient: 'from-warning to-warning-700',
+    iconBg: 'bg-warning/10',
+    iconColor: 'text-warning',
+    border: 'border-warning/20',
+    hoverBorder: 'hover:border-warning/40',
+    glow: 'group-hover:shadow-warning/10',
+    text: 'text-warning',
   },
-  blue: {
-    gradient: 'from-blue-500 to-indigo-500',
-    iconBg: 'bg-gradient-to-br from-blue-500/20 to-indigo-500/10',
-    iconColor: 'text-blue-600 dark:text-blue-400',
-    border: 'border-blue-200/50 dark:border-blue-800/30',
-    hoverBorder: 'hover:border-blue-300 dark:hover:border-blue-700',
-    glow: 'group-hover:shadow-blue-500/10',
-    text: 'text-blue-700 dark:text-blue-400',
+  error: {
+    gradient: 'from-error to-error-700',
+    iconBg: 'bg-error/10',
+    iconColor: 'text-error',
+    border: 'border-error/20',
+    hoverBorder: 'hover:border-error/40',
+    glow: 'group-hover:shadow-error/10',
+    text: 'text-error',
   },
-  red: {
-    gradient: 'from-rose-500 to-red-500',
-    iconBg: 'bg-gradient-to-br from-rose-500/20 to-red-500/10',
-    iconColor: 'text-rose-600 dark:text-rose-400',
-    border: 'border-rose-200/50 dark:border-rose-800/30',
-    hoverBorder: 'hover:border-rose-300 dark:hover:border-rose-700',
-    glow: 'group-hover:shadow-rose-500/10',
-    text: 'text-rose-700 dark:text-rose-400',
+  info: {
+    gradient: 'from-info to-info-700',
+    iconBg: 'bg-info/10',
+    iconColor: 'text-info',
+    border: 'border-info/20',
+    hoverBorder: 'hover:border-info/40',
+    glow: 'group-hover:shadow-info/10',
+    text: 'text-info',
   },
-  gray: {
-    gradient: 'from-slate-500 to-slate-600',
-    iconBg: 'bg-gradient-to-br from-slate-500/20 to-slate-600/10',
-    iconColor: 'text-slate-600 dark:text-slate-400',
-    border: 'border-slate-200/50 dark:border-slate-700/50',
-    hoverBorder: 'hover:border-slate-300 dark:hover:border-slate-600',
-    glow: 'group-hover:shadow-slate-500/10',
-    text: 'text-slate-700 dark:text-slate-400',
-  },
-  purple: {
-    gradient: 'from-violet-500 to-purple-500',
-    iconBg: 'bg-gradient-to-br from-violet-500/20 to-purple-500/10',
-    iconColor: 'text-violet-600 dark:text-violet-400',
-    border: 'border-violet-200/50 dark:border-violet-800/30',
-    hoverBorder: 'hover:border-violet-300 dark:hover:border-violet-700',
-    glow: 'group-hover:shadow-violet-500/10',
-    text: 'text-violet-700 dark:text-violet-400',
-  },
-  pink: {
-    gradient: 'from-pink-500 to-rose-500',
-    iconBg: 'bg-gradient-to-br from-pink-500/20 to-rose-500/10',
-    iconColor: 'text-pink-600 dark:text-pink-400',
-    border: 'border-pink-200/50 dark:border-pink-800/30',
-    hoverBorder: 'hover:border-pink-300 dark:hover:border-pink-700',
-    glow: 'group-hover:shadow-pink-500/10',
-    text: 'text-pink-700 dark:text-pink-400',
+  neutral: {
+    gradient: 'from-muted-foreground to-foreground/70',
+    iconBg: 'bg-muted',
+    iconColor: 'text-muted-foreground',
+    border: 'border-border',
+    hoverBorder: 'hover:border-border/80',
+    glow: 'group-hover:shadow-foreground/5',
+    text: 'text-muted-foreground',
   },
 };
 
@@ -103,7 +95,7 @@ function KPICardComponent({
   trend,
   onClick,
 }: KPICardProps) {
-  const theme = colorThemes[colorTheme] || colorThemes.gray;
+  const theme = colorThemes[colorTheme] || colorThemes.neutral;
 
   return (
     <motion.div
@@ -204,8 +196,8 @@ function KPICardComponent({
                     className={cn(
                       'flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold',
                       trend.direction === 'up'
-                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                        : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                        ? 'bg-success/10 text-success'
+                        : 'bg-error/10 text-error'
                     )}
                   >
                     {trend.direction === 'up' ? (

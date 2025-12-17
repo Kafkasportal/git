@@ -123,8 +123,8 @@ export default function SettingsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-blue-500/10">
-                <Palette className="w-6 h-6 text-blue-500" />
+              <div className="p-3 rounded-lg bg-info/10">
+                <Palette className="w-6 h-6 text-info" />
               </div>
               <div>
                 <p className="text-2xl font-bold">5</p>
@@ -137,8 +137,8 @@ export default function SettingsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-green-500/10">
-                <MessageSquare className="w-6 h-6 text-green-500" />
+              <div className="p-3 rounded-lg bg-success/10">
+                <MessageSquare className="w-6 h-6 text-success" />
               </div>
               <div>
                 <p className="text-2xl font-bold">3</p>
@@ -151,8 +151,8 @@ export default function SettingsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-purple-500/10">
-                <Shield className="w-6 h-6 text-purple-500" />
+              <div className="p-3 rounded-lg bg-primary/10">
+                <Shield className="w-6 h-6 text-primary" />
               </div>
               <div>
                 <p className="text-2xl font-bold">4</p>
@@ -165,8 +165,8 @@ export default function SettingsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-orange-500/10">
-                <Zap className="w-6 h-6 text-orange-500" />
+              <div className="p-3 rounded-lg bg-warning/10">
+                <Zap className="w-6 h-6 text-warning" />
               </div>
               <div>
                 <p className="text-2xl font-bold">50+</p>
@@ -221,9 +221,9 @@ export default function SettingsPage() {
 
       {/* Info Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border-blue-500/20 bg-blue-500/5">
+        <Card className="border-info/20 bg-info/5">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <Eye className="w-5 h-5" />
               Gerçek Zamanlı Değişiklikler
             </CardTitle>
@@ -237,9 +237,9 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-purple-500/20 bg-purple-500/5">
+        <Card className="border-primary/20 bg-primary/5">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-purple-700 dark:text-purple-400">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <Lock className="w-5 h-5" />
               Güvenli ve Şifreli
             </CardTitle>

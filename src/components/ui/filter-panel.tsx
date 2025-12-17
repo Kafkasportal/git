@@ -509,7 +509,7 @@ export function ActiveFilters({ filters, filterLabels, onRemove }: ActiveFilters
           return value.map((v) => (
             <div
               key={`${key}-${v}`}
-              className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+              className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
             >
               <span>{value}</span>
               <button
@@ -517,7 +517,7 @@ export function ActiveFilters({ filters, filterLabels, onRemove }: ActiveFilters
                   onRemove(key, v);
                 }}
                 aria-label={`${v} filtresini kaldır`}
-                className="hover:text-blue-900"
+                className="hover:text-primary/80"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -527,7 +527,7 @@ export function ActiveFilters({ filters, filterLabels, onRemove }: ActiveFilters
         return (
           <div
             key={key}
-            className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+            className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
           >
             <span>
               {label}: {value}
@@ -537,7 +537,7 @@ export function ActiveFilters({ filters, filterLabels, onRemove }: ActiveFilters
                 onRemove(key);
               }}
               aria-label={`${label} filtresini kaldır`}
-              className="hover:text-blue-900"
+              className="hover:text-primary/80"
             >
               <X className="h-3 w-3" />
             </button>

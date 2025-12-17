@@ -106,14 +106,14 @@ function ModernSidebarComponent({
       <aside
         className={cn(
           'fixed left-0 top-16 h-[calc(100vh-4rem)] z-40',
-          'bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800',
+          'bg-background border-r border-border',
           'transition-all duration-300 ease-out flex flex-col',
           isCollapsed ? 'w-[68px]' : 'w-64',
           className
         )}
       >
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
+        <nav className="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin scrollbar-thumb-muted-foreground/20">
           <div className="space-y-1">
             {visibleModules.map((module) => {
               const visibleSubPages = module.subPages.filter(
@@ -137,21 +137,21 @@ function ModernSidebarComponent({
                             'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium',
                             'transition-all duration-200',
                             moduleActive
-                              ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400'
-                              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200',
+                              ? 'bg-primary/10 text-primary'
+                              : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                             isCollapsed && 'justify-center px-2'
                           )}
                         >
                           <Icon className={cn(
                             'flex-shrink-0 transition-colors',
                             isCollapsed ? 'w-5 h-5' : 'w-[18px] h-[18px]',
-                            moduleActive && 'text-teal-500 dark:text-teal-400'
+                            moduleActive && 'text-primary'
                           )} />
                           {!isCollapsed && (
                             <>
                               <span className="flex-1 text-left truncate">{module.name}</span>
                               <ChevronDown className={cn(
-                                'w-4 h-4 text-slate-400 transition-transform duration-200',
+                                'w-4 h-4 text-muted-foreground transition-transform duration-200',
                                 isExpanded && 'rotate-180'
                               )} />
                             </>
@@ -174,8 +174,8 @@ function ModernSidebarComponent({
                             'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium',
                             'transition-all duration-200',
                             isActive(visibleSubPages[0].href)
-                              ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400'
-                              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200',
+                              ? 'bg-primary/10 text-primary'
+                              : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                             isCollapsed && 'justify-center px-2'
                           )}
                         >
@@ -205,7 +205,7 @@ function ModernSidebarComponent({
                           transition={{ duration: 0.2 }}
                           className="overflow-hidden"
                         >
-                          <div className="ml-4 mt-1 pl-4 border-l border-slate-200 dark:border-slate-700 space-y-0.5">
+                          <div className="ml-4 mt-1 pl-4 border-l border-border space-y-0.5">
                             {visibleSubPages.map((subPage) => (
                               <Link
                                 key={subPage.href}
@@ -214,8 +214,8 @@ function ModernSidebarComponent({
                                 className={cn(
                                   'block px-3 py-2 rounded-md text-sm transition-all duration-150',
                                   isActive(subPage.href)
-                                    ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 font-medium'
-                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                                    ? 'bg-primary/10 text-primary font-medium'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                                 )}
                               >
                                 {subPage.name}
@@ -234,7 +234,7 @@ function ModernSidebarComponent({
 
         {/* Footer - Settings */}
         {(effectivePermissions.includes(MODULE_PERMISSIONS.SETTINGS) || hasNoPermissions) && (
-          <div className="border-t border-slate-200 dark:border-slate-800 p-3">
+          <div className="border-t border-border p-3">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
@@ -244,8 +244,8 @@ function ModernSidebarComponent({
                     'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium',
                     'transition-all duration-200',
                     pathname.startsWith('/ayarlar')
-                      ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400'
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200',
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                     isCollapsed && 'justify-center px-2'
                   )}
                 >

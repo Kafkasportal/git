@@ -36,12 +36,12 @@ import { Search, FileText, CheckCircle, XCircle, Clock, Eye } from 'lucide-react
 type ApplicationStatus = 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'waitlisted';
 
 const STATUS_LABELS = {
-  draft: { label: 'Taslak', color: 'bg-gray-100 text-gray-700', icon: Clock },
-  submitted: { label: 'Gönderildi', color: 'bg-blue-100 text-blue-700', icon: FileText },
-  under_review: { label: 'İncelemede', color: 'bg-yellow-100 text-yellow-700', icon: Eye },
-  approved: { label: 'Onaylandı', color: 'bg-green-100 text-green-700', icon: CheckCircle },
-  rejected: { label: 'Reddedildi', color: 'bg-red-100 text-red-700', icon: XCircle },
-  waitlisted: { label: 'Beklemede', color: 'bg-orange-100 text-orange-700', icon: Clock },
+  draft: { label: 'Taslak', color: 'bg-muted text-muted-foreground', icon: Clock },
+  submitted: { label: 'Gönderildi', color: 'bg-info/10 text-info', icon: FileText },
+  under_review: { label: 'İncelemede', color: 'bg-warning/10 text-warning', icon: Eye },
+  approved: { label: 'Onaylandı', color: 'bg-success/10 text-success', icon: CheckCircle },
+  rejected: { label: 'Reddedildi', color: 'bg-error/10 text-error', icon: XCircle },
+  waitlisted: { label: 'Beklemede', color: 'bg-warning/10 text-warning', icon: Clock },
 };
 
 export default function ScholarshipApplicationsPage() {
@@ -133,54 +133,54 @@ export default function ScholarshipApplicationsPage() {
     <div className="space-y-6 p-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Burs Başvuruları</h1>
-        <p className="text-slate-600 mt-1">Burs başvurularını inceleyin ve değerlendirin</p>
+        <h1 className="text-3xl font-bold text-foreground">Burs Başvuruları</h1>
+        <p className="text-muted-foreground mt-1">Burs başvurularını inceleyin ve değerlendirin</p>
       </div>
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Toplam Başvuru</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Toplam Başvuru</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900">{stats.total}</div>
+            <div className="text-2xl font-bold text-foreground">{stats.total}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Gönderildi</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Gönderildi</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.submitted}</div>
+            <div className="text-2xl font-bold text-info">{stats.submitted}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">İncelemede</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">İncelemede</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.underReview}</div>
+            <div className="text-2xl font-bold text-warning">{stats.underReview}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Onaylanan</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Onaylanan</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
+            <div className="text-2xl font-bold text-success">{stats.approved}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Reddedilen</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Reddedilen</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
+            <div className="text-2xl font-bold text-error">{stats.rejected}</div>
           </CardContent>
         </Card>
       </div>
@@ -190,7 +190,7 @@ export default function ScholarshipApplicationsPage() {
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Ad, üniversite veya bölüm ara..."
                 value={search}
@@ -245,13 +245,13 @@ export default function ScholarshipApplicationsPage() {
             if (isLoading) {
               return (
                 <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                 </div>
               );
             }
             if (filteredApplications.length === 0) {
               return (
-                <div className="text-center py-8 text-slate-500">
+                <div className="text-center py-8 text-muted-foreground">
                   <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
                   <p>Başvuru bulunamadı</p>
                 </div>
@@ -283,7 +283,7 @@ export default function ScholarshipApplicationsPage() {
                       <TableCell>
                         <div>
                           <div className="font-medium">{application.applicant_name || '-'}</div>
-                          <div className="text-sm text-slate-500">
+                          <div className="text-sm text-muted-foreground">
                             {application.applicant_phone || '-'}
                           </div>
                         </div>
@@ -296,7 +296,7 @@ export default function ScholarshipApplicationsPage() {
                       <TableCell>
                         <div>
                           <div className="text-sm">{application.university || '-'}</div>
-                          <div className="text-xs text-slate-500">
+                          <div className="text-xs text-muted-foreground">
                             {application.department || '-'}
                           </div>
                         </div>
@@ -324,7 +324,7 @@ export default function ScholarshipApplicationsPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="text-sm text-slate-600">
+                        <div className="text-sm text-muted-foreground">
                           {application.submitted_at && typeof application.submitted_at === 'string'
                             ? new Date(application.submitted_at).toLocaleDateString('tr-TR')
                             : 'Henüz gönderilmedi'}
@@ -366,7 +366,7 @@ export default function ScholarshipApplicationsPage() {
           {selectedApplication && (
             <div className="space-y-6">
               {/* Status Update */}
-              <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg">
+              <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
                 <Label htmlFor="status-select" className="font-medium min-w-[100px]">
                   Durum:
                 </Label>
@@ -393,19 +393,19 @@ export default function ScholarshipApplicationsPage() {
                 <h3 className="font-semibold mb-3">Kişisel Bilgiler</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-slate-600">Ad Soyad:</span>
+                    <span className="text-muted-foreground">Ad Soyad:</span>
                     <p className="font-medium">{selectedApplication.applicant_name}</p>
                   </div>
                   <div>
-                    <span className="text-slate-600">Telefon:</span>
+                    <span className="text-muted-foreground">Telefon:</span>
                     <p className="font-medium">{selectedApplication.applicant_phone}</p>
                   </div>
                   <div>
-                    <span className="text-slate-600">E-posta:</span>
+                    <span className="text-muted-foreground">E-posta:</span>
                     <p className="font-medium">{selectedApplication.applicant_email || '-'}</p>
                   </div>
                   <div>
-                    <span className="text-slate-600">Öncelik Puanı:</span>
+                    <span className="text-muted-foreground">Öncelik Puanı:</span>
                     <p className="font-medium">{selectedApplication.priority_score || '-'}</p>
                   </div>
                 </div>
@@ -416,25 +416,25 @@ export default function ScholarshipApplicationsPage() {
                 <h3 className="font-semibold mb-3">Akademik Bilgiler</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-slate-600">Üniversite:</span>
+                    <span className="text-muted-foreground">Üniversite:</span>
                     <p className="font-medium">{selectedApplication.university || '-'}</p>
                   </div>
                   <div>
-                    <span className="text-slate-600">Bölüm:</span>
+                    <span className="text-muted-foreground">Bölüm:</span>
                     <p className="font-medium">{selectedApplication.department || '-'}</p>
                   </div>
                   <div>
-                    <span className="text-slate-600">Sınıf:</span>
+                    <span className="text-muted-foreground">Sınıf:</span>
                     <p className="font-medium">{selectedApplication.grade_level || '-'}</p>
                   </div>
                   <div>
-                    <span className="text-slate-600">GPA:</span>
+                    <span className="text-muted-foreground">GPA:</span>
                     <p className="font-medium">
                       {selectedApplication.gpa ? selectedApplication.gpa.toFixed(2) : '-'}
                     </p>
                   </div>
                   <div>
-                    <span className="text-slate-600">Akademik Yıl:</span>
+                    <span className="text-muted-foreground">Akademik Yıl:</span>
                     <p className="font-medium">{selectedApplication.academic_year || '-'}</p>
                   </div>
                 </div>
@@ -445,7 +445,7 @@ export default function ScholarshipApplicationsPage() {
                 <h3 className="font-semibold mb-3">Aile ve Ekonomik Durum</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-slate-600">Aylık Gelir:</span>
+                    <span className="text-muted-foreground">Aylık Gelir:</span>
                     <p className="font-medium">
                       {selectedApplication.monthly_income
                         ? `₺${selectedApplication.monthly_income.toLocaleString('tr-TR')}`
@@ -453,7 +453,7 @@ export default function ScholarshipApplicationsPage() {
                     </p>
                   </div>
                   <div>
-                    <span className="text-slate-600">Aile Geliri:</span>
+                    <span className="text-muted-foreground">Aile Geliri:</span>
                     <p className="font-medium">
                       {selectedApplication.family_income
                         ? `₺${selectedApplication.family_income.toLocaleString('tr-TR')}`
@@ -461,26 +461,26 @@ export default function ScholarshipApplicationsPage() {
                     </p>
                   </div>
                   <div>
-                    <span className="text-slate-600">Baba Mesleği:</span>
+                    <span className="text-muted-foreground">Baba Mesleği:</span>
                     <p className="font-medium">{selectedApplication.father_occupation || '-'}</p>
                   </div>
                   <div>
-                    <span className="text-slate-600">Anne Mesleği:</span>
+                    <span className="text-muted-foreground">Anne Mesleği:</span>
                     <p className="font-medium">{selectedApplication.mother_occupation || '-'}</p>
                   </div>
                   <div>
-                    <span className="text-slate-600">Kardeş Sayısı:</span>
+                    <span className="text-muted-foreground">Kardeş Sayısı:</span>
                     <p className="font-medium">{selectedApplication.sibling_count || '-'}</p>
                   </div>
                   <div className="flex items-center gap-4">
                     <div>
-                      <span className="text-slate-600">Yetim:</span>
+                      <span className="text-muted-foreground">Yetim:</span>
                       <p className="font-medium">
                         {selectedApplication.is_orphan ? 'Evet' : 'Hayır'}
                       </p>
                     </div>
                     <div>
-                      <span className="text-slate-600">Engelli:</span>
+                      <span className="text-muted-foreground">Engelli:</span>
                       <p className="font-medium">
                         {selectedApplication.has_disability ? 'Evet' : 'Hayır'}
                       </p>
@@ -493,7 +493,7 @@ export default function ScholarshipApplicationsPage() {
               {selectedApplication.essay && (
                 <div>
                   <h3 className="font-semibold mb-3">Motivasyon Mektubu</h3>
-                  <div className="p-4 bg-slate-50 rounded-lg text-sm whitespace-pre-wrap">
+                  <div className="p-4 bg-muted rounded-lg text-sm whitespace-pre-wrap">
                     {selectedApplication.essay}
                   </div>
                 </div>
@@ -503,7 +503,7 @@ export default function ScholarshipApplicationsPage() {
               {selectedApplication.reviewer_notes && (
                 <div>
                   <h3 className="font-semibold mb-3">İnceleyen Notları</h3>
-                  <div className="p-4 bg-yellow-50 rounded-lg text-sm">
+                  <div className="p-4 bg-warning/10 rounded-lg text-sm">
                     {selectedApplication.reviewer_notes}
                   </div>
                 </div>

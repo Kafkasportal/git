@@ -79,13 +79,15 @@ export function ThemeProvider({
     [attribute, disableTransitionOnChange, getSystemTheme]
   );
 
-  // Initialize
+  // Initialize - Development mode: Don't read from localStorage
   useEffect(() => {
     startTransition(() => {
       setMounted(true);
       setSystemTheme(getSystemTheme());
-      
-      // Load saved theme
+
+      // DEV MODE: Skip localStorage, always use defaultTheme for fresh CSS testing
+      // To enable localStorage again, uncomment the block below:
+      /*
       const savedTheme = localStorage.getItem(storageKey) as Theme | null;
       if (savedTheme && ['light', 'dark', 'system'].includes(savedTheme)) {
         setThemeState(savedTheme);
@@ -93,6 +95,10 @@ export function ThemeProvider({
       } else {
         applyTheme(defaultTheme);
       }
+      */
+
+      // Always apply default theme for consistent development experience
+      applyTheme(defaultTheme);
     });
   }, [storageKey, defaultTheme, applyTheme, getSystemTheme]);
 
@@ -114,11 +120,12 @@ export function ThemeProvider({
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [theme, enableSystem, applyTheme]);
 
-  // Set theme function
+  // Set theme function - DEV MODE: Don't save to localStorage
   const setTheme = useCallback(
     (newTheme: Theme) => {
       setThemeState(newTheme);
-      localStorage.setItem(storageKey, newTheme);
+      // DEV MODE: Skip localStorage save for fresh CSS testing
+      // localStorage.setItem(storageKey, newTheme);
       applyTheme(newTheme);
     },
     [storageKey, applyTheme]

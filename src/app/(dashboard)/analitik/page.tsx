@@ -115,22 +115,22 @@ function AnalyticsPageContent() {
   const getVitalStatusColor = (status: string) => {
     switch (status) {
       case 'good':
-        return 'text-green-600';
+        return 'text-success';
       case 'needs-improvement':
-        return 'text-yellow-600';
+        return 'text-warning';
       case 'poor':
-        return 'text-red-600';
+        return 'text-error';
       default:
-        return 'text-gray-600';
+        return 'text-muted-foreground';
     }
   };
 
   const getVitalStatusBadge = (status: string) => {
     switch (status) {
       case 'good':
-        return <Badge className="bg-green-500">İyi</Badge>;
+        return <Badge className="bg-success text-success-foreground">İyi</Badge>;
       case 'needs-improvement':
-        return <Badge className="bg-yellow-500">Geliştirilmeli</Badge>;
+        return <Badge className="bg-warning text-warning-foreground">Geliştirilmeli</Badge>;
       case 'poor':
         return <Badge variant="destructive">Zayıf</Badge>;
       default:
@@ -152,7 +152,7 @@ function AnalyticsPageContent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Toplam Olay</CardTitle>
-            <Activity className="h-4 w-4 text-blue-600" />
+            <Activity className="h-4 w-4 text-info" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalEvents.toLocaleString('tr-TR')}</div>
@@ -165,7 +165,7 @@ function AnalyticsPageContent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Aktif Kullanıcı</CardTitle>
-            <Users className="h-4 w-4 text-green-600" />
+            <Users className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalUsers}</div>
@@ -179,7 +179,7 @@ function AnalyticsPageContent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Ort. Oturum</CardTitle>
-            <Clock className="h-4 w-4 text-purple-600" />
+            <Clock className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{Math.floor(stats.avgSessionDuration / 60)}dk</div>
@@ -192,7 +192,7 @@ function AnalyticsPageContent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Hemen Çıkma</CardTitle>
-            <MousePointerClick className="h-4 w-4 text-orange-600" />
+            <MousePointerClick className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">%{stats.bounceRate}</div>
@@ -346,7 +346,7 @@ function AnalyticsPageContent() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-semibold">{vital.metric}</p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-muted-foreground">
                           {vital.metric === 'LCP' && 'Largest Contentful Paint'}
                           {vital.metric === 'FID' && 'First Input Delay'}
                           {vital.metric === 'CLS' && 'Cumulative Layout Shift'}
@@ -363,20 +363,20 @@ function AnalyticsPageContent() {
                         {getVitalStatusBadge(vital.status)}
                       </div>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-muted rounded-full h-2">
                       <div
                         className={`h-2 rounded-full ${vital.status === 'good'
-                            ? 'bg-green-500'
+                            ? 'bg-success'
                             : vital.status === 'needs-improvement'
-                              ? 'bg-yellow-500'
-                              : 'bg-red-500'
+                              ? 'bg-warning'
+                              : 'bg-error'
                           }`}
                         style={{
                           width: `${Math.min((vital.value / vital.threshold) * 100, 100)}%`,
                         }}
                       />
                     </div>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       Hedef: {vital.threshold}
                       {vital.metric === 'LCP' && 's'}
                       {vital.metric === 'FID' && 'ms'}
@@ -394,31 +394,31 @@ function AnalyticsPageContent() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-                  <Badge className="bg-green-500 mt-0.5">İyi</Badge>
+                <div className="flex items-start gap-3 p-3 bg-success/10 rounded-lg">
+                  <Badge className="bg-success text-success-foreground mt-0.5">İyi</Badge>
                   <div>
-                    <p className="font-medium text-green-900">Genel Performans</p>
-                    <p className="text-sm text-green-800">
+                    <p className="font-medium text-foreground">Genel Performans</p>
+                    <p className="text-sm text-muted-foreground">
                       Tüm Core Web Vitals metrikleri iyi seviyede. Mevcut optimizasyonları koruyun.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                  <Badge className="bg-blue-500 mt-0.5">Öneri</Badge>
+                <div className="flex items-start gap-3 p-3 bg-info/10 rounded-lg">
+                  <Badge className="bg-info text-info-foreground mt-0.5">Öneri</Badge>
                   <div>
-                    <p className="font-medium text-blue-900">Görsel Optimizasyon</p>
-                    <p className="text-sm text-blue-800">
+                    <p className="font-medium text-foreground">Görsel Optimizasyon</p>
+                    <p className="text-sm text-muted-foreground">
                       Görseller için WebP formatı kullanmaya devam edin. LCP performansını korur.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
-                  <Badge className="bg-purple-500 mt-0.5">İzleme</Badge>
+                <div className="flex items-start gap-3 p-3 bg-primary/10 rounded-lg">
+                  <Badge className="bg-primary text-primary-foreground mt-0.5">İzleme</Badge>
                   <div>
-                    <p className="font-medium text-purple-900">Sürekli İzleme</p>
-                    <p className="text-sm text-purple-800">
+                    <p className="font-medium text-foreground">Sürekli İzleme</p>
+                    <p className="text-sm text-muted-foreground">
                       Performans metriklerini düzenli olarak kontrol edin. Yeni özellikler
                       performansı etkileyebilir.
                     </p>

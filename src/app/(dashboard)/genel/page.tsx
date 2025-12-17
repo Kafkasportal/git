@@ -7,7 +7,7 @@ import { DemoBanner } from '@/components/ui/demo-banner';
 import { useDashboardLayout } from '@/hooks/useDashboardLayout';
 import { useDashboardWidgets } from '@/components/dashboard/dashboard-widgets';
 import WidgetGrid from '@/components/dashboard/widget-grid';
-import { WidgetSkeleton } from '@/components/ui/skeleton-variants';
+import { WidgetSkeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useDashboardRealtime } from '@/hooks/useDashboardRealtime';
 import { Badge } from '@/components/ui/badge';
@@ -149,21 +149,21 @@ function DashboardHeroSection({
                 value: '8',
                 icon: TrendingUp,
                 trend: '+1',
-                color: 'text-emerald-600 dark:text-emerald-400',
+                color: 'text-success',
               },
               {
                 label: 'Bekleyen İşler',
                 value: '24',
                 icon: Clock,
                 trend: '-5',
-                color: 'text-amber-600 dark:text-amber-400',
+                color: 'text-warning',
               },
               {
                 label: 'Bu Ay',
                 value: '156',
                 icon: Sparkles,
                 trend: '+23%',
-                color: 'text-indigo-600 dark:text-indigo-400',
+                color: 'text-info',
               },
             ].map((stat) => (
               <motion.div
@@ -202,8 +202,8 @@ function DashboardHeroSection({
                     className={cn(
                       'text-xs mt-2 font-medium',
                       stat.trend.startsWith('+')
-                        ? 'text-emerald-600 dark:text-emerald-400'
-                        : 'text-amber-600 dark:text-amber-400'
+                        ? 'text-success'
+                        : 'text-warning'
                     )}
                   >
                     {stat.trend} bu hafta

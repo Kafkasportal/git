@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "../styles/theme-variables.css";
 @import "../styles/animations.css";
 
 /* ========================================
@@ -208,6 +207,43 @@
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+
+  /* ==========  BRAND GRADIENTS  ========== */
+  --gradient-brand: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+  --gradient-brand-light: linear-gradient(135deg, var(--primary-400) 0%, var(--primary-500) 100%);
+  --gradient-accent: linear-gradient(135deg, var(--primary) 0%, var(--primary-700) 100%);
+  --gradient-surface: linear-gradient(135deg, var(--primary-50) 0%, var(--accent) 100%);
+  
+  /* ==========  AVATAR/LOGO COLORS  ========== */
+  --avatar-bg: var(--gradient-brand);
+  --logo-bg: var(--gradient-brand);
+  --logo-shadow: 0 4px 6px -1px rgb(13 148 136 / 0.3);
+
+  /* ==========  STAT CARD COLORS  ========== */
+  --stat-neutral-bg: var(--muted);
+  --stat-neutral-text: var(--muted-foreground);
+  --stat-neutral-icon: var(--primary);
+
+  --stat-positive-bg: var(--success-50);
+  --stat-positive-text: var(--success-700);
+  --stat-positive-icon: var(--success);
+
+  --stat-negative-bg: var(--error-50);
+  --stat-negative-text: var(--error-700);
+  --stat-negative-icon: var(--error);
+
+  --stat-pending-bg: var(--warning-50);
+  --stat-pending-text: var(--warning-700);
+  --stat-pending-icon: var(--warning);
+
+  --stat-info-bg: var(--info-50);
+  --stat-info-text: var(--info-700);
+  --stat-info-icon: var(--info);
+
+  /* ==========  CONTRAST TEXT COLORS (WCAG AA)  ========== */
+  --text-high-contrast: #0f172a;
+  --text-medium-contrast: #334155;
+  --text-low-contrast: #64748b;
 }
 
 /* ========================================
@@ -289,6 +325,32 @@
   
   /* Glow Effects */
   --shadow-glow: 0 0 20px rgb(99 102 241 / 0.15);
+
+  /* ==========  STAT CARD COLORS - DARK  ========== */
+  --stat-neutral-bg: var(--muted);
+  --stat-neutral-text: var(--muted-foreground);
+  --stat-neutral-icon: var(--primary);
+
+  --stat-positive-bg: rgba(16, 185, 129, 0.1);
+  --stat-positive-text: #34d399;
+  --stat-positive-icon: var(--success);
+
+  --stat-negative-bg: rgba(239, 68, 68, 0.1);
+  --stat-negative-text: #f87171;
+  --stat-negative-icon: var(--error);
+
+  --stat-pending-bg: rgba(245, 158, 11, 0.1);
+  --stat-pending-text: #fbbf24;
+  --stat-pending-icon: var(--warning);
+
+  --stat-info-bg: rgba(59, 130, 246, 0.1);
+  --stat-info-text: #60a5fa;
+  --stat-info-icon: var(--info);
+
+  /* ==========  CONTRAST TEXT COLORS - DARK (WCAG AA)  ========== */
+  --text-high-contrast: #f8fafc;
+  --text-medium-contrast: #e2e8f0;
+  --text-low-contrast: #94a3b8;
   
   color-scheme: dark;
 }
@@ -376,6 +438,42 @@
   .bg-info { background-color: var(--info); }
   .bg-info-50 { background-color: var(--info-50); }
   .border-info { border-color: var(--info); }
+
+  /* ==========  STAT CARD UTILITIES  ========== */
+  .stat-neutral { 
+    background-color: var(--stat-neutral-bg); 
+    color: var(--stat-neutral-text);
+  }
+  .stat-neutral-icon { color: var(--stat-neutral-icon); }
+
+  .stat-positive { 
+    background-color: var(--stat-positive-bg); 
+    color: var(--stat-positive-text);
+  }
+  .stat-positive-icon { color: var(--stat-positive-icon); }
+
+  .stat-negative { 
+    background-color: var(--stat-negative-bg); 
+    color: var(--stat-negative-text);
+  }
+  .stat-negative-icon { color: var(--stat-negative-icon); }
+
+  .stat-pending { 
+    background-color: var(--stat-pending-bg); 
+    color: var(--stat-pending-text);
+  }
+  .stat-pending-icon { color: var(--stat-pending-icon); }
+
+  .stat-info { 
+    background-color: var(--stat-info-bg); 
+    color: var(--stat-info-text);
+  }
+  .stat-info-icon { color: var(--stat-info-icon); }
+
+  /* ==========  CONTRAST TEXT UTILITIES  ========== */
+  .text-high-contrast { color: var(--text-high-contrast); }
+  .text-medium-contrast { color: var(--text-medium-contrast); }
+  .text-low-contrast { color: var(--text-low-contrast); }
 
   /* ==========  FONT UTILITIES  ========== */
   .font-heading { font-family: var(--font-heading); }

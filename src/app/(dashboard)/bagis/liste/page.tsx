@@ -45,7 +45,7 @@ function StatCard({
   description, 
   icon: Icon, 
   trend,
-  colorClass = 'text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-500/10'
+  colorClass = 'text-primary bg-primary/10'
 }: { 
   title: string; 
   value: string | number; 
@@ -71,8 +71,8 @@ function StatCard({
         </div>
         {trend && (
           <div className="mt-3 flex items-center gap-1">
-            <TrendingUp className={cn('h-3.5 w-3.5', trend.isPositive ? 'text-green-500' : 'text-red-500 rotate-180')} />
-            <span className={cn('text-xs font-medium', trend.isPositive ? 'text-green-600' : 'text-red-600')}>
+            <TrendingUp className={cn('h-3.5 w-3.5', trend.isPositive ? 'text-success' : 'text-error rotate-180')} />
+            <span className={cn('text-xs font-medium', trend.isPositive ? 'text-success' : 'text-error')}>
               {trend.isPositive ? '+' : ''}{trend.value}%
             </span>
             <span className="text-xs text-muted-foreground">geçen aya göre</span>
@@ -86,10 +86,10 @@ function StatCard({
 // Status Badge Component
 function StatusBadge({ status }: { status: string }) {
   const config = {
-    completed: { label: 'Tamamlandı', icon: CheckCircle2, className: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20' },
-    pending: { label: 'Beklemede', icon: Clock, className: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20' },
-    cancelled: { label: 'İptal', icon: FileText, className: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20' },
-  }[status] || { label: status, icon: FileText, className: 'bg-slate-50 text-slate-700' };
+    completed: { label: 'Tamamlandı', icon: CheckCircle2, className: 'bg-success/10 text-success border-success/20' },
+    pending: { label: 'Beklemede', icon: Clock, className: 'bg-warning/10 text-warning border-warning/20' },
+    cancelled: { label: 'İptal', icon: FileText, className: 'bg-error/10 text-error border-error/20' },
+  }[status] || { label: status, icon: FileText, className: 'bg-muted text-muted-foreground' };
 
   const Icon = config.icon;
   
@@ -189,8 +189,8 @@ export default function DonationsPage() {
       label: 'Bağışçı',
       render: (item) => (
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-full bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
-            <User className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+          <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+            <User className="h-4 w-4 text-primary" />
           </div>
           <div>
             <p className="font-medium text-sm">{item.donor_name}</p>
@@ -207,7 +207,7 @@ export default function DonationsPage() {
       label: 'Tutar',
       render: (item) => (
         <div className="text-right">
-          <p className="text-lg font-semibold text-green-600 dark:text-green-400">
+          <p className="text-lg font-semibold text-success">
             {item.amount.toLocaleString('tr-TR')} ₺
           </p>
         </div>
@@ -299,14 +299,14 @@ export default function DonationsPage() {
           value={data?.total || donationsList.length}
           description="Tüm zamanlar"
           icon={Users}
-          colorClass="text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-500/10"
+          colorClass="text-primary bg-primary/10"
         />
         <StatCard
           title="Toplam Tutar"
           value={`${totalAmount.toLocaleString('tr-TR')} ₺`}
           description="Toplanan miktar"
           icon={Banknote}
-          colorClass="text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-500/10"
+          colorClass="text-success bg-success/10"
           trend={{ value: 12, isPositive: true }}
         />
         <StatCard
@@ -314,7 +314,7 @@ export default function DonationsPage() {
           value={completedCount}
           description={`${donationsList.length > 0 ? Math.round((completedCount / donationsList.length) * 100) : 0}% başarı oranı`}
           icon={CheckCircle2}
-          colorClass="text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/10"
+          colorClass="text-success bg-success/10"
         />
         <StatCard
           title="Bu Ay"
@@ -325,7 +325,7 @@ export default function DonationsPage() {
           }).length}
           description="Yeni bağış"
           icon={Calendar}
-          colorClass="text-violet-600 bg-violet-50 dark:text-violet-400 dark:bg-violet-500/10"
+          colorClass="text-info bg-info/10"
         />
       </div>
 

@@ -7,121 +7,150 @@ const config = {
   ],
   theme: {
     extend: {
-      // Corporate Color Palette
+      // ========================================
+      // SEMANTIC COLOR SYSTEM - CSS Variables
+      // ========================================
       colors: {
-        // Primary Blues - Profesyonel
-        'brand': {
-          'primary': 'var(--primary)',
-          'secondary': 'var(--secondary)',
+        // Background & Foreground
+        'background': 'var(--background)',
+        'foreground': 'var(--foreground)',
+        
+        // Card
+        'card': {
+          DEFAULT: 'var(--card)',
+          foreground: 'var(--card-foreground)',
         },
-        // Government/Corporate Colors
-        'corporate': {
-          // Primary Blue
-          'primary': {
-            50: '#F0F5FF',
-            100: '#E8F0FF',
-            200: '#D6E4FF',
-            300: '#BBCFFF',
-            400: '#99B2FF',
-            500: '#7A8AFF',
-            600: '#0052CC',
-            700: '#003A99',
-            800: '#002966',
-            900: '#001A4D',
-          },
-          // Dark Blue (Accent)
-          'dark': {
-            50: '#F5F7FA',
-            100: '#EBF0F7',
-            200: '#D6E0EC',
-            300: '#C2CDE0',
-            400: '#A8B8D0',
-            500: '#7A8FA8',
-            600: '#2B3E50',
-            700: '#1F2A38',
-            800: '#151B24',
-            900: '#0B0E12',
-          },
-          // Teal Accent (Modern)
-          'accent': {
-            50: '#F0FFFE',
-            100: '#E0FFFD',
-            200: '#B3FFFB',
-            300: '#80FFF9',
-            400: '#4DFFF6',
-            500: '#1AE5DB',
-            600: '#17A2B8',
-            700: '#127A89',
-            800: '#0D525A',
-            900: '#062A2E',
-          },
-          // Success Green
-          'success': {
-            50: '#E8F5E9',
-            100: '#C8E6C9',
-            200: '#A5D6A7',
-            300: '#81C784',
-            400: '#66BB6A',
-            500: '#4CAF50',
-            600: '#43A047',
-            700: '#388E3C',
-            800: '#2E7D32',
-            900: '#1B5E20',
-          },
-          // Warning Amber
-          'warning': {
-            50: '#FFF3E0',
-            100: '#FFE0B2',
-            200: '#FFCC80',
-            300: '#FFB74D',
-            400: '#FFA726',
-            500: '#FF9800',
-            600: '#FB8C00',
-            700: '#F57C00',
-            800: '#E65100',
-            900: '#BF360C',
-          },
-          // Error Red
-          'error': {
-            50: '#FFEBEE',
-            100: '#FFCDD2',
-            200: '#EF9A9A',
-            300: '#E57373',
-            400: '#EF5350',
-            500: '#F44336',
-            600: '#E53935',
-            700: '#D32F2F',
-            800: '#C62828',
-            900: '#B71C1C',
-          },
-          // Info/Cyan
-          'info': {
-            50: '#E0F7FA',
-            100: '#B2EBF2',
-            200: '#80DEEA',
-            300: '#4DD0E1',
-            400: '#26C6DA',
-            500: '#00BCD4',
-            600: '#00ACC1',
-            700: '#0097A7',
-            800: '#00838F',
-            900: '#006064',
-          },
-          // Neutral Grays
-          'gray': {
-            50: '#FAFBFC',
-            100: '#F5F7FA',
-            200: '#E8EBF0',
-            300: '#DDD',
-            400: '#C5CED6',
-            500: '#A0ABB8',
-            600: '#718096',
-            700: '#4A5568',
-            800: '#2D3748',
-            900: '#1A202C',
-          },
+        
+        // Popover
+        'popover': {
+          DEFAULT: 'var(--popover)',
+          foreground: 'var(--popover-foreground)',
+        },
+        
+        // Primary - Teal Scale
+        'primary': {
+          DEFAULT: 'var(--primary)',
+          foreground: 'var(--primary-foreground)',
+          50: 'var(--primary-50)',
+          100: 'var(--primary-100)',
+          200: 'var(--primary-200)',
+          300: 'var(--primary-300)',
+          400: 'var(--primary-400)',
+          500: 'var(--primary-500)',
+          600: 'var(--primary-600)',
+          700: 'var(--primary-700)',
+          800: 'var(--primary-800)',
+          900: 'var(--primary-900)',
+        },
+        
+        // Secondary
+        'secondary': {
+          DEFAULT: 'var(--secondary)',
+          foreground: 'var(--secondary-foreground)',
+        },
+        
+        // Muted
+        'muted': {
+          DEFAULT: 'var(--muted)',
+          foreground: 'var(--muted-foreground)',
+        },
+        
+        // Accent
+        'accent': {
+          DEFAULT: 'var(--accent)',
+          foreground: 'var(--accent-foreground)',
+        },
+        
+        // Destructive
+        'destructive': {
+          DEFAULT: 'var(--destructive)',
+          foreground: 'var(--destructive-foreground)',
+        },
+        
+        // ========================================
+        // STATUS COLORS
+        // ========================================
+        
+        // Success - Green
+        'success': {
+          DEFAULT: 'var(--success)',
+          foreground: 'var(--success-foreground)',
+          50: 'var(--success-50)',
+          100: 'var(--success-100)',
+          500: 'var(--success-500)',
+          600: 'var(--success-600)',
+          700: 'var(--success-700)',
+        },
+        
+        // Warning - Amber
+        'warning': {
+          DEFAULT: 'var(--warning)',
+          foreground: 'var(--warning-foreground)',
+          50: 'var(--warning-50)',
+          100: 'var(--warning-100)',
+          500: 'var(--warning-500)',
+          600: 'var(--warning-600)',
+          700: 'var(--warning-700)',
+        },
+        
+        // Error - Red
+        'error': {
+          DEFAULT: 'var(--error)',
+          foreground: 'var(--error-foreground)',
+          50: 'var(--error-50)',
+          100: 'var(--error-100)',
+          500: 'var(--error-500)',
+          600: 'var(--error-600)',
+          700: 'var(--error-700)',
+        },
+        
+        // Info - Blue
+        'info': {
+          DEFAULT: 'var(--info)',
+          foreground: 'var(--info-foreground)',
+          50: 'var(--info-50)',
+          100: 'var(--info-100)',
+          500: 'var(--info-500)',
+          600: 'var(--info-600)',
+          700: 'var(--info-700)',
+        },
+        
+        // ========================================
+        // INTERACTIVE COLORS
+        // ========================================
+        'border': 'var(--border)',
+        'input': 'var(--input)',
+        'ring': 'var(--ring)',
+        
+        // ========================================
+        // CHART COLORS
+        // ========================================
+        'chart': {
+          1: 'var(--chart-1)',
+          2: 'var(--chart-2)',
+          3: 'var(--chart-3)',
+          4: 'var(--chart-4)',
+          5: 'var(--chart-5)',
+        },
+        
+        // ========================================
+        // SIDEBAR COLORS
+        // ========================================
+        'sidebar': {
+          DEFAULT: 'var(--sidebar)',
+          foreground: 'var(--sidebar-foreground)',
+          primary: 'var(--sidebar-primary)',
+          'primary-foreground': 'var(--sidebar-primary-foreground)',
+          accent: 'var(--sidebar-accent)',
+          'accent-foreground': 'var(--sidebar-accent-foreground)',
+          border: 'var(--sidebar-border)',
+          ring: 'var(--sidebar-ring)',
         },
       },
+      
+      // ========================================
+      // TYPOGRAPHY
+      // ========================================
       fontFamily: {
         sans: [
           'Inter',
@@ -165,6 +194,10 @@ const config = {
         bold: '700',
         extrabold: '800',
       },
+      
+      // ========================================
+      // SPACING
+      // ========================================
       spacing: {
         xs: '0.25rem',   // 4px
         sm: '0.5rem',    // 8px
@@ -175,28 +208,41 @@ const config = {
         '3xl': '4rem',   // 64px
         '4xl': '6rem',   // 96px
       },
+      
+      // ========================================
+      // BORDER RADIUS
+      // ========================================
       borderRadius: {
         xs: '0.25rem',   // 4px
         sm: '0.375rem',  // 6px
         md: '0.5rem',    // 8px
-        lg: '0.75rem',   // 12px
+        lg: 'var(--radius)',
         xl: '1rem',      // 16px
         '2xl': '1.25rem',// 20px
         '3xl': '1.5rem', // 24px
       },
+      
+      // ========================================
+      // BOX SHADOWS
+      // ========================================
       boxShadow: {
-        xs: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-        sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-        md: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-        lg: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-        xl: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
-        '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
-        'focus': '0 0 0 3px rgba(0, 82, 204, 0.1)',
-        'focus-error': '0 0 0 3px rgba(220, 53, 69, 0.1)',
+        xs: 'var(--shadow-xs)',
+        sm: 'var(--shadow-sm)',
+        md: 'var(--shadow-md)',
+        lg: 'var(--shadow-lg)',
+        xl: 'var(--shadow-xl)',
+        '2xl': 'var(--shadow-2xl)',
+        'inner': 'var(--shadow-inner)',
+        'focus': '0 0 0 3px rgba(13, 148, 136, 0.2)',
+        'focus-error': '0 0 0 3px rgba(239, 68, 68, 0.2)',
         'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
         'card': '0 2px 8px rgba(0, 0, 0, 0.08)',
         'card-hover': '0 4px 12px rgba(0, 0, 0, 0.12)',
       },
+      
+      // ========================================
+      // ANIMATIONS
+      // ========================================
       animation: {
         'pulse-smooth': 'pulse-smooth 2s cubic-bezier(0.83, 0, 0.17, 1) infinite',
         'spin-smooth': 'spin-smooth 1s linear infinite',
@@ -251,6 +297,10 @@ const config = {
           '100%': { opacity: '1', transform: 'scale(1)' },
         },
       },
+      
+      // ========================================
+      // TRANSITIONS
+      // ========================================
       transitionDuration: {
         250: '250ms',
         350: '350ms',
@@ -259,6 +309,10 @@ const config = {
         'ease': 'cubic-bezier(0.4, 0, 0.2, 1)',
         'ease-spring': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
       },
+      
+      // ========================================
+      // MISC
+      // ========================================
       backdropBlur: {
         xs: '2px',
         sm: '4px',
@@ -278,10 +332,6 @@ const config = {
       maxWidth: {
         'prose': '65ch',
         'container': '1400px',
-      },
-      gaps: {
-        'card': '1rem',
-        'section': '2rem',
       },
     }
   },

@@ -146,7 +146,7 @@ export function AnimatedStatCard({
             transition={{ delay: delay + 0.4 }}
             className={cn(
               "mt-2 text-sm font-medium flex items-center gap-1",
-              trend.isPositive ? "text-green-600" : "text-red-600"
+              trend.isPositive ? "text-success" : "text-error"
             )}
           >
             <span>{trend.isPositive ? "↑" : "↓"}</span>
