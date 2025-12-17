@@ -145,8 +145,8 @@ Even though they don't execute due to the vitest bug:
 
 ## Files Related to This Issue
 
-- `VITEST_DIAGNOSTICS.md` - Detailed analysis of the bug
-- `VITEST_ENVIRONMENT_FIX_GUIDE.md` - Original 4 solution options
+- [VITEST_DIAGNOSTICS.md](./VITEST_DIAGNOSTICS.md) - Detailed analysis of the bug
+- [VITEST_ENVIRONMENT_FIX_GUIDE.md](./VITEST_ENVIRONMENT_FIX_GUIDE.md) - Original 4 solution options
 - `vitest.config.ts` - Configuration file (original settings preserved)
 - `src/__tests__/setup.ts` - Test setup file (original settings preserved)
 

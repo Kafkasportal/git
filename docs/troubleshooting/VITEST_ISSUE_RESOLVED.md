@@ -56,7 +56,7 @@ Branches   : 61.9%  (Target: 70%)
 ## Changes Made
 
 ### 1. Setup File Fix (Kept for future v4 migration)
-[src/__tests__/setup.ts](c:\Users\isaha\Documents\GitHub\git\src\__tests__\setup.ts):
+`src/__tests__/setup.ts`:
 ```typescript
 import { expect } from 'vitest';
 import * as matchers from '@testing-library/jest-dom/matchers';
