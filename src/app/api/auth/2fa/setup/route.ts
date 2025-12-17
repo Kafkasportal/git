@@ -8,6 +8,8 @@ import { authenticator } from 'otplib';
 import * as QRCode from 'qrcode';
 import { getAuthSessionFromRequest, getUserFromSession } from '@/lib/auth/session';
 import logger from '@/lib/logger';
+import { TwoFactorEncryption } from '@/lib/security';
+import { getServerUsers } from '@/lib/appwrite/server';
 
 // Configure otplib
 authenticator.options = {
@@ -102,7 +104,7 @@ export async function PUT(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { secret, token } = body as {
+        const { secret, token, recoveryCodes } = body as {
             secret: string;
             token: string;
             recoveryCodes: string[];
@@ -126,14 +128,43 @@ export async function PUT(request: NextRequest) {
             );
         }
 
-        // TODO: Store encrypted secret and recovery codes in user preferences
-        // For now, we'll just log success - actual storage would require Appwrite update
-        logger.info('2FA enabled successfully', { userId: user.id });
+        // Store encrypted secret and recovery codes in user preferences
+        try {
+            const users = getServerUsers();
 
-        return NextResponse.json({
-            success: true,
-            message: '2FA başarıyla etkinleştirildi',
-        });
+            // Encrypt the 2FA data
+            const { encryptedSecret, encryptedRecoveryCodes } = TwoFactorEncryption.encryptConfig(
+                secret,
+                recoveryCodes || []
+            );
+
+            // Get current user preferences
+            const appwriteUser = await users.get(user.id);
+            const currentPrefs = (appwriteUser.prefs || {}) as Record<string, unknown>;
+
+            // Update preferences with encrypted 2FA data
+            const newPrefs = {
+                ...currentPrefs,
+                twoFactorEnabled: 'true',
+                twoFactorSecret: encryptedSecret,
+                twoFactorRecoveryCodes: encryptedRecoveryCodes,
+            };
+
+            await users.updatePrefs(user.id, newPrefs);
+
+            logger.info('2FA enabled successfully', { userId: user.id });
+
+            return NextResponse.json({
+                success: true,
+                message: '2FA başarıyla etkinleştirildi',
+            });
+        } catch (error) {
+            logger.error('Failed to store 2FA preferences', { error, userId: user.id });
+            return NextResponse.json(
+                { success: false, error: 'Failed to enable 2FA' },
+                { status: 500 }
+            );
+        }
     } catch (error) {
         logger.error('2FA verification error', { error });
         return NextResponse.json(
@@ -169,13 +200,57 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        // TODO: Verify password and remove 2FA from user preferences
-        logger.info('2FA disabled', { userId: user.id });
+        // Verify password and remove 2FA from user preferences
+        try {
+            const users = getServerUsers();
 
-        return NextResponse.json({
-            success: true,
-            message: '2FA başarıyla devre dışı bırakıldı',
-        });
+            // Verify password by attempting to create a session
+            // This is a common pattern to verify the user's password
+            const { Client, Account } = await import('node-appwrite');
+            const client = new Client()
+                .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || '')
+                .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || '');
+
+            const account = new Account(client);
+
+            // Try to create a session with the provided password
+            try {
+                await account.createEmailPasswordSession(user.email, password);
+                // If successful, delete the session immediately as we only needed to verify
+                await account.deleteSession('current');
+            } catch (verifyError) {
+                logger.warn('Invalid password during 2FA disable', { userId: user.id });
+                return NextResponse.json(
+                    { success: false, error: 'Invalid password' },
+                    { status: 401 }
+                );
+            }
+
+            // Get current user preferences
+            const appwriteUser = await users.get(user.id);
+            const currentPrefs = (appwriteUser.prefs || {}) as Record<string, unknown>;
+
+            // Remove 2FA data from preferences
+            const newPrefs = { ...currentPrefs };
+            delete newPrefs.twoFactorEnabled;
+            delete newPrefs.twoFactorSecret;
+            delete newPrefs.twoFactorRecoveryCodes;
+
+            await users.updatePrefs(user.id, newPrefs);
+
+            logger.info('2FA disabled', { userId: user.id });
+
+            return NextResponse.json({
+                success: true,
+                message: '2FA başarıyla devre dışı bırakıldı',
+            });
+        } catch (error) {
+            logger.error('Failed to disable 2FA', { error, userId: user.id });
+            return NextResponse.json(
+                { success: false, error: 'Failed to disable 2FA' },
+                { status: 500 }
+            );
+        }
     } catch (error) {
         logger.error('2FA disable error', { error });
         return NextResponse.json(
