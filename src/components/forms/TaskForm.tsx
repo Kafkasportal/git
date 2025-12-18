@@ -280,7 +280,7 @@ export function TaskForm({ onSuccess, onCancel, initialData, taskId }: TaskFormP
           </div>
 
           {/* Priority and Status */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="priority">Öncelik *</Label>
               <Select
@@ -437,8 +437,8 @@ export function TaskForm({ onSuccess, onCancel, initialData, taskId }: TaskFormP
           </div>
 
           {/* Form Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-6">
-            <Button type="submit" disabled={isSubmitting} className="flex-1 sm:flex-none">
+          <div className="flex flex-col flex-row gap-4 pt-6">
+            <Button type="submit" disabled={isSubmitting} className="flex-1 flex-none">
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -457,7 +457,7 @@ export function TaskForm({ onSuccess, onCancel, initialData, taskId }: TaskFormP
                 variant="outline"
                 onClick={onCancel}
                 disabled={isSubmitting}
-                className="flex-1 sm:flex-none"
+                className="flex-1 flex-none"
               >
                 İptal
               </Button>

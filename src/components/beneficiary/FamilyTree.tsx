@@ -262,7 +262,7 @@ export function FamilyTree({
   return (
     <div className={cn('space-y-4', className)}>
       {/* Özet Kartları */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 grid-cols-4 gap-4">
         <SummaryCard
           icon={Users}
           label="Toplam Üye"

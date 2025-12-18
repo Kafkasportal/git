@@ -218,7 +218,7 @@ export default function DonationsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col flex-row items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Bağış Yönetimi</h1>
           <p className="text-muted-foreground mt-1">Bağış kayıtlarını görüntüleyin ve yönetin</p>
@@ -248,7 +248,7 @@ export default function DonationsPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 grid-cols-4">
         <StatCard
           title="Toplam Bağış"
           value={data?.total || donationsList.length}

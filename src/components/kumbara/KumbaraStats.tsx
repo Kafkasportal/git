@@ -30,7 +30,7 @@ export function KumbaraStats() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -69,7 +69,7 @@ export function KumbaraStats() {
   };
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 grid-cols-2 grid-cols-4">
       {/* Toplam Kumbara Sayısı */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -134,7 +134,7 @@ export function KumbaraStats() {
       </Card>
 
       {/* Bekleyen Koleksiyonlar */}
-      <Card className="md:col-span-2">
+      <Card className="col-span-2">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Koleksiyon Durumu</CardTitle>
           <Archive className="h-4 w-4 text-muted-foreground" />

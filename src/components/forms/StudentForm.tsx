@@ -83,9 +83,9 @@ export function StudentForm({ initialData, onSubmit, isLoading }: StudentFormPro
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 grid-cols-2 gap-4">
           {/* Kişisel Bilgiler */}
-          <div className="md:col-span-2">
+          <div className="col-span-2">
             <h3 className="text-lg font-medium mb-4">Kişisel Bilgiler</h3>
           </div>
 
@@ -146,7 +146,7 @@ export function StudentForm({ initialData, onSubmit, isLoading }: StudentFormPro
           />
 
           {/* Eğitim Bilgileri */}
-          <div className="md:col-span-2 mt-4">
+          <div className="col-span-2 mt-4">
             <h3 className="text-lg font-medium mb-4">Eğitim Bilgileri</h3>
           </div>
 
@@ -220,7 +220,7 @@ export function StudentForm({ initialData, onSubmit, isLoading }: StudentFormPro
           />
 
           {/* Burs Bilgileri */}
-          <div className="md:col-span-2 mt-4">
+          <div className="col-span-2 mt-4">
             <h3 className="text-lg font-medium mb-4">Burs Başvurusu</h3>
           </div>
 
@@ -254,7 +254,7 @@ export function StudentForm({ initialData, onSubmit, isLoading }: StudentFormPro
           />
 
           {/* Aile ve Gelir Bilgileri */}
-          <div className="md:col-span-2 mt-4">
+          <div className="col-span-2 mt-4">
             <h3 className="text-lg font-medium mb-4">Aile ve Gelir Durumu</h3>
           </div>
 
@@ -300,7 +300,7 @@ export function StudentForm({ initialData, onSubmit, isLoading }: StudentFormPro
             )}
           />
 
-          <div className="md:col-span-2 grid grid-cols-2 gap-4">
+          <div className="col-span-2 grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="is_orphan"
@@ -334,7 +334,7 @@ export function StudentForm({ initialData, onSubmit, isLoading }: StudentFormPro
             />
           </div>
 
-          <div className="md:col-span-2">
+          <div className="col-span-2">
             <FormField
               control={form.control}
               name="essay"

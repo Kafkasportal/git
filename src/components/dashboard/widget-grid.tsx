@@ -285,7 +285,7 @@ export function WidgetGrid({
 
       {/* Save Layout Dialog */}
       <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Düzeni Kaydet</DialogTitle>
             <DialogDescription>

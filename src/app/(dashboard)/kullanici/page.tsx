@@ -160,7 +160,7 @@ export default function UsersPage() {
       </div>
 
       <Card>
-        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <CardHeader className="flex flex-col gap-4 flex-row items-center justify-between">
           <div>
             <CardTitle>Kullanıcılar</CardTitle>
             <CardDescription>

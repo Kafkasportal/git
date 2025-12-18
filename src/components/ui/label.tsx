@@ -46,7 +46,7 @@ const Label = React.forwardRef<React.ElementRef<typeof LabelPrimitive.Root>, Lab
         ref={ref}
         data-slot="label"
         className={cn(
-          'flex items-center gap-2 leading-normal select-none mb-1.5',
+          'flex items-center gap-2 leading-normal select-none',
           sizeClass,
           emphasisClass,
           'text-foreground', // High contrast - uses foreground color

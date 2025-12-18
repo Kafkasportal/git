@@ -13,10 +13,6 @@ const CommandPalette = dynamic(
   () => import('@/components/ui/command-palette').then((mod) => ({ default: mod.CommandPalette })),
   { ssr: false }
 );
-const OfflineSyncIndicator = dynamic(
-  () => import('@/components/pwa/offline-sync-indicator').then((mod) => ({ default: mod.OfflineSyncIndicator })),
-  { ssr: false }
-);
 
 import { useCommandPalette } from '@/components/ui/command-palette';
 import { toast } from 'sonner';
@@ -28,10 +24,9 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { isAuthenticated, isInitialized, user, logout, initializeAuth } = useAuthStore();
   const { open: isSearchOpen, setOpen: setSearchOpen } = useCommandPalette();
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return window.localStorage.getItem('sidebar-collapsed') === 'true';
-  });
+  // Initialize with default value to prevent hydration mismatch
+  // Will be updated in useEffect after mount
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const rafIdRef = useRef<number | null>(null);
@@ -68,9 +63,16 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, isInitialized, router]);
 
-  // Sync sidebar state
+  // Initialize sidebar state from localStorage after mount to prevent hydration mismatch
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    // Set initial state from localStorage
+    const stored = window.localStorage.getItem('sidebar-collapsed');
+    if (stored === 'true') {
+      setIsSidebarCollapsed(true);
+    }
+    
+    // Listen for storage changes (e.g., from other tabs)
     const handleStorageChange = () => {
       setIsSidebarCollapsed(window.localStorage.getItem('sidebar-collapsed') === 'true');
     };
@@ -110,18 +112,21 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
     }
   }, [isSidebarCollapsed]);
 
-  // Demo session check - use lazy initializer to avoid setState in effect
-  const [hasDemoSession] = useState(() => {
-    if (typeof window === 'undefined') return false;
+  // Demo session check - initialize after mount to prevent hydration mismatch
+  const [hasDemoSession, setHasDemoSession] = useState(false);
+  
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
     try {
       const stored = localStorage.getItem('auth-session');
       if (stored) {
         const data = JSON.parse(stored);
-        return data.isDemo && data.isAuthenticated;
+        if (data.isDemo && data.isAuthenticated) {
+          setHasDemoSession(true);
+        }
       }
     } catch { /* Invalid */ }
-    return false;
-  });
+  }, []);
 
   if ((!isInitialized || !isAuthenticated) && !hasDemoSession) {
     return <LoadingOverlay variant="pulse" fullscreen={true} text="Yükleniyor..." />;
@@ -159,7 +164,7 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
         {/* Sidebar Spacer */}
         <div
           className={cn(
-            'hidden lg:block flex-shrink-0 transition-all duration-300',
+            'block flex-shrink-0 transition-all duration-300',
             isSidebarCollapsed ? 'w-[68px]' : 'w-64'
           )}
         />
@@ -171,7 +176,7 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
           tabIndex={-1}
         >
           <div className={cn(
-            'mx-auto w-full p-6 lg:p-8',
+            'mx-auto w-full p-8',
             'max-w-[1600px]'
           )}>
             <BreadcrumbNav />
@@ -194,9 +199,6 @@ function DashboardLayoutComponent({ children }: { children: React.ReactNode }) {
 
         {/* Command Palette */}
         <CommandPalette open={isSearchOpen} onOpenChange={setSearchOpen} />
-
-        {/* Offline Indicator */}
-        <OfflineSyncIndicator />
       </div>
     </div>
   );

@@ -18,6 +18,10 @@
 *.test-results
 junit.xml
 
+# BrowserStack
+browserstack.yml
+!browserstack.yml.example
+
 # Next.js
 /.next/
 /out/

@@ -132,7 +132,7 @@ export function ColumnCustomizer({
         <Button variant="outline" size="sm" className="h-8 gap-2">
           <Columns3 className="h-4 w-4" />
           Sütunlar
-          <span className="hidden sm:inline text-muted-foreground">
+          <span className="hidden inline text-muted-foreground">
             ({visibleCount}/{columns.length})
           </span>
         </Button>
@@ -244,7 +244,7 @@ export function SimpleColumnToggle({ columns, onToggle }: SimpleColumnToggleProp
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="h-8 gap-1">
           <Columns3 className="h-4 w-4" />
-          <span className="hidden sm:inline">Sütunlar</span>
+          <span className="hidden inline">Sütunlar</span>
           <ChevronDown className="h-3 w-3 opacity-50" />
         </Button>
       </DropdownMenuTrigger>

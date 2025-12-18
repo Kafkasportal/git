@@ -147,7 +147,7 @@ const TransactionRow = memo(function TransactionRow({ record, onView, onEdit, on
           </div>
 
           {/* Transaction Details Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-sm">
+          <div className="grid grid-cols-2 grid-cols-4 lg:grid-cols-6 gap-4 text-sm">
             <DetailField label="Tür" value={record.record_type === 'income' ? 'Gelir' : 'Gider'} />
             <DetailField label="Kategori" value={record.category} />
             <DetailField

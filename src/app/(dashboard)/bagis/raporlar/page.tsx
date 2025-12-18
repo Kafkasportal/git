@@ -310,7 +310,7 @@ export default function DonationReportsPage() {
             Bağış verilerini analiz edin ve raporlar oluşturun
           </p>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 grid-cols-2 grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i}>
               <CardHeader>
@@ -351,7 +351,7 @@ export default function DonationReportsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col flex-row items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Bağış Raporları</h1>
           <p className="text-muted-foreground mt-2">
@@ -398,7 +398,7 @@ export default function DonationReportsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 grid-cols-4 gap-4">
             <div>
               <Label htmlFor="date-range">Tarih Aralığı</Label>
               <Select value={dateRange} onValueChange={setDateRange}>
@@ -455,7 +455,7 @@ export default function DonationReportsPage() {
       </Card>
 
       {/* Summary Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Toplam Tutar</CardTitle>
@@ -513,7 +513,7 @@ export default function DonationReportsPage() {
       </div>
 
       {/* Charts Row */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-2">
         {/* Monthly Trend */}
         <Card>
           <CardHeader>
@@ -634,7 +634,7 @@ export default function DonationReportsPage() {
           <CardDescription>Ödeme yöntemi bazında analiz</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 grid-cols-3">
             {reportData.paymentMethodData.map((method) => (
               <div key={method.method} className="border rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">

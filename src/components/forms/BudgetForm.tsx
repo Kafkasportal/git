@@ -165,7 +165,7 @@ export default function BudgetForm({
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 grid-cols-2 gap-4">
             <div>
               <Label htmlFor="name">Bütçe Adı</Label>
               <Input
@@ -202,7 +202,7 @@ export default function BudgetForm({
           </div>
 
           {/* Year and Month */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 grid-cols-2 gap-4">
             <div>
               <Label htmlFor="year">Yıl</Label>
               <Input

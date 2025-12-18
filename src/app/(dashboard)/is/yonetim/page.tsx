@@ -169,7 +169,7 @@ export default function WorkManagementPage() {
 
   return (
     <div className="space-y-6">
-      <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <section className="flex flex-col gap-4 flex-row items-center justify-between">
         <div>
           <h1 className="text-3xl font-semibold">İş Yönetimi Paneli</h1>
           <p className="text-muted-foreground">
@@ -205,7 +205,7 @@ export default function WorkManagementPage() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 grid-cols-3">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
@@ -355,7 +355,7 @@ export default function WorkManagementPage() {
                     key={item._id}
                     className="rounded-lg border p-4 transition hover:border-primary/40 hover:shadow-sm"
                   >
-                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <div className="flex flex-col gap-3 flex-row items-center justify-between">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <h3 className="text-sm font-semibold">{item.title}</h3>
@@ -420,7 +420,7 @@ export default function WorkManagementPage() {
               ) : (
                 recentDecisions.map((decision) => (
                   <div key={decision._id} className="rounded-lg border p-4">
-                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div className="flex flex-col gap-2 flex-row items-center justify-between">
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="text-sm font-semibold">{decision.title}</h3>
@@ -470,7 +470,7 @@ export default function WorkManagementPage() {
               ) : (
                 notifications.map((notification) => (
                   <div key={notification._id} className="rounded-lg border p-4">
-                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div className="flex flex-col gap-2 flex-row items-center justify-between">
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="text-sm font-semibold">{notification.title}</h3>

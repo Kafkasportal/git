@@ -154,7 +154,7 @@ interface StatsSkeletonProps {
 
 export function StatsSkeleton({ count = 4, className }: StatsSkeletonProps) {
   return (
-    <div className={cn('grid gap-4 grid-cols-2 md:grid-cols-4', className)}>
+    <div className={cn('grid gap-4 grid-cols-2 grid-cols-4', className)}>
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}

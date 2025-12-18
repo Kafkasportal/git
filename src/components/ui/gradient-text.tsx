@@ -17,7 +17,7 @@ export interface GradientTextProps {
 
 const gradients = {
   primary: 'from-blue-600 via-indigo-500 to-indigo-600',
-  success: 'from-emerald-500 via-green-500 to-teal-600',
+  success: 'from-emerald-500 via-green-500 to-primary-600',
   warning: 'from-amber-500 via-orange-500 to-red-500',
   error: 'from-red-500 via-pink-500 to-rose-600',
   info: 'from-cyan-500 via-blue-500 to-indigo-600',

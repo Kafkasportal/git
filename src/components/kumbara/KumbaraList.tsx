@@ -191,7 +191,7 @@ export function KumbaraList({ onCreate }: KumbaraListProps) {
           <CardDescription>Tüm kumbara bağışlarını görüntüleyin ve yönetin</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4 mb-4">
+          <div className="flex flex-col flex-row gap-4 mb-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

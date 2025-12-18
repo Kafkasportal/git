@@ -29,7 +29,7 @@ export function AddressTab({ state, actions, readOnly }: AddressTabProps) {
                         disabled={readOnly}
                     />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 grid-cols-3 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="city">İl</Label>
                         <Input

@@ -126,7 +126,7 @@ export function BulkActionsToolbar(props: BulkActionsToolbarProps) {
             disabled={isLoading}
           >
             <X className="h-4 w-4" />
-            <span className="hidden sm:inline">Seçimi Temizle</span>
+            <span className="hidden inline">Seçimi Temizle</span>
           </Button>
         </div>
 
@@ -179,7 +179,7 @@ export function BulkActionsToolbar(props: BulkActionsToolbarProps) {
               disabled={isLoading}
             >
               <Edit className="h-4 w-4" />
-              <span className="hidden sm:inline">Düzenle</span>
+              <span className="hidden inline">Düzenle</span>
             </Button>
           )}
 
@@ -194,7 +194,7 @@ export function BulkActionsToolbar(props: BulkActionsToolbarProps) {
                   disabled={isLoading}
                 >
                   <Download className="h-4 w-4" />
-                  <span className="hidden sm:inline">Dışa Aktar</span>
+                  <span className="hidden inline">Dışa Aktar</span>
                   <ChevronDown className="h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
@@ -228,8 +228,8 @@ export function BulkActionsToolbar(props: BulkActionsToolbarProps) {
               ) : (
                 <Trash2 className="h-4 w-4" />
               )}
-              <span className="hidden sm:inline">Sil</span>
-              <span className="sm:hidden">({selectedCount})</span>
+              <span className="hidden inline">Sil</span>
+              <span className="hidden">({selectedCount})</span>
             </Button>
           )}
         </div>
@@ -298,7 +298,7 @@ export function CompactBulkActions({
   if (selectedCount === 0) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 flex items-center justify-between gap-2 p-3 bg-background border shadow-lg rounded-lg sm:hidden">
+    <div className="fixed bottom-4 left-4 right-4 z-50 flex items-center justify-between gap-2 p-3 bg-background border shadow-lg rounded-lg hidden">
       <div className="flex items-center gap-2">
         <Badge>{selectedCount}</Badge>
         <Button variant="ghost" size="icon" onClick={onClearSelection} className="h-8 w-8">

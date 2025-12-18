@@ -132,7 +132,7 @@ export function FinancialFilters({
           {/* Search and Basic Filters */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             {/* Search Input */}
-            <div className="md:col-span-2 relative">
+            <div className="col-span-2 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Açıklama, kategori veya makbuz no"
@@ -211,7 +211,7 @@ export function FinancialFilters({
 
             {/* Custom Date Inputs */}
             {dateFilter === 'custom' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div className="grid grid-cols-1 grid-cols-2 gap-4 pt-2">
                 <div className="space-y-2">
                   <Label htmlFor="customStartDate">
                     Başlangıç Tarihi <span className="text-red-500">*</span>

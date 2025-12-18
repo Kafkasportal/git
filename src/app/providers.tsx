@@ -17,22 +17,6 @@ import logger from "@/lib/logger";
 
 import { SuspenseBoundary } from "@/components/ui/suspense-boundary";
 import { ReactQueryDevtoolsWrapper } from "@/components/devtools/ReactQueryDevtools";
-import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
-import { NetworkStatusIndicator } from "@/components/pwa/NetworkStatusIndicator";
-// import { createOptimizedQueryClient, cacheUtils } from "@/lib/cache-config";
-// import { persistentCache } from "@/lib/persistent-cache";
-// import { initGlobalErrorHandlers } from "@/lib/global-error-handler";
-// import { initErrorTracker } from "@/lib/error-tracker";
-// import { SettingsProvider } from "@/contexts/settings-context";
-// import { KeyboardNavigationProvider } from "@/contexts/keyboard-navigation-context";
-// import { ThemeProvider } from "@/components/ui/theme-provider";
-// import { pingAppwrite } from "@/lib/appwrite";
-// import logger from "@/lib/logger";
-
-// import { SuspenseBoundary } from "@/components/ui/suspense-boundary";
-// import { ReactQueryDevtoolsWrapper } from "@/components/devtools/ReactQueryDevtools";
-// import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
-// import { NetworkStatusIndicator } from "@/components/pwa/NetworkStatusIndicator";
 
 // TypeScript interfaces for window objects
 interface WindowWithDebug extends Window {
@@ -152,8 +136,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
           </TooltipProvider>
         </ThemeProvider>
       </SuspenseBoundary>
-      <ServiceWorkerRegister />
-      <NetworkStatusIndicator />
       <Toaster position="top-right" richColors />
       <ReactQueryDevtoolsWrapper />
     </QueryClientProvider>

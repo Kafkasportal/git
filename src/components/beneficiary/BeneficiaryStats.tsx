@@ -109,7 +109,7 @@ export function BeneficiaryStats({ className }: BeneficiaryStatsProps) {
 
   if (isLoading) {
     return (
-      <div className={cn('grid gap-4 md:grid-cols-2 lg:grid-cols-4', className)}>
+      <div className={cn('grid gap-4 grid-cols-2 grid-cols-4', className)}>
         {[...Array(4)].map((_, i) => (
           <Card key={i}>
             <CardContent className="flex items-center justify-center py-8">
@@ -140,7 +140,7 @@ export function BeneficiaryStats({ className }: BeneficiaryStatsProps) {
   return (
     <div className={cn('space-y-4', className)}>
       {/* Main Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 grid-cols-4">
         {/* Total */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -220,7 +220,7 @@ export function BeneficiaryStats({ className }: BeneficiaryStatsProps) {
       </div>
 
       {/* Workflow Status Overview */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Workflow Durumu</CardTitle>

@@ -30,7 +30,7 @@ export function PlaceholderPage({
       badge={{ text: 'Geliştiriliyor', variant: 'secondary' }}
       showBackButton={true}
     >
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 grid-cols-2">
         {/* Main Construction Card */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}

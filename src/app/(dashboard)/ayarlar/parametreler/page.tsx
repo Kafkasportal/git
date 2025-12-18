@@ -115,7 +115,7 @@ export default function ParametersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col flex-row items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Parametre Yönetimi</h1>
           <p className="text-gray-600 mt-2">
@@ -150,7 +150,7 @@ export default function ParametersPage() {
           <CardTitle>Filtreleme</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label>Kategori</Label>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>

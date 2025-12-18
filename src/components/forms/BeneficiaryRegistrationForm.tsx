@@ -1109,7 +1109,7 @@ export function BeneficiaryRegistrationForm({ open, onOpenChange }: BeneficiaryR
             </div>
 
             {/* Sidebar - Summary */}
-            <div className="hidden lg:flex w-80 flex-col border-l border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30 p-4 overflow-y-auto">
+            <div className="flex w-80 flex-col border-l border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30 p-4 overflow-y-auto">
               <div className="space-y-4">
                 <h3 className="font-semibold text-sm text-slate-900 dark:text-slate-100">Kayıt Özeti</h3>
                 <BeneficiaryFormSummary

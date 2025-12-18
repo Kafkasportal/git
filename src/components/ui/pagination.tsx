@@ -21,7 +21,7 @@ export function Pagination({
   const endItem = Math.min(currentPage * limit, total);
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
+    <div className="flex flex-col flex-row items-center justify-between gap-4 py-4">
       <p className="text-sm text-muted-foreground">
         Toplam <span className="font-semibold text-foreground">{total}</span> kayıt
         {total > 0 && ` (${startItem}-${endItem} görüntüleniyor)`}

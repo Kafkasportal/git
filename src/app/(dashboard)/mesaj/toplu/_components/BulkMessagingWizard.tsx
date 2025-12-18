@@ -151,7 +151,7 @@ function WizardProgressIndicator({
           </div>
 
           {/* Step Label */}
-          <div className="ml-2 text-sm font-medium hidden sm:inline">{STEP_TITLES[step]}</div>
+          <div className="ml-2 text-sm font-medium hidden inline">{STEP_TITLES[step]}</div>
 
           {/* Connector Line */}
           {index < steps.length - 1 && (

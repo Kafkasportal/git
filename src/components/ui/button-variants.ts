@@ -5,7 +5,7 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Primary - Main brand action button (Teal)
+        // Primary - Main brand action button (Indigo)
         primary:
           'bg-primary text-primary-foreground bg-gradient-to-r from-primary-600 to-primary-700 shadow-lg hover:from-primary-700 hover:to-primary-800 hover:shadow-xl focus-visible:ring-primary-100 dark:focus-visible:ring-primary-900',
 

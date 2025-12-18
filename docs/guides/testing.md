@@ -100,6 +100,59 @@ describe('Module Name', () => {
 
 See `src/test-utils/test-patterns.ts` for established testing patterns.
 
+## E2E Testing with Playwright
+
+End-to-end tests are located in the `e2e/` directory.
+
+```bash
+# Run E2E tests locally
+npm run test:e2e
+
+# Run with UI mode
+npm run test:e2e:ui
+
+# Run in headed mode (see browser)
+npm run test:e2e:headed
+```
+
+### E2E Test Structure
+
+```
+e2e/
+├── homepage.spec.ts     # Homepage tests
+├── visual.spec.ts       # Visual regression tests (Argos)
+└── ...                  # Add more test files here
+```
+
+## Cross-Browser Testing with BrowserStack
+
+Run your E2E tests on real browsers and devices using BrowserStack.
+
+### Setup
+
+1. Copy `browserstack.yml.example` to `browserstack.yml`
+2. Add your BrowserStack credentials (get from [BrowserStack Settings](https://www.browserstack.com/accounts/settings))
+3. Run tests:
+
+```bash
+npm run test:browserstack
+```
+
+### Configured Platforms
+
+| Platform | Browser | Device |
+|----------|---------|--------|
+| Windows 11 | Chrome (latest) | Desktop |
+| macOS Sequoia | Safari (WebKit) | Desktop |
+| Android 14 | Chrome | Samsung Galaxy S24 |
+
+### Environment Variables (Optional)
+
+```bash
+export BROWSERSTACK_USERNAME=your_username
+export BROWSERSTACK_ACCESS_KEY=your_access_key
+```
+
 ## Troubleshooting
 
 If you encounter issues with the test environment, please refer to the troubleshooting guides in `docs/troubleshooting/`:

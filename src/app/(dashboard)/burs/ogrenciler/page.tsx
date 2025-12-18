@@ -264,7 +264,7 @@ export default function StudentsPage() {
             Burs alan öğrencileri görüntüleyin ve yönetin
           </p>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 grid-cols-2 grid-cols-4">
           {['stats-1', 'stats-2', 'stats-3', 'stats-4'].map((key) => (
             <Card key={key}>
               <CardHeader>
@@ -283,7 +283,7 @@ export default function StudentsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col flex-row items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Öğrenci Listesi</h1>
           <p className="text-muted-foreground mt-2">
@@ -315,7 +315,7 @@ export default function StudentsPage() {
       </div>
 
       {/* Statistics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Toplam Öğrenci</CardTitle>
@@ -372,8 +372,8 @@ export default function StudentsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="md:col-span-2 relative">
+          <div className="grid grid-cols-1 grid-cols-4 gap-4">
+            <div className="col-span-2 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Ad, TC No veya Üniversite"
@@ -455,7 +455,7 @@ export default function StudentsPage() {
                         </Badge>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                      <div className="grid grid-cols-1 grid-cols-2 grid-cols-4 gap-4 text-sm">
                         <div>
                           <span className="text-muted-foreground">TC No:</span>
                           <p className="font-medium">{student.applicant_tc_no}</p>

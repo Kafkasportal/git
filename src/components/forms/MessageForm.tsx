@@ -634,8 +634,8 @@ export function MessageForm({
           </div>
 
           {/* Form Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-6">
-            <Button type="submit" disabled={isSubmitting} className="flex-1 sm:flex-none">
+          <div className="flex flex-col flex-row gap-4 pt-6">
+            <Button type="submit" disabled={isSubmitting} className="flex-1 flex-none">
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -662,7 +662,7 @@ export function MessageForm({
                   void handleSend(data);
                 }}
                 disabled={isSubmitting || selectedRecipients.length === 0}
-                className="flex-1 sm:flex-none"
+                className="flex-1 flex-none"
               >
                 <Send className="mr-2 h-4 w-4" />
                 Gönder
@@ -674,7 +674,7 @@ export function MessageForm({
                 type="button"
                 onClick={handleSubmit(handleSend)}
                 disabled={isSubmitting || selectedRecipients.length === 0}
-                className="flex-1 sm:flex-none"
+                className="flex-1 flex-none"
               >
                 <Send className="mr-2 h-4 w-4" />
                 Gönder
@@ -687,7 +687,7 @@ export function MessageForm({
                 variant="outline"
                 onClick={onCancel}
                 disabled={isSubmitting}
-                className="flex-1 sm:flex-none"
+                className="flex-1 flex-none"
               >
                 İptal
               </Button>

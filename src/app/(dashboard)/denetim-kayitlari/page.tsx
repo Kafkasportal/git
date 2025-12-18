@@ -200,7 +200,7 @@ export default function AuditLogsPage() {
       badge={{ text: `${stats.total} Kayıt`, variant: 'default' }}
     >
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4 mb-6">
+      <div className="grid gap-4 grid-cols-4 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Toplam İşlem</CardTitle>
@@ -256,7 +256,7 @@ export default function AuditLogsPage() {
           <CardDescription>Denetim kayıtlarını filtreleyin ve arayın</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 grid-cols-4">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input

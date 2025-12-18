@@ -246,7 +246,7 @@ export default function InvoiceForm({
           {/* Client Information */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Müşteri Bilgileri</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="clientName">Müşteri Adı *</Label>
                 <Input
@@ -375,7 +375,7 @@ export default function InvoiceForm({
           </div>
 
           {/* Invoice Dates and Status */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 grid-cols-2 gap-4">
             <div>
               <Label htmlFor="issueDate">Fatura Tarihi</Label>
               <Input

@@ -171,7 +171,7 @@ function FinancialDashboardPageContent() {
   return (
     <PageLayout title="Finansal Dashboard" description="Mali durumu görsel olarak takip edin">
       {/* Header with Date Range Picker */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="flex flex-col flex-row justify-between items-start items-center gap-4 mb-6">
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -248,7 +248,7 @@ function FinancialDashboardPageContent() {
       </div>
 
       {/* Summary Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+      <div className="grid gap-4 grid-cols-2 grid-cols-4 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Toplam Gelir</CardTitle>

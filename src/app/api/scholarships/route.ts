@@ -5,6 +5,7 @@ import {
   verifyCsrfToken,
   buildErrorResponse,
   requireModuleAccess,
+  requireAuthenticatedUser,
 } from "@/lib/api/auth-utils";
 import { parseBody } from "@/lib/api/route-helpers";
 import { dataModificationRateLimit, readOnlyRateLimit } from "@/lib/rate-limit";
@@ -14,23 +15,42 @@ import { z } from "zod";
 /**
  * GET /api/scholarships
  * List all scholarships with filtering and pagination
+ * - Authenticated users can view active scholarships
+ * - Users with scholarship:access permission can view all scholarships
  */
 async function getScholarshipsHandler(request: NextRequest) {
   try {
-    await requireModuleAccess("scholarship");
-
     const { searchParams } = new URL(request.url);
+    const isActiveParam = searchParams.get("isActive");
+    
+    // Determine access requirements and filtering
+    // - If isActive=true: allow authenticated users, filter to active only
+    // - If isActive=false: require module access, filter to inactive only
+    // - If isActive not provided: default to active only for authenticated users
+    
+    let filterIsActive: boolean | undefined = undefined;
+    
+    if (isActiveParam === "false") {
+      // Requesting inactive scholarships - requires module access
+      await requireModuleAccess("scholarship");
+      filterIsActive = false;
+    } else if (isActiveParam === "true") {
+      // Explicitly requesting active scholarships - authenticated users can access
+      await requireAuthenticatedUser();
+      filterIsActive = true;
+    } else {
+      // No isActive parameter - default to active only for authenticated users
+      // This is the most common case and safest default
+      await requireAuthenticatedUser();
+      filterIsActive = true;
+    }
+
     const params = normalizeQueryParams(searchParams);
 
     const response = await appwriteScholarships.list({
       ...params,
       category: searchParams.get("category") || undefined,
-      isActive:
-        searchParams.get("isActive") === "true"
-          ? true
-          : searchParams.get("isActive") === "false"
-            ? false
-            : undefined,
+      isActive: filterIsActive,
     });
 
     return NextResponse.json({
@@ -60,7 +80,6 @@ async function getScholarshipsHandler(request: NextRequest) {
  * Create a new scholarship
  */
 async function createScholarshipHandler(request: NextRequest) {
-  const body: unknown = null;
   try {
     await verifyCsrfToken(request);
     await requireModuleAccess("scholarship");

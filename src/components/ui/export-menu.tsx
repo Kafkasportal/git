@@ -55,7 +55,7 @@ export function ExportMenu({ data, filename = 'export', title = 'Export', disabl
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2" disabled={disabled || !data.length}>
           <Download className="h-4 w-4" />
-          <span className="hidden sm:inline">Dışa Aktar</span>
+          <span className="hidden inline">Dışa Aktar</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

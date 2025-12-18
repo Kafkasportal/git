@@ -131,7 +131,7 @@ export default function ErrorsPage() {
     <PageLayout title="Hata Takip Sistemi" description="Uygulama hatalarını izleyin ve yönetin">
       <div className="space-y-6">
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 grid-cols-2 grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Toplam Hata</CardTitle>
@@ -188,7 +188,7 @@ export default function ErrorsPage() {
               <CardTitle>Önem Derecesine Göre Dağılım</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 grid-cols-4 gap-4">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-red-600">
                     {stats.bySeverity?.critical || 0}

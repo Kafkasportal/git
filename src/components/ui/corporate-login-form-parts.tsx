@@ -53,8 +53,8 @@ export function LoginFormFields({
         <Label
           htmlFor="email"
           className={cn(
-            'text-sm font-medium transition-colors duration-200',
-            focusedField === 'email' ? 'text-teal-600' : 'text-slate-700'
+            'mb-1.5 text-sm font-medium transition-colors duration-200',
+            focusedField === 'email' ? 'text-primary-600' : 'text-slate-700'
           )}
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
@@ -64,7 +64,7 @@ export function LoginFormFields({
           <Mail
             className={cn(
               'absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 transition-all duration-300',
-              focusedField === 'email' ? 'text-teal-500 scale-110' : 'text-slate-400',
+              focusedField === 'email' ? 'text-primary-500 scale-110' : 'text-slate-400',
               emailError && 'text-red-500'
             )}
           />
@@ -80,7 +80,7 @@ export function LoginFormFields({
             className={cn(
               'h-14 pl-12 pr-4 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400',
               'rounded-xl transition-all duration-300',
-              'focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:shadow-lg focus:shadow-teal-500/10',
+              'focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:shadow-lg focus:shadow-primary-500/10',
               'hover:border-slate-300 hover:bg-white',
               emailError && 'border-red-400 focus:border-red-500 focus:ring-red-500/20'
             )}
@@ -105,8 +105,8 @@ export function LoginFormFields({
           <Label
             htmlFor="password"
             className={cn(
-              'text-sm font-medium transition-colors duration-200',
-              focusedField === 'password' ? 'text-teal-600' : 'text-slate-700'
+              'mb-1.5 text-sm font-medium transition-colors duration-200',
+              focusedField === 'password' ? 'text-primary-600' : 'text-slate-700'
             )}
             style={{ fontFamily: 'Inter, sans-serif' }}
           >
@@ -114,7 +114,7 @@ export function LoginFormFields({
           </Label>
           <button
             type="button"
-            className="text-sm text-teal-600 hover:text-teal-700 font-medium transition-colors hover:underline underline-offset-2"
+            className="text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors hover:underline underline-offset-2"
             style={{ fontFamily: 'Inter, sans-serif' }}
           >
             Şifremi unuttum?
@@ -124,7 +124,7 @@ export function LoginFormFields({
           <Lock
             className={cn(
               'absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 transition-all duration-300',
-              focusedField === 'password' ? 'text-teal-500 scale-110' : 'text-slate-400',
+              focusedField === 'password' ? 'text-primary-500 scale-110' : 'text-slate-400',
               passwordError && 'text-red-500'
             )}
           />
@@ -139,7 +139,7 @@ export function LoginFormFields({
             className={cn(
               'h-14 pl-12 pr-12 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400',
               'rounded-xl transition-all duration-300',
-              'focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:shadow-lg focus:shadow-teal-500/10',
+              'focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:shadow-lg focus:shadow-primary-500/10',
               'hover:border-slate-300 hover:bg-white',
               passwordError && 'border-red-400 focus:border-red-500 focus:ring-red-500/20'
             )}
@@ -170,7 +170,7 @@ export function LoginFormFields({
           id="remember"
           checked={rememberMe}
           onCheckedChange={(c) => onRememberMeChange(c === true)}
-          className="w-5 h-5 rounded border-slate-300 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500 transition-colors"
+          className="w-5 h-5 rounded border-slate-300 data-[state=checked]:bg-primary-500 data-[state=checked]:border-primary-500 transition-colors"
         />
         <label
           htmlFor="remember"
@@ -202,11 +202,11 @@ export function TwoFactorField({
       initial={{ opacity: 0, y: -10, height: 0 }}
       animate={{ opacity: 1, y: 0, height: 'auto' }}
       transition={{ duration: 0.4 }}
-      className="space-y-2 p-5 bg-teal-50 border border-teal-200 rounded-xl"
+      className="space-y-2 p-5 bg-primary-50 border border-primary-200 rounded-xl"
     >
       <Label
         htmlFor="twoFactorCode"
-        className="text-sm font-medium text-teal-800"
+        className="text-sm font-medium text-primary-800"
         style={{ fontFamily: 'Inter, sans-serif' }}
       >
         İki Faktörlü Doğrulama Kodu
@@ -220,9 +220,9 @@ export function TwoFactorField({
         placeholder="000000"
         maxLength={6}
         className={cn(
-          'h-14 bg-white border-teal-200 text-slate-900 placeholder:text-slate-400',
+          'h-14 bg-white border-primary-200 text-slate-900 placeholder:text-slate-400',
           'rounded-xl transition-all text-center text-xl tracking-[0.5em] font-semibold',
-          'focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20',
+          'focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20',
           twoFactorError && 'border-red-400 focus:border-red-500 focus:ring-red-500/20'
         )}
         style={{ fontFamily: 'Inter, sans-serif' }}
@@ -230,7 +230,7 @@ export function TwoFactorField({
       {twoFactorError && (
         <p className="text-sm text-red-500 font-medium">{twoFactorError}</p>
       )}
-      <p className="text-xs text-teal-700 mt-2">
+      <p className="text-xs text-primary-700 mt-2">
         Authenticator uygulamanızdan 6 haneli kodu girin
       </p>
     </motion.div>
@@ -250,11 +250,11 @@ export function LoginSubmitButton({ isLoading, requiresTwoFactor }: LoginSubmitB
         disabled={isLoading}
         className={cn(
           'w-full h-14 font-semibold rounded-xl transition-all duration-300',
-          'bg-gradient-to-r from-teal-500 to-teal-600',
-          'hover:from-teal-600 hover:to-teal-700 hover:shadow-xl hover:shadow-teal-500/25',
+          'bg-gradient-to-r from-primary-500 to-primary-600',
+          'hover:from-primary-600 hover:to-primary-700 hover:shadow-xl hover:shadow-primary-500/25',
           'active:scale-[0.98]',
           'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none',
-          'focus:ring-4 focus:ring-teal-500/30'
+          'focus:ring-4 focus:ring-primary-500/30'
         )}
         style={{ fontFamily: 'Inter, sans-serif' }}
       >
@@ -306,19 +306,19 @@ export function OAuthSection({ redirectTo }: OAuthSectionProps) {
           provider="google"
           redirectUrl={redirectTo}
           variant="outline"
-          className="h-12 bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-teal-300 rounded-xl transition-all duration-300 hover:shadow-md"
+          className="h-12 bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-primary-300 rounded-xl transition-all duration-300 hover:shadow-md"
         />
         <OAuthButton
           provider="github"
           redirectUrl={redirectTo}
           variant="outline"
-          className="h-12 bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-teal-300 rounded-xl transition-all duration-300 hover:shadow-md"
+          className="h-12 bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-primary-300 rounded-xl transition-all duration-300 hover:shadow-md"
         />
         <OAuthButton
           provider="microsoft"
           redirectUrl={redirectTo}
           variant="outline"
-          className="h-12 bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-teal-300 rounded-xl transition-all duration-300 hover:shadow-md"
+          className="h-12 bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-primary-300 rounded-xl transition-all duration-300 hover:shadow-md"
         />
       </motion.div>
     </>

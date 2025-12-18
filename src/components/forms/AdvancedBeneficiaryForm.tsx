@@ -351,38 +351,38 @@ export function AdvancedBeneficiaryForm({
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+            <TabsList className="grid w-full grid-cols-4 grid-cols-8">
               <TabsTrigger value="personal" className="flex items-center gap-1">
                 <User className="h-4 w-4" />
-                <span className="hidden sm:inline">Kişisel</span>
+                <span className="hidden inline">Kişisel</span>
               </TabsTrigger>
               <TabsTrigger value="address" className="flex items-center gap-1">
                 <MapPin className="h-4 w-4" />
-                <span className="hidden sm:inline">Adres</span>
+                <span className="hidden inline">Adres</span>
               </TabsTrigger>
               <TabsTrigger value="family" className="flex items-center gap-1">
                 <Users className="h-4 w-4" />
-                <span className="hidden sm:inline">Aile</span>
+                <span className="hidden inline">Aile</span>
               </TabsTrigger>
               <TabsTrigger value="economic" className="flex items-center gap-1">
                 <Wallet className="h-4 w-4" />
-                <span className="hidden sm:inline">Ekonomik</span>
+                <span className="hidden inline">Ekonomik</span>
               </TabsTrigger>
               <TabsTrigger value="health" className="flex items-center gap-1">
                 <Heart className="h-4 w-4" />
-                <span className="hidden sm:inline">Sağlık</span>
+                <span className="hidden inline">Sağlık</span>
               </TabsTrigger>
               <TabsTrigger value="education" className="flex items-center gap-1">
                 <GraduationCap className="h-4 w-4" />
-                <span className="hidden sm:inline">Eğitim</span>
+                <span className="hidden inline">Eğitim</span>
               </TabsTrigger>
               <TabsTrigger value="aid" className="flex items-center gap-1">
                 <HandHeart className="h-4 w-4" />
-                <span className="hidden sm:inline">Yardım</span>
+                <span className="hidden inline">Yardım</span>
               </TabsTrigger>
               <TabsTrigger value="reference" className="flex items-center gap-1">
                 <UserCheck className="h-4 w-4" />
-                <span className="hidden sm:inline">Referans</span>
+                <span className="hidden inline">Referans</span>
               </TabsTrigger>
             </TabsList>
 
@@ -391,7 +391,7 @@ export function AdvancedBeneficiaryForm({
               <h3 className="text-lg font-medium">Kişisel Bilgiler</h3>
               <Separator />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">Ad *</Label>
                   <Input
@@ -419,7 +419,7 @@ export function AdvancedBeneficiaryForm({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="identityNumber">TC Kimlik No *</Label>
                   <Input
@@ -435,7 +435,7 @@ export function AdvancedBeneficiaryForm({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="mobilePhone">Telefon *</Label>
                   <Input
@@ -462,7 +462,7 @@ export function AdvancedBeneficiaryForm({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="birthDate">Doğum Tarihi</Label>
                   <Input
@@ -479,7 +479,7 @@ export function AdvancedBeneficiaryForm({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 grid-cols-3 gap-4">
                 <ParameterSelect
                   category="gender"
                   value={watch('gender')}
@@ -522,7 +522,7 @@ export function AdvancedBeneficiaryForm({
                 {errors.address && <p className="text-sm text-red-600">{errors.address.message}</p>}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="city">Şehir *</Label>
                   <Input id="city" {...register('city')} placeholder="İstanbul" />
@@ -552,7 +552,7 @@ export function AdvancedBeneficiaryForm({
               <h3 className="text-lg font-medium">Aile Bilgileri</h3>
               <Separator />
 
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="familyMemberCount">Toplam Aile Büyüklüğü *</Label>
                   <Input
@@ -614,7 +614,7 @@ export function AdvancedBeneficiaryForm({
               <h3 className="text-lg font-medium">Ekonomik Durum</h3>
               <Separator />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 grid-cols-2 gap-4">
                 <ParameterSelect
                   category="income_level"
                   value={watch('income_level')}
@@ -633,7 +633,7 @@ export function AdvancedBeneficiaryForm({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 grid-cols-2 gap-4">
                 <ParameterSelect
                   category="housing_type"
                   value={watch('livingPlace')}
@@ -719,7 +719,7 @@ export function AdvancedBeneficiaryForm({
               <h3 className="text-lg font-medium">Eğitim ve İstihdam</h3>
               <Separator />
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 grid-cols-3 gap-4">
                 <ParameterSelect
                   category="education_level"
                   value={watch('educationLevel')}
@@ -751,7 +751,7 @@ export function AdvancedBeneficiaryForm({
               <h3 className="text-lg font-medium">Yardım Talebi</h3>
               <Separator />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="aidType">Yardım Türü</Label>
                   <Input
@@ -777,7 +777,7 @@ export function AdvancedBeneficiaryForm({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="aid_duration">Yardım Süresi</Label>
                   <Input
@@ -840,7 +840,7 @@ export function AdvancedBeneficiaryForm({
               <h3 className="text-lg font-medium">Referans ve Ek Bilgiler</h3>
               <Separator />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="referenceName">Referans Kişi</Label>
                   <Input
@@ -860,7 +860,7 @@ export function AdvancedBeneficiaryForm({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="referenceRelation">Referans İlişkisi</Label>
                   <Input
@@ -903,12 +903,12 @@ export function AdvancedBeneficiaryForm({
 
           {/* Form Actions */}
           <Separator />
-          <div className="flex flex-col sm:flex-row gap-4 pt-6">
+          <div className="flex flex-col flex-row gap-4 pt-6">
             <Button
               type="submit"
               data-testid="saveButton"
               disabled={isSubmitting}
-              className="flex-1 sm:flex-none"
+              className="flex-1 flex-none"
               size="lg"
             >
               {isSubmitting ? (
@@ -927,7 +927,7 @@ export function AdvancedBeneficiaryForm({
                 variant="outline"
                 onClick={onCancel}
                 disabled={isSubmitting}
-                className="flex-1 sm:flex-none"
+                className="flex-1 flex-none"
                 size="lg"
               >
                 İptal

@@ -206,7 +206,7 @@ export default function ThemeSettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 grid-cols-3 gap-4">
                 {/* Light Mode */}
                 <button
                   onClick={() => {
@@ -317,7 +317,7 @@ export default function ThemeSettingsPage() {
               <CardDescription>Önceden tasarlanmış renk paletlerinden birini seçin</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 grid-cols-2 grid-cols-3 gap-4">
                 {themePresets.map((preset) => (
                   <button
                     key={preset._id || preset.name}
@@ -468,7 +468,7 @@ export default function ThemeSettingsPage() {
                   Bu tema kaydedilecek ve hazır temalar listesinde görünecektir
                 </p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 grid-cols-2 gap-6">
                 {/* Primary Color */}
                 <div className="space-y-2">
                   <Label htmlFor="primary">Ana Renk (Primary)</Label>
@@ -599,7 +599,7 @@ export default function ThemeSettingsPage() {
               {/* Preview Section */}
               <div className="pt-6 border-t space-y-4">
                 <h4 className="font-medium">Renk Önizleme</h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div className="grid grid-cols-2 grid-cols-3 lg:grid-cols-6 gap-4">
                   {Object.entries(customColors).map(([key, color]) => (
                     <div key={key} className="space-y-2">
                       <div
@@ -657,7 +657,7 @@ export default function ThemeSettingsPage() {
           <CardTitle>Aktif Tema Bilgileri</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 grid-cols-2 gap-4">
             <div>
               <Label className="text-muted-foreground">Tema Adı</Label>
               <p className="font-medium">{currentTheme?.name || 'Yükleniyor...'}</p>
@@ -669,7 +669,7 @@ export default function ThemeSettingsPage() {
               </p>
             </div>
             {currentTheme?.description && (
-              <div className="md:col-span-2">
+              <div className="col-span-2">
                 <Label className="text-muted-foreground">Açıklama</Label>
                 <p className="font-medium">{currentTheme.description}</p>
               </div>

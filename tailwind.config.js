@@ -27,7 +27,7 @@ const config = {
           foreground: 'var(--popover-foreground)',
         },
         
-        // Primary - Teal Scale
+        // Primary - Indigo/Blue Scale
         'primary': {
           DEFAULT: 'var(--primary)',
           foreground: 'var(--primary-foreground)',
@@ -127,6 +127,20 @@ const config = {
           700: '#374151',
           800: '#1f2937',
           900: '#111827',
+        },
+
+        // Override Tailwind's default teal to use indigo instead
+        'teal': {
+          50: '#eef2ff',
+          100: '#e0e7ff',
+          200: '#c7d2fe',
+          300: '#a5b4fc',
+          400: '#818cf8',
+          500: '#6366f1',
+          600: '#4f46e5',
+          700: '#4338ca',
+          800: '#3730a3',
+          900: '#312e81',
         },
 
         // ========================================

@@ -199,7 +199,7 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Kişisel Bilgiler</h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 grid-cols-2 gap-4">
               <FieldWithValidation
                 label="Ad Soyad"
                 error={errors.name?.message}
@@ -304,7 +304,7 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="city">Şehir *</Label>
                 <Input
@@ -369,7 +369,7 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Ekonomik Bilgiler</h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="income_level">Gelir Düzeyi *</Label>
                 <Select
@@ -495,11 +495,11 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
           </div>
 
           {/* Form Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-6">
+          <div className="flex flex-col flex-row gap-4 pt-6">
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 sm:flex-none"
+              className="flex-1 flex-none"
             >
               {isSubmitting ? (
                 <>
@@ -517,7 +517,7 @@ export function BeneficiaryForm({ onSuccess, onCancel }: BeneficiaryFormProps) {
                 variant="outline"
                 onClick={onCancel}
                 disabled={isSubmitting}
-                className="flex-1 sm:flex-none"
+                className="flex-1 flex-none"
               >
                 İptal
               </Button>

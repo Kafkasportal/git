@@ -145,7 +145,7 @@ export function TimeRangeSelector({
       )}
 
       {/* Date Range Display */}
-      <div className="hidden sm:flex items-center gap-1 text-sm text-muted-foreground">
+      <div className="flex items-center gap-1 text-sm text-muted-foreground">
         <span>{format(currentRange.from, 'dd MMM yyyy', { locale: tr })}</span>
         <span>-</span>
         <span>{format(currentRange.to, 'dd MMM yyyy', { locale: tr })}</span>

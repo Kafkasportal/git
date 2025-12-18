@@ -69,7 +69,7 @@ export function EmergencyContactsTab({ state, actions, readOnly }: EmergencyCont
                                     Birincil
                                 </Badge>
                             )}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Ad Soyad</Label>
                                     <Input

@@ -119,7 +119,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
@@ -179,7 +179,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Settings Categories */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 grid-cols-2 gap-6">
         {settingCategories.map((category) => (
           <Link key={category.href} href={category.href}>
             <Card className="h-full hover:shadow-lg transition-all duration-200 hover:border-primary cursor-pointer group">
@@ -220,7 +220,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Info Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 grid-cols-2 gap-6">
         <Card className="border-info/20 bg-info/5">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-foreground">
@@ -260,7 +260,7 @@ export default function SettingsPage() {
           <CardTitle>Yardım ve Dokümantasyon</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div className="grid grid-cols-1 grid-cols-3 gap-4 text-sm">
             <div>
               <h4 className="font-medium mb-1">Tema Ayarları</h4>
               <p className="text-muted-foreground">

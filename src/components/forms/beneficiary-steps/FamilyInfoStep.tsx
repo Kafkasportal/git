@@ -49,7 +49,7 @@ export function FamilyInfoStep() {
         </div>
 
         {/* Family Composition */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="children_count">Çocuk Sayısı</Label>
             <Input
@@ -88,7 +88,7 @@ export function FamilyInfoStep() {
         </div>
 
         {/* Vulnerable Family Members */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="elderly_count">Yaşlı Sayısı</Label>
             <Input

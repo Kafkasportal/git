@@ -41,7 +41,7 @@ export function PageLayout({
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 min-w-0"
+        className="flex flex-col flex-row items-center justify-between gap-4 min-w-0"
       >
         <div className="flex items-start gap-4">
           {showBackButton && (
@@ -72,7 +72,7 @@ export function PageLayout({
               )}
             </div>
             {description && (
-              <p className="text-muted-foreground mt-2 text-sm sm:text-base truncate">
+              <p className="text-muted-foreground mt-2 text-sm text-base truncate">
                 {description}
               </p>
             )}

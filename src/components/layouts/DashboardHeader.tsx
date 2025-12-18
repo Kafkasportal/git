@@ -66,7 +66,7 @@ const UserMenu = memo(function UserMenu({
                     </Avatar>
                     <ChevronDown
                         className={cn(
-                            'hidden sm:block h-4 w-4 text-muted-foreground transition-transform duration-200',
+                            'block h-4 w-4 text-muted-foreground transition-transform duration-200',
                             isOpen && 'rotate-180'
                         )}
                     />
@@ -149,7 +149,7 @@ export const DashboardHeader = memo(function DashboardHeader({
                 isScrolled ? 'border-border shadow-sm' : 'border-transparent'
             )}
         >
-            <div className="flex h-full items-center justify-between px-4 lg:px-6">
+            <div className="flex h-full items-center justify-between px-6">
                 {/* Left Section */}
                 <div className="flex items-center gap-3">
                     {/* Sidebar Toggle */}
@@ -170,14 +170,14 @@ export const DashboardHeader = memo(function DashboardHeader({
                         <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-primary-700 flex items-center justify-center shadow-md shadow-primary/20">
                             <Building2 className="w-5 h-5 text-primary-foreground" />
                         </div>
-                        <span className="hidden md:block text-lg font-semibold text-foreground">
+                        <span className="block text-lg font-semibold text-foreground">
                             Dernek Yönetim
                         </span>
                     </Link>
                 </div>
 
-                {/* Search Bar - Desktop */}
-                <div className="hidden lg:flex flex-1 max-w-md mx-8">
+                {/* Search Bar */}
+                <div className="flex flex-1 max-w-md mx-8">
                     <button
                         onClick={onOpenSearch}
                         className={cn(
@@ -189,7 +189,7 @@ export const DashboardHeader = memo(function DashboardHeader({
                     >
                         <Search className="h-4 w-4" />
                         <span className="flex-1 text-left">Hızlı arama...</span>
-                        <kbd className="hidden sm:inline-flex px-2 py-0.5 text-xs font-medium bg-background border border-border rounded">
+                        <kbd className="inline-flex px-2 py-0.5 text-xs font-medium bg-background border border-border rounded">
                             ⌘K
                         </kbd>
                     </button>
@@ -197,14 +197,6 @@ export const DashboardHeader = memo(function DashboardHeader({
 
                 {/* Right Section */}
                 <div className="flex items-center gap-2">
-                    {/* Mobile Search */}
-                    <button
-                        onClick={onOpenSearch}
-                        className="lg:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                    >
-                        <Search className="h-5 w-5" />
-                    </button>
-
                     {/* Notifications */}
                     <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors relative">
                         <Bell className="h-5 w-5" />

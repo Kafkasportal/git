@@ -295,8 +295,8 @@ export function BeneficiaryFormWizard({
                   disabled={index !== currentStep}
                   className="flex items-center gap-2"
                 >
-                  <span className="hidden sm:inline">{step.title}</span>
-                  <span className="sm:hidden">Adım {index + 1}</span>
+                  <span className="hidden inline">{step.title}</span>
+                  <span className="hidden">Adım {index + 1}</span>
                 </TabsTrigger>
               ))}
             </TabsList>

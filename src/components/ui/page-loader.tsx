@@ -96,7 +96,7 @@ export function DashboardLoader({ className }: { className?: string }) {
   return (
     <div className={cn('space-y-6', className)}>
       {/* Stats cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 grid-cols-4">
         {[...Array(4)].map((_, i) => (
           <div key={i} className="border rounded-lg p-6">
             <Skeleton className="h-4 w-24 mb-4" />
@@ -107,7 +107,7 @@ export function DashboardLoader({ className }: { className?: string }) {
       </div>
 
       {/* Main content */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 grid-cols-2">
         {[...Array(2)].map((_, i) => (
           <div key={i} className="border rounded-lg p-6">
             <Skeleton className="h-6 w-32 mb-4" />
@@ -175,7 +175,7 @@ export function DetailLoader({ className }: { className?: string }) {
       </div>
 
       {/* Info cards */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 grid-cols-3">
         {[...Array(3)].map((_, i) => (
           <div key={i} className="border rounded-lg p-4">
             <Skeleton className="h-4 w-20 mb-2" />
@@ -185,7 +185,7 @@ export function DetailLoader({ className }: { className?: string }) {
       </div>
 
       {/* Content sections */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 grid-cols-2">
         {[...Array(2)].map((_, i) => (
           <div key={i} className="border rounded-lg p-6 space-y-4">
             <Skeleton className="h-6 w-32" />

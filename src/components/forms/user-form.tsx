@@ -133,7 +133,7 @@ export function UserForm({
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit} className={cn('space-y-6', className)}>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 grid-cols-2">
           <FormField
             control={form.control}
             name="name"
@@ -216,7 +216,7 @@ export function UserForm({
           )}
         />
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 grid-cols-2">
           <FormField
             control={form.control}
             name="isActive"

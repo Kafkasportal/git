@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, Suspense } from 'react';
+import { memo, Suspense, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
 import { DemoBanner } from '@/components/ui/demo-banner';
@@ -53,22 +53,32 @@ function DashboardHeroSection({
   userName,
   isRealtimeConnected,
 }: DashboardHeroSectionProps) {
-  const currentHour = new Date().getHours();
-  let greeting: string;
-  if (currentHour < 12) {
-    greeting = 'Günaydın';
-  } else if (currentHour < 18) {
-    greeting = 'İyi günler';
-  } else {
-    greeting = 'İyi akşamlar';
-  }
+  // Use state to prevent hydration mismatch with date/time
+  const [greeting, setGreeting] = useState('Günaydın');
+  const [currentDate, setCurrentDate] = useState('');
 
-  const currentDate = new Date().toLocaleDateString('tr-TR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
+  useEffect(() => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    
+    let newGreeting: string;
+    if (currentHour < 12) {
+      newGreeting = 'Günaydın';
+    } else if (currentHour < 18) {
+      newGreeting = 'İyi günler';
+    } else {
+      newGreeting = 'İyi akşamlar';
+    }
+    setGreeting(newGreeting);
+
+    const formattedDate = now.toLocaleDateString('tr-TR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+    setCurrentDate(formattedDate);
+  }, []);
 
   return (
     <motion.div
@@ -80,7 +90,7 @@ function DashboardHeroSection({
       {/* Hero Card with Glass Effect */}
       <div
         className={cn(
-          'relative rounded-2xl p-6 md:p-8',
+          'relative rounded-2xl p-6 p-8',
           'bg-gradient-to-br from-primary/5 via-transparent to-accent/5',
           'border border-border/50',
           'backdrop-blur-sm'
@@ -95,7 +105,9 @@ function DashboardHeroSection({
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Clock className="h-4 w-4" />
-              <span className="text-sm font-medium capitalize">{currentDate}</span>
+              <span className="text-sm font-medium capitalize" suppressHydrationWarning>
+                {currentDate || 'Yükleniyor...'}
+              </span>
             </div>
             <Badge
               variant={isRealtimeConnected ? 'default' : 'secondary'}
@@ -135,7 +147,7 @@ function DashboardHeroSection({
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6"
+            className="grid grid-cols-2 grid-cols-4 gap-4 mt-6"
           >
             {[
               {
@@ -275,7 +287,7 @@ function DashboardPageComponent() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+              className="grid gap-4 grid-cols-2 grid-cols-3"
             >
               {[1, 2, 3].map((i) => {
                 const getWidgetTitle = (index: number): string => {
@@ -309,7 +321,7 @@ function DashboardPageComponent() {
         >
           <Suspense
             fallback={
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 grid-cols-2 grid-cols-3">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                   <WidgetSkeleton key={i} type="stats" />
                 ))}

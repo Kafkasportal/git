@@ -72,7 +72,7 @@ export function ColumnVisibilityToggle({
           aria-label="Toggle column visibility"
         >
           <Settings2 className="h-4 w-4" />
-          <span className="hidden sm:inline text-xs">
+          <span className="hidden inline text-xs">
             Sütunlar ({visibleCount}/{totalCount})
           </span>
           <ChevronDown className="h-4 w-4 opacity-50" />

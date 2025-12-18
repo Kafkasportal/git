@@ -108,7 +108,7 @@ export function KumbaraCharts() {
 
   if (monthlyLoading || locationLoading || paymentLoading || !recharts) {
     return (
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-2">
         <Card>
           <CardHeader>
             <Skeleton className="h-6 w-48" />
@@ -148,9 +148,9 @@ export function KumbaraCharts() {
   } = recharts;
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid gap-4 grid-cols-2">
       {/* Aylık Trend Grafiği */}
-      <Card className="col-span-1 md:col-span-2">
+      <Card className="col-span-1 col-span-2">
         <CardHeader>
           <CardTitle>Aylık Kumbara Bağış Trendi</CardTitle>
           <CardDescription>Son 6 ayın kumbara bağış miktarları ve adetleri</CardDescription>

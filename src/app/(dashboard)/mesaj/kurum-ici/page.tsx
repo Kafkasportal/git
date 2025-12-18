@@ -214,7 +214,7 @@ export default function InternalMessagingPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col flex-row items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Kurum İçi Mesajlar</h2>
           <p className="text-gray-600 mt-2">Ekip üyeleriyle mesajlaşın ve bildirimler alın</p>
@@ -246,7 +246,7 @@ export default function InternalMessagingPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Gelen Mesajlar</CardTitle>

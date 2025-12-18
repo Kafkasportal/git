@@ -39,19 +39,16 @@ function ModernSidebarComponent({
   const activeModuleId = getActiveModuleId(pathname);
   const previousPathRef = useRef(pathname);
 
-  // Initialize with active module already expanded
+  // Initialize with active module already expanded - safe for SSR
   const [expandedModules, setExpandedModules] = useState<string[]>(() => {
     if (typeof window === 'undefined') return [];
     const activeId = getActiveModuleId(pathname);
     return activeId ? [activeId] : [];
   });
 
-  const [isCollapsed, setIsCollapsed] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('sidebar-collapsed') === 'true';
-    }
-    return false;
-  });
+  // Initialize with default value to prevent hydration mismatch
+  // Will be updated in useEffect after mount
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Auto-expand active module when navigating to a new path
   // This responds to external navigation events from Next.js router
@@ -66,7 +63,20 @@ function ModernSidebarComponent({
     }
   }, [pathname, activeModuleId, expandedModules]);
 
+  // Initialize sidebar collapsed state from localStorage after mount
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    // Set initial state from localStorage
+    const stored = localStorage.getItem('sidebar-collapsed');
+    if (stored !== null) {
+      setIsCollapsed(stored === 'true');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const handleStorageChange = () => {
       const stored = localStorage.getItem('sidebar-collapsed');
       if (stored !== null) {

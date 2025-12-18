@@ -325,7 +325,7 @@ export default function BrandingSettingsPage() {
 
         {/* Logos Tab */}
         <TabsContent value="logos" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 grid-cols-2 gap-6">
             {/* Main Logo */}
             <Card>
               <CardHeader>
@@ -438,7 +438,7 @@ export default function BrandingSettingsPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 grid-cols-2 gap-6">
                   {/* Contact Email */}
                   <div className="space-y-2">
                     <Label htmlFor="contactEmail" className="flex items-center gap-2">

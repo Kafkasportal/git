@@ -44,8 +44,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
               if (isDisabled) return 'disabled';
               return state;
             })(),
-            className,
-          })
+          }),
+          className
         )}
         disabled={isDisabled}
         {...props}

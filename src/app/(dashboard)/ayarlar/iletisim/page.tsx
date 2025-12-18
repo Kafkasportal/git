@@ -240,8 +240,8 @@ export default function CommunicationSettingsPage() {
                     SMTP Sunucu Bilgileri
                   </h4>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="md:col-span-2 space-y-2">
+                  <div className="grid grid-cols-1 grid-cols-3 gap-4">
+                    <div className="col-span-2 space-y-2">
                       <Label htmlFor="smtp-host">SMTP Host *</Label>
                       <Input
                         id="smtp-host"
@@ -314,7 +314,7 @@ export default function CommunicationSettingsPage() {
                     E-posta Ayarları
                   </h4>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="from-email">Gönderen E-posta *</Label>
                       <Input

@@ -66,7 +66,7 @@ export const StudentCard = memo(function StudentCard({
                 </Badge>
               )}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-muted-foreground">
+            <div className="grid grid-cols-1 grid-cols-4 gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <GraduationCap className="h-4 w-4" />
                 <span>{student.institution}</span>
@@ -86,7 +86,7 @@ export const StudentCard = memo(function StudentCard({
                 </div>
               )}
             </div>
-            <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-muted-foreground">
+            <div className="mt-2 grid grid-cols-1 grid-cols-3 gap-2 text-sm text-muted-foreground">
               {student.phone && (
                 <div className="flex items-center gap-1">
                   <Phone className="h-3 w-3" />

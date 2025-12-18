@@ -385,7 +385,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center"
+              className="flex flex-col flex-row gap-4 justify-center"
             >
               <Link
                 href="/login"
@@ -435,7 +435,7 @@ export default function LandingPage() {
             </p>
           </motion.div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 grid-cols-4 gap-8">
             {[
               { value: 2500000, suffix: '₺', label: 'Toplam Bağış' },
               { value: 1250, suffix: '+', label: 'İhtiyaç Sahibi' },
@@ -481,7 +481,7 @@ export default function LandingPage() {
             </p>
           </motion.div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 grid-cols-3 gap-6">
             {features.map((feature, index) => (
               <FeatureCard
                 key={feature.title}
@@ -500,7 +500,7 @@ export default function LandingPage() {
           ================================================================ */}
       <section className="py-24 bg-white">
         <div className="container mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="grid grid-cols-2 gap-16 items-center">
             <div>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -536,7 +536,7 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="relative hidden lg:block"
+              className="relative block"
             >
               <div className="relative bg-gradient-to-br from-slate-100 to-slate-200 rounded-3xl p-8 aspect-square">
                 {/* Decorative elements */}
@@ -607,7 +607,7 @@ export default function LandingPage() {
           ================================================================ */}
       <section className="py-24 bg-slate-50">
         <div className="container mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="grid grid-cols-2 gap-16 items-center">
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -686,7 +686,7 @@ export default function LandingPage() {
             </p>
             
             {/* Email signup */}
-            <div className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto mb-10">
+            <div className="flex flex-col flex-row gap-4 max-w-lg mx-auto mb-10">
               <input
                 type="email"
                 placeholder="E-posta adresiniz"
@@ -721,9 +721,9 @@ export default function LandingPage() {
           ================================================================ */}
       <footer className="py-12 bg-slate-900 border-t border-slate-800">
         <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
+          <div className="grid grid-cols-4 gap-8 mb-8">
             {/* Brand */}
-            <div className="md:col-span-2">
+            <div className="col-span-2">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-600 rounded-xl flex items-center justify-center text-white font-bold">
                   K
@@ -758,7 +758,7 @@ export default function LandingPage() {
           </div>
           
           {/* Bottom */}
-          <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="pt-8 border-t border-slate-800 flex flex-col flex-row justify-between items-center gap-4">
             <p className="text-slate-500 text-sm">
               © {new Date().getFullYear()} KAFKASDER. Tüm hakları saklıdır.
             </p>

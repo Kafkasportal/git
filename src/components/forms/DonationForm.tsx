@@ -165,7 +165,7 @@ export function DonationForm({ onSuccess, onCancel }: DonationFormProps) {
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Donör Bilgileri</h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 grid-cols-2 gap-4">
               <FieldWithValidation
                 label="Donör Adı"
                 error={form.formState.errors.donor_name?.message}
@@ -271,7 +271,7 @@ export function DonationForm({ onSuccess, onCancel }: DonationFormProps) {
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Bağış Bilgileri</h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 grid-cols-3 gap-4">
               <FieldWithValidation
                 label="Tutar"
                 error={form.formState.errors.amount?.message}
@@ -392,7 +392,7 @@ export function DonationForm({ onSuccess, onCancel }: DonationFormProps) {
               </FieldWithValidation>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 grid-cols-2 gap-4">
               <FieldWithValidation
                 label="Bağış Türü"
                 error={form.formState.errors.donation_type?.message}
@@ -518,11 +518,11 @@ export function DonationForm({ onSuccess, onCancel }: DonationFormProps) {
           </div>
 
           {/* Form Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-6">
+          <div className="flex flex-col flex-row gap-4 pt-6">
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 sm:flex-none"
+              className="flex-1 flex-none"
               data-testid="saveButton"
             >
               {isSubmitting ? (
@@ -541,7 +541,7 @@ export function DonationForm({ onSuccess, onCancel }: DonationFormProps) {
                 variant="outline"
                 onClick={onCancel}
                 disabled={isSubmitting}
-                className="flex-1 sm:flex-none"
+                className="flex-1 flex-none"
                 data-testid="cancelButton"
               >
                 İptal

@@ -6,6 +6,7 @@
    Unified Design System - Single Source of Truth
    ======================================== */
 
+/* stylelint-disable-next-line at-rule-no-unknown */
 @theme {
   /* ==========  SEMANTIC COLORS  ========== */
   /* Background & Foreground */
@@ -109,19 +110,19 @@
   --popover: #ffffff;
   --popover-foreground: #020617;
 
-  /* Primary - Teal (KAFKASDER Corporate) */
-  --primary: #0d9488;
+  /* Primary - Indigo/Blue (Modern Professional) */
+  --primary: #4f46e5;
   --primary-foreground: #ffffff;
-  --primary-50: #f0fdfa;
-  --primary-100: #ccfbf1;
-  --primary-200: #99f6e4;
-  --primary-300: #5eead4;
-  --primary-400: #2dd4bf;
-  --primary-500: #14b8a6;
-  --primary-600: #0d9488;
-  --primary-700: #0f766e;
-  --primary-800: #115e59;
-  --primary-900: #134e4a;
+  --primary-50: #eef2ff;
+  --primary-100: #e0e7ff;
+  --primary-200: #c7d2fe;
+  --primary-300: #a5b4fc;
+  --primary-400: #818cf8;
+  --primary-500: #6366f1;
+  --primary-600: #4f46e5;
+  --primary-700: #4338ca;
+  --primary-800: #3730a3;
+  --primary-900: #312e81;
 
   /* Secondary */
   --secondary: #f1f5f9;
@@ -132,8 +133,8 @@
   --muted-foreground: #64748b;
 
   /* Accent */
-  --accent: #f0fdfa;
-  --accent-foreground: #0f766e;
+  --accent: #eef2ff;
+  --accent-foreground: #4338ca;
 
   /* Destructive */
   --destructive: #ef4444;
@@ -180,24 +181,24 @@
   /* ==========  INTERACTIVE  ========== */
   --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: #14b8a6;
+  --ring: #6366f1;
 
   /* ==========  CHART COLORS  ========== */
-  --chart-1: #0d9488;
-  --chart-2: #14b8a6;
-  --chart-3: #2dd4bf;
-  --chart-4: #06b6d4;
+  --chart-1: #4f46e5;
+  --chart-2: #6366f1;
+  --chart-3: #818cf8;
+  --chart-4: #3b82f6;
   --chart-5: #10b981;
 
   /* ==========  SIDEBAR - DARK THEME  ========== */
   --sidebar: #020617;
   --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #2dd4bf;
+  --sidebar-primary: #818cf8;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #1e293b;
   --sidebar-accent-foreground: #f8fafc;
   --sidebar-border: #1e293b;
-  --sidebar-ring: #14b8a6;
+  --sidebar-ring: #6366f1;
 
   /* ==========  SHADOWS  ========== */
   --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -217,7 +218,7 @@
   /* ==========  AVATAR/LOGO COLORS  ========== */
   --avatar-bg: var(--gradient-brand);
   --logo-bg: var(--gradient-brand);
-  --logo-shadow: 0 4px 6px -1px rgb(13 148 136 / 0.3);
+  --logo-shadow: 0 4px 6px -1px rgb(79 70 229 / 0.3);
 
   /* ==========  STAT CARD COLORS  ========== */
   --stat-neutral-bg: var(--muted);
@@ -278,9 +279,9 @@
   --popover: #0f172a;
   --popover-foreground: #f8fafc;
 
-  /* Primary - Teal (KAFKASDER Dark Mode) */
-  --primary: #2dd4bf;
-  --primary-foreground: #042f2e;
+  /* Primary - Indigo/Blue (Dark Mode) */
+  --primary: #818cf8;
+  --primary-foreground: #1e1b4b;
 
   /* Secondary */
   --secondary: #1e293b;
@@ -311,24 +312,24 @@
   /* Interactive */
   --border: #1e293b;
   --input: #1e293b;
-  --ring: #2dd4bf;
+  --ring: #818cf8;
 
   /* Chart Colors - Brighter for dark mode */
-  --chart-1: #2dd4bf;
-  --chart-2: #5eead4;
-  --chart-3: #99f6e4;
-  --chart-4: #22d3ee;
+  --chart-1: #818cf8;
+  --chart-2: #a5b4fc;
+  --chart-3: #c7d2fe;
+  --chart-4: #60a5fa;
   --chart-5: #34d399;
 
   /* Sidebar */
   --sidebar: #020617;
   --sidebar-foreground: #94a3b8;
-  --sidebar-primary: #2dd4bf;
-  --sidebar-primary-foreground: #042f2e;
+  --sidebar-primary: #818cf8;
+  --sidebar-primary-foreground: #1e1b4b;
   --sidebar-accent: #1e293b;
   --sidebar-accent-foreground: #f8fafc;
   --sidebar-border: #1e293b;
-  --sidebar-ring: #2dd4bf;
+  --sidebar-ring: #818cf8;
 
   /* Shadows - Darker */
   --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.5);

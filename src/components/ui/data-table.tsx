@@ -156,9 +156,9 @@ function DataTableComponent<T extends Record<string, unknown>>({
     <div className={cn('space-y-4', className)}>
       {/* Search & Info Bar */}
       {(searchable || pagination) && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex flex-row items-center justify-between gap-4">
           {searchable && (
-            <div className="relative w-full sm:w-80">
+            <div className="relative w-80">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 value={effectiveSearchValue}
@@ -272,10 +272,6 @@ function DataTableComponent<T extends Record<string, unknown>>({
           {/* Data Table */}
           {!isLoading && !error && filteredData.length > 0 && (
             <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
-              {/* Mobile scroll indicator */}
-              <div className="md:hidden text-xs text-muted-foreground text-center py-2 border-b border-border/50">
-                Yatay kaydırma için sola/sağa kaydırın →
-              </div>
               <table className="w-full border-collapse min-w-[600px]">
                 <thead>
                   <tr className="border-b border-border bg-secondary/50">
@@ -351,7 +347,7 @@ function DataTableComponent<T extends Record<string, unknown>>({
 
       {/* Pagination */}
       {pagination && !isLoading && !error && filteredData.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
             Sayfa {pagination.page} / {pagination.totalPages}
           </p>

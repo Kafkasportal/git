@@ -37,7 +37,7 @@ export function PersonalInfoStep({ isUpdateMode: _isUpdateMode = false }: Person
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Name Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="firstName">Ad *</Label>
             <Input
@@ -62,7 +62,7 @@ export function PersonalInfoStep({ isUpdateMode: _isUpdateMode = false }: Person
         </div>
 
         {/* Identity Information */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="identityNumber">TC Kimlik No *</Label>
             <Input
@@ -90,7 +90,7 @@ export function PersonalInfoStep({ isUpdateMode: _isUpdateMode = false }: Person
         </div>
 
         {/* Gender and Marital Status */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="gender">Cinsiyet</Label>
             <ParameterSelect
@@ -119,7 +119,7 @@ export function PersonalInfoStep({ isUpdateMode: _isUpdateMode = false }: Person
         </div>
 
         {/* Nationality and Religion */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="nationality">Uyruk</Label>
             <ParameterSelect
@@ -148,7 +148,7 @@ export function PersonalInfoStep({ isUpdateMode: _isUpdateMode = false }: Person
         </div>
 
         {/* Contact Information */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="mobilePhone">Cep Telefonu *</Label>
             <Input

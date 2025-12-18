@@ -220,7 +220,7 @@ export function CalendarView({ meetings, onMeetingClick, onDateClick }: Calendar
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 grid-cols-2 gap-4">
               {selectedDateMeetings.map((meeting) => {
                 const meetingDate = new Date(meeting.meeting_date);
                 const meetingTime = format(meetingDate, 'HH:mm');

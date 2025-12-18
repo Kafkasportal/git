@@ -127,7 +127,7 @@ export function AidApplicationForm({ onSuccess, onCancel }: AidApplicationFormPr
             </h3>
             <Separator />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="applicant_type">Başvuran Türü *</Label>
                 <Select
@@ -163,7 +163,7 @@ export function AidApplicationForm({ onSuccess, onCancel }: AidApplicationFormPr
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="beneficiary_id">İhtiyaç Sahibi (Opsiyonel)</Label>
                 <Select
@@ -214,7 +214,7 @@ export function AidApplicationForm({ onSuccess, onCancel }: AidApplicationFormPr
               Portal Plus tarzı yardım türleri - İlgili yardım türlerine değer girin
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="one_time_aid" className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-blue-600" />
@@ -320,8 +320,8 @@ export function AidApplicationForm({ onSuccess, onCancel }: AidApplicationFormPr
 
           {/* Form Actions */}
           <Separator />
-          <div className="flex flex-col sm:flex-row gap-4 pt-6">
-            <Button type="submit" disabled={isSubmitting} className="flex-1 sm:flex-none" size="lg">
+          <div className="flex flex-col flex-row gap-4 pt-6">
+            <Button type="submit" disabled={isSubmitting} className="flex-1 flex-none" size="lg">
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -338,7 +338,7 @@ export function AidApplicationForm({ onSuccess, onCancel }: AidApplicationFormPr
                 variant="outline"
                 onClick={onCancel}
                 disabled={isSubmitting}
-                className="flex-1 sm:flex-none"
+                className="flex-1 flex-none"
                 size="lg"
               >
                 İptal

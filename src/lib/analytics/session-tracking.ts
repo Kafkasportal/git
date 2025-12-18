@@ -43,13 +43,8 @@ function generateSessionId(): string {
   return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
-// Detect device type
-function detectDeviceType(): 'desktop' | 'tablet' | 'mobile' {
-  if (typeof window === 'undefined') return 'desktop';
-  
-  const width = window.innerWidth;
-  if (width < 768) return 'mobile';
-  if (width < 1024) return 'tablet';
+// Detect device type - Desktop only
+function detectDeviceType(): 'desktop' {
   return 'desktop';
 }
 

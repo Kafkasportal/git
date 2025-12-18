@@ -233,7 +233,7 @@ export default function TransactionForm({
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Transaction Type and Category */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 grid-cols-2 gap-4">
             <div>
               <Label htmlFor="type">İşlem Türü</Label>
               <Select
@@ -282,7 +282,7 @@ export default function TransactionForm({
           </div>
 
           {/* Amount and Currency */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 grid-cols-2 gap-4">
             <div>
               <Label htmlFor="amount">Tutar</Label>
               <div className="relative">
@@ -341,7 +341,7 @@ export default function TransactionForm({
           </div>
 
           {/* Date and Status */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 grid-cols-2 gap-4">
             <div>
               <Label htmlFor="date">Tarih</Label>
               <Input
