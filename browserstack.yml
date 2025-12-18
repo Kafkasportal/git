@@ -1,0 +1,45 @@
+# ==============================================
+# BrowserStack Configuration
+# ==============================================
+# This file configures BrowserStack for cross-browser testing.
+# Credentials should be set via environment variables, not hardcoded here.
+#
+# Required Environment Variables:
+#   BROWSERSTACK_USERNAME - Your BrowserStack username
+#   BROWSERSTACK_ACCESS_KEY - Your BrowserStack access key
+#
+# Usage:
+#   1. Set environment variables in your CI/CD or local .env file
+#   2. Run tests with: npx browserstack-node-sdk <test-command>
+# ==============================================
+
+# Authentication (use environment variables)
+userName: ${BROWSERSTACK_USERNAME}
+accessKey: ${BROWSERSTACK_ACCESS_KEY}
+
+# Test platforms configuration
+platforms:
+  - os: Windows
+    osVersion: 10
+    browserName: Chrome
+    browserVersion: 120.0
+  - os: OS X
+    osVersion: Monterey
+    browserName: Safari
+    browserVersion: 15.6
+  - deviceName: iPhone 13
+    osVersion: 15
+    browserName: Chromium
+    deviceOrientation: portrait
+
+# BrowserStack Local for testing localhost/internal servers
+browserstackLocal: true
+
+# Build and project identification
+buildName: browserstack-build-1
+projectName: BrowserStack Sample
+
+# Debugging options
+debug: false
+networkLogs: false
+consoleLogs: errors
