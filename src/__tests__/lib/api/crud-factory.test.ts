@@ -22,7 +22,8 @@ import { fetchWithCsrf } from '@/lib/csrf-client';
 import { getCache } from '@/lib/api-cache';
 
 describe('CRUD Factory', () => {
-    let fetchSpy: ReturnType<typeof vi.spyOn>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let fetchSpy: any;
     let mockCache: { get: ReturnType<typeof vi.fn>; set: ReturnType<typeof vi.fn> };
 
     beforeEach(() => {

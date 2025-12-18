@@ -6,7 +6,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { monitoringApi } from '@/lib/api/monitoring';
 
 describe('monitoringApi', () => {
-    let fetchSpy: ReturnType<typeof vi.spyOn>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let fetchSpy: any;
 
     beforeEach(() => {
         vi.clearAllMocks();

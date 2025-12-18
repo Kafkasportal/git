@@ -250,7 +250,7 @@ describe('Dialog', () => {
   describe('Controlled Dialog', () => {
     it('opens dialog with controlled open state', async () => {
       const TestComponent = () => {
-        const [open, setOpen] = vi.fn()
+        const [open, setOpen] = [true, vi.fn()] as const
         return (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -441,7 +441,7 @@ describe('Dialog', () => {
       })
 
       // Tab navigation should work
-      const actionButton = screen.getByRole('button', { name: 'Action' })
+      screen.getByRole('button', { name: 'Action' })
       await user.tab()
       await user.tab()
 

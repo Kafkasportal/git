@@ -6,17 +6,27 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { BudgetForm } from '@/components/forms/BudgetForm'
+import BudgetForm from '@/components/forms/BudgetForm'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import * as sonner from 'sonner'
 
 // Mock dependencies
 vi.mock('sonner')
+
+const mockBudget = {
+  $id: 'budget-123',
+  category: 'Program',
+  period: 'monthly' as const,
+  year: 2024,
+  allocated_amount: 5000,
+  status: 'active' as const,
+}
+
 vi.mock('@/lib/api/crud-factory', () => ({
   budgets: {
     create: vi.fn().mockResolvedValue({
-      success: true,
       data: { $id: 'budget-123', category: 'Program' },
+      error: null,
     }),
   },
 }))
@@ -48,7 +58,7 @@ describe('BudgetForm', () => {
 
   const renderForm = (props = {}) => {
     const defaultProps = {
-      onSuccess: vi.fn(),
+      onSubmit: vi.fn().mockResolvedValue(undefined),
       onCancel: vi.fn(),
       ...props,
     }
@@ -437,7 +447,7 @@ describe('BudgetForm', () => {
         () =>
           new Promise(resolve =>
             setTimeout(
-              () => resolve({ success: true, data: {} }),
+              () => resolve({ data: mockBudget, error: null }),
               100
             )
           )

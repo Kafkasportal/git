@@ -218,7 +218,7 @@ export async function DELETE(request: NextRequest) {
                 await account.createEmailPasswordSession(user.email, password);
                 // If successful, delete the session immediately as we only needed to verify
                 await account.deleteSession('current');
-            } catch (verifyError) {
+            } catch (_verifyError) {
                 logger.warn('Invalid password during 2FA disable', { userId: user.id });
                 return NextResponse.json(
                     { success: false, error: 'Invalid password' },

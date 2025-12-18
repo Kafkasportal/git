@@ -361,7 +361,7 @@ describe('Input', () => {
       const user = userEvent.setup()
 
       let value = ''
-      const { rerender } = render(
+      render(
         <Input
           value={value}
           onChange={(e) => {

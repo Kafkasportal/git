@@ -195,6 +195,8 @@ import type {
   PartnerDocument,
   ScholarshipDocument,
   WorkflowNotificationDocument,
+  BudgetDocument,
+  InvoiceDocument,
 } from '@/types/database';
 
 export const beneficiaries = createCrudOperations<BeneficiaryDocument>('beneficiaries', 'beneficiaries');
@@ -210,6 +212,8 @@ export const scholarships = createCrudOperations<ScholarshipDocument>('scholarsh
 export const workflowNotifications = createCrudOperations<WorkflowNotificationDocument>('workflow-notifications', 'default');
 export const meetingDecisions = createCrudOperations<MeetingDecisionDocument>('meeting-decisions', 'default');
 export const meetingActionItems = createCrudOperations<MeetingActionItemDocument>('meeting-action-items', 'default');
+export const budgets = createCrudOperations<BudgetDocument>('budgets', 'default');
+export const invoices = createCrudOperations<InvoiceDocument>('invoices', 'default');
 
 /**
  * Export factory function for custom entities

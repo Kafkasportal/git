@@ -512,6 +512,41 @@ export interface PartnerDocument extends Document {
   logo_url?: string;
 }
 
+// Budget Document
+export interface BudgetDocument extends Document {
+  category: string;
+  period: 'monthly' | 'quarterly' | 'yearly';
+  year: number;
+  month?: number;
+  allocated_amount: number;
+  spent_amount?: number;
+  notes?: string;
+  status: 'draft' | 'active' | 'completed';
+}
+
+// Invoice Document
+export interface InvoiceDocument extends Document {
+  invoice_number: string;
+  client_name: string;
+  client_email?: string;
+  client_address?: string;
+  items: Array<{
+    description: string;
+    quantity: number;
+    unit_price: number;
+    total: number;
+  }>;
+  subtotal: number;
+  tax?: number;
+  total: number;
+  currency: string;
+  issue_date: string;
+  due_date: string;
+  status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+  paid_date?: string;
+  notes?: string;
+}
+
 // API Response Types
 export interface ListResponse<T> {
   total: number;

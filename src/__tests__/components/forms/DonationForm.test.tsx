@@ -9,6 +9,7 @@ import userEvent from '@testing-library/user-event'
 import { DonationForm } from '@/components/forms/DonationForm'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import * as sonner from 'sonner'
+import { donationFactory, createApiResponse } from '@/__tests__/test-utils/factories'
 
 // Mock dependencies
 vi.mock('sonner')
@@ -641,7 +642,7 @@ describe('DonationForm', () => {
         () =>
           new Promise(resolve =>
             setTimeout(
-              () => resolve({ success: true, data: {} }),
+              () => resolve(createApiResponse(donationFactory.build())),
               100
             )
           )

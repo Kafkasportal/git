@@ -156,7 +156,6 @@ describe('Select', () => {
     })
 
     it('selects item and shows value', async () => {
-      const user = userEvent.setup()
       render(
         <Select defaultValue="opt1">
           <SelectTrigger>
@@ -350,7 +349,7 @@ describe('Select', () => {
       const user = userEvent.setup()
       const handleChange = vi.fn()
 
-      const { rerender } = render(
+      render(
         <Select onValueChange={handleChange}>
           <SelectTrigger>
             <SelectValue placeholder="Select" />

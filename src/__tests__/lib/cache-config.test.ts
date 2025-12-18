@@ -6,7 +6,6 @@ import {
   CACHE_STRATEGIES,
   CACHE_KEYS,
   invalidateRelatedCaches,
-  prefetchData,
   createOptimizedQueryClient,
   cacheUtils,
   getCacheStrategy,
