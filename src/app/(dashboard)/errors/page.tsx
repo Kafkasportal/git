@@ -244,28 +244,28 @@ export default function ErrorsPage() {
                 <Filter className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">Durum:</span>
                 <Button
-                  variant={filterStatus === '' ? 'default' : 'outline'}
+                  variant={filterStatus === '' ? 'primary' : 'outline'}
                   size="sm"
                   onClick={() => setFilterStatus('')}
                 >
                   Tümü
                 </Button>
                 <Button
-                  variant={filterStatus === 'new' ? 'default' : 'outline'}
+                  variant={filterStatus === 'new' ? 'primary' : 'outline'}
                   size="sm"
                   onClick={() => setFilterStatus('new')}
                 >
                   Yeni
                 </Button>
                 <Button
-                  variant={filterStatus === 'in_progress' ? 'default' : 'outline'}
+                  variant={filterStatus === 'in_progress' ? 'primary' : 'outline'}
                   size="sm"
                   onClick={() => setFilterStatus('in_progress')}
                 >
                   Devam Ediyor
                 </Button>
                 <Button
-                  variant={filterStatus === 'resolved' ? 'default' : 'outline'}
+                  variant={filterStatus === 'resolved' ? 'primary' : 'outline'}
                   size="sm"
                   onClick={() => setFilterStatus('resolved')}
                 >
