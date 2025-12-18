@@ -374,7 +374,7 @@ export function MeetingForm({
               {selectedParticipants.map((userId) => (
                 <Badge
                   key={userId}
-                  variant={userId === user?.id ? "default" : "secondary"}
+                  variant={userId === user?.id ? "primary" : "secondary"}
                   className="cursor-pointer"
                   onClick={() => handleParticipantToggle(userId)}
                 >

@@ -279,7 +279,7 @@ export default function ErrorsPage() {
                 <AlertCircle className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">Önem:</span>
                 <Button
-                  variant={filterSeverity === '' ? 'default' : 'outline'}
+                  variant={filterSeverity === '' ? 'primary' : 'outline'}
                   size="sm"
                   onClick={() => {
                     setFilterSeverity('');
@@ -288,7 +288,7 @@ export default function ErrorsPage() {
                   Tümü
                 </Button>
                 <Button
-                  variant={filterSeverity === 'critical' ? 'default' : 'outline'}
+                  variant={filterSeverity === 'critical' ? 'primary' : 'outline'}
                   size="sm"
                   onClick={() => {
                     setFilterSeverity('critical');
@@ -297,7 +297,7 @@ export default function ErrorsPage() {
                   Kritik
                 </Button>
                 <Button
-                  variant={filterSeverity === 'high' ? 'default' : 'outline'}
+                  variant={filterSeverity === 'high' ? 'primary' : 'outline'}
                   size="sm"
                   onClick={() => {
                     setFilterSeverity('high');
@@ -306,7 +306,7 @@ export default function ErrorsPage() {
                   Yüksek
                 </Button>
                 <Button
-                  variant={filterSeverity === 'medium' ? 'default' : 'outline'}
+                  variant={filterSeverity === 'medium' ? 'primary' : 'outline'}
                   size="sm"
                   onClick={() => {
                     setFilterSeverity('medium');

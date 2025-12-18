@@ -28,14 +28,14 @@ export function MeetingsHeader({
         <div className="flex gap-1 border rounded-lg p-1">
           <Button
             size="sm"
-            variant={viewMode === 'calendar' ? 'default' : 'ghost'}
+            variant={viewMode === 'calendar' ? 'primary' : 'ghost'}
             onClick={() => onViewModeChange('calendar')}
           >
             Takvim
           </Button>
           <Button
             size="sm"
-            variant={viewMode === 'list' ? 'default' : 'ghost'}
+            variant={viewMode === 'list' ? 'primary' : 'ghost'}
             onClick={() => onViewModeChange('list')}
           >
             Liste

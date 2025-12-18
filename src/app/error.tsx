@@ -150,7 +150,7 @@ export default function Error({
               reset();
             }}
             className="w-full"
-            variant="default"
+            variant="primary"
           >
             <RefreshCw className="mr-2 h-4 w-4" />
             Tekrar Dene

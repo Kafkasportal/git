@@ -12,7 +12,7 @@ interface OAuthButtonProps {
   provider: 'google' | 'github' | 'microsoft';
   redirectUrl?: string;
   className?: string;
-  variant?: 'default' | 'outline' | 'ghost' | 'link' | 'destructive' | 'secondary';
+  variant?: 'primary' | 'outline' | 'ghost' | 'link' | 'destructive' | 'secondary';
   size?: 'default' | 'sm' | 'lg' | 'icon';
 }
 

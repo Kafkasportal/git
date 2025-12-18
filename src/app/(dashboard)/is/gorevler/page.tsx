@@ -292,7 +292,7 @@ export default function TasksPage() {
           {/* View Mode Toggle */}
           <div className="flex border rounded-lg">
             <Button
-              variant={viewMode === 'kanban' ? 'default' : 'ghost'}
+              variant={viewMode === 'kanban' ? 'primary' : 'ghost'}
               size="sm"
               onClick={() => { setViewMode('kanban'); }}
               className="rounded-r-none"
@@ -301,7 +301,7 @@ export default function TasksPage() {
               Kanban
             </Button>
             <Button
-              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              variant={viewMode === 'list' ? 'primary' : 'ghost'}
               size="sm"
               onClick={() => { setViewMode('list'); }}
               className="rounded-l-none"

@@ -98,7 +98,7 @@ function DashboardHeroSection({
               <span className="text-sm font-medium capitalize">{currentDate}</span>
             </div>
             <Badge
-              variant={isRealtimeConnected ? 'default' : 'secondary'}
+              variant={isRealtimeConnected ? 'primary' : 'secondary'}
               className={cn(
                 'px-3 py-1 font-medium transition-all duration-300',
                 isRealtimeConnected && 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/15'

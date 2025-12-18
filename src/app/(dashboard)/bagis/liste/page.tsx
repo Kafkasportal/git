@@ -14,7 +14,7 @@ import {
   DialogDescription,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Plus, TrendingUp, Users, Banknote, Calendar, FileText, User, CreditCard, CheckCircle2, Clock } from 'lucide-react';
+import { Plus, Users, Banknote, Calendar, FileText, User, CreditCard, CheckCircle2, Clock } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { BulkActionsToolbar } from '@/components/ui/bulk-actions-toolbar';
 import type { BulkEditField } from '@/components/ui/bulk-edit-modal';

@@ -447,8 +447,17 @@ export default function StudentsPage() {
                       <div className="flex items-center gap-3 mb-3">
                         <h3 className="font-semibold text-lg">{student.applicant_name}</h3>
                         <Badge
-                          variant={STATUS_LABELS[student.status as keyof typeof STATUS_LABELS]?.variant}
-                          status={STATUS_LABELS[student.status as keyof typeof STATUS_LABELS]?.status}
+                          {...(() => {
+                            const statusConfig = STATUS_LABELS[student.status as keyof typeof STATUS_LABELS];
+                            if (!statusConfig) return {};
+                            if ('variant' in statusConfig) {
+                              return { variant: statusConfig.variant };
+                            }
+                            if ('status' in statusConfig) {
+                              return { status: statusConfig.status };
+                            }
+                            return {};
+                          })()}
                         >
                           {STATUS_LABELS[student.status as keyof typeof STATUS_LABELS]?.label ||
                             student.status}

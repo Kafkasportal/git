@@ -463,7 +463,7 @@ export function QuickFilters({
     <div className="flex items-center gap-2 flex-wrap">
       <span className="text-sm font-medium text-gray-600">{label}</span>
       <Button
-        variant={!selectedValue ? 'default' : 'outline'}
+        variant={!selectedValue ? 'primary' : 'outline'}
         size="sm"
         onClick={() => {
           onChange('');
@@ -475,7 +475,7 @@ export function QuickFilters({
       {options.map((option) => (
         <Button
           key={option.value}
-          variant={selectedValue === option.value ? 'default' : 'outline'}
+          variant={selectedValue === option.value ? 'primary' : 'outline'}
           size="sm"
           onClick={() => {
             onChange(option.value);

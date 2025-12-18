@@ -236,7 +236,7 @@ function DataTableComponent<T extends Record<string, unknown>>({
                   Sayfayı Yenile
                 </Button>
                 <Button
-                  variant="default"
+                  variant="primary"
                   size="sm"
                   onClick={() => {
                     if (refetch) {

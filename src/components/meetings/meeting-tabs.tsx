@@ -144,7 +144,7 @@ function MeetingCard({
               <>
                 <Button
                   size="sm"
-                  variant="default"
+                  variant="primary"
                   onClick={() => onAccept?.(meeting._id)}
                   className="bg-green-600 hover:bg-green-700"
                 >
@@ -165,7 +165,7 @@ function MeetingCard({
 
             {meeting.status && meeting.category !== 'invitations' && (
               <Badge
-                variant={meeting.status === 'accepted' ? 'default' : 'secondary'}
+                variant={meeting.status === 'accepted' ? 'primary' : 'secondary'}
                 className={cn(
                   meeting.status === 'accepted' && 'bg-green-600',
                   meeting.status === 'declined' && 'bg-red-600',

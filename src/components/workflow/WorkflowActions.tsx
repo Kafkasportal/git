@@ -287,7 +287,7 @@ export function WorkflowActions({
               İptal
             </Button>
             <Button
-              variant={selectedAction && DESTRUCTIVE_ACTIONS.includes(selectedAction) ? 'destructive' : 'default'}
+              variant={selectedAction && DESTRUCTIVE_ACTIONS.includes(selectedAction) ? 'destructive' : 'primary'}
               onClick={handleConfirmAction}
               disabled={actionMutation.isPending}
             >

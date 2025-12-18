@@ -209,7 +209,7 @@ export function WidgetGrid({
 
           {/* Edit Mode Toggle */}
           <Button
-            variant={isEditMode ? 'default' : 'outline'}
+            variant={isEditMode ? 'primary' : 'outline'}
             size="sm"
             onClick={() => { onEditModeChange(!isEditMode); }}
             className="gap-2 min-w-[90px]"

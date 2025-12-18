@@ -90,7 +90,7 @@ export function StepProgress({
       <div className="mb-4">
         <Progress
           value={progress}
-          variant={progress === 100 ? 'success' : 'default'}
+          variant={progress === 100 ? 'success' : 'primary'}
           className="h-2"
         />
         <p className="text-xs text-muted-foreground mt-1 text-right font-body">

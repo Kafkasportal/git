@@ -135,7 +135,7 @@ export function TimeRangeSelector({
       {/* Comparison Toggle */}
       {showComparison && (
         <Button
-          variant={comparisonEnabled ? 'default' : 'outline'}
+          variant={comparisonEnabled ? 'primary' : 'outline'}
           size="sm"
           onClick={() => onComparisonChange?.(!comparisonEnabled)}
           className="gap-1"

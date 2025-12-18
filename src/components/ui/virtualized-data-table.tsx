@@ -409,7 +409,7 @@ function VirtualizedDataTableComponent<T>({
                 return (
                   <Button
                     key={page}
-                    variant={page === pagination.page ? 'default' : 'outline'}
+                    variant={page === pagination.page ? 'primary' : 'outline'}
                     size="sm"
                     onClick={() => {
                       pagination.onPageChange(page);
