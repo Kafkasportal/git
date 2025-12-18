@@ -39,7 +39,7 @@ describe('Button', () => {
     })
 
     it('renders with primary variant', () => {
-      render(<Button variant="default">Primary</Button>)
+      render(<Button variant="primary">Primary</Button>)
       expect(screen.getByRole('button')).toBeInTheDocument()
     })
 
@@ -319,7 +319,7 @@ describe('Button', () => {
 
     it('preserves styling after multiple clicks', async () => {
       const user = userEvent.setup()
-      const { container } = render(<Button variant="destructive">Delete</Button>)
+      render(<Button variant="destructive">Delete</Button>)
 
       const button = screen.getByRole('button')
       const originalClass = button.className

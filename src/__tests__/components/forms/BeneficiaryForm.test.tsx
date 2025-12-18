@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BeneficiaryForm } from '@/components/forms/BeneficiaryForm'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -28,13 +28,6 @@ describe('BeneficiaryForm', () => {
       },
     })
     vi.clearAllMocks()
-    
-    // Setup beneficiaries API mock
-    const { beneficiaries } = require('@/lib/api/crud-factory')
-    beneficiaries.create = vi.fn().mockResolvedValue({
-      success: true,
-      data: beneficiaryFactory.build(),
-    })
   })
 
   afterEach(() => {
@@ -344,7 +337,7 @@ describe('BeneficiaryForm', () => {
       vi.mocked(beneficiaries.create).mockImplementationOnce(
         () =>
           new Promise(resolve =>
-            setTimeout(() => resolve({ success: true, data: {} }), 100)
+            setTimeout(() => resolve({ data: beneficiaryFactory.build(), error: null }), 100)
           )
       )
 
@@ -388,7 +381,7 @@ describe('BeneficiaryForm', () => {
       vi.mocked(beneficiaries.create).mockImplementationOnce(
         () =>
           new Promise(resolve =>
-            setTimeout(() => resolve({ success: true, data: {} }), 100)
+            setTimeout(() => resolve({ data: beneficiaryFactory.build(), error: null }), 100)
           )
       )
 
@@ -458,7 +451,7 @@ describe('BeneficiaryForm', () => {
       await user.type(phoneInput, '5321234567')
 
       // Should contain the typed digits
-      expect(phoneInput.value).toContain('5321234567')
+      expect((phoneInput as HTMLInputElement).value).toContain('5321234567')
     })
   })
 

@@ -10,19 +10,19 @@ import {
 describe('permissions utilities', () => {
   describe('normalizePermissions', () => {
     it('should return empty array for null input', () => {
-      // @ts-ignore
+      // @ts-expect-error - Testing with invalid input
       const result = normalizePermissions(null);
       expect(result).toEqual([]);
     });
 
     it('should return empty array for undefined input', () => {
-      // @ts-ignore
+      // @ts-expect-error - Testing with invalid input
       const result = normalizePermissions(undefined);
       expect(result).toEqual([]);
     });
 
     it('should return empty array for non-array input', () => {
-      // @ts-ignore
+      // @ts-expect-error - Testing with invalid input
       const result = normalizePermissions('not-an-array');
       expect(result).toEqual([]);
     });
@@ -42,10 +42,10 @@ describe('permissions utilities', () => {
     });
 
     it('should remove duplicate permissions', () => {
-      const permissions = ['users:read', 'users:read', 'tasks:write', 'users:read'];
+      const permissions = ['beneficiaries:access', 'beneficiaries:access', 'donations:access', 'beneficiaries:access'];
       const result = normalizePermissions(permissions as any);
-      expect(result).toEqual(expect.arrayContaining(['users:read', 'tasks:write']));
-      expect(result.filter((p) => p === 'users:read')).toHaveLength(1);
+      expect(result).toEqual(expect.arrayContaining(['beneficiaries:access', 'donations:access']));
+      expect(result.filter((p) => p === 'beneficiaries:access')).toHaveLength(1);
     });
 
     it('should handle empty array', () => {
@@ -101,9 +101,9 @@ describe('permissions utilities', () => {
     });
 
     it('should normalize explicit permissions', () => {
-      const permissions = ['users:read', '*', 'users:read'];
+      const permissions = ['beneficiaries:access', '*', 'beneficiaries:access'];
       const result = getEffectivePermissions('editor', permissions as any);
-      expect(result.filter((p) => p === 'users:read')).toHaveLength(1);
+      expect(result.filter((p) => p === 'beneficiaries:access')).toHaveLength(1);
       expect(result).not.toContain('*');
     });
 
@@ -116,18 +116,18 @@ describe('permissions utilities', () => {
     });
 
     it('should handle null role gracefully', () => {
-      // @ts-ignore
+      // @ts-expect-error - Testing with invalid input
       const result = getEffectivePermissions(null, ['users:read']);
       expect(result).toContain('users:read');
     });
 
     it('should handle empty role string', () => {
-      const result = getEffectivePermissions('', ['users:read']);
-      expect(result).toContain('users:read');
+      const result = getEffectivePermissions('', ['beneficiaries:access'] as any);
+      expect(result).toContain('beneficiaries:access');
     });
 
     it('should handle null permissions gracefully', () => {
-      // @ts-ignore
+      // @ts-expect-error - Testing with invalid input
       const result = getEffectivePermissions('admin', null);
       expect(Array.isArray(result)).toBe(true);
       expect(result).toContain('USERS_MANAGE');
@@ -148,19 +148,19 @@ describe('permissions utilities', () => {
     });
 
     it('should return false for null permissions', () => {
-      // @ts-ignore
+      // @ts-expect-error - Testing with invalid input
       const result = hasPermission(null, 'users:read');
       expect(result).toBe(false);
     });
 
     it('should return false for undefined permissions', () => {
-      // @ts-ignore
+      // @ts-expect-error - Testing with invalid input
       const result = hasPermission(undefined, 'users:read');
       expect(result).toBe(false);
     });
 
     it('should return false for non-array permissions', () => {
-      // @ts-ignore
+      // @ts-expect-error - Testing with invalid input
       const result = hasPermission('not-an-array', 'users:read');
       expect(result).toBe(false);
     });
@@ -198,27 +198,27 @@ describe('permissions utilities', () => {
     });
 
     it('should return false for null user permissions', () => {
-      // @ts-ignore
+      // @ts-expect-error - Testing with invalid input
       const result = hasAnyPermission(null, ['users:read']);
       expect(result).toBe(false);
     });
 
     it('should return false for null required permissions', () => {
       const permissions = ['users:read'];
-      // @ts-ignore
+      // @ts-expect-error - Testing with invalid input
       const result = hasAnyPermission(permissions, null);
       expect(result).toBe(false);
     });
 
     it('should return false for non-array user permissions', () => {
-      // @ts-ignore
+      // @ts-expect-error - Testing with invalid input
       const result = hasAnyPermission('not-an-array', ['users:read']);
       expect(result).toBe(false);
     });
 
     it('should return false for non-array required permissions', () => {
       const permissions = ['users:read'];
-      // @ts-ignore
+      // @ts-expect-error - Testing with invalid input
       const result = hasAnyPermission(permissions, 'not-an-array');
       expect(result).toBe(false);
     });
@@ -265,27 +265,27 @@ describe('permissions utilities', () => {
     });
 
     it('should return false for null user permissions', () => {
-      // @ts-ignore
+      // @ts-expect-error - Testing with invalid input
       const result = hasAllPermissions(null, ['users:read']);
       expect(result).toBe(false);
     });
 
     it('should return false for null required permissions', () => {
       const permissions = ['users:read'];
-      // @ts-ignore
+      // @ts-expect-error - Testing with invalid input
       const result = hasAllPermissions(permissions, null);
       expect(result).toBe(false);
     });
 
     it('should return false for non-array user permissions', () => {
-      // @ts-ignore
+      // @ts-expect-error - Testing with invalid input
       const result = hasAllPermissions('not-an-array', ['users:read']);
       expect(result).toBe(false);
     });
 
     it('should return false for non-array required permissions', () => {
       const permissions = ['users:read'];
-      // @ts-ignore
+      // @ts-expect-error - Testing with invalid input
       const result = hasAllPermissions(permissions, 'not-an-array');
       expect(result).toBe(false);
     });

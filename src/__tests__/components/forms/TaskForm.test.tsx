@@ -9,6 +9,7 @@ import userEvent from '@testing-library/user-event'
 import { TaskForm } from '@/components/forms/TaskForm'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import * as sonner from 'sonner'
+import { taskFactory, createApiResponse } from '@/__tests__/test-utils/factories'
 
 // Mock dependencies
 vi.mock('sonner')
@@ -21,12 +22,12 @@ vi.mock('@/stores/authStore', () => ({
 vi.mock('@/lib/api/crud-factory', () => ({
   tasks: {
     create: vi.fn().mockResolvedValue({
-      success: true,
       data: { $id: 'task-123', title: 'Test Task' },
+      error: null,
     }),
     update: vi.fn().mockResolvedValue({
-      success: true,
       data: { $id: 'task-123', title: 'Updated Task' },
+      error: null,
     }),
   },
 }))
@@ -252,7 +253,7 @@ describe('TaskForm', () => {
         () =>
           new Promise(resolve =>
             setTimeout(
-              () => resolve({ success: true, data: {} }),
+              () => resolve(createApiResponse(taskFactory.build())),
               100
             )
           )
@@ -475,7 +476,7 @@ describe('TaskForm', () => {
 
       vi.mocked(tasks.create)
         .mockRejectedValueOnce(new Error('Server error'))
-        .mockResolvedValueOnce({ success: true, data: {} })
+        .mockResolvedValueOnce(createApiResponse(taskFactory.build()))
 
       renderForm()
 
@@ -539,7 +540,7 @@ describe('TaskForm', () => {
         () =>
           new Promise(resolve =>
             setTimeout(
-              () => resolve({ success: true, data: {} }),
+              () => resolve(createApiResponse(taskFactory.build())),
               100
             )
           )

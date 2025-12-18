@@ -6,17 +6,31 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { InvoiceForm } from '@/components/forms/InvoiceForm'
+import InvoiceForm from '@/components/forms/InvoiceForm'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import * as sonner from 'sonner'
 
 // Mock dependencies
 vi.mock('sonner')
+
+const mockInvoice = {
+  $id: 'invoice-123',
+  invoice_number: 'INV-001',
+  client_name: 'Test Client',
+  items: [{ description: 'Test', quantity: 1, unit_price: 100, total: 100 }],
+  subtotal: 100,
+  total: 100,
+  currency: 'TRY',
+  issue_date: new Date().toISOString(),
+  due_date: new Date().toISOString(),
+  status: 'draft' as const,
+}
+
 vi.mock('@/lib/api/crud-factory', () => ({
   invoices: {
     create: vi.fn().mockResolvedValue({
-      success: true,
       data: { $id: 'invoice-123', invoice_number: 'INV-001' },
+      error: null,
     }),
   },
 }))
@@ -48,7 +62,7 @@ describe('InvoiceForm', () => {
 
   const renderForm = (props = {}) => {
     const defaultProps = {
-      onSuccess: vi.fn(),
+      onSubmit: vi.fn().mockResolvedValue(undefined),
       onCancel: vi.fn(),
       ...props,
     }
@@ -350,7 +364,7 @@ describe('InvoiceForm', () => {
         () =>
           new Promise(resolve =>
             setTimeout(
-              () => resolve({ success: true, data: {} }),
+              () => resolve({ data: mockInvoice, error: null }),
               100
             )
           )

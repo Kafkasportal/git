@@ -21,7 +21,7 @@ global.ResizeObserver = class ResizeObserver {
 
 describe('WidgetGrid', () => {
   const mockWidgets: WidgetConfig[] = [
-    { id: '1', title: 'Widget 1', type: 'chart', visible: true, size: 'medium', order: 0 },
+    { id: '1', title: 'Widget 1', type: 'chart', visible: true, size: { w: 4, h: 3 }, position: { x: 0, y: 0 } },
   ];
   const mockSavedLayouts = [
     { id: 'layout1', name: 'My Layout', widgets: [], isDefault: false, createdAt: '', updatedAt: '' },

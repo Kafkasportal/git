@@ -24,7 +24,7 @@ describe('document utilities', () => {
     });
 
     it('should return null when no ID field exists', () => {
-      const doc = { name: 'Alice' };
+      const doc = { $createdAt: '2024-01-15T10:30:00Z' };
       expect(getDocumentId(doc)).toBeNull();
     });
 
@@ -56,10 +56,10 @@ describe('document utilities', () => {
     });
 
     it('should return Date from _creationTime when $createdAt is missing', () => {
-      const dateString = '2024-01-15T10:30:00Z';
-      const doc = { $id: 'abc123', _creationTime: dateString };
+      const timestamp = new Date('2024-01-15T10:30:00Z').getTime();
+      const doc = { $id: 'abc123', _creationTime: timestamp };
       const result = getDocumentCreatedAt(doc);
-      expect(result).toEqual(new Date(dateString));
+      expect(result).toEqual(new Date(timestamp));
     });
 
     it('should return null when no creation date exists', () => {
@@ -77,11 +77,11 @@ describe('document utilities', () => {
 
     it('should prioritize $createdAt over _creationTime', () => {
       const dateString1 = '2024-01-15T10:30:00Z';
-      const dateString2 = '2024-01-16T10:30:00Z';
+      const timestamp2 = new Date('2024-01-16T10:30:00Z').getTime();
       const doc = {
         $id: 'abc123',
         $createdAt: dateString1,
-        _creationTime: dateString2,
+        _creationTime: timestamp2,
       };
       const result = getDocumentCreatedAt(doc);
       expect(result).toEqual(new Date(dateString1));
@@ -104,10 +104,10 @@ describe('document utilities', () => {
     });
 
     it('should return Date from _updatedAt when $updatedAt is missing', () => {
-      const dateString = '2024-01-15T10:30:00Z';
-      const doc = { $id: 'abc123', _updatedAt: dateString };
+      const timestamp = new Date('2024-01-15T10:30:00Z').getTime();
+      const doc = { $id: 'abc123', _updatedAt: timestamp };
       const result = getDocumentUpdatedAt(doc);
-      expect(result).toEqual(new Date(dateString));
+      expect(result).toEqual(new Date(timestamp));
     });
 
     it('should return null when no update date exists', () => {
@@ -125,11 +125,11 @@ describe('document utilities', () => {
 
     it('should prioritize $updatedAt over _updatedAt', () => {
       const dateString1 = '2024-01-15T10:30:00Z';
-      const dateString2 = '2024-01-16T10:30:00Z';
+      const timestamp2 = new Date('2024-01-16T10:30:00Z').getTime();
       const doc = {
         $id: 'abc123',
         $updatedAt: dateString1,
-        _updatedAt: dateString2,
+        _updatedAt: timestamp2,
       };
       const result = getDocumentUpdatedAt(doc);
       expect(result).toEqual(new Date(dateString1));

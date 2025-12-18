@@ -84,7 +84,6 @@ describe('TransactionForm', () => {
     })
 
     it('renders category options based on type', async () => {
-      const user = userEvent.setup()
       renderForm()
 
       const categorySelect = screen.getByDisplayValue(/Bağış/)

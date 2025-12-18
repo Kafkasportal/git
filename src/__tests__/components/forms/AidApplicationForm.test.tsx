@@ -9,6 +9,7 @@ import userEvent from '@testing-library/user-event'
 import { AidApplicationForm } from '@/components/forms/AidApplicationForm'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import * as sonner from 'sonner'
+import { aidApplicationFactory, createApiResponse } from '@/__tests__/test-utils/factories'
 
 // Mock toast
 vi.mock('sonner')
@@ -17,8 +18,8 @@ vi.mock('sonner')
 vi.mock('@/lib/api/crud-factory', () => ({
   aidApplications: {
     create: vi.fn().mockResolvedValue({
-      success: true,
       data: { $id: 'aid-123', applicant_name: 'Test Applicant' },
+      error: null,
     }),
   },
   beneficiaries: {
@@ -682,7 +683,7 @@ describe('AidApplicationForm', () => {
         () =>
           new Promise(resolve =>
             setTimeout(
-              () => resolve({ success: true, data: {} }),
+              () => resolve(createApiResponse(aidApplicationFactory.build())),
               100
             )
           )
@@ -713,7 +714,7 @@ describe('AidApplicationForm', () => {
         () =>
           new Promise(resolve =>
             setTimeout(
-              () => resolve({ success: true, data: {} }),
+              () => resolve(createApiResponse(aidApplicationFactory.build())),
               100
             )
           )
@@ -770,7 +771,7 @@ describe('AidApplicationForm', () => {
 
       vi.mocked(aidApplications.create)
         .mockRejectedValueOnce(new Error('Sunucu hatası'))
-        .mockResolvedValueOnce({ success: true, data: {} })
+        .mockResolvedValueOnce(createApiResponse(aidApplicationFactory.build()))
 
       renderForm()
 

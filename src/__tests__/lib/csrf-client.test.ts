@@ -110,7 +110,8 @@ describe('CSRF Client Utilities', () => {
     });
 
     describe('fetchWithCsrf', () => {
-        let fetchSpy: ReturnType<typeof vi.spyOn>;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let fetchSpy: any;
 
         beforeEach(() => {
             fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue(
@@ -139,7 +140,7 @@ describe('CSRF Client Utilities', () => {
                 })
             );
 
-            const callArgs = fetchSpy.mock.calls[0];
+            const callArgs = fetchSpy.mock.calls[0] as [RequestInfo | URL, RequestInit | undefined];
             const headers = callArgs[1]?.headers as Headers;
             expect(headers.get('x-csrf-token')).toBe('test-csrf-token');
         });
@@ -147,7 +148,7 @@ describe('CSRF Client Utilities', () => {
         it('should include CSRF token for PUT requests', async () => {
             await fetchWithCsrf('/api/test', { method: 'PUT' });
 
-            const callArgs = fetchSpy.mock.calls[0];
+            const callArgs = fetchSpy.mock.calls[0] as [RequestInfo | URL, RequestInit | undefined];
             const headers = callArgs[1]?.headers as Headers;
             expect(headers.get('x-csrf-token')).toBe('test-csrf-token');
         });
@@ -155,7 +156,7 @@ describe('CSRF Client Utilities', () => {
         it('should include CSRF token for PATCH requests', async () => {
             await fetchWithCsrf('/api/test', { method: 'PATCH' });
 
-            const callArgs = fetchSpy.mock.calls[0];
+            const callArgs = fetchSpy.mock.calls[0] as [RequestInfo | URL, RequestInit | undefined];
             const headers = callArgs[1]?.headers as Headers;
             expect(headers.get('x-csrf-token')).toBe('test-csrf-token');
         });
@@ -163,7 +164,7 @@ describe('CSRF Client Utilities', () => {
         it('should include CSRF token for DELETE requests', async () => {
             await fetchWithCsrf('/api/test', { method: 'DELETE' });
 
-            const callArgs = fetchSpy.mock.calls[0];
+            const callArgs = fetchSpy.mock.calls[0] as [RequestInfo | URL, RequestInit | undefined];
             const headers = callArgs[1]?.headers as Headers;
             expect(headers.get('x-csrf-token')).toBe('test-csrf-token');
         });
@@ -171,7 +172,7 @@ describe('CSRF Client Utilities', () => {
         it('should not include CSRF token for GET requests', async () => {
             await fetchWithCsrf('/api/test', { method: 'GET' });
 
-            const callArgs = fetchSpy.mock.calls[0];
+            const callArgs = fetchSpy.mock.calls[0] as [RequestInfo | URL, RequestInit | undefined];
             const headers = callArgs[1]?.headers as Headers;
             expect(headers.get('x-csrf-token')).toBeNull();
         });
