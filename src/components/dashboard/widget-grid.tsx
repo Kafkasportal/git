@@ -33,6 +33,11 @@ import {
   Plus,
   Trash2,
 } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { WidgetConfig, DashboardLayout, widgetTypeLabels } from '@/types/dashboard';
 import 'react-grid-layout/css/styles.css';
@@ -180,14 +185,22 @@ export function WidgetGrid({
                     >
                       {layout.name}
                     </button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => { onDeleteLayout(layout.id); }}
-                    >
-                      <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => { onDeleteLayout(layout.id); }}
+                          aria-label="Şablonu sil"
+                        >
+                          <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Şablonu sil</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 ))}
               </DropdownMenuContent>

@@ -12,6 +12,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
   GripVertical,
   MoreVertical,
   Settings,
@@ -129,21 +134,29 @@ export function WidgetContainer({
           )}
 
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  'h-7 w-7',
-                  'opacity-0 group-hover/widget:opacity-100',
-                  'focus:opacity-100',
-                  'transition-opacity duration-200',
-                  'hover:bg-primary/10 hover:text-primary'
-                )}
-              >
-                <MoreVertical className="h-3.5 w-3.5" />
-              </Button>
-            </DropdownMenuTrigger>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Widget seçenekleri"
+                    className={cn(
+                      'h-7 w-7',
+                      'opacity-0 group-hover/widget:opacity-100',
+                      'focus:opacity-100',
+                      'transition-opacity duration-200',
+                      'hover:bg-primary/10 hover:text-primary'
+                    )}
+                  >
+                    <MoreVertical className="h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Widget seçenekleri</p>
+              </TooltipContent>
+            </Tooltip>
             <DropdownMenuContent
               align="end"
               className="w-48 bg-card/95 backdrop-blur-md border-border/60"
