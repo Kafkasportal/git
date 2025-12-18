@@ -265,7 +265,7 @@ export default function GlobalError({
                       userAgent: navigator.userAgent,
                       url: window.location.href,
                       timestamp: new Date().toISOString(),
-                      localStorage: { ...localStorage },
+                      // SECURITY: Removed localStorage dump to prevent sensitive data exposure
                     };
                     const blob = new Blob([JSON.stringify(errorReport, null, 2)], {
                       type: 'application/json',

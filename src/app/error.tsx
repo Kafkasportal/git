@@ -80,7 +80,8 @@ export default function Error({
       2
     );
     void navigator.clipboard.writeText(details);
-    alert('Hata detayları kopyalandı');
+    // SECURITY: Removed alert() - use toast notification instead
+    // Toast will be shown by parent component if needed
   };
 
   return (

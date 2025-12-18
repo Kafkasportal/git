@@ -16,7 +16,6 @@ import { pingAppwrite } from "@/lib/appwrite";
 import logger from "@/lib/logger";
 
 import { SuspenseBoundary } from "@/components/ui/suspense-boundary";
-import { ReactQueryDevtoolsWrapper } from "@/components/devtools/ReactQueryDevtools";
 
 // TypeScript interfaces for window objects
 interface WindowWithDebug extends Window {
@@ -137,7 +136,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
         </ThemeProvider>
       </SuspenseBoundary>
       <Toaster position="top-right" richColors />
-      <ReactQueryDevtoolsWrapper />
     </QueryClientProvider>
   );
 }

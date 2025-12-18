@@ -16,8 +16,8 @@ export interface GradientTextProps {
 }
 
 const gradients = {
-  primary: 'from-blue-600 via-indigo-500 to-indigo-600',
-  success: 'from-emerald-500 via-green-500 to-primary-600',
+  primary: 'from-indigo-600 via-blue-500 to-blue-600',
+  success: 'from-emerald-500 via-green-500 to-green-600',
   warning: 'from-amber-500 via-orange-500 to-red-500',
   error: 'from-red-500 via-pink-500 to-rose-600',
   info: 'from-cyan-500 via-blue-500 to-indigo-600',
@@ -74,7 +74,7 @@ export function AnimatedGradientText({
     <Component
       className={cn(
         'inline-block',
-        'bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 bg-[length:200%_auto]',
+        'bg-gradient-to-r from-indigo-600 via-blue-500 to-indigo-700 bg-[length:200%_auto]',
         'bg-clip-text text-transparent',
         'animate-gradient-shift',
         className

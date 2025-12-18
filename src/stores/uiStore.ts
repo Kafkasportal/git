@@ -16,7 +16,7 @@ import { immer } from 'zustand/middleware/immer';
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type SidebarVariant = 'default' | 'compact' | 'mini';
 export type LayoutDensity = 'comfortable' | 'compact' | 'spacious';
-export type AccentColor = 'blue' | 'green' | 'purple' | 'orange' | 'red' | 'teal';
+export type AccentColor = 'blue' | 'green' | 'purple' | 'orange' | 'red' | 'indigo';
 
 export interface ModalState {
   id: string;
