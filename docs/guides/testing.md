@@ -104,6 +104,4 @@ See `src/test-utils/test-patterns.ts` for established testing patterns.
 
 If you encounter issues with the test environment, please refer to the troubleshooting guides in `docs/troubleshooting/`:
 
-- [Vitest Diagnostics](../troubleshooting/VITEST_DIAGNOSTICS.md)
-- [Environment Fix Guide](../troubleshooting/VITEST_ENVIRONMENT_FIX_GUIDE.md)
-- [Recovery Guide](../troubleshooting/VITEST_RECOVERY_GUIDE.md)
+- [Troubleshooting index](../troubleshooting/README.md)

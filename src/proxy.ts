@@ -1,6 +1,4 @@
-// Edge Runtime declaration for Cloudflare Pages compatibility
-// Using 'experimental-edge' for compatibility with both Next.js 16 and Cloudflare Pages
-export const runtime = "experimental-edge";
+// Next.js 16 "proxy" file runs on the Node.js runtime (not Edge).
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
@@ -33,8 +31,6 @@ const csrfExemptRoutes = [
   "/api/csrf", // CSRF token endpoint itself doesn't need CSRF validation
   "/api/errors", // Error tracking endpoint for client-side error reporting
 ];
-
-// Auth routes that should redirect to dashboard if already authenticated
 
 // API routes that require authentication (protected endpoints)
 const protectedApiRoutes = [
@@ -234,12 +230,12 @@ function addSessionHeaders(
 }
 
 /**
- * Main middleware function (Edge Runtime compatible)
+ * Main proxy function (Edge Runtime compatible)
  *
- * Note: Edge middleware is lightweight and cannot call external APIs like Appwrite.
+ * Note: Edge proxy is lightweight and cannot call external APIs like Appwrite.
  * Permission checks are deferred to API routes and server components.
  */
-export default async function middleware(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Handle root path

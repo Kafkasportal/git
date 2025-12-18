@@ -1,6 +1,10 @@
 # Sorun Giderme Rehberleri
 
-Bu klasör, proje geliştirme sürecinde karşılaşılan yaygın sorunların çözüm rehberlerini içerir.
+Bu klasör, proje geliştirme sürecinde karşılaşılan sorunların çözüm rehberlerini içerir.
+
+## Vitest Test Sistemi
+
+Vitest ile ilgili eski/tekrarlı detay dokümanlar sadeleştirildi. Bu klasörde yalnızca hızlı başvuru komutları tutulur; daha kapsamlı rehber için `docs/guides/testing.md` dosyasına bakın.
 
 ## Hızlı Başvuru
 
