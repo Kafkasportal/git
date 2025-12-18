@@ -16,6 +16,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
   UserPlus,
   UserCog,
   UserMinus,
@@ -150,15 +155,23 @@ export function ActivityFeed({
             </Select>
           )}
           {onRefresh && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onRefresh}
-              disabled={isLoading}
-              className="h-8 w-8"
-            >
-              <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onRefresh}
+                  disabled={isLoading}
+                  className="h-8 w-8"
+                  aria-label="Aktiviteleri yenile"
+                >
+                  <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Aktiviteleri yenile</p>
+              </TooltipContent>
+            </Tooltip>
           )}
         </div>
       </div>
