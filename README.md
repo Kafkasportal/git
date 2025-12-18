@@ -202,8 +202,6 @@ Tüm teknik dokümantasyon `docs/` klasöründe organize edilmiştir:
 - [design-system.md](./docs/design/design-system.md) - Kurumsal tasarım sistemi
 
 ### Diğer
-- [PRD.md](./PRD.md) - Ürün gereksinimleri dokümanı
-- [PROJECT_METRICS.md](./PROJECT_METRICS.md) - Proje metrikleri
 - `.env.example` - Environment variables şablonu
 
 ## 🤝 Katkıda Bulunma
