@@ -39,7 +39,7 @@ npm run dev
 
 ## Project Structure
 
-See [COMPONENTS.md](./COMPONENTS.md) for component organization.
+See [COMPONENTS.md](../reference/components.md) for component organization.
 
 ```
 src/

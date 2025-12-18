@@ -10,67 +10,55 @@ const cardVariants = cva(
       variant: {
         // Default - Standard white card with subtle shadow
         default:
-          'bg-white border-corporate-gray-200 text-corporate-gray-900 shadow-card hover:shadow-card-hover',
+          'bg-card border-gray-200 text-foreground shadow-card hover:shadow-card-hover',
 
         // Interactive - Card that responds to user interaction
         interactive:
-          'bg-white border-corporate-gray-200 text-corporate-gray-900 shadow-card hover:shadow-card-hover hover:border-corporate-primary-300 cursor-pointer transition-transform hover:-translate-y-1',
+          'bg-card border-gray-200 text-foreground shadow-card hover:shadow-card-hover hover:border-primary-300 cursor-pointer transition-transform hover:-translate-y-1',
 
         // Elevated - More prominent card with stronger shadow
         elevated:
-          'bg-white border-corporate-gray-100 text-corporate-gray-900 shadow-xl hover:shadow-2xl',
-
-        // Highlighted - Important card with accent color
-        highlighted:
-          'bg-corporate-primary-50 border-corporate-primary-200 text-corporate-gray-900 shadow-card hover:shadow-card-hover',
+          'bg-card border-gray-100 text-foreground shadow-xl hover:shadow-2xl',
 
         // Success - Positive/confirmation card
         success:
-          'bg-corporate-success-50 border-corporate-success-200 text-corporate-gray-900 shadow-card',
+          'bg-success-50 border-success-100 text-foreground shadow-card',
 
         // Warning - Warning/caution card
         warning:
-          'bg-corporate-warning-50 border-corporate-warning-200 text-corporate-gray-900 shadow-card',
+          'bg-warning-50 border-warning-100 text-foreground shadow-card',
 
         // Error - Error/danger card
         error:
-          'bg-corporate-error-50 border-corporate-error-200 text-corporate-gray-900 shadow-card',
+          'bg-error-50 border-error-100 text-foreground shadow-card',
 
         // Info - Informational card
         info:
-          'bg-corporate-info-50 border-corporate-info-200 text-corporate-gray-900 shadow-card',
+          'bg-info-50 border-info-100 text-foreground shadow-card',
 
         // Outline - Borderless with outline only
         outline:
-          'bg-transparent border-corporate-gray-300 text-corporate-gray-900 hover:border-corporate-gray-400 shadow-none',
+          'bg-transparent border-gray-300 text-foreground hover:border-gray-400 shadow-none',
 
         // Ghost - Transparent background
         ghost:
-          'bg-transparent border-transparent text-corporate-gray-900 shadow-none',
+          'bg-transparent border-transparent text-foreground shadow-none',
 
         // Muted - Neutral gray card
         muted:
-          'bg-corporate-gray-50 border-corporate-gray-200 text-corporate-gray-700 shadow-sm',
+          'bg-muted border-gray-200 text-muted-foreground shadow-sm',
 
         // Dark - Dark background (for light mode contrast)
         dark:
-          'bg-corporate-gray-900 border-corporate-gray-800 text-white shadow-xl',
+          'bg-gray-900 border-gray-800 text-white shadow-xl',
 
         // Glass - Glass morphism effect
         glass:
-          'bg-white/70 backdrop-blur-xl border-white/20 shadow-lg hover:bg-white/80 hover:shadow-xl',
-
-        // Gradient Border - Subtle gradient border effect
-        'gradient-border':
-          'bg-white border-0 shadow-lg relative before:absolute before:inset-0 before:rounded-lg before:p-[1px] before:bg-gradient-to-br before:from-primary/30 before:via-transparent before:to-primary/10 before:-z-10',
-
-        // Accent - Card with top accent line
-        accent:
-          'bg-white border-corporate-gray-200 shadow-card relative overflow-hidden before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-primary before:to-primary/60',
+          'bg-white/70 backdrop-blur-xl border-white/20 shadow-lg hover:bg-white/80 hover:shadow-xl dark:bg-gray-900/70 dark:hover:bg-gray-900/80',
 
         // Glow - Subtle glow effect on hover
         glow:
-          'bg-white border-corporate-gray-200 shadow-card hover:shadow-[0_0_30px_rgba(13,148,136,0.15)] transition-shadow duration-300',
+          'bg-card border-gray-200 shadow-card hover:shadow-[0_0_30px_rgba(13,148,136,0.15)] transition-shadow duration-300',
       },
 
       size: {
@@ -158,7 +146,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="card-header"
       className={cn(
-        'grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 border-b border-corporate-gray-200 px-6 py-4 has-data-[slot=card-action]:grid-cols-[1fr_auto]',
+        'grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 border-b border-gray-200 px-6 py-4 has-data-[slot=card-action]:grid-cols-[1fr_auto]',
         className
       )}
       {...props}
@@ -180,7 +168,7 @@ function CardTitle({
     <div
       data-slot="card-title"
       className={cn(
-        'text-lg font-bold text-corporate-gray-900 leading-none',
+        'text-lg font-bold text-foreground leading-none',
         className
       )}
       {...props}
@@ -202,7 +190,7 @@ function CardDescription({
     <div
       data-slot="card-description"
       className={cn(
-        'text-sm text-corporate-gray-600 leading-relaxed',
+        'text-sm text-muted-foreground leading-relaxed',
         className
       )}
       {...props}
@@ -262,7 +250,7 @@ function CardFooter({
     <div
       data-slot="card-footer"
       className={cn(
-        'flex flex-wrap items-center justify-between gap-4 border-t border-corporate-gray-200 px-6 py-4',
+        'flex flex-wrap items-center justify-between gap-4 border-t border-gray-200 px-6 py-4',
         className
       )}
       {...props}

@@ -114,7 +114,21 @@ const config = {
           600: 'var(--info-600)',
           700: 'var(--info-700)',
         },
-        
+
+        // Gray - Neutral Scale (using Tailwind's gray)
+        'gray': {
+          50: '#f9fafb',
+          100: '#f3f4f6',
+          200: '#e5e7eb',
+          300: '#d1d5db',
+          400: '#9ca3af',
+          500: '#6b7280',
+          600: '#4b5563',
+          700: '#374151',
+          800: '#1f2937',
+          900: '#111827',
+        },
+
         // ========================================
         // INTERACTIVE COLORS
         // ========================================
@@ -161,13 +175,13 @@ const config = {
           'sans-serif',
         ],
         heading: [
-          'Poppins',
+          'Outfit',
           'Inter',
           '-apple-system',
           'sans-serif',
         ],
         display: [
-          'Poppins',
+          'Outfit',
           'Inter',
           'sans-serif',
         ],

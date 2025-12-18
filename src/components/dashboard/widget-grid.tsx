@@ -121,9 +121,9 @@ export function WidgetGrid({
           {/* Widget Visibility Toggle */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
+              <Button variant="outline" size="sm" className="gap-2 min-w-[100px]">
                 <LayoutGrid className="h-4 w-4" />
-                <span className="hidden sm:inline">Widgetlar</span>
+                <span>Widgetlar</span>
                 {hiddenWidgetsCount > 0 && (
                   <Badge variant="secondary" className="h-5 px-1">
                     {hiddenWidgetsCount}
@@ -160,9 +160,9 @@ export function WidgetGrid({
           {savedLayouts.length > 0 && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1">
+                <Button variant="outline" size="sm" className="gap-2">
                   <Save className="h-4 w-4" />
-                  <span className="hidden sm:inline">Şablonlar</span>
+                  <span>Şablonlar</span>
                   <ChevronDown className="h-3 w-3 opacity-50" />
                 </Button>
               </DropdownMenuTrigger>
@@ -199,12 +199,10 @@ export function WidgetGrid({
             variant={isEditMode ? 'default' : 'outline'}
             size="sm"
             onClick={() => { onEditModeChange(!isEditMode); }}
-            className="gap-2"
+            className="gap-2 min-w-[90px]"
           >
             <Settings2 className="h-4 w-4" />
-            <span className="hidden sm:inline">
-              {isEditMode ? 'Bitti' : 'Düzenle'}
-            </span>
+            <span>{isEditMode ? 'Bitti' : 'Düzenle'}</span>
           </Button>
 
           {/* Actions when in edit mode */}
@@ -214,19 +212,19 @@ export function WidgetGrid({
                 variant="outline"
                 size="sm"
                 onClick={() => setSaveDialogOpen(true)}
-                className="gap-1"
+                className="gap-2"
               >
                 <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Kaydet</span>
+                <span>Kaydet</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onResetLayout}
-                className="gap-1"
+                className="gap-2"
               >
                 <RotateCcw className="h-4 w-4" />
-                <span className="hidden sm:inline">Sıfırla</span>
+                <span>Sıfırla</span>
               </Button>
             </>
           )}
@@ -236,11 +234,15 @@ export function WidgetGrid({
       {/* Responsive Grid */}
 
       {visibleWidgets.length === 0 ? (
-        <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-lg bg-muted">
-          <div className="text-center text-muted-foreground">
-            <LayoutGrid className="h-12 w-12 mx-auto mb-3 opacity-20" />
-            <p className="font-medium">Hiç widget görünür değil</p>
-            <p className="text-sm mt-1">Widget eklemek için Widgetlar menüsünü kullanın</p>
+        <div className="flex items-center justify-center h-64 border-2 border-dashed border-border/50 rounded-lg bg-muted/50">
+          <div className="text-center">
+            <div className="inline-flex p-4 rounded-xl bg-primary/10 mb-4">
+              <LayoutGrid className="h-10 w-10 text-primary/70" />
+            </div>
+            <p className="font-semibold text-foreground mb-1">Hiç widget görünür değil</p>
+            <p className="text-sm text-muted-foreground mb-4">
+              Yukarıdaki <strong>Widgetlar</strong> menüsünden widget ekleyebilirsiniz
+            </p>
           </div>
         </div>
       ) : (

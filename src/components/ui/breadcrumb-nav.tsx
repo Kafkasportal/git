@@ -91,7 +91,7 @@ function BreadcrumbNavComponent() {
             {/* Separator */}
             {index > 0 && (
               <ChevronRight
-                className="h-4 w-4 text-corporate-gray-400 mx-1 flex-shrink-0"
+                className="h-4 w-4 text-muted-foreground/50 mx-1 flex-shrink-0"
                 aria-hidden="true"
               />
             )}
@@ -104,9 +104,9 @@ function BreadcrumbNavComponent() {
                     href={item.href}
                     className={cn(
                       'inline-flex items-center gap-1.5 px-2 py-1.5 rounded-md transition-all duration-150',
-                      'text-corporate-gray-600 hover:text-corporate-primary-600',
-                      'hover:bg-corporate-primary-50',
-                      'focus:outline-none focus:ring-2 focus:ring-corporate-primary-300 focus:ring-offset-1'
+                      'text-muted-foreground hover:text-primary',
+                      'hover:bg-primary/5',
+                      'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1'
                     )}
                     aria-label="Anasayfa (Dashboard)"
                   >
@@ -119,7 +119,7 @@ function BreadcrumbNavComponent() {
               if (item.current) {
                 return (
                   <span
-                    className="px-2 py-1.5 text-corporate-gray-900 font-semibold"
+                    className="px-2 py-1.5 text-foreground font-bold bg-muted rounded-md"
                     aria-current="page"
                   >
                     {item.label}
@@ -132,9 +132,9 @@ function BreadcrumbNavComponent() {
                   href={item.href}
                   className={cn(
                     'px-2 py-1.5 rounded-md transition-all duration-150',
-                    'text-corporate-gray-600 hover:text-corporate-primary-600',
-                    'hover:bg-corporate-primary-50',
-                    'focus:outline-none focus:ring-2 focus:ring-corporate-primary-300 focus:ring-offset-1'
+                    'text-muted-foreground hover:text-primary',
+                    'hover:bg-primary/5',
+                    'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1'
                   )}
                 >
                   {item.label}

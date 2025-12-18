@@ -86,7 +86,7 @@
   --radius: 0.75rem;
 
   /* ==========  TYPOGRAPHY  ========== */
-  --font-heading: 'Poppins', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
   --font-heading-alt: 'Inter', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
@@ -244,6 +244,21 @@
   --text-high-contrast: #0f172a;
   --text-medium-contrast: #334155;
   --text-low-contrast: #64748b;
+  
+  /* ==========  EMPTY STATE COLORS  ========== */
+  --empty-state-icon: #475569;
+  --empty-state-title: #1e293b;
+  --empty-state-description: #475569;
+  
+  /* ==========  STAT CARD SEMANTIC COLORS  ========== */
+  --stat-value: #0f172a;
+  --stat-label: #475569;
+  --stat-description: #64748b;
+  
+  /* ==========  FORM LABELS  ========== */
+  --label-color: #1e293b;
+  --label-required: #dc2626;
+  --placeholder-color: #94a3b8;
 }
 
 /* ========================================
@@ -351,6 +366,21 @@
   --text-high-contrast: #f8fafc;
   --text-medium-contrast: #e2e8f0;
   --text-low-contrast: #94a3b8;
+  
+  /* ==========  EMPTY STATE COLORS - DARK  ========== */
+  --empty-state-icon: #94a3b8;
+  --empty-state-title: #f1f5f9;
+  --empty-state-description: #94a3b8;
+  
+  /* ==========  STAT CARD SEMANTIC COLORS - DARK  ========== */
+  --stat-value: #f8fafc;
+  --stat-label: #cbd5e1;
+  --stat-description: #94a3b8;
+  
+  /* ==========  FORM LABELS - DARK  ========== */
+  --label-color: #f1f5f9;
+  --label-required: #f87171;
+  --placeholder-color: #64748b;
   
   color-scheme: dark;
 }
@@ -474,6 +504,20 @@
   .text-high-contrast { color: var(--text-high-contrast); }
   .text-medium-contrast { color: var(--text-medium-contrast); }
   .text-low-contrast { color: var(--text-low-contrast); }
+  
+  /* ==========  EMPTY STATE UTILITIES  ========== */
+  .empty-state-icon { color: var(--empty-state-icon); }
+  .empty-state-title { color: var(--empty-state-title); }
+  .empty-state-description { color: var(--empty-state-description); }
+  
+  /* ==========  STAT CARD UTILITIES  ========== */
+  .stat-value { color: var(--stat-value); font-weight: 700; }
+  .stat-label { color: var(--stat-label); font-weight: 500; }
+  .stat-description { color: var(--stat-description); }
+  
+  /* ==========  FORM LABEL UTILITIES  ========== */
+  .label-text { color: var(--label-color); }
+  .label-required { color: var(--label-required); }
 
   /* ==========  FONT UTILITIES  ========== */
   .font-heading { font-family: var(--font-heading); }

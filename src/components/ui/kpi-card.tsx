@@ -170,7 +170,7 @@ function KPICardComponent({
             {/* Content */}
             <div className="flex-1 min-w-0 space-y-1">
               <p
-                className="text-[10px] font-medium text-muted-foreground truncate uppercase tracking-wide"
+                className="text-xs font-semibold text-muted-foreground truncate uppercase tracking-wide"
                 title={title}
               >
                 {title}
@@ -179,8 +179,8 @@ function KPICardComponent({
               <div className="flex items-baseline gap-2">
                 <h3
                   className={cn(
-                    'text-xl font-bold tracking-tight',
-                    'text-foreground',
+                    'text-2xl font-bold tracking-tight',
+                    'text-foreground', // High contrast value
                     'transition-colors duration-200'
                   )}
                   title={String(value)}
@@ -194,16 +194,16 @@ function KPICardComponent({
                     initial={{ opacity: 0, x: -5 }}
                     animate={{ opacity: 1, x: 0 }}
                     className={cn(
-                      'flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold',
+                      'flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold',
                       trend.direction === 'up'
-                        ? 'bg-success/10 text-success'
-                        : 'bg-error/10 text-error'
+                        ? 'bg-success/15 text-success-700 dark:text-success'
+                        : 'bg-error/15 text-error-700 dark:text-error'
                     )}
                   >
                     {trend.direction === 'up' ? (
-                      <TrendingUp className="h-2.5 w-2.5" />
+                      <TrendingUp className="h-3 w-3" />
                     ) : (
-                      <TrendingDown className="h-2.5 w-2.5" />
+                      <TrendingDown className="h-3 w-3" />
                     )}
                     {trend.value}
                   </motion.div>
@@ -212,7 +212,7 @@ function KPICardComponent({
 
               {description && (
                 <p
-                  className="text-[10px] text-muted-foreground truncate"
+                  className="text-xs text-muted-foreground/80 truncate"
                   title={description}
                 >
                   {description}

@@ -4,49 +4,37 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const inputVariants = cva(
-  'w-full min-w-0 rounded-lg border bg-white text-corporate-gray-900 placeholder:text-corporate-gray-400 transition-all duration-200 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:bg-corporate-gray-100 disabled:text-corporate-gray-400 disabled:border-corporate-gray-300 selection:bg-corporate-primary-200 selection:text-corporate-gray-900 outline-none',
+  'w-full min-w-0 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground transition-all duration-200 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:border-gray-300 selection:bg-primary-200 selection:text-foreground outline-none',
   {
     variants: {
       variant: {
         // Default - Normal input field
         default:
-          'h-12 px-4 py-3 border-corporate-gray-300 focus:border-corporate-primary-500 focus:ring-4 focus:ring-corporate-primary-100 shadow-sm hover:border-corporate-gray-400',
+          'h-12 px-4 py-3 border-input focus:border-primary focus:ring-4 focus:ring-primary-100 shadow-sm hover:border-gray-400',
 
         // Error - Input with validation error
         error:
-          'h-12 px-4 py-3 border-corporate-error-500 focus:border-corporate-error-500 focus:ring-4 focus:ring-corporate-error-100 shadow-sm bg-corporate-error-50/30',
+          'h-12 px-4 py-3 border-error-600 focus:border-error-600 focus:ring-4 focus:ring-error-100 shadow-sm bg-error-50/30',
 
         // Success - Input with validation success
         success:
-          'h-12 px-4 py-3 border-corporate-success-500 focus:border-corporate-success-500 focus:ring-4 focus:ring-corporate-success-100 shadow-sm bg-corporate-success-50/30',
+          'h-12 px-4 py-3 border-success-600 focus:border-success-600 focus:ring-4 focus:ring-success-100 shadow-sm bg-success-50/30',
 
         // Warning - Input with warning state
         warning:
-          'h-12 px-4 py-3 border-corporate-warning-500 focus:border-corporate-warning-500 focus:ring-4 focus:ring-corporate-warning-100 shadow-sm bg-corporate-warning-50/30',
+          'h-12 px-4 py-3 border-warning-600 focus:border-warning-600 focus:ring-4 focus:ring-warning-100 shadow-sm bg-warning-50/30',
 
         // Info - Input with info state
         info:
-          'h-12 px-4 py-3 border-corporate-info-500 focus:border-corporate-info-500 focus:ring-4 focus:ring-corporate-info-100 shadow-sm bg-corporate-info-50/30',
+          'h-12 px-4 py-3 border-info-600 focus:border-info-600 focus:ring-4 focus:ring-info-100 shadow-sm bg-info-50/30',
 
         // Outline - Bordered style without background
         outline:
-          'h-12 px-4 py-3 border-corporate-gray-300 focus:border-corporate-primary-500 focus:ring-4 focus:ring-corporate-primary-100 shadow-none bg-transparent hover:bg-corporate-gray-50',
+          'h-12 px-4 py-3 border-gray-300 focus:border-primary focus:ring-4 focus:ring-primary-100 shadow-none bg-transparent hover:bg-muted',
 
         // Ghost - Minimal style
         ghost:
-          'h-12 px-4 py-3 border-transparent focus:border-corporate-primary-500 focus:ring-4 focus:ring-corporate-primary-100 bg-corporate-gray-50 hover:bg-corporate-gray-100 shadow-none rounded-lg',
-
-        // Elegant - Refined input with subtle effects
-        elegant:
-          'h-14 px-5 py-4 border-corporate-gray-200 focus:border-primary focus:ring-4 focus:ring-primary/10 shadow-sm hover:border-corporate-gray-300 rounded-xl bg-white transition-all duration-200 focus:shadow-md',
-
-        // Glass - Glass morphism input
-        glass:
-          'h-12 px-4 py-3 border-white/30 focus:border-white/50 focus:ring-4 focus:ring-white/20 bg-white/10 backdrop-blur-md text-white placeholder:text-white/50 rounded-xl',
-
-        // Underline - Bottom border only
-        underline:
-          'h-12 px-0 py-3 border-0 border-b-2 border-corporate-gray-300 focus:border-primary focus:ring-0 rounded-none bg-transparent hover:border-corporate-gray-400 transition-colors',
+          'h-12 px-4 py-3 border-transparent focus:border-primary focus:ring-4 focus:ring-primary-100 bg-muted hover:bg-muted/80 shadow-none rounded-lg',
       },
 
       inputSize: {
@@ -112,7 +100,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <div className="relative flex items-center">
           <div
             className={cn(
-              'absolute top-1/2 -translate-y-1/2 text-corporate-gray-500 pointer-events-none',
+              'absolute top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none',
               iconPosition === 'left' ? 'left-3' : 'right-3'
             )}
           >

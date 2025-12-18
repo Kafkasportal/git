@@ -162,18 +162,19 @@ export function EmptyState({
         <div
           className={cn(
             'flex items-center justify-center mb-4',
-            variant === 'default' && 'rounded-full bg-muted/50 p-4',
+            variant === 'default' && 'rounded-full bg-primary/10 p-4',
             variant === 'minimal' && '',
-            variant === 'illustration' && 'rounded-full bg-muted/30 p-6'
+            variant === 'illustration' && 'rounded-full bg-primary/5 p-6'
           )}
         >
-          <Icon className={cn('text-muted-foreground', iconSizeVariants[variant])} />
+          <Icon className={cn('text-primary/70', iconSizeVariants[variant])} />
         </div>
       )}
 
       <h3
         className={cn(
-          'font-heading font-semibold text-foreground mb-2',
+          'font-heading font-semibold mb-2',
+          'text-foreground', // High contrast title
           titleSizeVariants[variant]
         )}
       >
@@ -181,13 +182,13 @@ export function EmptyState({
       </h3>
 
       {description && (
-        <p className="font-body text-sm text-muted-foreground max-w-md mb-4">{description}</p>
+        <p className="font-body text-sm text-muted-foreground max-w-md mb-4 leading-relaxed">{description}</p>
       )}
 
-      {action && <div className="mt-4">{action}</div>}
+      {action && <div className="mt-6">{action}</div>}
 
       {actionLabel && onAction && !action && (
-        <Button onClick={onAction} className="mt-4">
+        <Button onClick={onAction} className="mt-6" size="lg">
           {actionLabel}
         </Button>
       )}
@@ -293,6 +294,19 @@ export function EmptyFolderEmptyState({ onAction, actionLabel = 'Dosya Yükle' }
       title="Klasör boş"
       description="Bu klasörde henüz dosya bulunmuyor."
       actionLabel={actionLabel}
+      onAction={onAction}
+    />
+  );
+}
+
+export function NoWidgetsEmptyState({ onAction }: { onAction?: () => void }) {
+  return (
+    <EmptyState
+      illustration="no-data"
+      variant="illustration"
+      title="Henüz widget eklenmemiş"
+      description="Dashboard'ınızı özelleştirmek için widget ekleyin. İhtiyacınıza göre grafik, istatistik ve listeler ekleyebilirsiniz."
+      actionLabel="Widget Ekle"
       onAction={onAction}
     />
   );

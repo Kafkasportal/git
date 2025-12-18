@@ -114,7 +114,7 @@ export default function GlobalError({
                 }}
               >
                 <svg
-                  style={{ width: '2rem', height: '2rem', color: '#dc2626' }}
+                  style={{ width: '2rem', height: '2rem', color: '#ef4444' }} // error-500
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -195,7 +195,7 @@ export default function GlobalError({
                       marginTop: '0.25rem',
                       overflow: 'auto',
                       fontSize: '0.75rem',
-                      color: '#dc2626',
+                      color: '#ef4444', // error-500
                     }}
                   >
                     {error.message}
@@ -371,7 +371,7 @@ export default function GlobalError({
                 style={{
                   textAlign: 'center',
                   fontSize: '0.75rem',
-                  color: '#dc2626',
+                  color: '#ef4444', // error-500
                   marginTop: '1rem',
                   fontWeight: '600',
                 }}

@@ -232,31 +232,31 @@ export default function AidApplicationsPage() {
                       {/* Yardım Türleri */}
                       <div className="flex flex-wrap gap-2 mb-3">
                         {app.one_time_aid && app.one_time_aid > 0 && (
-                          <Badge className="gap-1 bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+                          <Badge variant="info">
                             <DollarSign className="h-3 w-3" />
                             Tek Seferlik: {app.one_time_aid.toLocaleString('tr-TR')} ₺
                           </Badge>
                         )}
                         {app.regular_financial_aid && app.regular_financial_aid > 0 && (
-                          <Badge className="gap-1 bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">
+                          <Badge variant="success">
                             <DollarSign className="h-3 w-3" />
                             Düzenli: {app.regular_financial_aid.toLocaleString('tr-TR')} ₺
                           </Badge>
                         )}
                         {app.regular_food_aid && app.regular_food_aid > 0 && (
-                          <Badge className="gap-1 bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400">
+                          <Badge variant="warning">
                             <Utensils className="h-3 w-3" />
                             Gıda: {app.regular_food_aid} paket
                           </Badge>
                         )}
                         {app.in_kind_aid && app.in_kind_aid > 0 && (
-                          <Badge className="gap-1 bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400">
+                          <Badge variant="default">
                             <Package className="h-3 w-3" />
                             Ayni: {app.in_kind_aid} adet
                           </Badge>
                         )}
                         {app.service_referral && app.service_referral > 0 && (
-                          <Badge className="gap-1 bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400">
+                          <Badge variant="destructive">
                             <Stethoscope className="h-3 w-3" />
                             Sevk: {app.service_referral}
                           </Badge>
@@ -265,13 +265,11 @@ export default function AidApplicationsPage() {
 
                       {/* Aşama ve Durum */}
                       <div className="flex gap-2">
-                        <Badge
-                          className={STAGE_LABELS[app.stage as keyof typeof STAGE_LABELS].color}
-                        >
+                        <Badge variant="outline">
                           {STAGE_LABELS[app.stage as keyof typeof STAGE_LABELS].label}
                         </Badge>
                         <Badge
-                          className={STATUS_LABELS[app.status as keyof typeof STATUS_LABELS].color}
+                          status={app.status === 'open' ? 'active' : 'inactive'}
                         >
                           {STATUS_LABELS[app.status as keyof typeof STATUS_LABELS].label}
                         </Badge>

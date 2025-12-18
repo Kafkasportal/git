@@ -11,6 +11,7 @@ import { WidgetSkeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useDashboardRealtime } from '@/hooks/useDashboardRealtime';
 import { Badge } from '@/components/ui/badge';
+import { StatCard } from '@/components/ui/stat-card';
 import { cn } from '@/lib/utils';
 import {
   Sparkles,
@@ -134,81 +135,44 @@ function DashboardHeroSection({
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6"
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6"
           >
             {[
               {
-                label: 'Bugünkü Görevler',
+                title: 'Bugünkü Görevler',
                 value: '12',
                 icon: Activity,
-                trend: '+3',
-                color: 'text-primary',
+                colorTheme: 'neutral' as const,
+                change: { value: '+3', type: 'positive' as const },
+                description: 'bu hafta',
               },
               {
-                label: 'Aktif Projeler',
+                title: 'Aktif Projeler',
                 value: '8',
                 icon: TrendingUp,
-                trend: '+1',
-                color: 'text-success',
+                colorTheme: 'success' as const,
+                change: { value: '+1', type: 'positive' as const },
+                description: 'bu hafta',
               },
               {
-                label: 'Bekleyen İşler',
+                title: 'Bekleyen İşler',
                 value: '24',
                 icon: Clock,
-                trend: '-5',
-                color: 'text-warning',
+                colorTheme: 'warning' as const,
+                change: { value: '-5', type: 'negative' as const },
+                description: 'bu hafta',
               },
               {
-                label: 'Bu Ay',
+                title: 'Bu Ay',
                 value: '156',
                 icon: Sparkles,
-                trend: '+23%',
-                color: 'text-info',
+                colorTheme: 'info' as const,
+                change: { value: '+23%', type: 'positive' as const },
+                description: 'bu hafta',
               },
             ].map((stat) => (
-              <motion.div
-                key={stat.label}
-                variants={itemVariants}
-                className={cn(
-                  'group relative p-4 rounded-xl',
-                  'bg-card/50 backdrop-blur-sm',
-                  'border border-border/50',
-                  'hover:border-primary/30 hover:bg-card/80',
-                  'transition-all duration-300 cursor-default'
-                )}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">
-                      {stat.label}
-                    </p>
-                    <p className={cn('text-2xl font-bold', stat.color)}>
-                      {stat.value}
-                    </p>
-                  </div>
-                  <div
-                    className={cn(
-                      'p-2 rounded-lg',
-                      'bg-gradient-to-br from-primary/10 to-primary/5',
-                      'group-hover:from-primary/20 group-hover:to-primary/10',
-                      'transition-all duration-300'
-                    )}
-                  >
-                    <stat.icon className="h-4 w-4 text-primary" />
-                  </div>
-                </div>
-                {stat.trend && (
-                  <p
-                    className={cn(
-                      'text-xs mt-2 font-medium',
-                      stat.trend.startsWith('+')
-                        ? 'text-success'
-                        : 'text-warning'
-                    )}
-                  >
-                    {stat.trend} bu hafta
-                  </p>
-                )}
+              <motion.div key={stat.title} variants={itemVariants}>
+                <StatCard {...stat} />
               </motion.div>
             ))}
           </motion.div>

@@ -72,7 +72,7 @@ function wrapInTemplate(content: string, title: string): string {
       overflow: hidden;
     }
     .header {
-      background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+      background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
       color: #ffffff;
       padding: 30px;
       text-align: center;
@@ -94,14 +94,14 @@ function wrapInTemplate(content: string, title: string): string {
     .button {
       display: inline-block;
       padding: 12px 24px;
-      background-color: #3498db;
+      background-color: #14b8a6;
       color: #ffffff;
       text-decoration: none;
       border-radius: 4px;
       margin: 10px 0;
     }
     .button:hover {
-      background-color: #2980b9;
+      background-color: #0d9488;
     }
     .alert {
       padding: 15px;
@@ -118,7 +118,7 @@ function wrapInTemplate(content: string, title: string): string {
     }
     .alert-medium {
       background-color: #ebf5fb;
-      border-left: 4px solid #3498db;
+      border-left: 4px solid #14b8a6;
     }
     .alert-low {
       background-color: #eafaf1;

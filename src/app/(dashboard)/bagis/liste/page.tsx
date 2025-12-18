@@ -23,8 +23,8 @@ import { useFilters } from '@/hooks/useFilters';
 import { FilterPanel, FilterField } from '@/components/ui/filter-panel';
 import { useBulkOperations } from '@/hooks/useBulkOperations';
 import type { DonationDocument } from '@/types/database';
-import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { StatCard } from '@/components/ui/stat-card';
 
 const DonationForm = dynamic(
   () => import('@/components/forms/DonationForm').then((mod) => ({ default: mod.DonationForm })),
@@ -38,63 +38,18 @@ const DonationForm = dynamic(
   }
 );
 
-// Stat Card Component
-function StatCard({ 
-  title, 
-  value, 
-  description, 
-  icon: Icon, 
-  trend,
-  colorClass = 'text-primary bg-primary/10'
-}: { 
-  title: string; 
-  value: string | number; 
-  description?: string;
-  icon: React.ElementType;
-  trend?: { value: number; isPositive: boolean };
-  colorClass?: string;
-}) {
-  return (
-    <Card className="relative overflow-hidden">
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between">
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold tracking-tight">{value}</p>
-            {description && (
-              <p className="text-xs text-muted-foreground">{description}</p>
-            )}
-          </div>
-          <div className={cn('p-2.5 rounded-lg', colorClass)}>
-            <Icon className="h-5 w-5" />
-          </div>
-        </div>
-        {trend && (
-          <div className="mt-3 flex items-center gap-1">
-            <TrendingUp className={cn('h-3.5 w-3.5', trend.isPositive ? 'text-success' : 'text-error rotate-180')} />
-            <span className={cn('text-xs font-medium', trend.isPositive ? 'text-success' : 'text-error')}>
-              {trend.isPositive ? '+' : ''}{trend.value}%
-            </span>
-            <span className="text-xs text-muted-foreground">geçen aya göre</span>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
 // Status Badge Component
 function StatusBadge({ status }: { status: string }) {
   const config = {
-    completed: { label: 'Tamamlandı', icon: CheckCircle2, className: 'bg-success/10 text-success border-success/20' },
-    pending: { label: 'Beklemede', icon: Clock, className: 'bg-warning/10 text-warning border-warning/20' },
-    cancelled: { label: 'İptal', icon: FileText, className: 'bg-error/10 text-error border-error/20' },
-  }[status] || { label: status, icon: FileText, className: 'bg-muted text-muted-foreground' };
+    completed: { label: 'Tamamlandı', icon: CheckCircle2, badgeStatus: 'active' as const },
+    pending: { label: 'Beklemede', icon: Clock, badgeStatus: 'pending' as const },
+    cancelled: { label: 'İptal', icon: FileText, badgeStatus: 'error' as const },
+  }[status] || { label: status, icon: FileText, badgeStatus: undefined };
 
   const Icon = config.icon;
-  
+
   return (
-    <Badge variant="outline" className={cn('gap-1 font-medium', config.className)}>
+    <Badge status={config.badgeStatus} variant={config.badgeStatus ? undefined : 'outline'}>
       <Icon className="h-3 w-3" />
       {config.label}
     </Badge>
@@ -299,22 +254,22 @@ export default function DonationsPage() {
           value={data?.total || donationsList.length}
           description="Tüm zamanlar"
           icon={Users}
-          colorClass="text-primary bg-primary/10"
+          colorTheme="neutral"
         />
         <StatCard
           title="Toplam Tutar"
           value={`${totalAmount.toLocaleString('tr-TR')} ₺`}
           description="Toplanan miktar"
           icon={Banknote}
-          colorClass="text-success bg-success/10"
-          trend={{ value: 12, isPositive: true }}
+          colorTheme="success"
+          change={{ value: '+12%', type: 'positive' }}
         />
         <StatCard
           title="Tamamlanan"
           value={completedCount}
           description={`${donationsList.length > 0 ? Math.round((completedCount / donationsList.length) * 100) : 0}% başarı oranı`}
           icon={CheckCircle2}
-          colorClass="text-success bg-success/10"
+          colorTheme="success"
         />
         <StatCard
           title="Bu Ay"
@@ -325,7 +280,7 @@ export default function DonationsPage() {
           }).length}
           description="Yeni bağış"
           icon={Calendar}
-          colorClass="text-info bg-info/10"
+          colorTheme="info"
         />
       </div>
 

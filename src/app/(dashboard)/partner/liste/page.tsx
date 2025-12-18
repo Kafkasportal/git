@@ -271,19 +271,11 @@ export default function PartnersPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return (
-          <Badge className="bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">
-            Aktif
-          </Badge>
-        );
+        return <Badge status="active">Aktif</Badge>;
       case "inactive":
-        return <Badge variant="secondary">Pasif</Badge>;
+        return <Badge status="inactive">Pasif</Badge>;
       case "pending":
-        return (
-          <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400">
-            Beklemede
-          </Badge>
-        );
+        return <Badge status="pending">Beklemede</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }

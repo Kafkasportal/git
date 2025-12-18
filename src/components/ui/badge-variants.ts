@@ -5,52 +5,49 @@ export const badgeVariants = cva(
   {
     variants: {
       variant: {
-        // Default - Primary blue badge
+        // Default - Primary badge
         default:
-          'bg-corporate-primary-100 text-corporate-primary-700 border-corporate-primary-200 hover:bg-corporate-primary-200',
+          'bg-primary-100 text-primary-700 border-primary-200 hover:bg-primary-200',
 
         // Primary - Main brand
         primary:
-          'bg-corporate-primary-600 text-white border-corporate-primary-700 hover:bg-corporate-primary-700 focus-visible:ring-corporate-primary-300',
+          'bg-primary-600 text-white border-primary-700 hover:bg-primary-700 focus-visible:ring-primary-300',
 
         // Secondary - Gray background
         secondary:
-          'bg-corporate-gray-100 text-corporate-gray-900 border-corporate-gray-200 hover:bg-corporate-gray-200',
+          'bg-gray-100 text-gray-900 border-gray-200 hover:bg-gray-200',
 
         // Success - Green badge
         success:
-          'bg-corporate-success-100 text-corporate-success-700 border-corporate-success-200 hover:bg-corporate-success-200',
+          'bg-success-100 text-success-700 border-success-100 hover:bg-success-100',
 
         // Warning - Amber badge
         warning:
-          'bg-corporate-warning-100 text-corporate-warning-700 border-corporate-warning-200 hover:bg-corporate-warning-200',
+          'bg-warning-100 text-warning-700 border-warning-100 hover:bg-warning-100',
 
-        // Error/Destructive - Red badge
-        error:
-          'bg-corporate-error-100 text-corporate-error-700 border-corporate-error-200 hover:bg-corporate-error-200 focus-visible:ring-corporate-error-300',
-
+        // Destructive - Red badge
         destructive:
-          'bg-corporate-error-100 text-corporate-error-700 border-corporate-error-200 hover:bg-corporate-error-200 focus-visible:ring-corporate-error-300',
+          'bg-error-100 text-error-700 border-error-100 hover:bg-error-100 focus-visible:ring-error-300',
 
-        // Info - Cyan badge
+        // Info - Blue badge
         info:
-          'bg-corporate-info-100 text-corporate-info-700 border-corporate-info-200 hover:bg-corporate-info-200',
+          'bg-info-100 text-info-700 border-info-100 hover:bg-info-100',
 
         // Outline - Bordered style
         outline:
-          'bg-transparent text-corporate-gray-900 border-corporate-gray-300 hover:bg-corporate-gray-50 dark:text-corporate-gray-100 dark:border-corporate-gray-600',
+          'bg-transparent text-gray-900 border-gray-300 hover:bg-gray-50 dark:text-gray-100 dark:border-gray-600',
 
         // Ghost - Minimal style
         ghost:
-          'bg-transparent text-corporate-gray-700 border-transparent hover:bg-corporate-gray-100 dark:text-corporate-gray-300 dark:hover:bg-corporate-gray-800',
+          'bg-transparent text-gray-700 border-transparent hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800',
 
         // Solid - Full color
         solid:
-          'bg-corporate-primary-600 text-white border-corporate-primary-700 hover:bg-corporate-primary-700 shadow-sm',
+          'bg-primary-600 text-white border-primary-700 hover:bg-primary-700 shadow-sm',
 
         // Muted - Subtle gray
         muted:
-          'bg-corporate-gray-200 text-corporate-gray-700 border-corporate-gray-300 hover:bg-corporate-gray-300',
+          'bg-gray-200 text-gray-700 border-gray-300 hover:bg-gray-300',
       },
 
       size: {
@@ -67,10 +64,10 @@ export const badgeVariants = cva(
 
       // Status badges
       status: {
-        active: 'bg-corporate-success-100 text-corporate-success-700 border-corporate-success-200',
-        inactive: 'bg-corporate-gray-100 text-corporate-gray-700 border-corporate-gray-200',
-        pending: 'bg-corporate-warning-100 text-corporate-warning-700 border-corporate-warning-200',
-        error: 'bg-corporate-error-100 text-corporate-error-700 border-corporate-error-200',
+        active: 'bg-success-100 text-success-700 border-success-100',
+        inactive: 'bg-gray-100 text-gray-700 border-gray-200',
+        pending: 'bg-warning-100 text-warning-700 border-warning-100',
+        error: 'bg-error-100 text-error-700 border-error-100',
       },
     },
 

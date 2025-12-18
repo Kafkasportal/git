@@ -5,69 +5,49 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Default - Alias for primary
-        default:
-          'bg-primary text-primary-foreground bg-gradient-to-r from-corporate-primary-600 to-corporate-primary-700 shadow-lg hover:from-corporate-primary-700 hover:to-corporate-primary-800 hover:shadow-xl focus-visible:ring-corporate-primary-100 dark:focus-visible:ring-corporate-primary-900',
-
-        // Primary - Main brand action button (Corporate Blue)
+        // Primary - Main brand action button (Teal)
         primary:
-          'bg-primary text-primary-foreground bg-gradient-to-r from-corporate-primary-600 to-corporate-primary-700 shadow-lg hover:from-corporate-primary-700 hover:to-corporate-primary-800 hover:shadow-xl focus-visible:ring-corporate-primary-100 dark:focus-visible:ring-corporate-primary-900',
+          'bg-primary text-primary-foreground bg-gradient-to-r from-primary-600 to-primary-700 shadow-lg hover:from-primary-700 hover:to-primary-800 hover:shadow-xl focus-visible:ring-primary-100 dark:focus-visible:ring-primary-900',
 
         // Secondary - Alternative action (Outline)
         secondary:
-          'bg-secondary text-secondary-foreground bg-white border-2 border-corporate-gray-300 text-corporate-gray-900 hover:bg-corporate-gray-50 hover:border-corporate-primary-300 shadow-sm focus-visible:ring-corporate-primary-100 dark:bg-corporate-gray-800 dark:border-corporate-gray-600 dark:text-corporate-gray-50 dark:hover:bg-corporate-gray-700',
+          'bg-secondary text-secondary-foreground bg-white border-2 border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-primary-300 shadow-sm focus-visible:ring-primary-100 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-50 dark:hover:bg-gray-700',
 
         // Success - Positive actions (Green)
         success:
-          'bg-corporate-success-600 text-white shadow-lg hover:bg-corporate-success-700 hover:shadow-xl focus-visible:ring-corporate-success-100 disabled:bg-corporate-success-400 dark:focus-visible:ring-corporate-success-900',
+          'bg-success-600 text-white shadow-lg hover:bg-success-700 hover:shadow-xl focus-visible:ring-success-100 disabled:bg-success-500/50 dark:focus-visible:ring-success-900',
 
-        // Danger/Destructive - Delete/Remove (Red)
-        danger:
-          'bg-corporate-error-600 text-white shadow-lg hover:bg-corporate-error-700 hover:shadow-xl focus-visible:ring-corporate-error-100 disabled:bg-corporate-error-400 dark:focus-visible:ring-corporate-error-900',
-
-        // Destructive - Alias for danger
+        // Destructive - Delete/Remove (Red)
         destructive:
-          'bg-destructive text-white bg-corporate-error-600 shadow-lg hover:bg-corporate-error-700 hover:shadow-xl focus-visible:ring-corporate-error-100 disabled:bg-corporate-error-400 dark:focus-visible:ring-corporate-error-900',
+          'bg-destructive text-white bg-error-600 shadow-lg hover:bg-error-700 hover:shadow-xl focus-visible:ring-error-100 disabled:bg-error-500/50 dark:focus-visible:ring-error-900',
 
         // Warning - Caution actions (Amber)
         warning:
-          'bg-corporate-warning-600 text-white shadow-lg hover:bg-corporate-warning-700 hover:shadow-xl focus-visible:ring-corporate-warning-100 disabled:bg-corporate-warning-400 dark:focus-visible:ring-corporate-warning-900',
+          'bg-warning-600 text-white shadow-lg hover:bg-warning-700 hover:shadow-xl focus-visible:ring-warning-100 disabled:bg-warning-500/50 dark:focus-visible:ring-warning-900',
+
+        // Info - Informational actions (Blue)
+        info:
+          'bg-info-600 text-white shadow-lg hover:bg-info-700 hover:shadow-xl focus-visible:ring-info-100 dark:focus-visible:ring-info-900',
 
         // Ghost - Subtle/tertiary action
         ghost:
-          'bg-transparent text-corporate-primary-600 hover:bg-corporate-primary-50 hover:text-corporate-primary-700 focus-visible:ring-corporate-primary-100 dark:text-corporate-primary-400 dark:hover:bg-corporate-primary-900/20',
+          'bg-transparent text-primary-600 hover:bg-primary-50 hover:text-primary-700 focus-visible:ring-primary-100 dark:text-primary-400 dark:hover:bg-primary-900/20',
 
         // Link - Text link style
         link:
-          'text-corporate-primary-600 underline-offset-4 hover:underline focus-visible:ring-corporate-primary-100 dark:text-corporate-primary-400',
+          'text-primary-600 underline-offset-4 hover:underline focus-visible:ring-primary-100 dark:text-primary-400',
 
         // Outline - Bordered style
         outline:
-          'border bg-background border-corporate-gray-300 bg-white text-corporate-gray-900 hover:bg-corporate-gray-50 hover:border-corporate-gray-400 shadow-sm focus-visible:ring-corporate-primary-100 dark:border-corporate-gray-600 dark:bg-corporate-gray-800 dark:text-corporate-gray-50',
-
-        // Info - Informational actions (Cyan)
-        info:
-          'bg-corporate-info-600 text-white shadow-lg hover:bg-corporate-info-700 hover:shadow-xl focus-visible:ring-corporate-info-100 dark:focus-visible:ring-corporate-info-900',
+          'border bg-background border-gray-300 bg-white text-gray-900 hover:bg-gray-50 hover:border-gray-400 shadow-sm focus-visible:ring-primary-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-50',
 
         // Loading state (disabled appearance)
         loading:
-          'bg-corporate-gray-300 text-corporate-gray-600 cursor-not-allowed shadow-none hover:shadow-none',
+          'bg-gray-300 text-gray-600 cursor-not-allowed shadow-none hover:shadow-none',
 
         // Elevated - More prominent with shadow
         elevated:
-          'bg-gradient-to-r from-corporate-primary-600 to-corporate-primary-700 text-white shadow-xl hover:shadow-2xl hover:from-corporate-primary-700 hover:to-corporate-primary-800 focus-visible:ring-corporate-primary-100 transform hover:-translate-y-0.5 transition-all',
-
-        // Glow - Teal glow effect on hover
-        glow:
-          'bg-gradient-to-r from-primary to-primary/80 text-white shadow-lg hover:shadow-[0_0_30px_rgba(13,148,136,0.4)] focus-visible:ring-primary/30 transition-all duration-300',
-
-        // Soft - Soft background with text color
-        soft:
-          'bg-primary/10 text-primary hover:bg-primary/20 focus-visible:ring-primary/20 shadow-none',
-
-        // Glass - Glass morphism button
-        glass:
-          'bg-white/20 backdrop-blur-md border border-white/30 text-white hover:bg-white/30 shadow-lg focus-visible:ring-white/20',
+          'bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-xl hover:shadow-2xl hover:from-primary-700 hover:to-primary-800 focus-visible:ring-primary-100 transform hover:-translate-y-0.5 transition-all',
       },
 
       size: {

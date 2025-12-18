@@ -110,6 +110,20 @@ const TransactionRow = memo(function TransactionRow({ record, onView, onEdit, on
     onDelete?.(record);
   }, [onDelete, record]);
 
+  // Map status to Badge status prop
+  const getBadgeStatus = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'active' as const;
+      case 'pending':
+        return 'pending' as const;
+      case 'cancelled':
+        return 'error' as const;
+      default:
+        return undefined;
+    }
+  };
+
   return (
     <div className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
       <div className="flex items-center justify-between">
@@ -118,11 +132,13 @@ const TransactionRow = memo(function TransactionRow({ record, onView, onEdit, on
           <div className="flex items-center gap-3 mb-2">
             <div className="flex items-center gap-2">
               {record.record_type === 'income' ? (
-                <ArrowUpCircle className="h-5 w-5 text-green-600" />
+                <ArrowUpCircle className="h-5 w-5 text-success" />
               ) : (
-                <ArrowDownCircle className="h-5 w-5 text-red-600" />
+                <ArrowDownCircle className="h-5 w-5 text-error" />
               )}
-              <Badge className={statusInfo?.color}>{statusInfo?.label}</Badge>
+              <Badge status={getBadgeStatus(record.status)} variant={getBadgeStatus(record.status) ? undefined : 'outline'}>
+                {statusInfo?.label}
+              </Badge>
             </div>
             <h3 className="font-semibold">{record.description}</h3>
             <span className="text-sm text-muted-foreground">
@@ -137,7 +153,7 @@ const TransactionRow = memo(function TransactionRow({ record, onView, onEdit, on
             <DetailField
               label="Tutar"
               value={formatCurrency(record.amount)}
-              valueClassName={`font-bold ${record.record_type === 'income' ? 'text-green-600' : 'text-red-600'}`}
+              valueClassName={`font-bold ${record.record_type === 'income' ? 'text-success' : 'text-error'}`}
             />
             <DetailField label="Ödeme Yöntemi" value={record.payment_method || '-'} />
             <DetailField label="Makbuz No" value={record.receipt_number || '-'} />

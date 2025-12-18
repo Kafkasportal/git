@@ -61,12 +61,12 @@ interface ScholarshipApplication {
 }
 
 const STATUS_LABELS = {
-  draft: { label: 'Taslak', color: 'bg-gray-100 text-gray-700' },
-  submitted: { label: 'Başvuru Gönderildi', color: 'bg-blue-100 text-blue-700' },
-  under_review: { label: 'İncelemede', color: 'bg-yellow-100 text-yellow-700' },
-  approved: { label: 'Onaylandı', color: 'bg-green-100 text-green-700' },
-  rejected: { label: 'Reddedildi', color: 'bg-red-100 text-red-700' },
-  waitlisted: { label: 'Beklemede', color: 'bg-orange-100 text-orange-700' },
+  draft: { label: 'Taslak', variant: 'secondary' as const },
+  submitted: { label: 'Başvuru Gönderildi', variant: 'info' as const },
+  under_review: { label: 'İncelemede', status: 'pending' as const },
+  approved: { label: 'Onaylandı', status: 'active' as const },
+  rejected: { label: 'Reddedildi', status: 'error' as const },
+  waitlisted: { label: 'Beklemede', variant: 'warning' as const },
 };
 
 const GRADE_LABELS = {
@@ -447,9 +447,8 @@ export default function StudentsPage() {
                       <div className="flex items-center gap-3 mb-3">
                         <h3 className="font-semibold text-lg">{student.applicant_name}</h3>
                         <Badge
-                          className={
-                            STATUS_LABELS[student.status as keyof typeof STATUS_LABELS]?.color
-                          }
+                          variant={STATUS_LABELS[student.status as keyof typeof STATUS_LABELS]?.variant}
+                          status={STATUS_LABELS[student.status as keyof typeof STATUS_LABELS]?.status}
                         >
                           {STATUS_LABELS[student.status as keyof typeof STATUS_LABELS]?.label ||
                             student.status}

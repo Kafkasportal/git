@@ -17,8 +17,16 @@ docs/
 │   ├── components.md     # React component referansı
 │   ├── types.md          # TypeScript tip tanımları
 │   └── hooks-utilities.md # Hook ve utility fonksiyonları
-└── design/           # Tasarım Sistemi
-    └── design-system.md  # Kurumsal tasarım sistemi
+├── design/           # Tasarım Sistemi
+│   └── design-system.md  # Kurumsal tasarım sistemi
+├── project/          # Proje Dokümanları
+│   ├── PRD.md            # Ürün gereksinimleri
+│   └── CLAUDE.md         # AI asistan rehberi
+├── reports/          # Test ve İlerleme Raporları
+│   ├── TEST_SESSION_REPORT.md        # Test oturum raporları
+│   └── TEST_IMPROVEMENT_PLAN.md      # İyileştirme planları
+└── troubleshooting/  # Sorun Giderme
+    └── VITEST_*.md       # Test sorun giderme rehberleri
 ```
 
 ## 🚀 Hızlı Başlangıç
@@ -32,8 +40,7 @@ docs/
 ## 📖 Ana Proje Dokümantasyonu
 
 - [README.md](../README.md) - Proje genel bakış
-- [PRD.md](../PRD.md) - Ürün gereksinimleri dokümanı
-- [PROJECT_METRICS.md](../PROJECT_METRICS.md) - Proje metrikleri
+- [PRD.md](./project/PRD.md) - Ürün gereksinimleri dokümanı
 
 ## 🔗 Harici Kaynaklar
 
