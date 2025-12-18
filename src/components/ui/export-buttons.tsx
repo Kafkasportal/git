@@ -31,7 +31,7 @@ interface ExportButtonsProps {
   filename: string;
   title?: string;
   columns?: Record<string, string>;
-  variant?: 'default' | 'outline' | 'ghost';
+  variant?: 'outline' | 'ghost' | 'secondary';
   size?: 'default' | 'sm' | 'lg';
   showLabel?: boolean;
   compact?: boolean;
@@ -329,7 +329,7 @@ interface SimpleExportButtonProps {
   data: Record<string, unknown>[];
   filename: string;
   format?: 'csv' | 'json' | 'html' | 'excel' | 'pdf';
-  variant?: 'default' | 'outline' | 'ghost';
+  variant?: 'outline' | 'ghost' | 'secondary';
   size?: 'default' | 'sm' | 'lg';
   label?: string;
   columns?: Record<string, string>;
