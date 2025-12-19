@@ -192,6 +192,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
               <button
                 onClick={() => setQuery('')}
                 className="p-1 hover:bg-slate-100 rounded-md transition-colors"
+                aria-label="Aramayı temizle"
               >
                 <X className="h-4 w-4 text-slate-400" />
               </button>

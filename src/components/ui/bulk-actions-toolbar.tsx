@@ -124,6 +124,7 @@ export function BulkActionsToolbar(props: BulkActionsToolbarProps) {
             onClick={onClearSelection}
             className="h-8 gap-1 text-muted-foreground hover:text-foreground"
             disabled={isLoading}
+            aria-label="Seçimi Temizle"
           >
             <X className="h-4 w-4" />
             <span className="hidden sm:inline">Seçimi Temizle</span>
@@ -301,7 +302,7 @@ export function CompactBulkActions({
     <div className="fixed bottom-4 left-4 right-4 z-50 flex items-center justify-between gap-2 p-3 bg-background border shadow-lg rounded-lg sm:hidden">
       <div className="flex items-center gap-2">
         <Badge>{selectedCount}</Badge>
-        <Button variant="ghost" size="icon" onClick={onClearSelection} className="h-8 w-8">
+        <Button variant="ghost" size="icon" onClick={onClearSelection} className="h-8 w-8" aria-label="Seçimi temizle">
           <X className="h-4 w-4" />
         </Button>
       </div>
