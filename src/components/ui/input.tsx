@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
+import { Loader2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -94,8 +95,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     else if (isWarning) effectiveVariant = 'warning';
     else if (props['aria-invalid']) effectiveVariant = 'error';
 
-    // If there's an icon, wrap input in container
-    if (icon) {
+    // If there's an icon or loading state, wrap input in container
+    if (icon || isLoading) {
       return (
         <div className="relative flex items-center">
           <div
@@ -105,9 +106,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             )}
           >
             {isLoading ? (
-              <div className="animate-spin">
-                {/* Loader icon would go here */}
-              </div>
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               icon
             )}
