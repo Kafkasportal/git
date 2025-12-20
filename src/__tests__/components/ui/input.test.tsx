@@ -7,6 +7,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Input } from '@/components/ui/input'
+import { SearchIcon } from 'lucide-react'
 
 describe('Input', () => {
   describe('Rendering', () => {
@@ -298,6 +299,33 @@ describe('Input', () => {
       render(<Input readOnly value="readonly" />)
       expect(screen.getByRole('textbox')).toHaveAttribute('readonly')
     })
+
+    it('renders loading spinner when isLoading is true (with icon)', () => {
+      render(
+        <Input
+          placeholder="Searching..."
+          icon={<SearchIcon data-testid="search-icon" />}
+          isLoading={true}
+        />
+      );
+      // Icon should be replaced by spinner
+      expect(screen.queryByTestId('search-icon')).not.toBeInTheDocument();
+      // Verify spinner exists (lucide-react Loader2 usually has class 'animate-spin')
+      const spinner = document.querySelector('.animate-spin');
+      expect(spinner).toBeInTheDocument();
+    });
+
+    it('renders loading spinner when isLoading is true (without icon)', () => {
+      render(<Input placeholder="Loading..." isLoading={true} />);
+      const spinner = document.querySelector('.animate-spin');
+      expect(spinner).toBeInTheDocument();
+    });
+
+    it('disables input when isLoading is true', () => {
+      render(<Input placeholder="Loading..." isLoading={true} />);
+      const input = screen.getByPlaceholderText('Loading...');
+      expect(input).toBeDisabled();
+    });
   })
 
   describe('Number Input', () => {
