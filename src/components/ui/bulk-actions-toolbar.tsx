@@ -124,6 +124,8 @@ export function BulkActionsToolbar(props: BulkActionsToolbarProps) {
             onClick={onClearSelection}
             className="h-8 gap-1 text-muted-foreground hover:text-foreground"
             disabled={isLoading}
+            aria-label="Seçimi Temizle"
+            title="Seçimi Temizle"
           >
             <X className="h-4 w-4" />
             <span className="hidden sm:inline">Seçimi Temizle</span>
@@ -140,6 +142,7 @@ export function BulkActionsToolbar(props: BulkActionsToolbarProps) {
                   size="sm"
                   className="h-8 gap-1"
                   disabled={isLoading}
+                  aria-label="Durum Değiştir"
                 >
                   Durum Değiştir
                   <ChevronDown className="h-3 w-3" />
@@ -177,6 +180,8 @@ export function BulkActionsToolbar(props: BulkActionsToolbarProps) {
               onClick={() => setShowEditModal(true)}
               className="h-8 gap-1"
               disabled={isLoading}
+              aria-label="Seçilenleri Düzenle"
+              title="Seçilenleri Düzenle"
             >
               <Edit className="h-4 w-4" />
               <span className="hidden sm:inline">Düzenle</span>
@@ -192,6 +197,8 @@ export function BulkActionsToolbar(props: BulkActionsToolbarProps) {
                   size="sm"
                   className="h-8 gap-1"
                   disabled={isLoading}
+                  aria-label="Seçilenleri Dışa Aktar"
+                  title="Seçilenleri Dışa Aktar"
                 >
                   <Download className="h-4 w-4" />
                   <span className="hidden sm:inline">Dışa Aktar</span>
@@ -222,6 +229,8 @@ export function BulkActionsToolbar(props: BulkActionsToolbarProps) {
               onClick={handleDelete}
               className="h-8 gap-1"
               disabled={isLoading}
+              aria-label={`${selectedCount} öğeyi sil`}
+              title={`${selectedCount} öğeyi sil`}
             >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -301,7 +310,13 @@ export function CompactBulkActions({
     <div className="fixed bottom-4 left-4 right-4 z-50 flex items-center justify-between gap-2 p-3 bg-background border shadow-lg rounded-lg sm:hidden">
       <div className="flex items-center gap-2">
         <Badge>{selectedCount}</Badge>
-        <Button variant="ghost" size="icon" onClick={onClearSelection} className="h-8 w-8">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClearSelection}
+          className="h-8 w-8"
+          aria-label="Seçimi Temizle"
+        >
           <X className="h-4 w-4" />
         </Button>
       </div>
