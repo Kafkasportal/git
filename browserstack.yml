@@ -1,0 +1,49 @@
+# ==============================================
+# BrowserStack Configuration
+# ==============================================
+# This file configures BrowserStack for cross-browser testing.
+# Credentials should be set via environment variables, not hardcoded here.
+#
+# Required Environment Variables:
+#   BROWSERSTACK_USERNAME - Your BrowserStack username
+#   BROWSERSTACK_ACCESS_KEY - Your BrowserStack access key
+#
+# Optional Environment Variables:
+#   BROWSERSTACK_BUILD_NAME - Build name for test runs (default: local-build)
+#   BROWSERSTACK_PROJECT_NAME - Project name (default: Dernek Yönetim Sistemi)
+#
+# Usage:
+#   1. Set environment variables in your CI/CD or local .env file
+#   2. Run tests with: npx browserstack-node-sdk <test-command>
+# ==============================================
+
+# Authentication (use environment variables)
+userName: ${BROWSERSTACK_USERNAME}
+accessKey: ${BROWSERSTACK_ACCESS_KEY}
+
+# Test platforms configuration
+platforms:
+  - os: Windows
+    osVersion: 10
+    browserName: Chrome
+    browserVersion: latest
+  - os: OS X
+    osVersion: Monterey
+    browserName: Safari
+    browserVersion: 15.6
+  - deviceName: iPhone 14
+    osVersion: 16
+    browserName: Chromium
+    deviceOrientation: portrait
+
+# BrowserStack Local for testing localhost/internal servers
+browserstackLocal: true
+
+# Build and project identification
+buildName: ${BROWSERSTACK_BUILD_NAME:-local-build}
+projectName: ${BROWSERSTACK_PROJECT_NAME:-Dernek Yönetim Sistemi}
+
+# Debugging options
+debug: false
+networkLogs: false
+consoleLogs: errors
