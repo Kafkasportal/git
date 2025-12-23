@@ -9,6 +9,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { OAuthButton } from '@/components/auth/OAuthButton';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -145,13 +151,27 @@ export function LoginFormFields({
             )}
             style={{ fontFamily: 'Inter, sans-serif' }}
           />
-          <button
-            type="button"
-            onClick={onTogglePassword}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
-          >
-            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-          </button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={onTogglePassword}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                  aria-label={showPassword ? 'Şifreyi gizle' : 'Şifreyi göster'}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{showPassword ? 'Şifreyi gizle' : 'Şifreyi göster'}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         {passwordError && (
           <motion.p

@@ -171,7 +171,7 @@ describe('sanitizeFilename', () => {
   });
 
   it('should limit filename length to 255 characters', () => {
-    const longName = 'a'.repeat(300) + '.txt';
+    const longName = `${'a'.repeat(300)  }.txt`;
     expect(sanitizeFilename(longName).length).toBeLessThanOrEqual(255);
   });
 });
