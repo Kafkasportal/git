@@ -190,8 +190,10 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             />
             {query && (
               <button
+                type="button"
                 onClick={() => setQuery('')}
                 className="p-1 hover:bg-slate-100 rounded-md transition-colors"
+                aria-label="Aramayı temizle"
               >
                 <X className="h-4 w-4 text-slate-400" />
               </button>
@@ -251,11 +253,13 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                     Son Aramalar
                   </span>
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       clearRecent();
                     }}
                     className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                    aria-label="Geçmişi temizle"
                   >
                     Temizle
                   </button>
