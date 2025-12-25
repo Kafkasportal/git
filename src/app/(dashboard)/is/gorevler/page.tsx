@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tasks as tasksApi, users as usersApi } from "@/lib/api/crud-factory";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { IconButton } from '@/components/ui/icon-button';
 import {
   Dialog,
   DialogContent,
@@ -594,27 +595,27 @@ export default function TasksPage() {
 
                       {/* Actions */}
                       <div className="flex items-center gap-2 ml-4">
-                        <Button
+                        <IconButton
+                          icon={Edit}
+                          label="Görevi Düzenle"
                           variant="ghost"
-                          size="sm"
+                          size="icon-sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleTaskClick(task);
                           }}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
+                        />
+                        <IconButton
+                          icon={Trash2}
+                          label="Görevi Sil"
                           variant="ghost"
-                          size="sm"
+                          size="icon-sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteTask(task._id || task.$id || '');
                           }}
                           className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        />
                       </div>
                     </div>
                   </div>
